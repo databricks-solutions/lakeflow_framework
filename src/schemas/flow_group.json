@@ -1,0 +1,112 @@
+{
+    "title": "Flow DataFlowSpec FlowGroup",
+    "type": "object",
+    "properties": {
+        "flowGroup": {"type": "string"},
+        "sqlTokens": {
+            "type": "object",
+            "properties": {
+                "{bronze_schema}": {"type": "string"},
+                "{silver_schema}": {"type": "string"}
+            }
+        },
+        "stagingTables": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "type": {"type": "string", "enum": ["ST", "MV"]},
+                    "schemaPath": {"type": "string"},
+                    "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                    "cdcApplyChanges": {"$ref": "./flow_definitions.json#/definitions/cdcApplyChanges"}
+                }
+            }
+        },
+        "flows": {
+            "type": "object",
+            "patternProperties": {
+                "f_([A-Za-z0-9_]+)": {
+                    "type": "object",
+                    "properties": {
+                        "flowType": {
+                            "type": "string", "enum": ["append_view", "append_sql", "merge"]
+                        },
+                        "views": {
+                            "type": "object",
+                            "patternProperties": {
+                                "v_([A-Za-z0-9_]+)": {
+                                    "type": "object",
+                                    "properties": {
+                                        "viewType": {"type": "string", "enum": ["stream", "sql"]}
+                                    },
+                                    "if": {
+                                        "properties": {
+                                            "viewType": { "const": "stream" }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "viewDetails": {"$ref": "./flow_definitions.json#/definitions/streamViewDetails"}
+                                        }
+                                    },
+                                    "else": {
+                                        "if": {
+                                            "properties": {
+                                                "viewType": { "const": "sql" }
+                                            }
+                                        },
+                                        "then": {
+                                            "properties": {
+                                                "viewDetails": {"$ref": "./flow_definitions.json#/definitions/sqlViewDetails"}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "allOf": [
+                        {
+                            "if": {
+                                "properties": {
+                                    "flowType": { "const": "append_sql" }
+                                }
+                            },
+                            "then": {
+                                "properties": {
+                                    "flowDetails": {"$ref": "./flow_definitions.json#/definitions/appendSqlFlowDetails"}
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "flowType": { "const": "append_view" }
+                                }
+                            },
+                            "then": {
+                                "properties": {
+                                    "flowDetails": {"$ref": "./flow_definitions.json#/definitions/appendViewFlowDetails"}
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "flowType": { "const": "merge" }
+                                }
+                            },
+                            "then": {
+                                "properties": {
+                                    "flowDetails": {"$ref": "./flow_definitions.json#/definitions/mergeFlowDetails"}
+                                }
+                            }
+                        }
+                    ],
+                    "required": ["flowType", "flowDetails"]
+                }
+            }
+        }
+    },
+    "required": ["flowGroup", "sqlTokens", "targets", "flows"]
+}

@@ -1,0 +1,10 @@
+{
+    "api_connections": {
+        "dbsql_microflow_audit_db": {
+            "type": "databricks_sql_statements_api",
+            "warehouse_id": "58aa1b363649e722",
+            "schema": "main.nab_bronze_test_4",
+            "table": "test_log"
+        }
+    }
+}

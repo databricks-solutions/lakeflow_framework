@@ -1,0 +1,214 @@
+{
+    "title": "Main DataFlowSpec",
+    "type": "object",
+    "properties": {
+        "dataFlowId": {"type": "string"},
+        "dataFlowGroup": {"type": "string"},
+        "dataFlowType": {"type": "string", "enum": ["flow", "standard"]}
+    },
+    "required": [
+        "dataFlowId",
+        "dataFlowGroup",
+        "dataFlowType"
+    ],
+    "if": {
+        "properties": {
+            "dataFlowType": {"const": "flow"}
+        }
+    },
+    "then": {
+        "properties": {
+            "sourceSystem": {"type": "string", "enum": ["flow", "standard"]},
+            "targetFormat": {"type": "string"},
+            "targetDetails": {
+                "type": "object",
+                "properties": {
+                    "table": {"type": "string"},
+                    "tableProperties": {"type": "object"},
+                    "tablePath": {"type": "string"},
+                    "schemaPath": {"type": "string"}
+                },
+                "required": ["table", "schemaPath"]
+            },
+            "partitionColumns": {"type": "array", "items": {"type": "string", "pattern": "^[^\\s].*[^\\s]$|^[^\\s]$"}},
+            "cdcApplyChanges": {"$ref": "./flow_definitions.json#/definitions/cdcApplyChanges"},
+            "dataQualityExpectations": {"type": "string"},
+            "quarantineMode": {"type": "string", "enum": ["off", "flag", "table"]},
+            "quarantineTargetDetails": {"$ref": "#/definitions/quarantineTargetDetails"}
+        },
+        "required": [
+            "targetFormat",
+            "targetDetails",
+            "cdcApplyChanges"
+        ]
+    },
+    "else": {
+        "if": {
+            "properties": {
+                "dataFlowType": {"const": "standard"}
+            }
+        },
+        "then": {
+            "properties": {
+                "sourceSystem": {"type": "string"},
+                "sourceType": {"type": "string", "enum": ["cloudFiles", "delta", "eventhub", "kafka"]},
+                "sourceDetails": {"type": "object"},
+                "targetFormat": {"type": "string", "enum": ["delta"]},
+                "targetDetails": {"type": "object"},
+                "partitionColumns": {"type": "array", "items": {"type": "string", "pattern": "^[^\\s].*[^\\s]$|^[^\\s]$"}},
+                "cdcApplyChanges": {"$ref": "./standard_definitions.json#/definitions/cdcApplyChanges"},
+                "dataQualityExpectationsEnabled": {"type": "string", "enum": ["true", "false"]},
+                "quarantineMode": {"type": "string", "enum": ["off", "flag", "table"]},
+                "quarantineTargetDetails": {"$ref": "#/definitions/quarantineTargetDetails"}
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "sourceType": { "const": "cloudFiles" }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "sourceDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "viewName": {"type": "string", "pattern": "v_([A-Za-z0-9_]+)"},
+                                    "readerOptions": {"$ref": "./standard_definitions.json#/definitions/cloudFilesReaderOptions"},
+                                    "selectExp": {"type": "array", "items": {"type": "string"}},
+                                    "whereClause": {"type": "array", "items": {"type": "string"}},
+                                    "schemaPath": {"type": "string"}
+                                },
+                                "required": ["viewName", "readerOptions"],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "sourceType": { "const": "delta" }
+                        }
+                    },
+                    "then": {       
+                        "properties": {                 
+                            "sourceDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "database": {"type": "string"},
+                                    "table": {"type": "string"},
+                                    "viewName": {"type": "string", "pattern": "v_([A-Za-z0-9_]+)"},
+                                    "cdfEnabled": {"type": "string", "enum": ["true", "false"]},
+                                    "selectExp": {"type": "array", "items": {"type": "string"}},
+                                    "whereClause": {"type": "array", "items": {"type": "string"}},
+                                    "schemaPath": {"type": "string"}
+                                },
+                                "required": ["viewName", "database", "table"],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "sourceType": { "const": "eventhub" }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "sourceDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "viewName": {"type": "string", "pattern": "v_([A-Za-z0-9_]+)"},
+                                    "readerOptions": {"$ref": "./standard_definitions.json#/definitions/eventHubReaderOptions"},
+                                    "selectExp": {"type": "array", "items": {"type": "string"}},
+                                    "whereClause": {"type": "array", "items": {"type": "string"}},
+                                    "schemaPath": {"type": "string"}
+                                },
+                                "required": ["viewName", "readerOptions"],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "sourceType": { "const": "kafka" }
+                        }
+                    },
+                    "then": {    
+                        "properties": {                       
+                            "sourceDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "viewName": {"type": "string", "pattern": "v_([A-Za-z0-9_]+)"},
+                                    "readerOptions": {"$ref": "./standard_definitions.json#/definitions/kafkaReaderOptions"},
+                                    "selectExp": {"type": "array", "items": {"type": "string"}},
+                                    "whereClause": {"type": "array", "items": {"type": "string"}},
+                                    "schemaPath": {"type": "string"}
+                                },
+                                "required": ["viewName", "readerOptions"],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "targetFormat": { "const": "delta" }
+                        }
+                    },
+                    "then": {  
+                        "properties": {
+                            "targetDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "table": {"type": "string"},
+                                    "tableProperties": {"type":"object"},
+                                    "tablePath": {"type": "string"},
+                                    "partitionColumns": {"type": "array", "items": {"type": "string", "pattern": "^[^\\s].*[^\\s]$|^[^\\s]$"}},
+                                    "schemaPath": {"type": "string"}
+                                },
+                                "required": ["table", "schemaPath"],
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                }
+            ],
+            "required": [
+                "sourceSystem",
+                "sourceDetails",
+                "targetDetails"
+            ]
+        }
+    },
+    "definitions": {
+        "quarantineTargetDetails": {
+            "type": "object",
+            "properties": {
+                "targetFormat": {"type": "string", "enum": ["delta"], "default": "delta"}
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "targetFormat": { "const": "delta" }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "table": {"type": "string"},
+                            "tableProperties": {"type":"object"},
+                            "path": {"type": "string"}
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

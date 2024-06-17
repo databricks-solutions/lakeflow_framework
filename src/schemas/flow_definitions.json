@@ -1,0 +1,69 @@
+{
+    "title": "Flow DataFlowSpec Definitions",
+    "definitions": {
+        "appendSqlFlowDetails": {
+            "type": "object",
+            "properties": {
+                "targetTable": {"type": "string"},
+                "sqlPath": {"type": "string"}
+            },
+            "additionalProperties": false,
+            "required": ["targetTable", "sqlPath"]
+        },
+        "appendViewFlowDetails": {
+            "type": "object",
+            "properties": {
+                "targetTable": {"type": "string"},
+                "sourceView": {"type": "string"},
+                "column_prefix": {"type": "string"},
+                "column_prefix_exceptions": {"type": "array"}
+            },
+            "additionalProperties": false,
+            "required": ["targetTable", "sourceView"]
+        },        
+        "mergeFlowDetails": {
+            "type": "object",
+            "properties": {
+                "targetTable": {"type": "string"},
+                "sourceView": {"type": "string"}
+            },
+            "additionalProperties": false,
+            "required": ["targetTable", "sourceView"]
+        },
+        "streamViewDetails": {
+            "type": "object",
+            "properties": {
+                "database": {"type": "string"},
+                "table": {"type": "string"},
+                "cdfEnabled": {"type": "string", "enum": ["true", "false"]},
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "whereClause": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false,
+            "required": ["database", "table", "cdfEnabled"]
+        },
+        "sqlViewDetails": {
+            "type": "object",
+            "properties": {
+                "sqlPath": {"type": "string"}
+            },
+            "additionalProperties": false,
+            "required": ["sqlPath"]
+        },
+        "cdcApplyChanges": {
+            "type": "object",
+            "properties": {
+                "keys": {"type": "array", "items": {"type": "string"}},
+                "sequence_by": {"type": "string"},
+                "where": {"type": "string"},
+                "ignore_null_updates": {"type": "string", "enum": ["true", "false"]},
+                "except_column_list": {"type": "array", "items": {"type": "string"}},
+                "scd_type": {"type": "string"},
+                "track_history_column_list": {"type": "array", "items": {"type": "string"}},
+                "track_history_except_column_list": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false,
+            "required": ["keys", "sequence_by", "scd_type"]
+        }
+    }
+}
