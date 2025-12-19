@@ -1,0 +1,18 @@
+template: cdc_stream_from_snapshot_template
+parameterSets:
+  
+  - dataFlowId: template_customer
+    sourceTable: customer
+    targetTable: customer_template
+    cdcKeys:
+      - CUSTOMER_ID
+    sequenceByColumn: LOAD_TIMESTAMP
+    schemaPath: customer_schema.json
+  
+  - dataFlowId: template_customer_address
+    sourceTable: customer_address
+    targetTable: customer_address_template
+    cdcKeys:
+      - CUSTOMER_ID
+    sequenceByColumn: LOAD_TIMESTAMP
+    schemaPath: customer_address_schema.json

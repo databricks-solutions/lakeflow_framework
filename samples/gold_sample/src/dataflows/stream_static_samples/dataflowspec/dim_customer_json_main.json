@@ -1,0 +1,156 @@
+{
+    "dataFlowId": "dim_customer_stream_static_json",
+    "dataFlowGroup": "stream_static_samples",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "dim_customer_delta_join_sample",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "__START_AT",
+        "except_column_list": ["__START_AT"],
+        "ignore_null_updates": true,
+        "apply_as_deletes": "DELETE_FLAG = 1"
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "dim_customer_stream_static_json_1",
+            "stagingTables": {
+                "stg_customer_json_appnd_keys": {
+                    "type": "ST"
+                },
+                "stg_customer_json_merge_keys": {
+                    "type": "ST",
+                    "tableProperties": {
+                        "delta.enableChangeDataFeed": "true"
+                    },
+                    "cdcSettings": {
+                        "keys": [
+                            "CUSTOMER_ID"
+                        ],
+                        "sequence_by": "__START_AT",
+                        "where": "",
+                        "ignore_null_updates": true,
+                        "except_column_list": ["__START_AT"],
+                        "scd_type": "2",
+                        "track_history_column_list": [],
+                        "track_history_except_column_list": []
+                    }
+                }
+            },
+            "flows": {
+                "f_customer": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "stg_customer_json_appnd_keys",
+                        "sourceView": "v_customer"
+                    },
+                    "views": {
+                        "v_customer": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "customer",
+                                "cdfEnabled": true,
+                                "selectExp": ["CUSTOMER_ID", "__START_AT"]
+                            }
+                        }
+                    }
+                },
+                "f_customer_address": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "stg_customer_json_appnd_keys",
+                        "sourceView": "v_customer_address"
+                    },
+                    "views": {
+                        "v_customer_address": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "customer_address",
+                                "cdfEnabled": true,
+                                "selectExp": ["CUSTOMER_ID", "__START_AT"]
+                            }
+                        }
+                    }
+                },
+                "f_merge_keys": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "stg_customer_json_merge_keys",
+                        "sourceView": "stg_customer_json_appnd_keys"
+                    }
+                },
+                "f_target": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "dim_customer_delta_join_sample",
+                        "sourceView": "v_transform"
+                    },
+                    "views": {
+                        "v_transform": {
+                            "mode": "stream",
+                            "sourceType": "deltaJoin",
+                            "sourceDetails": {
+                                "sources": [
+                                    {
+                                        "database": "live",
+                                        "table": "stg_customer_json_merge_keys",
+                                        "cdfEnabled": true,
+                                        "alias": "drv",
+                                        "joinMode": "stream"
+                                    },
+                                    {
+                                        "database": "{silver_schema}",
+                                        "table": "customer",
+                                        "cdfEnabled": false,
+                                        "alias": "c",
+                                        "joinMode": "static"
+                                    },
+                                    {
+                                        "database": "{silver_schema}",
+                                        "table": "customer_address",
+                                        "cdfEnabled": false,
+                                        "alias": "ca",
+                                        "joinMode": "static"
+                                    }
+                                ],
+                                "joins": [
+                                    {
+                                        "joinType": "inner",
+                                        "condition": "drv.CUSTOMER_ID = c.CUSTOMER_ID and drv.__START_AT = c.__START_AT"
+                                    },
+                                    {
+                                        "joinType": "inner",
+                                        "condition": "drv.CUSTOMER_ID = ca.CUSTOMER_ID and drv.__START_AT = ca.__START_AT"
+                                    }
+                                ],
+                                "selectExp": [
+                                    "drv.CUSTOMER_ID",
+                                    "drv.__START_AT",
+                                    "c.FIRST_NAME",
+                                    "c.LAST_NAME",
+                                    "c.EMAIL",
+                                    "ca.CITY",
+                                    "ca.STATE",
+                                    "c.DELETE_FLAG"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

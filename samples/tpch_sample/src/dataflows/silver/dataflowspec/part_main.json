@@ -1,0 +1,31 @@
+{
+    "dataFlowId": "part_silver",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_part",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "part",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "part",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "part_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "p_partkey"
+        ],
+        "scd_type": "2",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"],
+        "ignore_null_updates": false
+    }
+}

@@ -1,0 +1,176 @@
+{
+    "title": "Standard DataflowSpec Definitions",
+    "definitions": {
+        "cdcSettings": {
+            "type": "object",
+            "properties": {
+                "keys": {"type": "array", "items": {"type": "string"}},
+                "sequence_by": {"type": "string"},
+                "apply_as_deletes": {"type": "string"},
+                "where": {"type": "string"},
+                "ignore_null_updates": {"type": "boolean"},
+                "except_column_list": {"type": "array", "items": {"type": "string"}},
+                "scd_type": {"type": "string"},
+                "track_history_column_list": {"type": "array", "items": {"type": "string"}},
+                "track_history_except_column_list": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false,
+            "required": ["keys", "sequence_by", "scd_type"]
+        },
+        "cdcSnapshotSettings": {
+            "type": "object",
+            "properties": {
+                "keys": {"type": "array", "items": {"type": "string"}},
+                "scd_type": {"type": "string"},
+                "snapshotType": {"type": "string", "enum": ["historical", "periodic"]},
+                "sourceType": {"type": "string", "enum": ["file", "table"]},
+                "source": {},
+                "track_history_column_list": {"type": "array", "items": {"type": "string"}},
+                "track_history_except_column_list": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["keys", "scd_type", "snapshotType"],
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {
+                        "allOf": [
+                            {"properties": {"snapshotType": {"const": "historical"}}},
+                            {"properties": {"sourceType": {"const": "file"}}}
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "source": {"$ref": "#/definitions/historicalSnapshotFileSource"}
+                        },
+                        "required": ["sourceType", "source"]
+                    }
+                },
+                {
+                    "if": {
+                        "allOf": [
+                            {"properties": {"snapshotType": {"const": "historical"}}},
+                            {"properties": {"sourceType": {"const": "table"}}}
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "source": {"$ref": "#/definitions/historicalSnapshotTableSource"}
+                        },
+                        "required": ["sourceType", "source"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {"snapshotType": {"const": "periodic"}}
+                    },
+                    "then": {
+                        "not": {
+                            "anyOf": [
+                                {"required": ["sourceType"]},
+                                {"required": ["source"]}
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "historicalSnapshotFileSource": {
+            "type": "object",
+            "properties": {
+                "format": {"type": "string"},
+                "path": {"type": "string"},
+                "readerOptions": {"type": "object"},
+                "filter": {"type": "string"},
+                "versionType": {"type": "string", "enum": ["integer", "timestamp"]},
+                "startingVersion": {"type": ["string", "integer"]},
+                "datetimeFormat": {"type": "string"},
+                "microSecondMaskLength": {"type": "integer", "minimum": 0, "maximum": 6},
+                "schemaPath": {"type": "string"},
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "recursiveFileLookup": {"type": "boolean", "default": false}
+            },
+            "required": ["format", "path", "versionType"],
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "versionType": {"const": "integer"}
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "startingVersion": {"type": "integer"}
+                        },
+                        "not": {
+                            "required": ["datetimeFormat"]
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "versionType": {"const": "timestamp"}
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "startingVersion": {"type": "string"}
+                        },
+                        "required": ["datetimeFormat"]
+                    }
+                }
+            ]
+        },
+        "historicalSnapshotTableSource": {
+            "type": "object",
+            "properties": {
+                "table": {"type": "string"},
+                "versionColumn": {"type": "string"},
+                "versionType": {"type": "string", "enum": ["date", "timestamp", "integer", "long"]},
+                "startingVersion": {"type": ["string", "integer"]},
+                "selectExp": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["table", "versionColumn", "versionType"],
+            "additionalProperties": false
+        },
+        "tableMigrationDetails": {
+            "type": "object",
+            "properties": {
+                "enabled": {"type": "boolean"},
+                "autoStartingVersionsEnabled": {"type": "boolean", "default": true},
+                "catalogType": {"type": "string", "enum": ["hms", "uc"]},
+                "sourceDetails": {"$ref": "./definitions_sources.json#/source/sourceMigrateDelta"}
+            },
+            "required": ["enabled", "catalogType", "sourceDetails"],
+            "additionalProperties": false
+        },
+        "quarantineTargetDetails": {
+            "type": "object",
+            "properties": {
+                "targetFormat": {"type": "string", "enum": ["delta"], "default": "delta"}
+            },
+            "required": ["targetFormat"],
+            "dependentSchemas": {
+                "targetFormat": {
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "targetFormat": { "const": "delta" },
+                                "table": {"type": "string"},
+                                "database": {"type": "string"},
+                                "tableProperties": {"type":"object"},
+                                "path": {"type": "string"},
+                                "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                                "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                                "clusterByAuto": {"type": "boolean"}
+
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

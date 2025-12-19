@@ -1,0 +1,40 @@
+{
+    "dataFlowId": "orders_gold",
+    "dataFlowGroup": "tpch_gold",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_orders",
+    "sourceDetails": {
+        "database": "{silver_schema}",
+        "table": "orders",
+        "cdfEnabled": true,
+        "selectExp": [
+            "o_orderkey as order_key",
+            "o_orderstatus as order_status",
+            "o_orderdate as order_date",
+            "o_orderpriority as order_priority",
+            "o_shippriority as ship_priority",
+            "o_comment as comment",
+            "__START_AT"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "dim_orders",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "dim_orders_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "order_key"
+        ],
+        "scd_type": "2",
+        "sequence_by": "__START_AT",
+        "except_column_list": ["__START_AT"],
+        "ignore_null_updates": false
+    }
+}

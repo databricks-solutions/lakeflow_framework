@@ -1,0 +1,20 @@
+resources:
+  pipelines:
+    dlt_framework_<pipeline name>_pipeline:
+      name: dlt_framework_<pipeline name>_pipeline${var.logical_env}
+      channel: CURRENT
+      serverless: true
+      catalog: ${var.catalog}
+      target: ${var.schema}
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: /Workspace/${workspace.file_path}/src
+        bundle.target: ${bundle.target}
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        pipeline.layer: ${var.layer}
+        logicalEnv: ${var.logical_env}
+        pipeline.dataFlowIdFilter: <dataflow_id>

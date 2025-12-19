@@ -1,0 +1,25 @@
+{
+    "dataFlowId": "supplier_phone_bronze",
+    "dataFlowGroup": "tpch_bronze",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_supplier_phone",
+    "sourceDetails": {
+        "path": "{staging_source_root}/supplier_phone*.csv",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true"
+        },
+        "schemaPath": "source/supplier_phone_schema.json"
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "supplier_phone",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/supplier_phone_schema.json"
+    }
+}

@@ -1,0 +1,63 @@
+{
+    "dataFlowId": "csnap_scd1_source",
+    "dataFlowGroup": "csnap",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_snapshot_scd1_source",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "UPDATE_TIMESTAMP",
+        "except_column_list": ["SNAPSHOT_VERSION", "SNAPSHOT_TIMESTAMP", "change_type"],
+        "apply_as_deletes": "change_type = 'delete'",
+        "ignore_null_updates": false
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "csnap_scd2_flow",
+            "stagingTables": {
+                "customer_snapshot_source_append": {
+                    "type": "ST"
+                }
+            },
+            "flows": {
+                "f_customer_snapshot_source_append": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "customer_snapshot_source_append",
+                        "sourceView": "v_customer_snapshot_source"
+                    },
+                    "views": {
+                        "v_customer_snapshot_source": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "feature_historical_snapshot_datetime_scd1",
+                                "cdfEnabled": true,
+                                "startingVersionFromDLTSetup": true,
+                                "selectExp": ["*", "_change_type as change_type"],
+                                "cdfChangeTypeOverride": ["insert", "update_postimage", "delete"]
+                            }
+                        }
+                    }
+                },
+                "f_customer_snapshot_source_merge": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_snapshot_scd1_source",
+                        "sourceView": "customer_snapshot_source_append"
+                    }
+                }
+            }
+        }
+    ]
+}

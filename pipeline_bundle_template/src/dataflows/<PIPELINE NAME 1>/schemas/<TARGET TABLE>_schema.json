@@ -1,0 +1,17 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "<FIELD NAME>",
+            "type": "<FIELD TYPE>",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "<FIELD NAME 2>",
+            "type": "<FIELD TYPE>",
+            "nullable": false,
+            "metadata": {}
+        }
+    ]
+}

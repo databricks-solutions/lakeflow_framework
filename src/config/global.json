@@ -1,10 +1,16 @@
 {
-    "api_connections": {
-        "dbsql_microflow_audit_db": {
-            "type": "databricks_sql_statements_api",
-            "warehouse_id": "58aa1b363649e722",
-            "schema": "main.nab_bronze_test_4",
-            "table": "test_log"
-        }
+    "pipeline_bundle_spec_format": {
+        "format": "json",
+        "allow_override": true
+    },
+    "spark_config": {
+        "spark.databricks.sql.streamingTable.cdf.applyChanges.returnPhysicalCdf": true,
+        "pipelines.streamingFlowReadOptionsEnabled": true,
+        "pipelines.externalSink.enabled": true
+    },
+    "mandatory_table_properties": {
+        "delta.logRetentionDuration": "interval 45 days",
+        "delta.deletedFileRetentionDuration": "interval 45 days",
+        "delta.enableRowTracking": "true"
     }
 }

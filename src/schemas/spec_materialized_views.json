@@ -1,0 +1,74 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://dlt-framework/schemas/spec_materialized_views.json",
+    "title": "Materialized Views Dataflow Specification",
+    "$defs": {
+        "materializedViewsSpec": {
+            "properties": {
+                "dataFlowId": {"type": "string"},
+                "dataFlowGroup": {"type": "string"},
+                "dataFlowType": { "const": "materialized_view" },
+                "dataFlowVersion": {"type": "string"},
+                "tags": {"type": "object", "additionalProperties": true},
+                "materializedViewsPath": {"type": "string"},
+                "materializedViews": {
+                    "additionalProperties": {
+                        "type": "object", 
+                        "properties": {
+                            "sourceView": {
+                                "type": "object",
+                                "properties": {
+                                    "sourceViewName": {"type": "string"},
+                                    "sourceType": {"type": "string", "enum": ["delta", "python", "sql"]},
+                                    "sourceDetails": {"type": "object"}
+                                }
+                            },
+                            "sqlPath": {"type": "string"},
+                            "sqlStatement": {"type": "string"},
+                            "tableDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "database": {"type": "string"},
+                                    "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
+                                    "tableProperties": {"type": "object"},
+                                    "path": {"type": "string"},
+                                    "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                                    "comment": {"type": "string"},
+                                    "sparkConf": {"type": "object"},
+                                    "private": {"type": "boolean"},
+                                    "rowFilter": {"type": "string"}
+                                },
+                                "additionalProperties": false
+                            },
+                            "dataQualityExpectationsEnabled": {"type": "boolean"},
+                            "dataQualityExpectationsPath": {"type": "string"},
+                            "quarantineMode": {"type": "string", "enum": ["off", "flag", "table"], "default": "off"},
+                            "quarantineTargetDetails": {"type": "object"}
+                        },
+                        "additionalProperties": false,
+                        "oneOf": [
+                            {
+                                "required": ["sourceView"],
+                                "dependentSchemas": {
+                                    "sourceView": {
+                                        "properties": {
+                                            "sourceType": {"$ref": "./definitions_sources.json#/sourceType"}
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "required": ["sqlPath"]
+                            },
+                            {
+                                "required": ["sqlStatement"]
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": ["dataFlowId", "dataFlowGroup", "dataFlowType", "materializedViews"]
+        }
+    }
+}

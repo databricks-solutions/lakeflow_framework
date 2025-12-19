@@ -1,0 +1,6 @@
+{
+    "pipeline_bundle_spec_format": {
+        "format": "yaml"
+    },
+    "table_migration_state_volume_path": "/Volumes/main/lakeflow_samples_staging_es/stg_volume/checkpoint_state"
+}

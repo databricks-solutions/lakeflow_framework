@@ -1,0 +1,25 @@
+{
+    "dataFlowId": "customer_address_bronze",
+    "dataFlowGroup": "tpch_bronze",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_customer_address",
+    "sourceDetails": {
+        "path": "{staging_source_root}/customer_address/*.csv",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true"
+        },
+        "schemaPath": "source/customer_address_schema.json"
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_address",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/customer_address_schema.json"
+    }
+}

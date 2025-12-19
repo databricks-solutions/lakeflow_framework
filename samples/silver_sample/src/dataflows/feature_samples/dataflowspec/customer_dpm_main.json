@@ -1,0 +1,82 @@
+{
+    "dataFlowId": "dpm",
+    "dataFlowGroup": "dpm",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_dpm",
+        "database": "{dpm_schema}",
+        "schemaPath": "customer.json",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "LOAD_TIMESTAMP",
+        "except_column_list": ["LOAD_TIMESTAMP"],
+        "ignore_null_updates": true,
+        "apply_as_deletes": "DELETE_FLAG = 1"
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "dpm",
+            "stagingTables": {
+                "customer_dpm_appnd": {
+                    "type": "ST",
+                    "database": "{dpm_schema}"
+                }
+            },
+            "flows": {
+                "f_customer": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "{dpm_schema}.customer_dpm_appnd",
+                        "sourceView": "v_customer"
+                    },
+                    "views": {
+                        "v_customer": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer",
+                                "cdfEnabled": true
+                            }
+                        }
+                    }
+                },
+                "f_customer_address": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "{dpm_schema}.customer_dpm_appnd",
+                        "sourceView": "v_customer_address"
+                    },
+                    "views": {
+                        "v_customer_address": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer_address",
+                                "cdfEnabled": true,
+                                "whereClause": ["STATE is not NULL"]
+                            }
+                        }
+                    }
+                },
+                "f_merge": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "{dpm_schema}.customer_dpm",
+                        "sourceView": "{dpm_schema}.customer_dpm_appnd"
+                    }
+                }
+            }
+        }
+    ]
+}

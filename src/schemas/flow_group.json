@@ -2,111 +2,139 @@
     "title": "Flow DataFlowSpec FlowGroup",
     "type": "object",
     "properties": {
-        "flowGroup": {"type": "string"},
-        "sqlTokens": {
-            "type": "object",
-            "properties": {
-                "{bronze_schema}": {"type": "string"},
-                "{silver_schema}": {"type": "string"}
-            }
-        },
-        "stagingTables": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "properties": {
-                    "type": {"type": "string", "enum": ["ST", "MV"]},
-                    "schemaPath": {"type": "string"},
-                    "partitionColumns": {"type": "array", "items": {"type": "string"}},
-                    "cdcApplyChanges": {"$ref": "./flow_definitions.json#/definitions/cdcApplyChanges"}
-                }
-            }
-        },
+        "dataFlowId": {"type": "string"},
+        "flowGroupId": {"type": "string"},
+        "stagingTables": {"$ref": "#/definitions/stagingTables"},
         "flows": {
             "type": "object",
             "patternProperties": {
                 "f_([A-Za-z0-9_]+)": {
                     "type": "object",
                     "properties": {
-                        "flowType": {
-                            "type": "string", "enum": ["append_view", "append_sql", "merge"]
-                        },
-                        "views": {
-                            "type": "object",
-                            "patternProperties": {
-                                "v_([A-Za-z0-9_]+)": {
-                                    "type": "object",
-                                    "properties": {
-                                        "viewType": {"type": "string", "enum": ["stream", "sql"]}
-                                    },
-                                    "if": {
-                                        "properties": {
-                                            "viewType": { "const": "stream" }
-                                        }
-                                    },
-                                    "then": {
-                                        "properties": {
-                                            "viewDetails": {"$ref": "./flow_definitions.json#/definitions/streamViewDetails"}
-                                        }
-                                    },
-                                    "else": {
-                                        "if": {
-                                            "properties": {
-                                                "viewType": { "const": "sql" }
-                                            }
-                                        },
-                                        "then": {
-                                            "properties": {
-                                                "viewDetails": {"$ref": "./flow_definitions.json#/definitions/sqlViewDetails"}
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        "enabled": {"type": "boolean"},
+                        "flowType": {"type": "string", "enum": ["append_view", "append_sql", "merge"]},
+                        "flowDetails": {"type": "object"},
+                        "views": {"$ref": "#/definitions/views"}
                     },
-                    "allOf": [
-                        {
-                            "if": {
-                                "properties": {
-                                    "flowType": { "const": "append_sql" }
-                                }
-                            },
-                            "then": {
-                                "properties": {
-                                    "flowDetails": {"$ref": "./flow_definitions.json#/definitions/appendSqlFlowDetails"}
-                                }
-                            }
-                        },
-                        {
-                            "if": {
-                                "properties": {
-                                    "flowType": { "const": "append_view" }
-                                }
-                            },
-                            "then": {
-                                "properties": {
-                                    "flowDetails": {"$ref": "./flow_definitions.json#/definitions/appendViewFlowDetails"}
-                                }
-                            }
-                        },
-                        {
-                            "if": {
-                                "properties": {
-                                    "flowType": { "const": "merge" }
-                                }
-                            },
-                            "then": {
-                                "properties": {
-                                    "flowDetails": {"$ref": "./flow_definitions.json#/definitions/mergeFlowDetails"}
-                                }
-                            }
-                        }
-                    ],
-                    "required": ["flowType", "flowDetails"]
+                    "required": ["flowType", "flowDetails"],
+                    "dependentSchemas": {
+                        "flowType": { "$ref": "./definitions_flows.json#/flowType"}
+                    }
                 }
-            }
+            },
+            "additionalProperties": false
         }
     },
-    "required": ["flowGroup", "sqlTokens", "targets", "flows"]
+    "required": ["flowGroupId", "flows"],
+    "additionalProperties": false,
+    "definitions": {
+        "stagingTables": {
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "type": {"type": "string", "enum": ["ST", "MV"]},
+                    "database": {"type": "string"}
+                },
+                "dependentSchemas": {
+                    "type": {
+                        "oneOf": [
+                            {
+                                "properties": {
+                                    "type": {"const": "ST"},
+                                    "database": {"type": "string"},
+                                    "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
+                                    "tableProperties": {"type": "object"},
+                                    "path": {"type": "string"},
+                                    "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByAuto": {"type": "boolean"},
+                                    "cdcSettings": {"$ref": "./definitions_main.json#/definitions/cdcSettings"},
+                                    "cdcSnapshotSettings": {"$ref": "./definitions_main.json#/definitions/cdcSnapshotSettings"},
+                                    "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
+                                },
+                                "additionalProperties": false
+                            },
+                            {
+                                "properties": {
+                                    "type": {"const": "MV"},
+                                    "database": {"type": "string"},
+                                    "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
+                                    "tableProperties": {"type": "object"},
+                                    "path": {"type": "string"},
+                                    "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByAuto": {"type": "boolean"},
+                                    "sourceView": {"type": "string"},
+                                    "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
+                                },
+                                "additionalProperties": false,
+                                "required": ["sourceView"]
+                            },
+                            {
+                                "properties": {
+                                    "type": {"const": "MV"},
+                                    "database": {"type": "string"},
+                                    "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
+                                    "tableProperties": {"type": "object"},
+                                    "path": {"type": "string"},
+                                    "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByAuto": {"type": "boolean"},
+                                    "sqlPath": {"type": "string"},
+                                    "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
+                                },
+                                "additionalProperties": false,
+                                "required": ["sqlPath"]
+                            },
+                            {
+                                "properties": {
+                                    "type": {"const": "MV"},
+                                    "database": {"type": "string"},
+                                    "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
+                                    "tableProperties": {"type": "object"},
+                                    "path": {"type": "string"},
+                                    "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByAuto": {"type": "boolean"},
+                                    "sqlStatement": {"type": "string"},
+                                    "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
+                                },
+                                "additionalProperties": false,
+                                "required": ["sqlStatement"]
+                            }
+                        ]
+                    }
+                },
+                "required": ["type"]
+            }
+        },
+        "views": {
+            "type": "object",
+            "patternProperties": {
+                "v_([A-Za-z0-9_]+)": {
+                    "type": "object",
+                    "properties": {
+                        "mode": {"type": "string", "enum": ["batch", "stream"]},
+                        "sourceType": {"type": "string", "enum": ["batchFiles", "cloudFiles", "delta", "deltaJoin", "kafka", "python", "sql"]},
+                        "sourceDetails": {"type": "object"}
+                    },
+                    "dependentSchemas": {
+                        "sourceType": { "$ref": "./definitions_sources.json#/sourceType"}
+                    },
+                    "required": ["mode", "sourceType", "sourceDetails"]
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "$defs": {
+        "configFlags": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": ["disableOperationalMetadata"]
+            },
+            "default": []
+        }
+    }
 }

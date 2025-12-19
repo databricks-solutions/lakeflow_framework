@@ -1,0 +1,132 @@
+[MAIN]
+ignore=CVS
+ignore-paths=
+ignore-patterns=^\.#
+ignored-modules=pyspark, delta
+py-version=3.10
+suggestion-mode=yes
+unsafe-load-any-extension=no
+
+
+[BASIC]
+argument-naming-style=snake_case
+attr-naming-style=snake_case
+class-attribute-naming-style=any
+class-const-naming-style=UPPER_CASE
+class-naming-style=PascalCase
+const-naming-style=UPPER_CASE
+docstring-min-length=-1
+function-naming-style=snake_case
+include-naming-hint=no
+inlinevar-naming-style=any
+method-naming-style=snake_case
+module-naming-style=snake_case
+property-classes=abc.abstractproperty
+variable-naming-style=snake_case
+
+
+[CLASSES]
+check-protected-access-in-special-methods=no
+defining-attr-methods=__init__,
+                      __new__,
+                      setUp,
+                      asyncSetUp,
+                      __post_init__
+exclude-protected=_asdict,_fields,_replace,_source,_make,os._exit
+valid-classmethod-first-arg=cls
+valid-metaclass-classmethod-first-arg=mcs
+
+
+[DESIGN]
+max-args=7
+max-attributes=7
+max-bool-expr=5
+max-branches=12
+max-locals=15
+max-parents=7
+max-public-methods=20
+max-returns=6
+max-statements=50
+min-public-methods=0
+
+
+[FORMAT]
+expected-line-ending-format=
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+indent-after-paren=4
+indent-string='    '
+max-line-length=120
+max-module-lines=1000
+single-line-class-stmt=no
+single-line-if-stmt=no
+
+
+[IMPORTS]
+allow-reexport-from-package=no
+allow-wildcard-with-all=no
+known-third-party=enchant
+
+
+[LOGGING]
+# The type of string formatting that logging methods do. `old` means using %
+# formatting, `new` is for `{}` formatting.
+logging-format-style=old
+logging-modules=logging
+
+
+[MESSAGES CONTROL]
+disable= 
+      C0114,  # Missing module docstring
+      R0903,  # Too few public methods
+      W0511,  # Fixme comments
+      raw-checker-failed,
+      bad-inline-option,
+      locally-disabled,
+      file-ignored,
+      suppressed-message,
+      useless-suppression,
+      deprecated-pragma,
+      use-symbolic-message-instead
+enable=
+
+
+[METHOD_ARGS]
+timeout-methods=requests.api.delete,requests.api.get,requests.api.head,requests.api.options,requests.api.patch,requests.api.post,requests.api.put,requests.api.request
+
+
+[MISCELLANEOUS]
+notes=FIXME,
+      XXX,
+      TODO
+
+
+[SIMILARITIES]
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+ignore-signatures=yes
+min-similarity-lines=4
+
+
+[STRING]
+check-quote-consistency=no
+
+
+[TYPECHECK]
+contextmanager-decorators=contextlib.contextmanager
+ignore-none=yes
+ignore-on-opaque-inference=yes
+ignored-checks-for-mixins=no-member,
+                          not-async-context-manager,
+                          not-context-manager,
+                          attribute-defined-outside-init
+ignored-classes=optparse.Values,thread._local,_thread._local,argparse.Namespace
+missing-member-hint=yes
+missing-member-hint-distance=1
+missing-member-max-choices=1
+mixin-class-rgx=.*[Mm]ixin
+signature-mutators=
+
+
+[VARIABLES]
+allow-global-unused-variables=yes

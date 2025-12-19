@@ -1,0 +1,96 @@
+# This is a Databricks asset bundle definition for bronze_sample.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: test_data_and_orchestrator
+
+include:
+  - scratch/resources/*.yml
+
+variables:
+  # Core variables
+  catalog:
+    description: The target UC catalog
+    default: "main"
+  schema_namespace:
+    description: The prefix for all schemas which will end with one of (_bronze, _silver, _gold, or _dpm)
+    default: "lakeflow_samples"    
+  logical_env:
+    description: The logical environment
+    default: ""
+  job_cluster_name:
+    description: The name of the job cluster
+    default: "lakehouse_framework_samples_job_cluster"
+  job_cluster_config:
+    description: Complete cluster configuration for compute clusters
+    default:
+      spark_version: "16.4.x-scala2.12"
+      node_type_id: "i3.xlarge"
+      num_workers: 1
+      autoscale:
+        min_workers: 1
+        max_workers: 5
+
+  # name prefix variable
+  name_prefix: 
+    description: The name prefix
+    default: "[${bundle.target} ${workspace.current_user.short_name}] "
+
+  # SDP Bronze pipeline ID lookup variables
+  lakeflow_samples_bronze_base_pipeline_id:
+    lookup:
+      pipeline: "${var.name_prefix}Lakeflow Framework - Bronze - Base Pipeline (${var.logical_env})"  
+  lakeflow_samples_feature_samples_pipeline_general_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Feature Samples - General Pipeline (${var.logical_env})"
+  lakeflow_samples_feature_samples_pipeline_data_quality_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Feature Samples - Data Quality Pipeline (${var.logical_env})"
+  lakeflow_samples_feature_samples_pipeline_snapshots_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Feature Samples - Snapshots Pipeline (${var.logical_env})"
+  lakeflow_samples_feature_samples_pipeline_table_migration_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Feature Samples - Table Migration Pipeline (${var.logical_env})"
+  lakeflow_samples_bronze_kafka_samples_pipeline_id:
+    lookup:
+      pipeline: "${var.name_prefix}Lakeflow Framework - Bronze - Kafka Samples Pipeline (${var.logical_env})"
+  lakeflow_samples_yaml_sample_pipeline_id:
+    lookup:
+      pipeline: "${var.name_prefix}Lakeflow Framework - YAML Sample Pipeline (${var.logical_env})"
+  lakeflow_samples_bronze_template_samples_pipeline_id:
+    lookup:
+      pipeline: "${var.name_prefix}Lakeflow Framework - Bronze - Template Samples Pipeline (${var.logical_env})"
+
+  # SDP Silver pipeline ID lookup variables
+  lakeflow_samples_silver_base_samples_pipeline_id:
+    lookup:
+      pipeline: "${var.name_prefix}Lakeflow Framework - Silver - Base Samples Pipeline (${var.logical_env})"
+  lakeflow_samples_silver_multi_source_streaming_basic_pipeline_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Silver - Multi Source Streaming - Basic Pipeline (${var.logical_env})"
+  lakeflow_samples_silver_multi_source_streaming_decomp_final_pipeline_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Silver - Multi Source Streaming - Decomposed Final Pipeline (${var.logical_env})"
+  lakeflow_samples_silver_multi_source_streaming_decomp_staging_pipeline_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Silver - Multi Source Streaming - Decomposed Staging Pipeline (${var.logical_env})"
+  lakeflow_samples_silver_stream_static_basic_pipeline_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Silver - Stream Static - Basic Pipeline (${var.logical_env})"
+  lakeflow_samples_silver_stream_static_streaming_dwh_pipeline_id:
+    lookup:      
+      pipeline: "${var.name_prefix}Lakeflow Framework - Silver - Stream Static - Streaming DWH Pipeline (${var.logical_env})"
+  lakeflow_samples_silver_customer_dpm_pipeline_id:
+    lookup:
+      pipeline: "${var.name_prefix}Lakeflow Framework - Silver - Customer DPM Pipeline (${var.logical_env})"
+
+  # Gold pipeline ID lookup variables
+  lakeflow_samples_gold_stream_static_pipeline_id:
+    lookup:
+      pipeline: "${var.name_prefix}Lakeflow Framework - Gold - Stream Static Pipeline (${var.logical_env})"
+
+targets:
+  # The 'dev' target, for development purposes. This target is the default.
+  dev:
+    mode: development
+    default: true

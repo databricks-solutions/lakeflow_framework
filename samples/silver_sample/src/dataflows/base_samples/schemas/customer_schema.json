@@ -1,0 +1,41 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "CUSTOMER_ID",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "FIRST_NAME",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "LAST_NAME",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "EMAIL",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "DELETE_FLAG",
+            "type": "boolean",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "LOAD_TIMESTAMP",
+            "type": "timestamp",
+            "nullable": true,
+            "metadata": {}
+        }
+    ]
+}

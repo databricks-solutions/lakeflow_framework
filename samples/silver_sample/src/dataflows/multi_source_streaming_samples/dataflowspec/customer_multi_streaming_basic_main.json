@@ -1,0 +1,120 @@
+{
+    "dataFlowId": "multi_source_streaming_basic",
+    "dataFlowGroup": "multi_source_streaming",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_ms_basic",
+        "schemaPath": "customer.json",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "clusterByAuto": true,
+        "clusterByColumns": ["CUSTOMER_ID"]
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "SEQUENCE_BY_COLUMN",
+        "except_column_list": ["SEQUENCE_BY_COLUMN"],
+        "ignore_null_updates": false,
+        "apply_as_deletes": "DELETE_FLAG = true"
+    },
+    "flowGroups": [
+        {
+            "flowGroupId": "multi_source_streaming_basic_1",
+            "stagingTables": {
+                "customer_ms_basic_appnd": {
+                    "type": "ST"
+                },
+                "customer_ms_basic_merge": {
+                    "type": "ST",
+                    "tableProperties": {
+                        "delta.enableChangeDataFeed": "true"
+                    },
+                    "cdcSettings": {
+                        "keys": [
+                            "CUSTOMER_ID"
+                        ],
+                        "sequence_by": "LOAD_TIMESTAMP",
+                        "ignore_null_updates": true,
+                        "scd_type": "2"
+                    },
+                    "clusterByAuto": true
+                }
+            },
+            "flows": {
+                "f_customer": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "customer_ms_basic_appnd",
+                        "sourceView": "v_customer"
+                    },
+                    "views": {
+                        "v_customer": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer",
+                                "cdfEnabled": true
+                            }
+                        }
+                    }
+                },
+                "f_customer_address": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "customer_ms_basic_appnd",
+                        "sourceView": "v_customer_address"
+                    },
+                    "views": {
+                        "v_customer_address": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer_address",
+                                "cdfEnabled": true
+                            }
+                        }
+                    }
+                },
+                "f_merge": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_ms_basic_merge",
+                        "sourceView": "customer_ms_basic_appnd"
+                    }
+                },
+                "f_target": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_ms_basic",
+                        "sourceView": "v_final_transform"
+                    },
+                    "views": {
+                        "v_final_cdf_feed": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "live",
+                                "table": "customer_ms_basic_merge",
+                                "cdfEnabled": true
+                            }
+                        },
+                        "v_final_transform": {
+                            "mode": "stream",
+                            "sourceType": "sql",
+                            "sourceDetails": {
+                                "sqlPath": "./tfm_customer.sql"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

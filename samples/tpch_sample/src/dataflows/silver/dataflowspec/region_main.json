@@ -1,0 +1,30 @@
+{
+    "dataFlowId": "region_silver",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_region",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "region",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "region",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "region_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "r_regionkey"
+        ],
+        "scd_type": "1",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"]
+    }
+}

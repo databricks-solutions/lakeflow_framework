@@ -1,0 +1,53 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "snapshot_month",
+            "type": "date",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "custkey",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "total_orders",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "total_quantity",
+            "type": "decimal(18,2)",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "total_sales",
+            "type": "decimal(18,2)",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "avg_discount",
+            "type": "decimal(5,4)",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "max_order_total",
+            "type": "decimal(18,2)",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "min_order_total",
+            "type": "decimal(18,2)",
+            "nullable": true,
+            "metadata": {}
+        }
+    ]
+}

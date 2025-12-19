@@ -1,0 +1,22 @@
+{
+    "dataFlowId": "feature_constraints",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_feature_constraints",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_constraints",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/feature_ddl_schema.ddl"
+    }
+}

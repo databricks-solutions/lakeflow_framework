@@ -1,0 +1,119 @@
+{
+    "dataFlowId": "dim_customer_stream_static_sql",
+    "dataFlowGroup": "stream_static_samples",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "dim_customer_sql_sample",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "__START_AT",
+        "except_column_list": ["__START_AT"],
+        "ignore_null_updates": true,
+        "apply_as_deletes": "DELETE_FLAG = 1"
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "dim_customer_stream_static_sql_1",
+            "stagingTables": {
+                "stg_customer_sql_appnd_keys": {
+                    "type": "ST"
+                },
+                "stg_customer_sql_dedupe_keys": {
+                    "type": "ST",
+                    "tableProperties": {
+                        "delta.enableChangeDataFeed": "true"
+                    },
+                    "cdcSettings": {
+                        "keys": [
+                            "CUSTOMER_ID"
+                        ],
+                        "scd_type": "2",
+                        "sequence_by": "__START_AT",
+                        "except_column_list": ["__START_AT"]
+                    }
+                }
+            },
+            "flows": {
+                "f_customer_1": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "stg_customer_sql_appnd_keys",
+                        "sourceView": "v_customer_1"
+                    },
+                    "views": {
+                        "v_customer_1": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "customer",
+                                "cdfEnabled": true,
+                                "selectExp": ["CUSTOMER_ID", "__START_AT"]
+                            }
+                        }
+                    }
+                },
+                "f_customer_address_1": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "stg_customer_sql_appnd_keys",
+                        "sourceView": "v_customer_address_1"
+                    },
+                    "views": {
+                        "v_customer_address_1": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "customer_address",
+                                "cdfEnabled": true,
+                                "selectExp": ["CUSTOMER_ID", "__START_AT"]
+                            }
+                        }
+                    }
+                },
+                "f_merge_keys_1": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "stg_customer_sql_dedupe_keys",
+                        "sourceView": "stg_customer_sql_appnd_keys"
+                    }
+                },
+                "f_target_1": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "dim_customer_sql_sample",
+                        "sourceView": "v_transform_1"
+                    },
+                    "views": {
+                        "v_final_cdf_feed": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "live",
+                                "table": "stg_customer_sql_dedupe_keys",
+                                "cdfEnabled": true
+                            }
+                        },
+                        "v_transform_1": {
+                            "mode": "stream",
+                            "sourceType": "sql",
+                            "sourceDetails": {
+                                "sqlPath": "dim_customer.sql"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

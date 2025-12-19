@@ -1,0 +1,31 @@
+{
+    "dataFlowId": "nation_bronze",
+    "dataFlowGroup": "tpch_bronze",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_nation",
+    "sourceDetails": {
+        "path": "{staging_source_root}/nation/*.csv",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true"
+        },
+        "schemaPath": "source/nation_schema.json",
+        "selectExp": [
+            "n_nationkey",
+            "n_name",
+            "n_regionkey",
+            "load_timestamp"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "nation",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/nation_schema.json"
+    }
+}

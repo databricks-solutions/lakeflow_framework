@@ -1,0 +1,30 @@
+{
+    "dataFlowId": "append_sql_flow",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "append_sql_flow",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/customer_address_schema.json"
+    },
+    "dataQualityExpectationsEnabled": true,
+    "dataQualityExpectationsPath": "./customer_address_dqe.json",
+    "quarantineMode": "flag",
+    "flowGroups": [
+        {
+            "flowGroupId": "main",
+            "flows": {
+                "f_customer_address_append_sql": {
+                    "flowType": "append_sql",
+                    "flowDetails": {
+                        "targetTable": "append_sql_flow",
+                        "sqlStatement": "SELECT * FROM STREAM({staging_schema}.customer_address)"
+                    }
+                }
+            }
+        }
+    ]
+}

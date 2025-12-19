@@ -1,0 +1,12 @@
+resources:
+  jobs:
+    lakeflow_samples_tpch_sample_setup_data_job:
+      name: Lakeflow Framework - TPCH Sample - Setup Data (${var.logical_env})
+      tasks:
+        - task_key: setup_data
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/test_data/setup_data
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}

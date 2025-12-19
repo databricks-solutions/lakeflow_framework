@@ -1,0 +1,13 @@
+{
+    "dataFlowId": "snap_shot_facts",
+    "dataFlowGroup": "tpch_gold",
+    "dataFlowType": "materialized_view",
+    "materializedViews": {
+        "fct_orders_monthly_snapshot": {
+            "sqlPath": "./fct_orders_monthly_snapshot.sql",
+            "tableDetails": {
+                "schemaPath": "./fct_orders_monthly_snapshot_schema.json"
+            }
+        }
+    }
+}

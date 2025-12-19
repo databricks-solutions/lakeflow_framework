@@ -1,0 +1,41 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "order_key",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "order_status",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "order_date",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "order_priority",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "ship_priority",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "comment",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        }
+    ]
+}

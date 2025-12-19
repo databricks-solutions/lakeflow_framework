@@ -1,0 +1,56 @@
+{
+    "dataFlowId": "multi_source_streaming_decomp_final",
+    "dataFlowGroup": "multi_source_streaming",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_ms_decomp",
+        "schemaPath": "customer.json",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "SEQUENCE_BY_COLUMN",
+        "except_column_list": ["SEQUENCE_BY_COLUMN"],
+        "ignore_null_updates": true,
+        "apply_as_deletes": "DELETE_FLAG = 1"
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "multi_source_streaming_decomp_final_1",
+            "flows": {
+                "f_target": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_ms_decomp",
+                        "sourceView": "v_final_transform"
+                    },
+                    "views": {
+                        "v_final_cdf_feed": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "customer_ms_decomp_merge",
+                                "cdfEnabled": true
+                            }
+                        },
+                        "v_final_transform": {
+                            "mode": "stream",
+                            "sourceType": "sql",
+                            "sourceDetails": {
+                                "sqlPath": "./tfm_customer.sql"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+{
+    "dataFlowId": "for_each_batch_basic_sql",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "standard",
+    "sourceSystem": "test_system",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_purchase_basic_sql",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer_purchase",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "foreach_batch_sink",
+    "targetDetails": {
+        "name": "for_each_batch_basic_sql",
+        "type": "basic_sql",
+        "config": {
+            "database": "{staging_schema}",
+            "table": "feature_foreach_batch_single_basic_sql",
+            "sqlPath": "./customer_purchase_transformed.sql",
+            "tableProperties": {
+                "delta.enableChangeDataFeed": "true"
+            }
+        }
+    }
+}

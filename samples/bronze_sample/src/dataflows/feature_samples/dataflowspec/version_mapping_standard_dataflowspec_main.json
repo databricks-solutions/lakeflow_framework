@@ -1,0 +1,31 @@
+{
+    "dataFlowId": "version_mapping",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "standard",
+    "dataFlowVersion": "0.1.0",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_version_mapping_standard",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "v_version_mapping_standard",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcApplyChanges": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "sequence_by": "LOAD_TIMESTAMP",
+        "where": "",
+        "ignore_null_updates": false,
+        "scd_type": "1"
+    }
+}

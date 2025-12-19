@@ -1,0 +1,21 @@
+resources:
+  pipelines:
+    lakeflow_samples_silver_multi_source_streaming_decomp_staging_pipeline:
+      name: Lakeflow Framework - Silver - Multi Source Streaming - Decomposed Staging Pipeline (${var.logical_env})
+      channel: CURRENT
+      serverless: true
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
+        bundle.target: ${bundle.target}
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        pipeline.layer: ${var.layer}
+        logicalEnv: ${var.logical_env}
+        pipeline.dataFlowIdFilter: multi_source_streaming_decomp_staging
+      root_path: ${workspace.file_path}/src/dataflows/multi_source_streaming_samples

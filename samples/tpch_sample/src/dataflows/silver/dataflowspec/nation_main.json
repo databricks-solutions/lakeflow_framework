@@ -1,0 +1,30 @@
+{
+    "dataFlowId": "nation_silver",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_nation",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "nation",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "nation",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "nation_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "n_nationkey"
+        ],
+        "scd_type": "1",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"]
+    }
+}

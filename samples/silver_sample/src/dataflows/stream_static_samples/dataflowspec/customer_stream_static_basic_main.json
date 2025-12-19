@@ -1,0 +1,77 @@
+{
+    "dataFlowId": "stream_static_basic",
+    "dataFlowGroup": "stream_static_samples",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_ss_basic",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "LOAD_TIMESTAMP",
+        "except_column_list": ["LOAD_TIMESTAMP"],
+        "ignore_null_updates": false,
+        "apply_as_deletes": "DELETE_FLAG = 1"
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "stream_static_basic_1",
+            "flows": {
+                "f_customer": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_ss_basic",
+                        "sourceView": "v_customer"
+                    },
+                    "views": {
+                        "v_customer": {
+                            "mode": "stream",
+                            "sourceType": "deltaJoin",
+                            "sourceDetails": {
+                                "sources": [
+                                    {
+                                        "database": "{bronze_schema}",
+                                        "table": "customer",
+                                        "cdfEnabled": true,
+                                        "alias": "c",
+                                        "joinMode": "stream"
+                                    },
+                                    {
+                                        "database": "{bronze_schema}",
+                                        "table": "customer_address",
+                                        "cdfEnabled": false,
+                                        "alias": "ca",
+                                        "joinMode": "static"
+                                    }
+                                ],
+                                "joins": [
+                                    {
+                                        "joinType": "left",
+                                        "condition": "c.CUSTOMER_ID = ca.CUSTOMER_ID"
+                                    }
+                                ],
+                                "selectExp": [
+                                    "c.CUSTOMER_ID",
+                                    "c.FIRST_NAME",
+                                    "c.LAST_NAME",
+                                    "c.EMAIL",
+                                    "c.DELETE_FLAG",
+                                    "ca.CITY",
+                                    "ca.STATE",
+                                    "c.LOAD_TIMESTAMP"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,138 @@
+{
+    "dataFlowId": "dim_supplier_gold",
+    "dataFlowGroup": "tpch_gold",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "dim_supplier",
+        "schemaPath": "./dim_supplier_schema.json",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "supplier_key"
+        ],
+        "scd_type": "2",
+        "sequence_by": "__START_AT",
+        "except_column_list": ["__START_AT"],
+        "ignore_null_updates": true
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "dim_supplier",
+            "stagingTables": {
+                "stg_supplier_appnd_keys": {
+                    "type": "ST"
+                },
+                "stg_supplier_dedupe_keys": {
+                    "type": "ST",
+                    "tableProperties": {
+                        "delta.enableChangeDataFeed": "true"
+                    },
+                    "cdcSettings": {
+                        "keys": [
+                            "s_suppkey"
+                        ],
+                        "scd_type": "2",
+                        "sequence_by": "__START_AT",
+                        "except_column_list": ["__START_AT"]
+                    }
+                }
+            },
+            "flows": {
+                "f_supplier": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "stg_supplier_appnd_keys",
+                        "sourceView": "v_supplier"
+                    },
+                    "views": {
+                        "v_supplier": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "supplier",
+                                "cdfEnabled": true,
+                                "selectExp": ["s_suppkey", "__START_AT"]
+                            }
+                        }
+                    }
+                },
+                "f_supplier_address": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "stg_supplier_appnd_keys",
+                        "sourceView": "v_supplier_address"
+                    },
+                    "views": {
+                        "v_supplier_address": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "supplier_address",
+                                "cdfEnabled": true,
+                                "selectExp": ["s_suppkey", "__START_AT"]
+                            }
+                        }
+                    }
+                },
+                "f_supplier_phone": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "stg_supplier_appnd_keys",
+                        "sourceView": "v_supplier_phone"
+                    },
+                    "views": {
+                        "v_supplier_phone": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "supplier_phone",
+                                "cdfEnabled": true,
+                                "selectExp": ["s_suppkey", "__START_AT"]
+                            }
+                        }
+                    }
+                },
+                "f_supplier_merge_keys": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "stg_supplier_dedupe_keys",
+                        "sourceView": "stg_supplier_appnd_keys"
+                    }
+                },
+                "f_supplier_target": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "dim_supplier",
+                        "sourceView": "v_supplier_transform"
+                    },
+                    "views": {
+                        "v_stg_supplier_dedupe_cdf_feed": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "live",
+                                "table": "stg_supplier_dedupe_keys",
+                                "cdfEnabled": true
+                            }
+                        },
+                        "v_supplier_transform": {
+                            "mode": "stream",
+                            "sourceType": "sql",
+                            "sourceDetails": {
+                                "sqlPath": "dim_supplier.sql"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

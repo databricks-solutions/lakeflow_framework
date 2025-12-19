@@ -1,0 +1,21 @@
+{
+    "dataFlowId": "sink_delta_uc_table",
+    "dataFlowGroup": "feature_samples_general_DISABLED",
+    "dataFlowType": "standard",
+    "sourceSystem": "test_system",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_delta_sink_uc_table",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta_sink",
+    "targetDetails": {
+        "name": "sink_delta_uc_table",
+        "sinkOptions": {
+            "tableName": "{bronze_schema}.feature_sink_delta_uc_table"
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "dataFlowId": "for_each_batch_python_function",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "standard",
+    "sourceSystem": "test_system",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_purchase_python_function",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer_purchase",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "foreach_batch_sink",
+    "targetDetails": {
+        "name": "for_each_batch_python_function",
+        "type": "python_function",
+        "config": {
+            "functionPath": "./feature_foreach_batch_python.py",
+            "tokens": {
+                "staging_schema": "{staging_schema}",
+                "bronze_schema": "{bronze_schema}",
+                "staging_volume": "{staging_volume}"
+            }
+        }
+    }
+}
