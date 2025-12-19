@@ -1,0 +1,25 @@
+{
+    "global": {
+        "rename_all": {
+            "cdcApplyChanges": "cdcSettings",
+            "cdcApplyChangesFromSnapshot": "cdcSnapshotSettings",
+            "spark_conf": "sparkConf",
+            "pythonFunctionPath": "functionPath"
+        },
+        "rename_specific": {
+            "targetDetails.topic": "targetDetails.name",
+            "targetDetails.kafkaOptions": "targetDetails.sinkOptions"        
+        },
+        "move": {
+            "targetDetails.topic": "targetDetails.kafkaOptions.topic",
+            "sourceDetails.pythonFunctionPath": {
+                "to": "sourceDetails.pythonTransform.functionPath",
+                "condition": {
+                    "key": "sourceType",
+                    "operator": "not_equal_to",
+                    "value": "python"
+                }
+            }
+        }
+    }
+}

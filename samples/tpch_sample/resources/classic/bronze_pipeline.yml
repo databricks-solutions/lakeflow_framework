@@ -1,0 +1,21 @@
+resources:
+  pipelines:
+    lakeflow_samples_tpch_bronze_pipeline:
+      name: Lakeflow Framework - TPCH - Bronze Pipeline (${var.logical_env})
+      channel: CURRENT
+      clusters:
+        - ${var.pipeline_cluster_config}
+      catalog: ${var.catalog}
+      target: ${var.bronze_schema}${var.logical_env}
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
+        bundle.target: ${bundle.target}
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        pipeline.layer: bronze
+        logicalEnv: ${var.logical_env}
+        pipeline.dataFlowGroupFilter: tpch_bronze

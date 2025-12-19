@@ -1,0 +1,363 @@
+{
+    "title": "Source DataflowSpec Definitions",
+    "sourceType": {
+        "oneOf": [
+            {
+                "properties": {
+                    "sourceType": { "const": "batchFiles" },
+                    "sourceDetails": { "$ref": "./definitions_sources.json#/source/sourceBatchFiles" }
+                },
+                "required": ["sourceDetails"]
+            },
+            {
+                "properties": {
+                    "sourceType": { "const": "cloudFiles" },
+                    "sourceDetails": { "$ref": "./definitions_sources.json#/source/sourceCloudFiles" }
+                },
+                "required": ["sourceDetails"]
+            },
+            {
+                "properties": {
+                    "sourceType": { "const": "delta" },
+                    "sourceDetails": { "$ref": "./definitions_sources.json#/source/sourceDelta" }
+                },
+                "required": ["sourceDetails"]
+            },
+            {
+                "properties": {
+                    "sourceType": { "const": "deltaJoin" },
+                    "sourceDetails": { "$ref": "./definitions_sources.json#/source/sourceDeltaJoin" }
+                },
+                "required": ["sourceDetails"]
+            },
+            {
+                "properties": {
+                    "sourceType": { "const": "kafka" },
+                    "sourceDetails": { "$ref": "./definitions_sources.json#/source/sourceKafkaReader" }
+                },
+                "required": ["sourceDetails"]
+            },
+            {
+                "properties": {
+                    "sourceType": { "const": "python" },
+                    "sourceDetails": { "$ref": "./definitions_sources.json#/source/sourcePython" }
+                },
+                "required": ["sourceDetails"]
+            },
+            {
+                "properties": {
+                    "sourceType": { "const": "sql" },
+                    "sourceDetails": { "$ref": "./definitions_sources.json#/source/sourceSql" }
+                },
+                "required": ["sourceDetails"]
+            }
+        ]
+    },
+    "source": {
+        "sourceBatchFiles": {
+            "properties": {
+                "format": {"type": "string", "enum": ["csv", "json", "parquet", "text", "xml"]},
+                "path": {"type": "string"},
+                "readerOptions": {
+                    "type": "object",
+                    "properties": {
+                        "header": {"type": "string", "enum": ["true", "false"], "default": "true"},
+                        "inferSchema": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "mode": {"type": "string", "enum": ["PERMISSIVE", "DROPMALFORMED", "FAILFAST"], "default": "PERMISSIVE"},
+                        "multiLine": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "rescuedDataColumn": {"type": "string", "default": "_rescued_data"}
+                    },
+                    "additionalProperties": true
+                },
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "whereClause": {"type": "array", "items": {"type": "string"}},
+                "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
+            },
+            "required": ["path", "readerOptions"],
+            "additionalProperties": false
+        },
+        "sourceCloudFiles": {
+            "properties": {
+                "path": {"type": "string"},
+                "readerOptions": {
+                    "type": "object",
+                    "properties": {
+                        "cloudFiles.format": {"type": "string","enum": ["avro", "binaryFile", "csv", "json", "orc", "parquet", "text", "xml"]},
+                        "cloudFiles.allowOverwrites": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "cloudFiles.backfillInterval": {"type": "string"},
+                        "cloudFiles.includeExistingFiles": {"type": "string", "enum": ["true", "false"], "default": "true"},
+                        "cloudFiles.inferColumnTypes": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "cloudFiles.maxBytesPerTrigger": {"type": "string"},
+                        "cloudFiles.maxFileAge": {"type": "string"},
+                        "cloudFiles.maxFilesPerTrigger": {"type": "string", "default": "1000"},
+                        "cloudFiles.partitionColumns": {"type": "string"},
+                        "cloudFiles.schemaEvolutionMode": {"type": "string", "enum": ["addNewColumns", "rescue", "failOnNewColumns"]},
+                        "cloudFiles.schemaHints": {"type": "string"},
+                        "cloudFiles.schemaLocation": {"type": "string"},
+                        "cloudFiles.useStrictGlobber": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "cloudFiles.validateOptions": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "ignoreCorruptFiles": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "ignoreMissingFiles": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "modifiedAfter": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{6} UTC\\+\\d{1,2}$"},
+                        "modifiedBefore": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{6} UTC\\+\\d{1,2}$"},
+                        "pathGlobFilter": {"type": "string"},
+                        "recursiveFileLookup": {"type": "string", "enum": ["true", "false"], "default": "false"}
+                    },
+                    "allOf": [
+                        {
+                            "if": {
+                                "properties": {
+                                    "cloudFiles.format": { "const": "json" }
+                                }
+                            },
+                            "then": {
+                                "properties": {
+                                    "mode": {"type": "string", "enum": ["PERMISSIVE", "DROPMALFORMED", "FAILFAST"], "default": "PERMISSIVE"},
+                                    "multiLine": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                                    "rescuedDataColumn": {"type": "string", "default": "_rescued_data"}
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "cloudFiles.format": { "const": "csv" }
+                                }
+                            },
+                            "then": {
+                                "properties": {
+                                    "columnNameOfCorruptRecord": {"type": "string", "default": "_corrupt_record"},
+                                    "header": {"type": "string", "enum": ["true", "false"], "default": "true"},
+                                    "inferSchema": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                                    "mode": {"type": "string", "enum": ["PERMISSIVE", "DROPMALFORMED", "FAILFAST"], "default": "PERMISSIVE"},
+                                    "multiLine": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                                    "rescuedDataColumn": {"type": "string", "default": "_rescued_data"},
+                                    "quote": {"type": "string", "default": "\""},
+                                    "sep": {"type": "string", "default": ","}
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "cloudFiles.format": { "const": "text" }
+                                }
+                            },
+                            "then": {
+                                "properties": {
+                                    "encoding": {"type": "string", "default": "UTF-8"},
+                                    "lineSep": {"type": "string"},
+                                    "wholeText": {"type": "string", "enum": ["true", "false"], "default": "false"}
+                                }
+                            }
+                        },
+                        {
+                            "if": {
+                                "properties": {
+                                    "cloudFiles.format": { "const": "xml" }
+                                }
+                            },
+                            "then": {
+                                "properties": {
+                                    "attributePrefix": {"type": "string"},
+                                    "arrayElementName": {"type": "string"},
+                                    "columnNameOfCorruptRecord": {"type": "string", "default": "_corrupt_record"},
+                                    "ignoreNamespace": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                                    "inferSchema": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                                    "mode": {"type": "string", "enum": ["PERMISSIVE", "DROPMALFORMED", "FAILFAST"], "default": "PERMISSIVE"},
+                                    "multiLine": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                                    "rescuedDataColumn": {"type": "string", "default": "_rescued_data"},
+                                    "rootTag": {"type": "string"},
+                                    "rowTag": {"type": "string"},
+                                    "rowValidationXSDPath": {"type": "string"},
+                                    "valueTag": {"type": "string"}
+                                }
+                            }
+                        }
+                    ],
+                    "additionalProperties": true,
+                    "required": ["cloudFiles.format"]
+                },
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "whereClause": {"type": "array", "items": {"type": "string"}},
+                "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
+            },
+            "required": ["path", "readerOptions"],
+            "additionalProperties": false
+        },
+        "sourceDelta": {
+            "properties": {
+                "database": {"type": "string"},
+                "table": {"type": "string"},
+                "cdfEnabled": {"type": "boolean"},
+                "tablePath": {"type": "string"},
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "whereClause": {"type": "array", "items": {"type": "string"}},
+                "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                "readerOptions": {"type": "object", "additionalProperties": true},
+                "cdfChangeTypeOverride": {"type": "array", "items": {"type": "string", "enum": ["insert", "update_postimage", "delete"]}},
+                "startingVersionFromDLTSetup": {"type": "boolean"},
+                "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
+            },
+            "required": ["database", "table", "cdfEnabled"],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": { "startingVersionFromDLTSetup": { "const": true } },
+                        "required": ["startingVersionFromDLTSetup"]
+                    },
+                    "then": {
+                        "properties": { "cdfEnabled": { "const": true } }
+                    }
+                }
+            ],
+            "additionalProperties": false
+        },
+        "sourceDeltaJoin": {
+            "properties": {
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "properties": {
+                            "database": {"type": "string"},
+                            "table": {"type": "string"},
+                            "alias": {"type": "string"},
+                            "joinMode": {"type": "string", "enum": ["stream", "static"], "default": "stream"},
+                            "cdfEnabled": {"type": "boolean"},
+                            "tablePath": {"type": "string"},
+                            "selectExp": {"type": "array", "items": {"type": "string"}},
+                            "whereClause": {"type": "array", "items": {"type": "string"}},
+                            "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                            "readerOptions": {"type": "object", "additionalProperties": true},
+                            "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
+                        },
+                        "required": ["database", "table", "alias", "cdfEnabled", "joinMode"],
+                        "additionalProperties": false
+                    }
+                },
+                "joins": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "joinType": {"type": "string", "enum": ["left", "inner"], "default": "left"},
+                            "condition": {"type": "string"}
+                        },
+                        "required": ["joinType", "condition"],
+                        "additionalProperties": false
+                    }
+                },
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "whereClause": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["sources", "joins"],
+            "additionalProperties": false
+        },
+        "sourceKafkaReader": {
+            "properties": {
+                "readerOptions": {
+                    "type": "object",
+                    "properties": {
+                        "endingOffsets": {"type": "string"},
+                        "failOnDataLoss": {"type": "string"},
+                        "kafka.bootstrap.servers": {"type": "string"},
+                        "kafka.group.id": {"type": "string"},
+                        "kafka.security.protocol": {"type": "string", "default": "SASL_SSL"},
+                        "kafka.sasl.mechanism": {"type": "string", "default": "PLAIN"},
+                        "kafka.ssl.truststore.location": {"type": "string"},
+                        "kafka.ssl.truststore.password": {"type": "string"},
+                        "kafka.ssl.keystore.location": {"type": "string"},
+                        "kafka.ssl.keystore.password": {"type": "string"},
+                        "minPartitions": {"type": "string"},
+                        "startingOffsets": {"type": "string"},
+                        "subscribe": {"type": "string", "default": "latest"}
+                    },
+                    "additionalProperties": true
+                },
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "whereClause": {"type": "array", "items": {"type": "string"}},
+                "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
+            },
+            "required": ["readerOptions"],
+            "additionalProperties": false
+        },
+        "sourceMigrateDelta": {
+            "properties": {
+                "database": {"type": "string"},
+                "table": {"type": "string"},
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "whereClause": {"type": "array", "items": {"type": "string"}},
+                "exceptColumns": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["database", "table"],
+            "additionalProperties": false
+        },
+        "sourcePython": {
+            "properties": {
+                "tokens": {"type": "object"},
+                "functionPath": {"type": "string", "pattern": "\\.py$"},
+                "pythonModule": {"type": "string", "pattern": "^[a-zA-Z_][a-zA-Z0-9_.]*\\.[a-zA-Z_][a-zA-Z0-9_]*$"}
+            },
+            "oneOf": [
+                {"required": ["functionPath"]},
+                {"required": ["pythonModule"]}
+            ],
+            "additionalProperties": false
+        },
+        "sourceSql": {
+            "oneOf": [
+                {
+                    "properties": {
+                        "sqlPath": {"type": "string"}
+                    },
+                    "required": ["sqlPath"],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "sqlStatement": {"type": "string"}
+                    },
+                    "required": ["sqlStatement"],
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "kafkaConfig": {
+            "type": "object",
+            "properties": {
+                "kafkaSchemaPath": {"type": "string"},
+                "kafkaSubject": {"type": "string"},
+                "schemaRegistryAddress": {"type": "string"},
+                "schemaRegistryOptions": {
+                    "type": "object",
+                    "properties": {
+                        "avroSchemaEvolutionMode": {"type": "string","enum": ["restart","none"], "default": "none"},
+                        "mode": {"type": "string","enum": ["FAILFAST","PERMISSIVE" ], "default": "FAILFAST"},
+                        "certPath" : {"type": "string"},
+                        "keyPath" : {"type": "string"}
+                    },
+                    "additionalProperties": true
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "$defs": {
+        "pythonTransform": {
+            "type": "object",
+            "properties": {
+                "functionPath": {"type": "string", "pattern": "\\.py$"},
+                "module": {"type": "string", "pattern": "^[a-zA-Z_][a-zA-Z0-9_.]*\\.[a-zA-Z_][a-zA-Z0-9_]*$"},
+                "tokens": {"type": "object", "additionalProperties": true}
+            },
+            "oneOf": [
+                {"required": ["functionPath"]},
+                {"required": ["module"]}
+            ],
+            "additionalProperties": false
+        }
+    }
+}

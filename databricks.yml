@@ -1,0 +1,24 @@
+# This is a Databricks asset bundle definition for dlt_framework.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: lakeflow_framework
+
+include:
+  - resources/*.yml
+
+variables:
+  version:
+    description: The framework version to deploy this bundle as
+    default: current
+
+targets:
+  # The 'dev' target, for development purposes. This target is the default.
+  dev:
+    # We use 'mode: development' to indicate this is a personal development copy:
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default
+    # - The 'development' mode is used for Delta Live Tables pipelines
+    mode: development
+    default: true
+    workspace: 
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/${var.version}

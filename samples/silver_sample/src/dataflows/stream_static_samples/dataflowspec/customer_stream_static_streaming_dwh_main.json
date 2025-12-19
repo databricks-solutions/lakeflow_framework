@@ -1,0 +1,153 @@
+{
+    "dataFlowId": "stream_static_streaming_dwh",
+    "dataFlowGroup": "stream_static_samples",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_ss_dwh",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "__START_AT",
+        "except_column_list": ["__START_AT"],
+        "ignore_null_updates": false,
+        "apply_as_deletes": "DELETE_FLAG = 1"
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "stream_static_streaming_dwh_1",
+            "stagingTables": {
+                "customer_ss_dwh_appnd_keys": {
+                    "type": "ST"
+                },
+                "customer_ss_dwh_merge_keys": {
+                    "type": "ST",
+                    "tableProperties": {
+                        "delta.enableChangeDataFeed": "true"
+                    },
+                    "cdcSettings": {
+                        "keys": [
+                            "CUSTOMER_ID"
+                        ],
+                        "scd_type": "2",
+                        "sequence_by": "LOAD_TIMESTAMP",
+                        "where": "",
+                        "except_column_list": ["LOAD_TIMESTAMP"]
+                    }
+                }
+            },
+            "flows": {
+                "f_customer": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "customer_ss_dwh_appnd_keys",
+                        "sourceView": "v_customer"
+                    },
+                    "views": {
+                        "v_customer": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer",
+                                "cdfEnabled": true,
+                                "selectExp": ["CUSTOMER_ID", "LOAD_TIMESTAMP"]
+                            }
+                        }
+                    }
+                },
+                "f_customer_address": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "customer_ss_dwh_appnd_keys",
+                        "sourceView": "v_customer_address"
+                    },
+                    "views": {
+                        "v_customer_address": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer_address",
+                                "cdfEnabled": true,
+                                "selectExp": ["CUSTOMER_ID", "LOAD_TIMESTAMP"]
+                            }
+                        }
+                    }
+                },
+                "f_merge_keys": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_ss_dwh_merge_keys",
+                        "sourceView": "customer_ss_dwh_appnd_keys"
+                    }
+                },
+                "f_target": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_ss_dwh",
+                        "sourceView": "v_transform"
+                    },
+                    "views": {
+                        "v_transform": {
+                            "mode": "stream",
+                            "sourceType": "deltaJoin",
+                            "sourceDetails": {
+                                "sources": [
+                                    {
+                                        "database": "live",
+                                        "table": "customer_ss_dwh_merge_keys",
+                                        "cdfEnabled": true,
+                                        "alias": "drv",
+                                        "joinMode": "stream"
+                                    },
+                                    {
+                                        "database": "{bronze_schema}",
+                                        "table": "customer",
+                                        "cdfEnabled": false,
+                                        "alias": "c",
+                                        "joinMode": "static"
+                                    },
+                                    {
+                                        "database": "{bronze_schema}",
+                                        "table": "customer_address",
+                                        "cdfEnabled": false,
+                                        "alias": "ca",
+                                        "joinMode": "static"
+                                    }
+                                ],
+                                "joins": [
+                                    {
+                                        "joinType": "inner",
+                                        "condition": "drv.CUSTOMER_ID = c.CUSTOMER_ID"
+                                    },
+                                    {
+                                        "joinType": "inner",
+                                        "condition": "drv.CUSTOMER_ID = ca.CUSTOMER_ID"
+                                    }
+                                ],
+                                "selectExp": [
+                                    "c.CUSTOMER_ID",
+                                    "c.FIRST_NAME",
+                                    "c.LAST_NAME",
+                                    "c.EMAIL",
+                                    "ca.CITY",
+                                    "ca.STATE",
+                                    "c.DELETE_FLAG",
+                                    "drv.__START_AT"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

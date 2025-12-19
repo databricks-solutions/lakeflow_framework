@@ -1,0 +1,38 @@
+{
+    "dataFlowId": "customer_silver",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "customer",
+        "cdfEnabled": true,
+        "selectExp": [
+            "customer_id as c_custkey",
+            "name as c_name",
+            "mktseg as c_mktsegment",
+            "load_timestamp"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "customer_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "c_custkey"
+        ],
+        "scd_type": "2",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"],
+        "ignore_null_updates": false,
+        "track_history_column_list": ["c_name", "c_mktsegment"]
+    }
+}

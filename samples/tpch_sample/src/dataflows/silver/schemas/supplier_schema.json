@@ -1,0 +1,29 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "s_suppkey",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "s_name",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "s_acctbal",
+            "type": "decimal(18,2)",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "load_timestamp",
+            "type": "timestamp",
+            "nullable": false,
+            "metadata": {}
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "databricks.databricks",
+        "ms-python.vscode-pylance",
+        "ms-python.pylint",
+        "eeyore.yapf",
+        "redhat.vscode-yaml"
+    ]
+}

@@ -1,0 +1,10 @@
+SELECT
+  CUSTOMER_ID
+  , FIRST_NAME
+  , LAST_NAME
+  , EMAIL
+  , CITY
+  , STATE
+  , DELETE_FLAG
+  , __START_AT AS SEQUENCE_BY_COLUMN
+FROM stream(live.v_final_cdf_feed)

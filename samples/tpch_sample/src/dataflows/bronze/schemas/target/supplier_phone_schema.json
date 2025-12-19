@@ -1,0 +1,23 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "supplier_id",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "phone",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "load_timestamp",
+            "type": "timestamp",
+            "nullable": false,
+            "metadata": {}
+        }
+    ]
+}

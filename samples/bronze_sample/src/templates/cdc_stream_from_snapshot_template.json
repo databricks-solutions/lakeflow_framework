@@ -1,0 +1,112 @@
+{
+    "name": "cdc_stream_from_snapshot_template",
+    "parameters": {
+        "dataFlowId": {
+            "type": "string",
+            "required": true
+        },
+        "cdcKeys": {
+            "type": "list",
+            "required": true
+        },
+        "sourceTable": {
+            "type": "string",
+            "required": true
+        },
+        "targetTable": {
+            "type": "string",
+            "required": true
+        },
+        "sequenceByColumn": {
+            "type": "string",
+            "required": true
+        },
+        "schemaPath": {
+            "type": "string",
+            "required": true
+        }
+    },
+    "template": {
+        "dataFlowId": "${param.dataFlowId}",
+        "dataFlowGroup": "template_samples",
+        "dataFlowType": "flow",
+        "targetFormat": "delta",
+        "targetDetails": {
+            "table": "${param.targetTable}",
+            "tableProperties": {
+                "delta.enableChangeDataFeed": "true"
+            }
+        },
+        "cdcSettings": {
+            "keys": "${param.cdcKeys}",
+            "scd_type": "2",
+            "sequence_by": "${param.sequenceByColumn}",
+            "except_column_list": ["${param.sequenceByColumn}", "is_delete"],
+            "ignore_null_updates": false,
+            "apply_as_deletes": "is_delete = 1"
+        },
+        "flowGroups": [
+            {
+                "flowGroupId": "main",
+                "stagingTables": {
+                    "stg_${param.dataFlowId}_${param.sourceTable}": {
+                        "type": "ST",
+                        "tableProperties": {
+                            "delta.enableChangeDataFeed": "true"
+                        },
+                        "cdcSnapshotSettings": {
+                            "keys": "${param.cdcKeys}",
+                            "scd_type": "1",
+                            "snapshotType": "historical",
+                            "sourceType": "file",
+                            "source": {
+                                "format": "csv",
+                                "path": "{sample_file_location}/template_samples/snapshot_${param.sourceTable}/${param.sourceTable}_{version}.csv",
+                                "readerOptions": {
+                                    "header": "true"
+                                },
+                                "versionType": "timestamp",
+                                "datetimeFormat": "%Y_%m_%d",
+                                "schemaPath": "${param.schemaPath}",
+                                "selectExp": [
+                                    "* EXCEPT(${param.sequenceByColumn})",
+                                    "TO_TIMESTAMP(${param.sequenceByColumn}, 'yyyy-MM-dd HH:mm:ss') AS ${param.sequenceByColumn}",
+                                    "_metadata AS meta_file_metadata"
+                                ]
+                            }
+                        },
+                        "configFlags": ["disableOperationalMetadata"]
+                    }
+                },
+                "flows": {
+                    "f_${param.dataFlowId}_${param.sourceTable}_merge_flow": {
+                        "flowType": "merge",
+                        "flowDetails": {
+                            "targetTable": "${param.targetTable}",
+                            "sourceView": "v_stg_${param.dataFlowId}_${param.sourceTable}"
+                        },
+                        "views": {
+                            "v_stg_${param.dataFlowId}_${param.sourceTable}": {
+                                "mode": "stream",
+                                "sourceType": "delta",
+                                "sourceDetails": {
+                                    "database": "live",
+                                    "table": "stg_${param.dataFlowId}_${param.sourceTable}",
+                                    "cdfEnabled": true,
+                                    "selectExp": [
+                                        "*"
+                                    ],
+                                    "startingVersionFromDLTSetup": true,
+                                    "cdfChangeTypeOverride": ["insert", "update_postimage", "delete"],
+                                    "pythonTransform": {
+                                        "functionPath": "explode_deletes_function_transform.py"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

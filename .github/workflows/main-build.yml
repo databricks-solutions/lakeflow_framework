@@ -1,0 +1,59 @@
+name: Version and Tag on Merge to Main
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  tag-version:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # So tags are available
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "LAST_TAG=$LAST_TAG"
+          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Compute next version
+        id: bump
+        run: |
+          OLD=${{ steps.get_tag.outputs.last_tag }}
+          VERS=${OLD#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERS"
+          PATCH=$((PATCH + 1))
+          NEW="v$MAJOR.$MINOR.$PATCH"
+          echo "NEW_VERSION=$NEW"
+          echo "new_version=$NEW" >> $GITHUB_OUTPUT
+
+      - name: Fail if version is not incremented
+        run: |
+          if [ "${{ steps.get_tag.outputs.last_tag }}" = "${{ steps.bump.outputs.new_version }}" ]; then
+            echo "❌ Version not incremented. Current tag (${{ steps.get_tag.outputs.last_tag }}) is the same as the new tag."
+            exit 1
+          fi
+
+      - name: Write VERSION file
+        run: |
+          echo "${{ steps.bump.outputs.new_version }}" | sed 's/^v//' > VERSION
+          cat VERSION
+
+      - name: Tag and push
+        env:
+          TAG: ${{ steps.bump.outputs.new_version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag $TAG
+          git push origin $TAG

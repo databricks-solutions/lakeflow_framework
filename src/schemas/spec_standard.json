@@ -1,0 +1,106 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://dlt-framework/schemas/spec_standard.json",
+    "title": "Standard Dataflow Specification",
+    "$defs": {
+        "standardSpec": {
+            "properties": {
+                "dataFlowId": {"type": "string"},
+                "dataFlowGroup": {"type": "string"},
+                "dataFlowType": {"type": "string", "enum": ["standard"]},
+                "dataFlowVersion": {"type": "string"},
+                "tags": {"type": "object", "additionalProperties": true},
+                "features": {"type": "object", "additionalProperties": true},
+                "sourceSystem": {"type": "string"}, 
+                "sourceType": {"type": "string", "enum": ["batchFiles", "cloudFiles", "delta", "deltaJoin", "kafka", "python", "sql"]},
+                "sourceDetails": {"type": "object"},
+                "sourceViewName": {"type": "string","pattern": "v_([A-Za-z0-9_]+)"},
+                "mode": {"type": "string", "enum": ["stream","batch"]},
+                "targetFormat": {"type": "string", "enum": ["delta", "delta_sink", "kafka_sink", "foreach_batch_sink"]},
+                "targetDetails": {"type": "object"},
+                "cdcSettings": {"$ref": "./definitions_main.json#/definitions/cdcSettings"},
+                "cdcSnapshotSettings": {"$ref": "./definitions_main.json#/definitions/cdcSnapshotSettings"},
+                "dataQualityExpectationsEnabled": {"type": "boolean", "default": false},
+                "dataQualityExpectationsPath": {"type": "string"},
+                "quarantineMode": {"type": "string", "enum": ["off", "flag", "table"], "default": "off"},
+                "quarantineTargetDetails": {"$ref": "./definitions_main.json#/definitions/quarantineTargetDetails"},
+                "tableMigrationDetails": {"$ref": "./definitions_main.json#/definitions/tableMigrationDetails"}
+            },
+            "required": ["dataFlowId", "dataFlowGroup", "dataFlowType", "targetFormat", "targetDetails"],
+            "additionalProperties": false,
+            "dependentSchemas": {
+                "sourceType": { "$ref": "./definitions_sources.json#/sourceType"},
+                "targetFormat": { "$ref": "./definitions_targets.json#/targetFormat"}
+            },
+            "not": {"required": ["cdcSettings", "cdcSnapshotSettings"]},
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "cdcSnapshotSettings": {
+                                "type": "object",
+                                "properties": {
+                                    "snapshotType": {"const": "historical"}
+                                },
+                                "required": ["snapshotType"]
+                            }
+                        },
+                        "required": ["cdcSnapshotSettings"]
+                    },
+                    "then": {
+                        "not": {
+                            "anyOf": [
+                                {"required": ["sourceSystem"]},
+                                {"required": ["sourceType"]},
+                                {"required": ["sourceViewName"]},
+                                {"required": ["mode"]},
+                                {"required": ["sourceDetails"]}
+                            ]
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "not": {
+                            "properties": {
+                                "cdcSnapshotSettings": {
+                                    "type": "object",
+                                    "properties": {
+                                        "snapshotType": {"const": "historical"}
+                                    },
+                                    "required": ["snapshotType"]
+                                }
+                            },
+                            "required": ["cdcSnapshotSettings"]
+                        }
+                    },
+                    "then": {
+                        "required": ["sourceSystem", "sourceType", "sourceViewName", "mode", "sourceDetails"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "dataQualityExpectationsEnabled": { "const": true }
+                        },
+                        "required": ["dataQualityExpectationsEnabled"]
+                    },
+                    "then": {
+                        "required": ["dataQualityExpectationsPath"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "quarantineMode": { "const": "table" }
+                        },
+                        "required": ["quarantineMode"]
+                    },
+                    "then": {
+                        "required": ["quarantineTargetDetails"]
+                    }
+                }
+            ]
+        }
+    }
+}

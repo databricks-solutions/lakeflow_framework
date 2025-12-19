@@ -1,0 +1,28 @@
+{
+    "dataFlowId": "feature_historical_table_snapshot_datetime",
+    "dataFlowGroup": "feature_samples_snapshots",
+    "dataFlowType": "standard",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_historical_snapshot_table_datetime",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/feature_historic_snapshot_customer_schema.json",
+        "configFlags": ["disableOperationalMetadata"]
+    },
+    "cdcSnapshotSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "snapshotType": "historical",
+        "sourceType": "table",
+        "source": {
+            "table": "{staging_schema}.customer_historical_snapshot_source",
+            "versionColumn": "LOAD_TIMESTAMP",
+            "versionType": "timestamp"
+        },
+        "track_history_except_column_list": ["LOAD_TIMESTAMP"]
+    }
+}

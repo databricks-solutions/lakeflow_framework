@@ -1,0 +1,25 @@
+{
+    "dataFlowId": "part_bronze",
+    "dataFlowGroup": "tpch_bronze",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_part",
+    "sourceDetails": {
+        "path": "{staging_source_root}/part/*.csv",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true"
+        },
+        "schemaPath": "source/part_schema.json"
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "part",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/part_schema.json"
+    }
+}

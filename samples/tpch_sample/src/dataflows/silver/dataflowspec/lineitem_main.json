@@ -1,0 +1,32 @@
+{
+    "dataFlowId": "lineitem_silver",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_lineitem",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "lineitem",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "lineitem",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "lineitem_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "l_orderkey"
+            ,"l_linenumber"
+        ],
+        "scd_type": "2",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"],
+        "ignore_null_updates": false
+    }
+}

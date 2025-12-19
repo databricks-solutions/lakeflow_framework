@@ -1,0 +1,13 @@
+{
+  "tokens": {
+      "staging_schema": "main.lakeflow_samples_staging{logical_env}",
+      "bronze_schema": "main.lakeflow_samples_bronze{logical_env}",
+      "silver_schema": "main.lakeflow_samples_silver{logical_env}",
+      "staging_volume": "stg_volume",
+      "sample_file_location": "/Volumes/main/lakeflow_samples_staging{logical_env}/stg_volume",
+      "kafka_sink_servers": "your_kafka_sink_server_urls",
+      "kafka_sink_topic": "your_topic_with_{logical_env}",
+      "kafka_source_servers": "your_kafka_source_server_urls",
+      "kafka_source_topic": "your_kafka_source_topic"
+  }
+}

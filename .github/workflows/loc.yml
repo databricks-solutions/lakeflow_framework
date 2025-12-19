@@ -1,0 +1,44 @@
+name: LOC Badge
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lines-of-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Count lines of code
+        run: |
+          curl -s https://raw.githubusercontent.com/AlDanial/cloc/master/cloc | perl - --csv --out=loc.csv .
+          LOC=$(tail -n1 loc.csv | cut -d',' -f5)
+          echo "Lines of code: $LOC"
+
+      # Update README with LOC badge
+      - name: Update README.md with LOC badge
+        run: |
+          # Define the badge
+          LOC_BADGE="![Lines of Code](https://img.shields.io/badge/lines_of_code-${LOC}-blue)"
+          
+          # Check if README.md contains the badge
+          if grep -q "![Lines of Code]" README.md; then
+            # Update the existing badge
+            sed -i "s|!\[Lines of Code\](.*)|$LOC_BADGE|" README.md
+          else
+            # Add the badge at the end of README.md
+            echo -e "\n$LOC_BADGE" >> README.md
+          fi
+
+      # Commit and push changes
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Update Lines of Code badge"
+          git push
+
+

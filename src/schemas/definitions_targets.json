@@ -1,0 +1,219 @@
+{
+    "title": "Target DataflowSpec Definitions",
+    "targetFormat": {
+        "oneOf": [
+            {
+                "properties": {
+                    "targetFormat": { "const": "delta" },
+                    "targetDetails": { "$ref": "./definitions_targets.json#/target/targetDelta" }
+                }
+            },
+            {
+                "properties": {
+                    "targetFormat": { "const": "delta_sink" },
+                    "targetDetails": { "$ref": "./definitions_targets.json#/target/targetDeltaSink" }
+                }
+            },
+            {
+                "properties": {
+                    "targetFormat": { "const": "custom_python_sink" },
+                    "targetDetails": { "$ref": "./definitions_targets.json#/target/targetCustomPythonSink" }
+                }
+            },
+            {
+                "properties": {
+                    "targetFormat": { "const": "kafka_sink" },
+                    "targetDetails": { "$ref": "./definitions_targets.json#/target/targetKafkaSink" }
+                }
+            },
+            {
+                "properties": {
+                    "targetFormat": { "const": "foreach_batch_sink" },
+                    "targetDetails": { "$ref": "./definitions_targets.json#/target/targetForEachBatchSink" }
+                }
+            }
+        ]    
+    },
+    "target": {
+        "targetDelta": {
+            "type": "object",
+            "properties": {
+                "database": {"type": "string"},
+                "table": {"type": "string"},
+                "type": {"type": "string", "enum": ["ST", "MV"]},
+                "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
+                "tableProperties": {"type": "object"},
+                "path": {"type": "string"},
+                "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                "clusterByAuto": {"type": "boolean"},
+                "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"},
+                "comment": {"type": "string"},
+                "sparkConf": {"type": "object"},
+                "rowFilter": {"type": "string"}
+            },
+            "dependentSchemas": {
+                "type": {
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "type": { "const": "ST" }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "allOf": [
+                                {"properties": {"type": {"const": "MV"}}},
+                                {
+                                    "anyOf": [
+                                        {"required": ["sourceView"]},
+                                        {"required": ["sqlPath"]},
+                                        {"required": ["sqlStatement"]}
+                                    ]
+                                }
+                            ],
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "required": ["table"],
+            "oneOf": [
+                {
+                    "not": {
+                        "required": ["clusterByColumns", "partitionColumns"]
+                    }
+                }
+            ]
+        },
+        "targetCustomPythonSink": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "sinkOptions": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
+            },
+            "required": ["name", "sinkOptions"],
+            "additionalProperties": false
+        },
+        "targetDeltaSink": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "sinkOptions": {
+                    "type": "object",
+                    "properties": {
+                        "tableName": {"type": "string"},
+                        "path": {"type": "string"}
+                    },
+                    "additionalProperties": true,
+                    "oneOf": [
+                        {
+                            "required": ["tableName"],
+                            "not": {
+                                "required": ["path"]
+                            }
+                        },
+                        {
+                            "required": ["path"],
+                            "not": {
+                                "required": ["tableName"]
+                            }
+                        }
+                    ]
+                },
+                "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
+            },
+            "required": ["name", "sinkOptions"],
+            "additionalProperties": false
+        },
+        "targetKafkaSink": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "sinkOptions": {
+                    "type": "object",
+                    "properties": {
+                        "topic": {"type": "string"},
+                        "kafka.bootstrap.servers": {"type": "string"},
+                        "kafka.group.id": {"type": "string"},
+                        "kafka.security.protocol": {"type": "string", "default": "SASL_SSL"},
+                        "kafka.ssl.keystore.location": {"type": "string"},
+                        "kafka.ssl.keystore.password": {"type": "string"},
+                        "kafka.ssl.truststore.location": {"type": "string"},
+                        "kafka.ssl.truststore.password": {"type": "string"}
+                    },
+                    "required": ["topic", "kafka.bootstrap.servers"]
+                },
+                "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
+            },
+            "required": ["name", "sinkOptions"],
+            "additionalProperties": false
+        },
+        "targetForEachBatchSink": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "type": {"type": "string", "enum": ["basic_sql", "python_function"]},
+                "config": {"type": "object"},
+                "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
+            },
+            "additionalProperties": false,
+            "required": ["name", "type", "config"],
+            "dependentSchemas": {
+                "type": {
+                    "oneOf": [
+                        { 
+                            "properties": { 
+                                "type": { "const": "basic_sql" },
+                                "target": {
+                                    "type": "object",
+                                    "properties": {
+                                        "database": {"type": "string"},
+                                        "table": {"type": "string"},
+                                        "tableProperties": {"type": "object"},
+                                        "path": {"type": "string"},
+                                        "partitionColumns": {"type": "array", "items": {"type": "string"}},
+                                        "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                                        "sqlPath": {"type": "string"},
+                                        "sqlStatement": {"type": "string"}
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "properties": { 
+                                "type": { "const": "python_function" },
+                                "target": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tokens": {"type": "object"},
+                                        "module": {"type": "string", "pattern": "^[a-zA-Z_][a-zA-Z0-9_.]*\\.[a-zA-Z_][a-zA-Z0-9_]*$"},
+                                        "functionPath": {"type": "string", "pattern": "\\.py$"}
+                                    },
+                                    "oneOf": [
+                                        {"required": ["functionPath"]},
+                                        {"required": ["module"]}
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "$defs": {
+        "configFlags": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": ["disableOperationalMetadata"]
+            },
+            "default": []
+        }
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "dataFlowId": "feature_historical_files_snapshot_datetime_recursive_and_partitioned_parquet",
+    "dataFlowGroup": "feature_samples_snapshots",
+    "dataFlowType": "standard",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_historical_snapshot_files_datetime_recursive_and_partitioned_parquet",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/customer_schema.json",
+        "configFlags": ["disableOperationalMetadata"]
+    },
+    "cdcSnapshotSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "snapshotType": "historical",
+        "sourceType": "file",
+        "source": {
+            "format": "parquet",
+            "path": "{sample_file_location}/snapshot_customer_partitioned_parquet/{version}/customer.parquet",
+            "versionType": "timestamp",
+            "datetimeFormat": "YEAR=%Y/MONTH=%m/DAY=%d",
+            "recursiveFileLookup": true
+        },
+        "track_history_except_column_list":[
+            "LOAD_TIMESTAMP"
+        ]
+    }
+}

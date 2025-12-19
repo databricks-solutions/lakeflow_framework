@@ -1,0 +1,22 @@
+resources:
+  pipelines:
+    lakeflow_samples_bronze_base_pipeline:
+      name: Lakeflow Framework - Bronze - Base Pipeline (${var.logical_env})
+      channel: CURRENT
+      serverless: true
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
+        bundle.target: ${bundle.target}
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        pipeline.layer: ${var.layer}
+        logicalEnv: ${var.logical_env}
+        #pipeline.dataFlowIdFilter: base_customer,base_customer_file_source,base_customer_address
+        pipeline.dataFlowGroupFilter: base_samples
+      root_path: ${workspace.file_path}/src/dataflows/base_samples

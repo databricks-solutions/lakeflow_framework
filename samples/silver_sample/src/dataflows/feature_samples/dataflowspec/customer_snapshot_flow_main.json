@@ -1,0 +1,46 @@
+{
+    "dataFlowId": "csnap",
+    "dataFlowGroup": "csnap",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_snapshot_flow",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSnapshotSettings": {
+        "snapshotType": "periodic",
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2"    
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "c_snapshot_flow",
+            "flows": {
+                "f_merge": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_snapshot_flow",
+                        "sourceView": "v_customer"
+                    },
+                    "views": {
+                        "v_customer": {
+                            "mode": "batch",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer",
+                                "cdfEnabled": false,
+                                "selectExp": ["*"]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

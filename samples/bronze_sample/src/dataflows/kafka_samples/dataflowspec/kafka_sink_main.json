@@ -1,0 +1,51 @@
+{
+    "dataFlowId": "kafka_sink",
+    "dataFlowGroup": "kafka_samples",
+    "dataFlowType": "flow",
+    "targetFormat": "kafka_sink",
+    "targetDetails": {
+        "name": "my_kafka_sink",
+        "sinkOptions": {
+            "topic": "{kafka_sink_topic}",
+            "kafka.bootstrap.servers": "{kafka_servers}",
+            "kafka.security.protocol": "SSL",
+            "kafka.ssl.keystore.secretRetrieval": {
+                "scope": "{kafka_keystore_password_secret_scope_name}",
+                "key": "{kafka_keystore_password_access_key_name}"
+            }
+        }
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "kafka_sink",
+            "flows": {
+                "f_kafka_sink_sample_source": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "my_kafka_sink",
+                        "sourceView": "v_final_transform"
+                    },
+                    "views": {
+                        "v_kafka_sink_sample_source": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{staging_schema}",
+                                "table": "kafka_sink_sample_source",
+                                "cdfEnabled": true
+                            }
+                        },
+                        "v_final_transform": {
+                            "mode": "stream",
+                            "sourceType": "sql",
+                            "sourceDetails": {
+                                "sqlPath": "./tfm_final.sql"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

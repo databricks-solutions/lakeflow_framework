@@ -1,0 +1,65 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "p_partkey",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "p_name",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "p_mfgr",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "p_brand",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "p_type",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "p_size",
+            "type": "integer",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "p_container",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "p_retailprice",
+            "type": "decimal(18,2)",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "p_comment",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "load_timestamp",
+            "type": "timestamp",
+            "nullable": false,
+            "metadata": {}
+        }
+    ]
+}

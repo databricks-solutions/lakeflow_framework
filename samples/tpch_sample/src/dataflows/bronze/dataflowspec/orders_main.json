@@ -1,0 +1,25 @@
+{
+    "dataFlowId": "orders_bronze",
+    "dataFlowGroup": "tpch_bronze",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_orders",
+    "sourceDetails": {
+        "path": "{staging_source_root}/orders/*.csv",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true"
+        },
+        "schemaPath": "source/orders_schema.json"
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "orders",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/orders_schema.json"
+    }
+}

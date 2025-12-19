@@ -1,0 +1,82 @@
+{
+    "dataFlowId": "version_mapping_flows",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "flow",
+    "dataFlowVersion": "0.1.0",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_version_mapping_flows",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/feature_version_mapping_flows_schema.json"
+    },
+    "cdcApplyChanges": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "sequence_by": "LOAD_TIMESTAMP",
+        "where": "",
+        "ignore_null_updates": false,
+        "scd_type": "1"
+    },
+    "flowGroups": [
+        {
+            "flowGroupId": "version_mapping_flows_1",
+            "stagingTables": {
+                "feature_version_mapping_stage": {
+                    "type": "ST",
+                    "tableProperties": {
+                        "delta.enableChangeDataFeed": "true"
+                    },
+                    "cdcApplyChanges": {
+                        "keys": [
+                            "CUSTOMER_ID"
+                        ],
+                        "sequence_by": "LOAD_TIMESTAMP",
+                        "ignore_null_updates": true,
+                        "scd_type": "1"
+                    }
+                }
+            },
+            "flows": {
+                "f_feature_version_mapping_merge": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "feature_version_mapping_stage",
+                        "sourceView": "v_flows_version_mapping"
+                    },
+                    "views": {
+                        "v_flows_version_mapping": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{staging_schema}",
+                                "table": "customer",
+                                "cdfEnabled": true
+                            }
+                        }
+                    }
+                },
+                "f_target": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "feature_version_mapping_flows",
+                        "sourceView": "v_version_mapping_final"
+                    },
+                    "views": {
+                        "v_version_mapping_final": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "live",
+                                "table": "feature_version_mapping_stage",
+                                "cdfEnabled": true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

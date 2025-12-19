@@ -1,0 +1,65 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "o_orderkey",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "o_custkey",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "o_orderstatus",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "o_totalprice",
+            "type": "decimal(18,2)",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "o_orderdate",
+            "type": "date",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "o_orderpriority",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "o_clerk",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "o_shippriority",
+            "type": "integer",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "o_comment",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "load_timestamp",
+            "type": "timestamp",
+            "nullable": false,
+            "metadata": {}
+        }
+    ]
+}

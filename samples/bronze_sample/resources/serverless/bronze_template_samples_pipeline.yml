@@ -1,0 +1,21 @@
+resources:
+  pipelines:
+    lakeflow_samples_bronze_template_samples_pipeline:
+      name: Lakeflow Framework - Bronze - Template Samples Pipeline (${var.logical_env})
+      channel: CURRENT
+      serverless: true
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
+        bundle.target: ${bundle.target}
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        pipeline.layer: ${var.layer}
+        logicalEnv: ${var.logical_env}
+        pipeline.dataFlowGroupFilter: template_samples
+      root_path: ${workspace.file_path}/src/dataflows/template_samples

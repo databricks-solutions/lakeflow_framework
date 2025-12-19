@@ -1,0 +1,37 @@
+{
+    "dataFlowId": "append_view_flow",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "append_view_flow",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "flowGroups": [
+        {
+            "flowGroupId": "main",
+            "flows": {
+                "f_customer_append_view": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "append_view_flow",
+                        "sourceView": "v_append_view_flow"
+                    },
+                    "views": {
+                        "v_append_view_flow": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{staging_schema}",
+                                "table": "customer",
+                                "cdfEnabled": true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

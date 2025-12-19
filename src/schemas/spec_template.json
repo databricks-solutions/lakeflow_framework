@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://dlt-framework/schemas/template_spec_definition.json",
+    "title": "Template Dataflow Specification",
+    "description": "Schema for instantiating a dataflow template with parameters",
+    "type": "object",
+    "properties": {
+        "template": {"type": "string"},
+        "parameterSets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "dataFlowId": {"type": "string"}
+                },
+                "required": ["dataFlowId"],
+                "additionalProperties": true,
+                "minItems": 2
+            },
+            "minItems": 1
+        }
+    },
+    "required": ["template", "parameterSets"],
+    "additionalProperties": false
+}

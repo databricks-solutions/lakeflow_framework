@@ -1,0 +1,46 @@
+{
+    "dataFlowId": "feature_materialized_views",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "materialized_view",
+    "materializedViews": {
+        "feature_mv_source_view": {
+            "sourceView": {
+                "sourceViewName": "v_feature_mv_source_view",
+                "sourceType": "delta",
+                "sourceDetails": {
+                    "database": "{staging_schema}",
+                    "table": "customer",
+                    "cdfEnabled": true
+                }
+            }
+        },
+        "feature_mv_sql_path": {
+           "sqlPath": "./feature_mv_sql_path.sql"
+        },
+        "feature_mv_sql_statement": {
+            "sqlStatement": "SELECT * FROM {staging_schema}.customer",
+            "tableDetails": {
+                "private": true
+            }
+        },
+        "feature_mv_with_quarantine": {
+            "sqlStatement": "SELECT * FROM {staging_schema}.customer_address",
+            "dataQualityExpectationsEnabled": true,
+            "dataQualityExpectationsPath": "./customer_address_dqe.json",
+            "quarantineMode": "table",
+            "quarantineTargetDetails": {
+                "targetFormat": "delta",
+                "clusterByAuto": true
+            }
+        },
+        "feature_mv_chain_mvs": {
+            "sqlStatement": "SELECT * FROM live.feature_mv_sql_statement",
+            "tableDetails": {
+                "comment": "Test Config",
+                "sparkConf": {
+                    "spark.sql.session.timeZone": "Australia/Sydney"
+                }
+            }
+        }
+    }
+}

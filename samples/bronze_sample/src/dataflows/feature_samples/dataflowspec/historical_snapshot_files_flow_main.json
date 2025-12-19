@@ -1,0 +1,80 @@
+{
+    "dataFlowId": "feature_historical_files_snapshot_flow",
+    "dataFlowGroup": "feature_samples_snapshots",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_historical_files_snapshot_flow",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "flowGroups": [
+        {
+            "flowGroupId": "main",
+            "stagingTables": {
+                "stg_feature_historical_files_snapshot_flow": {
+                    "type": "ST",
+                    "tableProperties": {
+                        "delta.enableChangeDataFeed": "true"
+                    },
+                    "cdcSnapshotSettings": {
+                        "keys": [
+                            "CUSTOMER_ID"
+                        ],
+                        "scd_type": "1",
+                        "snapshotType": "historical",
+                        "sourceType": "file",
+                        "source": {
+                            "format": "csv",
+                            "path": "{sample_file_location}/snapshot_customer/customer_{version}.csv",
+                            "readerOptions": {
+                                "header": "true"
+                            },
+                            "versionType": "timestamp",
+                            "datetimeFormat": "%Y_%m_%d",
+                            "schemaPath": "source/feature_historic_snapshot_customer_schema.json",
+                            "selectExp": [
+                                "CUSTOMER_ID",
+                                "FIRST_NAME",
+                                "LAST_NAME",
+                                "EMAIL",
+                                "TO_TIMESTAMP(LOAD_TIMESTAMP, 'yyyy-MM-dd HH:mm:ss') AS LOAD_TIMESTAMP"
+                            ]
+                        }
+                    },
+                    "configFlags": ["disableOperationalMetadata"]
+                }
+            },
+            "flows": {
+                "f_feature_historical_files_snapshot_append_flow": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "feature_historical_files_snapshot_flow",
+                        "sourceView": "v_feature_historical_files_snapshot_append"
+                    },
+                    "views": {
+                        "v_feature_historical_files_snapshot_append": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "live",
+                                "table": "stg_feature_historical_files_snapshot_flow",
+                                "cdfEnabled": true,
+                                "selectExp": [
+                                    "CUSTOMER_ID",
+                                    "FIRST_NAME",
+                                    "LAST_NAME",
+                                    "EMAIL",
+                                    "_change_type AS META_CDC_CHANGE_TYPE"
+                                ],
+                                "startingVersionFromDLTSetup": true,
+                                "cdfChangeTypeOverride": ["insert", "update_postimage", "delete"]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

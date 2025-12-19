@@ -1,0 +1,24 @@
+{
+    "title": "Expectations",
+    "type": "object",
+    "properties": {
+        "expect": {"$ref": "#/definitions/expectations"},
+        "expect_or_drop": {"$ref": "#/definitions/expectations"},
+        "expect_or_fail": {"$ref": "#/definitions/expectations"}
+    },
+    "definitions": {
+        "expectations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "constraint": {"type": "string"},
+                    "tag": {"type": "string"},
+                    "enabled": {"type": "boolean"}
+                },
+                "required": ["name", "constraint"]
+            }
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "python.analysis.stubPath": ".vscode",
+    "jupyter.interactiveWindow.cellMarker.codeRegex": "^# COMMAND ----------|^# Databricks notebook source|^(#\\s*%%|#\\s*\\<codecell\\>|#\\s*In\\[\\d*?\\]|#\\s*In\\[ \\])",
+    "jupyter.interactiveWindow.cellMarker.default": "# COMMAND ----------",
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": ["src"],
+    "files.exclude": {
+        "**/*.egg-info": true,
+        "**/__pycache__": true,
+        ".pytest_cache": true,
+    },
+    "python.envFile": "${workspaceRoot}/.env",
+    "pylint.enabled": true,
+    "[python]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "eeyore.yapf",
+        "editor.formatOnType": false
+    },
+    "cursorpyright.analysis.extraPaths": [
+        "src"
+    ],
+    "cursorpyright.analysis.stubPath": ".vscode",
+    "python.languageServer": "None",
+}

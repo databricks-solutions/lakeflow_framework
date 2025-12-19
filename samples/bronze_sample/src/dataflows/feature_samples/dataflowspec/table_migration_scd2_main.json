@@ -1,0 +1,55 @@
+{
+    "dataFlowId": "table_migration_scd2",
+    "dataFlowGroup": "feature_samples_table_migration",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_feature_tm_customer_scd2",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer",
+        "cdfEnabled": true,
+        "selectExp": [
+            "CUSTOMER_ID",
+            "FIRST_NAME",
+            "LAST_NAME",
+            "EMAIL",
+            "LOAD_TIMESTAMP"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_migrated_table_scd2",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "false"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "LOAD_TIMESTAMP",
+        "except_column_list": [],
+        "ignore_null_updates": true,
+        "apply_as_deletes": ""
+    },
+    "tableMigrationDetails": {
+        "catalogType": "uc",
+        "enabled": true,
+        "autoStartingVersionsEnabled": true,
+        "sourceDetails": {
+            "database": "{bronze_schema}",
+            "table": "table_to_migrate_scd2",
+            "selectExp": [
+                "CUSTOMER_ID",
+                "FIRST_NAME",
+                "LAST_NAME",
+                "EMAIL",
+                "EFFECTIVE_FROM AS __START_AT",
+                "EFFECTIVE_TO AS __END_AT"
+            ]
+        }
+    }
+}

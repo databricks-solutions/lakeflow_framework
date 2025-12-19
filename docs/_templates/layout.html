@@ -1,0 +1,10 @@
+{% extends "!layout.html" %}
+
+{% block content %}
+<div class="documenting">
+    {% if last_updated %}
+    <p class="last-updated">Last updated: {{ last_updated }}</p>
+    {% endif %}
+    {{ super() }}
+</div>
+{% endblock %}

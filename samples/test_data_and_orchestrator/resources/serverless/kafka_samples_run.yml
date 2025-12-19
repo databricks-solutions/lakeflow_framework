@@ -1,0 +1,29 @@
+resources:
+  jobs:
+    kafka_samples_run:
+      name: Lakeflow Framework - Kafka Samples(${var.logical_env})
+      tasks:
+        - task_key: create_schemas_and_tables
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/create_schemas_and_tables
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+        - task_key: staging_load
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/run_1_staging_load
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+          depends_on:
+            - task_key: create_schemas_and_tables
+
+        # Bronze pipelines
+        - task_key: lakeflow_samples_bronze_kafka_samples_pipeline
+          pipeline_task:
+            pipeline_id: ${var.lakeflow_samples_bronze_kafka_samples_pipeline_id}
+            full_refresh: true
+          depends_on: 
+            - task_key: staging_load

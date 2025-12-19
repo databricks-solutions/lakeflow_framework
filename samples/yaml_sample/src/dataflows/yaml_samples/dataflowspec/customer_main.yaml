@@ -1,0 +1,22 @@
+# Metadata
+dataFlowId: base_customer
+dataFlowGroup: yaml_samples
+dataFlowType: standard
+
+# Source Configuration
+sourceSystem: testSystem
+sourceType: delta
+sourceViewName: v_customer
+sourceDetails:
+  database: '{staging_schema}'
+  table: customer
+  cdfEnabled: true
+mode: stream
+
+# Target Configuration
+targetFormat: delta
+targetDetails:
+  table: customer
+  tableProperties:
+    delta.enableChangeDataFeed: 'true'
+  schemaPath: customer_schema.json

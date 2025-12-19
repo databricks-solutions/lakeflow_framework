@@ -1,0 +1,31 @@
+{
+    "dataFlowId": "feature_quarantine_flag",
+    "dataFlowGroup": "feature_samples_data_quality",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_address_feature_quarantine_flag",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer_address",
+        "cdfEnabled": true, 
+        "selectExp": [
+            "CUSTOMER_ID"
+            , "CITY"
+            , "STATE"
+            , "LOAD_TIMESTAMP"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_quarantine_flag",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/customer_address_schema.json"
+    },
+    "dataQualityExpectationsEnabled": true,
+    "dataQualityExpectationsPath": "./customer_address_dqe.json",
+    "quarantineMode": "flag"
+}

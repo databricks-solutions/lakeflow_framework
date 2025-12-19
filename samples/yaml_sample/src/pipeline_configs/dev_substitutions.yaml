@@ -1,0 +1,6 @@
+tokens:
+  staging_schema: main.lakeflow_samples_staging{logical_env}
+  bronze_schema: main.lakeflow_samples_bronze{logical_env}
+  silver_schema: main.lakeflow_samples_silver{logical_env}
+  staging_volume: stg_volume
+  sample_file_location: /Volumes/main/lakeflow_samples_staging{logical_env}/stg_volume

@@ -1,0 +1,29 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "CUSTOMER_ID",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "CITY",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "STATE",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "LOAD_TIMESTAMP",
+            "type": "timestamp",
+            "nullable": true,
+            "metadata": {}
+        }
+    ]
+}

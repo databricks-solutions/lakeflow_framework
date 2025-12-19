@@ -1,0 +1,37 @@
+name: Dev Version on Merge to Develop
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types:
+      - closed
+
+jobs:
+  dev-version:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $TAG"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate pre-release version
+        run: |
+          TAG=${{ steps.get_tag.outputs.tag }}
+          VERS=${TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERS"
+          PATCH=$((PATCH + 1))
+          SHA=$(git rev-parse --short HEAD)
+          VERSION="${MAJOR}.${MINOR}.${PATCH}-dev.${SHA}"
+          echo $VERSION > VERSION
+          echo "Version: $VERSION"

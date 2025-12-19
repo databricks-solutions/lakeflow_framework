@@ -1,0 +1,30 @@
+# This is a Databricks asset bundle definition for bronze_sample.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: bronze_sample
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: The target UC catalog
+  framework_source_path:
+    description: The full workspace path to the framwework src folder
+    default: /Workspace/Users/<username>/.bundle/dlt_framework/<target>/current/files/src
+  schema:
+    description: The target UC schema
+  workspace_host:
+    description: workspace url used for API calls from Framework (usually same as deployment URL) e.g. https://e2-demo-field-eng.cloud.databricks.com/
+  layer:
+    description: The target layer
+    default: bronze
+  logical_env:
+    description: The logical environment
+    default: ""
+
+targets:
+  # The 'dev' target, for development purposes. This target is the default.
+  dev:
+    mode: development
+    default: true

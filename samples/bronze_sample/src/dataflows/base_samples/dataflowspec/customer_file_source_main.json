@@ -1,0 +1,41 @@
+{
+    "dataFlowId": "base_customer_file_source",
+    "dataFlowGroup": "base_samples",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_customer_files",
+    "sourceDetails": {
+        "path": "{sample_file_location}/customer/",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true"
+        },
+        "schemaPath": "./customer_file_source_schema.json",
+        "selectExp": [
+            "CUSTOMER_ID",
+            "FIRST_NAME",
+            "LAST_NAME",
+            "EMAIL",
+            "CAST(LOAD_TIMESTAMP AS TIMESTAMP) AS LOAD_TIMESTAMP"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_file_sample",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "customer_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "sequence_by": "LOAD_TIMESTAMP",
+        "where": "",
+        "ignore_null_updates": false,
+        "scd_type": "1"
+    }
+}

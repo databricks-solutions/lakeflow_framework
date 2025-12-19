@@ -1,0 +1,31 @@
+{
+    "dataFlowId": "customer_bronze",
+    "dataFlowGroup": "tpch_bronze",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_customer",
+    "sourceDetails": {
+        "path": "{staging_source_root}/customer/*.csv",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true"
+        },
+        "schemaPath": "source/customer_schema.json",
+        "selectExp": [
+            "customer_id",
+            "name",
+            "mktseg",
+            "load_timestamp"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/customer_schema.json"
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "customer_id",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "address",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "nat_id",
+            "type": "long",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "load_timestamp",
+            "type": "timestamp",
+            "nullable": false,
+            "metadata": {}
+        }
+    ]
+}

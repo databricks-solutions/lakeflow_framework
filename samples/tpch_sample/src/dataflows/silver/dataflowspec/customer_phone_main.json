@@ -1,0 +1,38 @@
+{
+    "dataFlowId": "customer_phone_silver",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_phone",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "customer_phone",
+        "cdfEnabled": true,
+        "selectExp": [
+            "customer_id as c_custkey",
+            "ptype as c_phonetype",
+            "phone as c_phone",
+            "load_timestamp"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_phone",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "customer_phone_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "c_custkey",
+            "c_phonetype"
+        ],
+        "scd_type": "2",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"],
+        "ignore_null_updates": false
+    }
+}
