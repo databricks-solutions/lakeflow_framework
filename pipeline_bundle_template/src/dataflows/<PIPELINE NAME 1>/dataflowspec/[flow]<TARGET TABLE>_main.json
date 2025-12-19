@@ -1,0 +1,43 @@
+{
+    "dataFlowId": "<DATA FLOW ID>",
+    "dataFlowGroup": "<DATA FLOW GROUP>",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "<TARGET TABLE>",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "<TARGET TABLE>_schema.json"
+    },
+    "dataQualityExpectationsEnabled": true,
+    "quarantineMode": "<off/flag/table>",
+    "quarantineTargetDetails": {
+        "targetFormat": "delta"
+    },
+    "flowGroups": [
+        {
+            "flowGroupId": "<FLOW GROUP ID>",
+            "flows": {
+                "f_target": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "<FLOW TARGET TABLE>",
+                        "sourceView": "<FLOW SOURCE VIEW>"
+                    },
+                    "views": {
+                        "v_<VIEW NAME>": {
+                            "mode": "stream",
+                            "sourceType": "<SOURCE TYPE>",
+                            "sourceDetails": {
+                                "database": "{<CATALOG.SCHEMA substitution>}",
+                                "table": "<SOURCE TABLE>",
+                                "cdfEnabled": true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

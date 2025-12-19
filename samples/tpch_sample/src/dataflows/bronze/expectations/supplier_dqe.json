@@ -1,0 +1,14 @@
+{
+    "expect_or_drop": [
+        {
+            "name": "PK not null",
+            "constraint": "supplier_id IS NOT NULL",
+            "tag": "Validity"
+        },
+        {
+            "name": "load_timestamp not null",
+            "constraint": "load_timestamp IS NOT NULL",
+            "tag": "Validity"
+        }
+    ]
+}

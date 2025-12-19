@@ -1,0 +1,9 @@
+{
+    "tokens": {
+        "staging_schema": "main.lakeflow_samples_tpch_staging{logical_env}",
+        "bronze_schema": "main.lakeflow_samples_tpch_bronze{logical_env}",
+        "silver_schema": "main.lakeflow_samples_tpch_silver{logical_env}",
+        "gold_schema": "main.lakeflow_samples_tpch_gold{logical_env}",
+        "staging_source_root": "/Volumes/main/lakeflow_samples_tpch_staging{logical_env}/stg_volume/tpc_h"
+    }
+}

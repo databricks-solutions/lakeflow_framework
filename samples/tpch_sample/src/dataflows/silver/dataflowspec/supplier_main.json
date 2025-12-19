@@ -1,0 +1,37 @@
+{
+    "dataFlowId": "supplier_silver",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_supplier",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "supplier",
+        "cdfEnabled": true,
+        "selectExp": [
+            "supplier_id as s_suppkey",
+            "name as s_name",
+            "load_timestamp"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "supplier",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "supplier_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "s_suppkey"
+        ],
+        "scd_type": "2",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"],
+        "ignore_null_updates": false,
+        "track_history_column_list": ["s_name"]
+    }
+}

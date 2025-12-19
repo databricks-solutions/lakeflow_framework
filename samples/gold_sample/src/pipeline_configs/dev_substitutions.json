@@ -1,0 +1,6 @@
+{
+    "tokens": {
+        "bronze_schema": "main.lakeflow_samples_bronze{logical_env}",
+        "silver_schema": "main.lakeflow_samples_silver{logical_env}"
+    }
+}

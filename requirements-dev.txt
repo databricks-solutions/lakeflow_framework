@@ -1,0 +1,16 @@
+## requirements-dev.txt: dependencies for local development.
+databricks-connect
+databricks-dlt
+delta
+pyspark
+jsonschema
+
+## testing packages
+pytest
+
+## Dependencies for building wheel files
+setuptools
+wheel
+
+# The following packages are only required for building documentation and are not required at runtime
+-r requirements-docs.txt

@@ -1,0 +1,24 @@
+{
+    "expect_or_drop": [
+        {
+            "name": "<CONSTRAINT NAME>",
+            "constraint": "<CONSTRAINT (SQL)>",
+            "tag": "<TAG>",
+            "enabled": true
+        },
+        {
+            "name": "<CONSTRAINT NAME 2>",
+            "constraint": "<CONSTRAINT (SQL)>",
+            "tag": "<TAG>",
+            "enabled": false
+        }
+    ],
+    "expect_or_fail": [
+        {
+            "name": "<CONSTRAINT NAME 3>",
+            "constraint": "<CONSTRAINT (SQL)>",
+            "tag": "<TAG>",
+            "enabled": true
+        }
+    ]
+}

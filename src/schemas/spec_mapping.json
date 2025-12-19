@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Dataflow Spec Mapping",
+    "type": "object",
+    "additionalProperties": {"$ref": "#/$defs/mappingOperations"},
+    "$defs": {
+        "mappingOperations": {
+            "type": "object",
+            "properties": {
+                "rename_all": {"type": "object", "additionalProperties": {"$ref": "#/$defs/operationValue"}},
+                "rename_specific": {"type": "object", "additionalProperties": {"$ref": "#/$defs/operationValue"}},
+                "move": {"type": "object", "additionalProperties": {"$ref": "#/$defs/operationValue"}},
+                "delete": {"type": "object", "additionalProperties": {"$ref": "#/$defs/deleteValue"}}
+            },
+            "additionalProperties": false
+        },
+        "operationValue": {
+            "oneOf": [
+                {"type": "string", "minLength": 1},
+                {"$ref": "#/$defs/conditionalOperation"}
+            ]
+        },
+        "conditionalOperation": {
+            "type": "object",
+            "properties": {
+                "to": {"type": "string", "minLength": 1},
+                "condition": {"$ref": "#/$defs/condition"}
+            },
+            "required": ["to", "condition"],
+            "additionalProperties": false
+        },
+        "condition": {
+            "type": "object",
+            "properties": {
+                "key": {"type": "string", "minLength": 1},
+                "operator": {"type": "string", "enum": ["equal_to", "not_equal_to", "in", "not_in"]},
+                "value": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"type": "number"},
+                        {"type": "boolean"},
+                        {"type": "null"},
+                        {"type": "array", "items": {"oneOf": [{"type": "string"}, {"type": "number"}, {"type": "boolean"}, {"type": "null"}]}}
+                    ]
+                }
+            },
+            "required": ["key", "operator", "value"],
+            "additionalProperties": false
+        },
+        "deleteValue": {
+            "oneOf": [
+                {"type": "boolean"},
+                {"type": "string"},
+                {
+                    "type": "object",
+                    "properties": {"condition": {"$ref": "#/$defs/condition"}},
+                    "required": ["condition"],
+                    "additionalProperties": false
+                }
+            ]
+        }
+    }
+}

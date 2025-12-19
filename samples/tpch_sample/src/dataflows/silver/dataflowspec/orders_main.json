@@ -1,0 +1,31 @@
+{
+    "dataFlowId": "orders_silver",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_orders",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "orders",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "orders",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "orders_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "o_orderkey"
+        ],
+        "scd_type": "2",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"],
+        "ignore_null_updates": false
+    }
+}

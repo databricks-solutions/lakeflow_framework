@@ -1,0 +1,29 @@
+{
+    "dataFlowId": "<DATA FLOW ID>",
+    "dataFlowGroup": "<DATA FLOW GROUP>",
+    "dataFlowType": "standard",
+    "sourceSystem": "<SOURCE SYSTEM>",
+    "sourceType": "<SOURCE TYPE>",
+    "sourceViewName": "<SOURCE VIEW NAME>",
+    "sourceDetails": {
+        "database": "{<CATALOG.SCHEMA substitution>}",
+        "table": "<TARGET TABLE>",
+        "cdfEnabled": true,
+        "selectExp": [
+            "<FIELD NAME>",
+            "<FIELD NAME 2>",
+            "<FIELD NAME 3>"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "<TARGET TABLE>",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "<TARGET TABLE>_schema.json"
+    },
+    "dataQualityExpectationsEnabled": false,
+    "quarantineMode": "<off/flag/table>"
+}

@@ -1,0 +1,79 @@
+{
+    "dataFlowId": "multi_source_streaming_decomp_staging",
+    "dataFlowGroup": "multi_source_streaming",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_ms_decomp_merge",
+        "schemaPath": "customer.json",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "LOAD_TIMESTAMP",
+        "except_column_list": ["LOAD_TIMESTAMP"],
+        "ignore_null_updates": true
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "multi_source_streaming_decomp_staging_1",
+            "stagingTables": {
+                "customer_ms_decomp_appnd": {
+                    "type": "ST"
+                }
+            },
+            "flows": {
+                "f_customer": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "customer_ms_decomp_appnd",
+                        "sourceView": "v_customer"
+                    },
+                    "views": {
+                        "v_customer": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer",
+                                "cdfEnabled": true
+                            }
+                        }
+                    }
+                },
+                "f_customer_address": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "customer_ms_decomp_appnd",
+                        "sourceView": "v_customer_address"
+                    },
+                    "views": {
+                        "v_customer_address": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "customer_address",
+                                "cdfEnabled": true,
+                                "whereClause": ["STATE is not NULL"]
+                            }
+                        }
+                    }
+                },
+                "f_merge": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "customer_ms_decomp_merge",
+                        "sourceView": "customer_ms_decomp_appnd"
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "dataFlowId": "sink_delta_path_table",
+    "dataFlowGroup": "feature_samples_general_DISABLED",
+    "dataFlowType": "standard",
+    "sourceSystem": "test_system",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_delta_sink_path_table",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta_sink",
+    "targetDetails": {
+        "name": "sink_delta_path_table",
+        "sinkOptions": {
+            "path": "{staging_volume}/feature_sink_delta_path_table"
+        }
+    }
+}

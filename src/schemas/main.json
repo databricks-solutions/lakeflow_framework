@@ -1,0 +1,40 @@
+{
+    "title": "Main DataFlowSpec",
+    "type": "object",
+    "properties": {
+        "dataFlowId": {"type": "string"},
+        "dataFlowGroup": {"type": "string"},
+        "dataFlowType": {"type": "string", "enum": ["flow", "standard", "materialized_view"]},
+        "dataFlowVersion": {"type": "string"},
+        "tags": {"type": "object", "additionalProperties": true},
+        "features": {
+            "type": "object",
+            "properties": {
+                "operationalMetadataEnabled": {"type": "boolean"}
+            }
+        }
+    },
+    "if": {
+        "properties": {
+            "dataFlowType": { "const": "standard" }
+        }
+    },
+    "then": { "$ref": "./spec_standard.json#/$defs/standardSpec" },
+    "else": {
+        "if": {
+            "properties": {
+                "dataFlowType": { "const": "flow" }
+            }
+        },
+        "then": { "$ref": "./spec_flows.json#/$defs/flowsSpec" },
+        "else": { 
+            "if": {
+                "properties": {
+                    "dataFlowType": { "const": "materialized_view" }
+                }
+            },
+            "then": { "$ref": "./spec_materialized_views.json#/$defs/materializedViewsSpec" }
+        }
+    },
+    "required": ["dataFlowId", "dataFlowGroup", "dataFlowType"]
+}

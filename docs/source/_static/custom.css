@@ -1,0 +1,130 @@
+.rst-content li li {
+    padding-top: 0em;
+    padding-bottom: 0.5em;
+    margin-top: 0em;
+}
+
+.rst-content li p{
+    padding-top: 0em;
+    padding-bottom: 0em;
+    margin-top: -0.5em;
+}
+.rst-content li {
+    padding-top: 0.0em;
+    padding-bottom: 0.2em;
+}
+
+/* Wrap text and prevent horizontal scrolling in tables */
+.rst-content table.docutils td {
+    white-space: normal;
+    table-layout: fixed;
+    vertical-align: top;
+}
+
+.rst-content table.docutils tr.highlight-row td,
+.highlight-cell {
+    background-color: green !important;
+    color: white !important;
+}
+
+/* Adjust width of main content column */
+.wy-nav-content {
+    max-width: 1000px; 
+}
+
+.last-updated {
+    font-style: italic;
+    color: #888;
+    font-size: 0.9em;
+}
+
+/* markdown styles for raw html */
+.highlight-row {
+    background-color: green !important;
+    color: white !important;
+}
+
+/* Custom styling for sphinx-tabs */
+.sphinx-tabs {
+    margin-bottom: 1rem;
+}
+
+.sphinx-tabs-tab {
+    background-color: #f3f6f6;
+    color: #404040;
+    padding: 0.5rem 1rem;
+    border: 1px solid #e1e4e5;
+    border-bottom: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.sphinx-tabs-tab[aria-selected="true"] {
+    background-color: #fff;
+    color: #2980b9;
+    border-bottom: 2px solid #2980b9;
+}
+
+.sphinx-tabs-panel {
+    background-color: #f8f8f8 !important;
+    border: 1px solid #e1e4e5;
+    border-top: none;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+/* Remove borders from code blocks inside tabs */
+.sphinx-tabs-panel .highlight {
+    margin: 0;
+    margin-bottom: 0;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.sphinx-tabs-panel pre {
+    margin: 0;
+    margin-bottom: 0;
+    border-radius: 0;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove box shadow from code blocks inside tabs */
+.sphinx-tabs-panel .highlight-default {
+    border: none !important;
+}
+
+/* Target all highlight classes */
+.sphinx-tabs-panel div[class^="highlight-"] {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Target code and pre elements */
+.sphinx-tabs-panel code,
+.sphinx-tabs-panel pre code {
+    border: none !important;
+}
+
+/* Remove border from literal blocks */
+.sphinx-tabs-panel .literal-block-wrapper {
+    border: none !important;
+}
+
+.sphinx-tabs-panel .code-block-caption {
+    border: none !important;
+}
+
+/* Remove padding from the last child in tab panel */
+.sphinx-tabs-panel > :last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.sphinx-tabs-panel .highlight:last-child {
+    margin-bottom: 0;
+}
+
+.sphinx-tabs-panel .highlight pre {
+    padding-bottom: 12px;
+}

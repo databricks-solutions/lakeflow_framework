@@ -1,5 +1,10 @@
-*conf*.json
+.databricks/
+build/
+dist/
+__pycache__/
+*.egg-info
+.venv/
+scratch/**
+!scratch/README.md
 .DS_Store
-__pycache__
-.idea/
-.env
+**/.DS_Store

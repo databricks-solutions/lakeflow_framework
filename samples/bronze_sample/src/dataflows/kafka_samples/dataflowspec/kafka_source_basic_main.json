@@ -1,0 +1,26 @@
+{
+    "dataFlowId": "kafka_source_basic",
+    "dataFlowGroup": "kafka_samples",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "kafka",
+    "sourceViewName": "v_topic_1",
+    "sourceDetails": {
+        "readerOptions": {
+            "kafka.bootstrap.servers": "${secret.kafka_source_bootstrap_servers}",
+            "kafka.security.protocol": "SSL",
+            "subscribe": "{kafka_source_topic}",
+            "startingOffsets": "earliest"
+        }
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "topic_1_staging",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "dataQualityExpectationsEnabled": false,
+    "quarantineMode": "off"
+}

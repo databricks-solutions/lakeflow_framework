@@ -1,0 +1,16 @@
+{
+    "pipeline_bundle_spec_format": {
+        "format": "json",
+        "allow_override": true
+    },
+    "spark_config": {
+        "spark.databricks.sql.streamingTable.cdf.applyChanges.returnPhysicalCdf": true,
+        "pipelines.streamingFlowReadOptionsEnabled": true,
+        "pipelines.externalSink.enabled": true
+    },
+    "mandatory_table_properties": {
+        "delta.logRetentionDuration": "interval 45 days",
+        "delta.deletedFileRetentionDuration": "interval 45 days",
+        "delta.enableRowTracking": "true"
+    }
+}

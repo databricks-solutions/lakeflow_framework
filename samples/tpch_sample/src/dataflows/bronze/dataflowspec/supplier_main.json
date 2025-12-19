@@ -1,0 +1,37 @@
+{
+    "dataFlowId": "supplier_bronze",
+    "dataFlowGroup": "tpch_bronze",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_supplier",
+    "sourceDetails": {
+        "path": "{staging_source_root}/supplier/*.csv",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true"
+        },
+        "schemaPath": "source/supplier_schema.json",
+        "selectExp": [
+            "supplier_id",
+            "name",
+            "load_timestamp"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "supplier",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/supplier_schema.json"
+    },
+    "dataQualityExpectationsEnabled": true,
+    "dataQualityExpectationsPath": "supplier_dqe.json",
+    "quarantineMode": "table",
+    "quarantineTargetDetails": {
+        "targetFormat": "delta",
+        "table": "supplier_quarantine"
+    }
+}

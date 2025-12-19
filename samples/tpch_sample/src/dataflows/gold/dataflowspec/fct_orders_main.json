@@ -1,0 +1,56 @@
+{
+    "dataFlowId": "fct_orders_gold",
+    "dataFlowGroup": "tpch_gold",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "fct_orders",
+        "schemaPath": "./fct_orders_schema.json",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "order_key"
+            , "line_number"
+        ],
+        "scd_type": "1",
+        "sequence_by": "__START_AT",
+        "except_column_list": ["__START_AT"],
+        "ignore_null_updates": false
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "fct_order_1",
+            "flows": {
+                "f_orders": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "fct_orders",
+                        "sourceView": "v_orders_tfm"
+                    },
+                    "views": {
+                        "v_lineitem_cdf_feed": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "lineitem",
+                                "cdfEnabled": true
+                            }
+                        },
+                        "v_orders_tfm": {
+                            "mode": "stream",
+                            "sourceType": "sql",
+                            "sourceDetails": {
+                                "sqlPath": "fct_orders.sql"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

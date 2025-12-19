@@ -1,0 +1,68 @@
+{
+    "title": "Source DataflowSpec Definitions",
+    "flowType": {
+        "oneOf": [
+            {
+                "properties": {
+                    "flowType": { "const": "append_sql" },
+                    "flowDetails": {"$ref": "#/flow/appendSqlFlowDetails"}
+                }
+            },
+            {
+                "properties": {
+                    "flowType": { "const": "append_view" },
+                    "flowDetails": {"$ref": "#/flow/appendViewFlowDetails"}
+                }
+            },
+            {
+                "properties": {
+                    "flowType": { "const": "merge" },
+                    "flowDetails": {"$ref": "#/flow/mergeFlowDetails"}
+                }
+            }
+        ]
+    },
+    "flow": {
+        "appendSqlFlowDetails": {
+            "oneOf": [
+                {
+                    "properties": {
+                        "targetTable": {"type": "string"},
+                        "sqlPath": {"type": "string"},
+                        "once": {"type": "boolean"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["targetTable", "sqlPath"]
+                },
+                {
+                    "properties": {
+                        "targetTable": {"type": "string"},
+                        "sqlStatement": {"type": "string"},
+                        "once": {"type": "boolean"}
+                    },
+                    "additionalProperties": false,
+                    "required": ["targetTable", "sqlStatement"]
+                }
+            ]
+        },
+        "appendViewFlowDetails": {
+            "properties": {
+                "targetTable": {"type": "string"},
+                "sourceView": {"type": "string"},
+                "column_prefix": {"type": "string"},
+                "column_prefix_exceptions": {"type": "array"},
+                "once": {"type": "boolean"}
+            },
+            "additionalProperties": false,
+            "required": ["targetTable", "sourceView"]
+        },        
+        "mergeFlowDetails": {
+            "properties": {
+                "targetTable": {"type": "string"},
+                "sourceView": {"type": "string"}
+            },
+            "additionalProperties": false,
+            "required": ["targetTable", "sourceView"]
+        }
+    }
+}

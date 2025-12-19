@@ -1,0 +1,37 @@
+{
+    "dataFlowId": "table_migration_append_only",
+    "dataFlowGroup": "feature_samples_table_migration",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_feature_tm_customer_scd0",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer",
+        "cdfEnabled": true,
+        "selectExp": [
+            "CUSTOMER_ID",
+            "FIRST_NAME",
+            "LAST_NAME",
+            "EMAIL",
+            "LOAD_TIMESTAMP"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_migrated_table_append_only",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "tableMigrationDetails": {
+        "catalogType": "uc",
+        "enabled": true,
+        "autoStartingVersionsEnabled": true,
+        "sourceDetails": {
+            "database": "{bronze_schema}",
+            "table": "table_to_migrate_scd0"
+        }
+    }
+}

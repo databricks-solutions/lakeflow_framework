@@ -1,0 +1,20 @@
+resources:
+  pipelines:
+    lakeflow_samples_bronze_kafka_samples_pipeline:
+      name: Lakeflow Framework - Bronze - Kafka Samples Pipeline (${var.logical_env})
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      channel: PREVIEW
+      serverless: true
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        bundle.target: ${bundle.target}
+        logicalEnv: ${var.logical_env}
+        pipeline.dataFlowGroupFilter: kafka_samples
+      root_path: ${workspace.file_path}/src/dataflows/kafka_samples

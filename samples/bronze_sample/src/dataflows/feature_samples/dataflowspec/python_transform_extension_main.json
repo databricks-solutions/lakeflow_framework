@@ -1,0 +1,26 @@
+{
+    "dataFlowId": "feature_python_extension_transform",
+    "dataFlowGroup": "feature_samples_python",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_feature_python_extension_transform",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer",
+        "cdfEnabled": true,
+        "pythonTransform": {
+            "module": "transforms.customer_aggregation"
+        }
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_python_extension_transform",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/feature_python_function_transform_schema.json"
+    }
+}
+

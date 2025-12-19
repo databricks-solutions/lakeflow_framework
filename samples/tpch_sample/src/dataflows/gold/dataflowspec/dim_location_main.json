@@ -1,0 +1,54 @@
+{
+    "dataFlowId": "dim_location_gold",
+    "dataFlowGroup": "tpch_gold",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "dim_location",
+        "schemaPath": "./dim_location_schema.json",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "nation_key"
+        ],
+        "scd_type": "1",
+        "sequence_by": "meta_load_details.record_update_timestamp",
+        "ignore_null_updates": false
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "dim_location",
+            "flows": {
+                "f_location": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "dim_location",
+                        "sourceView": "v_location_tfm"
+                    },
+                    "views": {
+                        "v_nation_cdf_feed": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "nation",
+                                "cdfEnabled": true
+                            }
+                        },
+                        "v_location_tfm": {
+                            "mode": "stream",
+                            "sourceType": "sql",
+                            "sourceDetails": {
+                                "sqlPath": "dim_location.sql"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

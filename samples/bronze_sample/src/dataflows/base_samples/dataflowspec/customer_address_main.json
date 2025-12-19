@@ -1,0 +1,28 @@
+{
+    "dataFlowId": "base_customer_address",
+    "dataFlowGroup": "base_samples",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_address",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer_address",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "customer_address",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "customer_address_schema.json"
+    },
+    "dataQualityExpectationsEnabled": true,
+    "dataQualityExpectationsPath": "./customer_address_dqe.json",
+    "quarantineMode": "table",
+    "quarantineTargetDetails": {
+        "targetFormat": "delta"
+    }
+}

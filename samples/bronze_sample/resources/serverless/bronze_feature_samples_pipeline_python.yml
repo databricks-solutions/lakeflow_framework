@@ -1,0 +1,21 @@
+resources:
+  pipelines:
+    lakeflow_samples_feature_samples_pipeline_python:
+      name: Lakeflow Framework - Feature Samples - Python Pipeline (${var.logical_env})
+      channel: CURRENT
+      serverless: true
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
+        bundle.target: ${bundle.target}
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        pipeline.layer: ${var.layer}
+        logicalEnv: ${var.logical_env}
+        pipeline.dataFlowGroupFilter: feature_samples_python
+      root_path: ${workspace.file_path}/src/dataflows/feature_samples

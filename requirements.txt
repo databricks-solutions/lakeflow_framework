@@ -1,0 +1,5 @@
+## requirements.txt: dependencies for runtime.
+## Core dependencies
+jsonschema
+
+## Add any additional dependencies needed for custom functionality below here

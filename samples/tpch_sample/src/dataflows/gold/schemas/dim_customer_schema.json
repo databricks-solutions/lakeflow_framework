@@ -1,0 +1,41 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "customer_key",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "customer_name",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "customer_address",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "customer_phone",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "nation_key",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "market_segment",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        }
+    ]
+}

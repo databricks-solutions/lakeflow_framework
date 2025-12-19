@@ -1,0 +1,36 @@
+{
+    "dataFlowId": "feature_periodic_snapshot_scd1",
+    "dataFlowGroup": "feature_samples_snapshots",
+    "dataFlowType": "standard",
+    "sourceSystem": "test",
+    "sourceType": "delta",
+    "sourceViewName": "v_periodic_snapshot_customer_scd1",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer_snapshot_source",
+        "cdfEnabled": false,
+        "selectExp": [
+            "CUSTOMER_ID",
+            "FIRST_NAME",
+            "LAST_NAME",
+            "EMAIL",
+            "DELETE_FLAG"
+        ]
+    },
+    "mode": "batch",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "feature_periodic_snapshot_scd1",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/feature_periodic_snapshot_customer_schema.json"
+    },
+    "cdcSnapshotSettings": {
+        "snapshotType": "periodic",
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "1"
+    }
+}

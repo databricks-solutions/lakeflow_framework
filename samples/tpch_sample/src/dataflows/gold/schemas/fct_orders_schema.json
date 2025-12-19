@@ -1,0 +1,119 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "order_key",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "line_number",
+            "type": "integer",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "customer_key",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "part_key",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "supplier_key",
+            "type": "long",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "order_date",
+            "type": "date",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "order_status",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "quantity",
+            "type": "decimal(18,2)",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "extended_price",
+            "type": "decimal(18,2)",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "discount",
+            "type": "decimal(18,2)",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "tax",
+            "type": "decimal(18,2)",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "return_flag",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "line_status",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "ship_date",
+            "type": "date",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "commit_date",
+            "type": "date",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "receipt_date",
+            "type": "date",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "ship_instruct",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "ship_mode",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "comment",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        }
+    ]
+}

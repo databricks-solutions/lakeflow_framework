@@ -1,0 +1,27 @@
+resources:
+  jobs:
+    lakeflow_samples_tpch_sample_run_1_full_refresh_job:  
+      name: Lakeflow Framework - TPCH Sample - Run 1 - Full Refresh (${var.logical_env})
+      tasks:
+
+        # Bronze pipeline
+        - task_key: lakeflow_samples_tpch_bronze_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_bronze_pipeline.id}
+            full_refresh: true
+
+        # Silver pipeline
+        - task_key: lakeflow_samples_tpch_silver_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_silver_pipeline.id}
+            full_refresh: true
+          depends_on:
+              - task_key: lakeflow_samples_tpch_bronze_pipeline
+
+        # Gold pipeline
+        - task_key: lakeflow_samples_tpch_gold_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_gold_pipeline.id}
+            full_refresh: true
+          depends_on:
+              - task_key: lakeflow_samples_tpch_silver_pipeline

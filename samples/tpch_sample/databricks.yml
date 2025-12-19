@@ -1,0 +1,48 @@
+# This is a Databricks asset bundle definition for bronze_sample.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: tpch_sample
+
+include:
+  - scratch/resources/*.yml
+
+variables:
+  catalog:
+    description: The target UC catalog
+  framework_source_path:
+    description: The full workspace path to the framwework src folder
+  schema_namespace:
+    description: The prefix for all schemas which will end with one of (_bronze, _silver, _gold, or _dpm)
+    default: "lakeflow_samples" 
+  workspace_host:
+    description: workspace url used for API calls from Framework (usually same as deployment URL) e.g. https://e2-demo-field-eng.cloud.databricks.com/
+  layer:
+    description: The target layer
+    default: bronze
+  logical_env:
+    description: The logical environment
+    default: ""
+  pipeline_cluster_config:
+    description: Basic cluster config, add node types as necessary
+    default:
+      label: default
+      autoscale:
+        min_workers: 1
+        max_workers: 5
+        mode: ENHANCED
+  job_cluster_config:
+    description: Complete cluster configuration for compute clusters
+    default:
+      spark_version: "16.4.x-scala2.12"
+      node_type_id: "i3.xlarge"
+      num_workers: 1
+      autoscale:
+        min_workers: 1
+        max_workers: 5
+        mode: ENHANCED
+
+targets:
+  # The 'dev' target, for development purposes. This target is the default.
+  dev:
+    mode: development
+    default: true
