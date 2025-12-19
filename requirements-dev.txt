@@ -13,13 +13,4 @@ setuptools
 wheel
 
 # The following packages are only required for building documentation and are not required at runtime
-myst-parser
-nbsphinx
-sphinx
-sphinx-toolbox
-sphinx-autoapi
-sphinx-markdown-builder
-sphinx-copybutton
-sphinx_rtd_theme
-sphinx-design
-sphinxcontrib-spelling
+-r requirements-docs.txt
