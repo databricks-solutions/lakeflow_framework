@@ -115,6 +115,26 @@ resources:
           depends_on:
             - task_key: silver_base_samples_pipeline
 
+        # Validation
+        - task_key: validate_run_1
+          job_cluster_key: ${var.job_cluster_name}
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/validate_run_1
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+          depends_on:
+            - task_key: bronze_base_pipeline
+            - task_key: feature_samples_pipeline_general
+            - task_key: feature_samples_pipeline_data_quality
+            - task_key: feature_samples_pipeline_snapshots
+            - task_key: yaml_sample_pipeline
+            - task_key: silver_base_samples_pipeline
+            - task_key: silver_multi_source_streaming_basic_pipeline
+            - task_key: silver_multi_source_streaming_decomp_final_pipeline
+            - task_key: gold_stream_static_pipeline
+
       queue:
         enabled: true
   
