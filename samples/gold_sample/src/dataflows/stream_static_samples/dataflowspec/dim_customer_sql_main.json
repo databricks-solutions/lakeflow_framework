@@ -14,8 +14,8 @@
             "CUSTOMER_ID"
         ],
         "scd_type": "2",
-        "sequence_by": "__START_AT",
-        "except_column_list": ["__START_AT"],
+        "sequence_by": "SEQUENCE_BY_COLUMN",
+        "except_column_list": ["SEQUENCE_BY_COLUMN"],
         "ignore_null_updates": true,
         "apply_as_deletes": "DELETE_FLAG = 1"
     },
