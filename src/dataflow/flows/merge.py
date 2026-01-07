@@ -1,5 +1,5 @@
 from ..cdc import CDCFlow
-from ..cdc_snaphot import CDCSnapshotFlow
+from ..cdc_snapshot import CDCSnapshotFlow
 from ..dataflow_config import DataFlowConfig
 
 from .base import BaseFlowWithViews, FlowConfig
