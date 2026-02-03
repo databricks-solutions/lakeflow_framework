@@ -334,4 +334,4 @@ class BaseSink(ABC):
         logger = self.logger
         logger.info(f"Creating Sink: {self.sink_name}, Type: {self.sink_type}")
         logger.info(f"Sink Options: {self.sink_options}")
-        dp.create_sink(self.sink_name, self.sink_type, self.sink_options)
+        dp.create_sink(f"`{self.sink_name}`", self.sink_type, self.sink_options)
