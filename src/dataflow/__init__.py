@@ -3,7 +3,7 @@ from .enums import Mode, SinkType, QuarantineMode, SourceType, TargetType
 
 # Import core classes
 from .cdc import CDCFlow, CDCSettings
-from .cdc_snaphot import CDCSnapshotFlow, CDCSnapshotSettings, CDCSnapshotTypes, CDCSnapshotVersionTypes
+from .cdc_snapshot import CDCSnapshotFlow, CDCSnapshotSettings, CDCSnapshotTypes, CDCSnapshotVersionTypes
 from .dataflow_spec import DataflowSpec
 from .dataflow import DataFlow
 from .expectations import DataQualityExpectations, ExpectationType

@@ -2,11 +2,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from dataflow import targets
 import pipeline_config
 
 from ..cdc import CDCSettings
-from ..cdc_snaphot import CDCSnapshotSettings
+from ..cdc_snapshot import CDCSnapshotSettings
 from ..dataflow_config import DataFlowConfig
 from ..view import View
 

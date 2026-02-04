@@ -16,7 +16,7 @@ The Framework is designed for simplicity, performance and alignment to the Datab
 
 ## Documentation
 
-Please refer to the [documentation](./docs/_build/html/index.html) for further details and an explanation of the samples.
+Please refer to the [documentation](https://databricks-solutions.github.io/lakeflow_framework/) for further details and an explanation of the samples.
 The documentation needs to be deployed as HTML or Markdown within your org before it can be used.
 
 ## How to get help

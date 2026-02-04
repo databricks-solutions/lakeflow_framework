@@ -145,10 +145,11 @@ class DLTPipelineBuilder:
         # This only gets populated post initiliazation. Currently retrieved in operational_metadata.py
         @dp.on_event_hook
         def update_id_hook(event):
-            event_type = event.get("event_type")
-            if event_type == "create_update":
-                self.spark.conf.set("pipeline.pipeline_update_id", f'{event.get("origin", {}).get("update_id", "")}')
-
+            if self.spark.conf.get("pipeline.pipeline_update_id", "") == "":
+                update_id = event.get("origin", {}).get("update_id", "")
+                if update_id:
+                    self.spark.conf.set("pipeline.pipeline_update_id", update_id)
+        
         # Load dataflow filters
         self.logger.info("Loading Dataflow Filters...")
         self.dataflow_spec_filters = {

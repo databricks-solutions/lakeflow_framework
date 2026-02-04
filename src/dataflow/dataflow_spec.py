@@ -4,7 +4,7 @@ from typing import Dict, List, Any
 import utility
 
 from dataflow.cdc import CDCSettings
-from dataflow.cdc_snaphot import CDCSnapshotSettings
+from dataflow.cdc_snapshot import CDCSnapshotSettings
 from dataflow.enums import SourceType
 from dataflow.expectations import DataQualityExpectations
 from dataflow.features import Features

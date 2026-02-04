@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Dict
 
 from ..cdc import CDCSettings
-from ..cdc_snaphot import CDCSnapshotSettings
+from ..cdc_snapshot import CDCSnapshotSettings
 
 from .delta_streaming_table import TargetDeltaStreamingTable
 
