@@ -5,7 +5,7 @@ import pyspark.sql.types as T
 from constants import SystemColumns
 import pipeline_config
 
-from .cdc_snaphot import CDCSnapshotFlow
+from .cdc_snapshot import CDCSnapshotFlow
 from .dataflow_config import DataFlowConfig
 from .dataflow_spec import DataflowSpec
 from .enums import QuarantineMode, SinkType, TargetType, TableType
