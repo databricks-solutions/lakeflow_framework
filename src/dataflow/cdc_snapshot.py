@@ -1,6 +1,7 @@
 import bisect
 from dataclasses import dataclass, field
 from datetime import datetime
+import glob
 import re
 from typing import Dict, List, Optional, Union
 
@@ -423,7 +424,7 @@ class CDCSnapshotFlow:
 
     def _extract_version_from_filename(self, filename: str, file_pattern: str) -> Optional[VersionInfo]:
         """Extract version from filename using pattern"""
-        regex_pattern = re.escape(file_pattern).replace(r'\{version\}', r'(.+)')
+        regex_pattern = re.escape(file_pattern).replace(r'\{version\}', r'(.+?)').replace(r'\{fragment\}', r'.*?')
         match = re.match(regex_pattern, filename)
         if not match or not match.group(1):
             self.logger.debug(f"CDC Snapshot: No version string match found for filename: {filename}")
@@ -481,18 +482,32 @@ class CDCSnapshotFlow:
 
         if self.sourceType == CDCSnapshotSourceTypes.FILE:
             file_path = self.source.path.replace("{version}", version_info.formatted_value)
-            self.logger.debug(f"CDC Snapshot: Reading file: {file_path}")
+            
+            if '{fragment}' in file_path:
+                search_pattern = file_path.replace('{fragment}', "*")
+                files = glob.glob(search_pattern)
+            else:
+                files = [file_path]
+            
+            df = None
+            for file in files:
+                self.logger.debug(f"CDC Snapshot: Reading file: {file_path}")
 
-            schema_path = self.source.schemaPath
-            select_exp = self.source.selectExp
+                schema_path = self.source.schemaPath
+                select_exp = self.source.selectExp
 
-            df = SourceBatchFiles(
-                path=file_path,
-                format=self.source.format,
-                readerOptions=self.source.readerOptions,
-                schemaPath=schema_path,
-                selectExp=select_exp
-            ).read_source(read_config)
+                file_df = SourceBatchFiles(
+                    path=file,
+                    format=self.source.format,
+                    readerOptions=self.source.readerOptions,
+                    schemaPath=schema_path,
+                    selectExp=select_exp
+                ).read_source(read_config)
+
+                if df:
+                    df = df.union(file_df)
+                else:
+                    df = file_df
 
             # Apply filter if specified
             if self.source.filter:
