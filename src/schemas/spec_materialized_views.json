@@ -34,6 +34,7 @@
                                     "path": {"type": "string"},
                                     "partitionColumns": {"type": "array", "items": {"type": "string"}},
                                     "clusterByColumns": {"type": "array", "items": {"type": "string"}},
+                                    "clusterByAuto": {"type": "boolean"},
                                     "comment": {"type": "string"},
                                     "sparkConf": {"type": "object"},
                                     "private": {"type": "boolean"},
