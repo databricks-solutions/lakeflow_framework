@@ -259,6 +259,9 @@ These properties define the materialized view specific configuration:
    * - **clusterByColumns**
      - ``array``
      - The suggested columns to cluster the materialized view by.
+   * - **clusterByAuto**
+     - ``boolean``
+     - When true, automatic liquid clustering allows Databricks to intelligently choose clustering keys to optimize query performance.
    * - **comment**
      - ``string``
      - A description for the materialized view.
