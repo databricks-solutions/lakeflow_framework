@@ -19,7 +19,7 @@
                                 "type": "object",
                                 "properties": {
                                     "sourceViewName": {"type": "string"},
-                                    "sourceType": {"type": "string", "enum": ["delta", "python", "sql"]},
+                                    "sourceType": {"type": "string", "enum": ["batchFiles", "delta", "python", "sql"]},
                                     "sourceDetails": {"type": "object"}
                                 }
                             },
