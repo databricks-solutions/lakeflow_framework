@@ -215,7 +215,7 @@ These properties define the source of the data:
    * - **sourceType**
      - ``string``
      - The type of source.  
-       Supported: ``cloudFiles``, ``delta``, ``sql``, ``python``
+       Supported: ``batchFiles``, ``delta``, ``sql``, ``python``
    * - **sourceViewName**
      - ``string``
      - The name to assign the source view.  
