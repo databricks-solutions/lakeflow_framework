@@ -1,7 +1,8 @@
 import bisect
 from dataclasses import dataclass, field
 from datetime import datetime
-import glob
+import fnmatch
+import os
 import re
 from typing import Dict, List, Optional, Union
 
@@ -485,7 +486,10 @@ class CDCSnapshotFlow:
             
             if '{fragment}' in file_path:
                 search_pattern = file_path.replace('{fragment}', "*")
-                files = glob.glob(search_pattern)
+                directory = os.path.dirname(search_pattern)
+                filename_pattern = os.path.basename(search_pattern)
+                dbutils = pipeline_config.get_dbutils()
+                files = [f.path for f in dbutils.fs.ls(directory) if fnmatch.fnmatch(f.name, filename_pattern)]
             else:
                 files = [file_path]
             
