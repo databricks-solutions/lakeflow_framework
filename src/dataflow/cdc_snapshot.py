@@ -7,7 +7,6 @@ from typing import Dict, List, Literal, Optional, Union
 from pyspark import pipelines as dp
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
-from pyspark.sql.window import Window
 import pyspark.sql.types as T
 
 import pipeline_config
@@ -44,7 +43,7 @@ class DeduplicateMode:
     """Deduplication strategy for CDC snapshot source data.
     - off: no deduplication (default).
     - full_row: dropDuplicates() on full row; deterministic.
-    - keys_only: first row per key (window + row_number); deterministic for batch, non-deterministic for streaming."""
+    - keys_only: first row per key via dropDuplicates(keys); deterministic for batch, non-deterministic for streaming."""
     OFF = "off"
     FULL_ROW = "full_row"
     KEYS_ONLY = "keys_only"
@@ -224,14 +223,12 @@ class CDCSnapshotFlow:
         self.logger.warning(
             "CDC Snapshot: deduplicateMode=keys_only is non-deterministic as it peserves the first row per key."
         )
-        window_spec = Window.partitionBy(*self.keys).orderBy(F.lit(1))
-        df_with_row_num = df.withColumn("__row_num", F.row_number().over(window_spec))
-        df_deduped = df_with_row_num.filter(F.col("__row_num") == 1).drop("__row_num")
-        return df_deduped
+        return df.dropDuplicates(self.keys)
 
     def _deduplicate_full_row(self, df: DataFrame) -> DataFrame:
-        """Deduplicate by full row using dropDuplicates(); deterministic."""
-        return df.dropDuplicates()
+        """Deduplicate by full row besides metadata column if present."""
+        columns_to_deduplicate_on = [col for col in df.columns if col not in ["_metadata"]]
+        return df.dropDuplicates(columns_to_deduplicate_on)
 
     def create(
         self,
