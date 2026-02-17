@@ -220,18 +220,10 @@ class CDCSnapshotFlow:
         return self._version_values
 
     def _deduplicate_by_keys(self, df: DataFrame) -> DataFrame:
-        """Deduplicate by configured keys, retaining first row per key. Deterministic for batch, non-deterministic for streaming."""
+        """Deduplicate by configured keys, retaining first row per key. WARNING: This is non-deterministic."""
         self.logger.warning(
-            "CDC Snapshot: deduplicateMode=keys_only is deterministic for batch but non-deterministic for streaming."
+            "CDC Snapshot: deduplicateMode=keys_only is non-deterministic as it peserves the first row per key."
         )
-        try:
-            spark = pipeline_config.get_spark()
-            spark.sparkContext.setLocalProperty(
-                "lakeflow.cdc_snapshot.deduplicate_warning",
-                "keys_only deduplication is non-deterministic for streaming; deterministic for batch",
-            )
-        except Exception:
-            pass
         window_spec = Window.partitionBy(*self.keys).orderBy(F.lit(1))
         df_with_row_num = df.withColumn("__row_num", F.row_number().over(window_spec))
         df_deduped = df_with_row_num.filter(F.col("__row_num") == 1).drop("__row_num")
