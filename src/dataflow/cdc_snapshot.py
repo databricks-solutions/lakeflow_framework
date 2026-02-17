@@ -2,10 +2,12 @@ import bisect
 from dataclasses import dataclass, field
 from datetime import datetime
 import re
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
 from pyspark import pipelines as dp
 from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 import pyspark.sql.types as T
 
 import pipeline_config
@@ -35,6 +37,17 @@ class CDCSnapshotVersionTypes:
     INTEGER = "integer"
     LONG = "long"
     TIMESTAMP = "timestamp"
+
+
+@dataclass(frozen=True)
+class DeduplicateMode:
+    """Deduplication strategy for CDC snapshot source data.
+    - off: no deduplication (default).
+    - full_row: dropDuplicates() on full row; deterministic.
+    - keys_only: first row per key (window + row_number); deterministic for batch, non-deterministic for streaming."""
+    OFF = "off"
+    FULL_ROW = "full_row"
+    KEYS_ONLY = "keys_only"
 
 
 @dataclass
@@ -93,6 +106,13 @@ class CDCSnapshotFileSource:
     schemaPath: Optional[str] = None
     selectExp: Optional[List[str]] = None
     recursiveFileLookup: bool = False
+    deduplicateMode: Optional[
+        Literal[
+            DeduplicateMode.OFF,
+            DeduplicateMode.FULL_ROW,
+            DeduplicateMode.KEYS_ONLY,
+        ]
+    ] = DeduplicateMode.OFF
 
 
 @dataclass
@@ -103,6 +123,13 @@ class CDCSnapshotTableSource:
     versionType: str
     startingVersion: Optional[Union[int, str]] = None
     selectExp: Optional[List[str]] = None
+    deduplicateMode: Optional[
+        Literal[
+            DeduplicateMode.OFF,
+            DeduplicateMode.FULL_ROW,
+            DeduplicateMode.KEYS_ONLY,
+        ]
+    ] = DeduplicateMode.OFF
 
 
 @dataclass
@@ -191,6 +218,28 @@ class CDCSnapshotFlow:
         if self._version_values is None:
             self._version_values = [v.raw_value for v in self.sorted_versions]
         return self._version_values
+
+    def _deduplicate_by_keys(self, df: DataFrame) -> DataFrame:
+        """Deduplicate by configured keys, retaining first row per key. Deterministic for batch, non-deterministic for streaming."""
+        self.logger.warning(
+            "CDC Snapshot: deduplicateMode=keys_only is deterministic for batch but non-deterministic for streaming."
+        )
+        try:
+            spark = pipeline_config.get_spark()
+            spark.sparkContext.setLocalProperty(
+                "lakeflow.cdc_snapshot.deduplicate_warning",
+                "keys_only deduplication is non-deterministic for streaming; deterministic for batch",
+            )
+        except Exception:
+            pass
+        window_spec = Window.partitionBy(*self.keys).orderBy(F.lit(1))
+        df_with_row_num = df.withColumn("__row_num", F.row_number().over(window_spec))
+        df_deduped = df_with_row_num.filter(F.col("__row_num") == 1).drop("__row_num")
+        return df_deduped
+
+    def _deduplicate_full_row(self, df: DataFrame) -> DataFrame:
+        """Deduplicate by full row using dropDuplicates(); deterministic."""
+        return df.dropDuplicates()
 
     def create(
         self,
@@ -516,5 +565,12 @@ class CDCSnapshotFlow:
                 whereClause=where_clause,
                 selectExp=select_exp
             ).read_source(read_config)
+        
+        if self.source.deduplicateMode == DeduplicateMode.KEYS_ONLY:
+            df = self._deduplicate_by_keys(df)
+            self.logger.debug("CDC Snapshot: Applied deduplication by keys")
+        elif self.source.deduplicateMode == DeduplicateMode.FULL_ROW:
+            df = self._deduplicate_full_row(df)
+            self.logger.debug("CDC Snapshot: Applied full-row deduplication")
 
         return df

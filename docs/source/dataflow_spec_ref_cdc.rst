@@ -87,6 +87,12 @@ The ``cdcSnapshotSettings`` object contains the following properties:
    * - **track_history_except_column_list**
      - ``list``
      - (*optional*) A subset of output columns to be excluded from history tracking in the target table. Use this to specify which columns should not be tracked. This cannot be used in conjunction with ``track_history_column_list``.
+   * - **deduplicateMode**
+     - ``string``
+     - (*optional*) How to deduplicate source snapshot data before CDC. Default: ``off`` (no deduplication). Use ``full_row`` to use PySpark ``dropDuplicates()`` on the full row (deterministic). Use ``keys_only`` to keep the first row per key: deterministic for batch, non-deterministic for streaming; a warning is logged when used.
+
+  .. warning::
+     The ``keys_only`` option is **non-deterministic** (e.g. in streaming). Use it with caution and only when you accept that which duplicate row is kept may vary between runs.
 
 .. _cdc-apply-changes-from-snapshot-source:
 

@@ -23,7 +23,8 @@
             "path": "{sample_file_location}/snapshot_customer_partitioned_parquet/{version}/customer.parquet",
             "versionType": "timestamp",
             "datetimeFormat": "YEAR=%Y/MONTH=%m/DAY=%d",
-            "recursiveFileLookup": true
+            "recursiveFileLookup": true,
+            "deduplicateMode": "keys_only"
         },
         "track_history_except_column_list":[
             "LOAD_TIMESTAMP"
