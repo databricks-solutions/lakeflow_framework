@@ -168,7 +168,7 @@ class TemplateProcessor:
         )
         template_path = self._resolve_template_path(base_path, spec_file_format)
         if not template_path:
-            error_msg = f"Template not found: {base_path} for format: {self.spec_file_format.upper()}"
+            error_msg = f"Template not found: {base_path} for format: {spec_file_format.upper()}"
             self.logger.error(error_msg)
             raise FileNotFoundError(error_msg)
         
