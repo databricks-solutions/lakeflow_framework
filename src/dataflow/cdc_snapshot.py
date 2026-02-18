@@ -42,8 +42,8 @@ class CDCSnapshotVersionTypes:
 class DeduplicateMode:
     """Deduplication strategy for CDC snapshot source data.
     - off: no deduplication (default).
-    - full_row: dropDuplicates() on full row; deterministic.
-    - keys_only: first row per key via dropDuplicates(keys); deterministic for batch, non-deterministic for streaming."""
+    - full_row: deduplicate based on the full row using dropDuplicates(); deterministic as the full row is deduplicated.
+    - keys_only: deduplicate based on the keys using dropDuplicates(keys); non-deterministic as it preserves the first row per key(s) without ordering on any other columns."""
     OFF = "off"
     FULL_ROW = "full_row"
     KEYS_ONLY = "keys_only"
