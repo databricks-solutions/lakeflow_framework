@@ -87,7 +87,8 @@
                 "microSecondMaskLength": {"type": "integer", "minimum": 0, "maximum": 6},
                 "schemaPath": {"type": "string"},
                 "selectExp": {"type": "array", "items": {"type": "string"}},
-                "recursiveFileLookup": {"type": "boolean", "default": false}
+                "recursiveFileLookup": {"type": "boolean", "default": false},
+                "deduplicateMode": {"type": "string", "enum": ["off", "full_row", "keys_only"], "default": "off"}
             },
             "required": ["format", "path", "versionType"],
             "additionalProperties": false,
@@ -129,7 +130,8 @@
                 "versionColumn": {"type": "string"},
                 "versionType": {"type": "string", "enum": ["date", "timestamp", "integer", "long"]},
                 "startingVersion": {"type": ["string", "integer"]},
-                "selectExp": {"type": "array", "items": {"type": "string"}}
+                "selectExp": {"type": "array", "items": {"type": "string"}},
+                "deduplicateMode": {"type": "string", "enum": ["off", "full_row", "keys_only"], "default": "off"}
             },
             "required": ["table", "versionColumn", "versionType"],
             "additionalProperties": false

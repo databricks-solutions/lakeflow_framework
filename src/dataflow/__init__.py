@@ -3,7 +3,13 @@ from .enums import Mode, SinkType, QuarantineMode, SourceType, TargetType
 
 # Import core classes
 from .cdc import CDCFlow, CDCSettings
-from .cdc_snapshot import CDCSnapshotFlow, CDCSnapshotSettings, CDCSnapshotTypes, CDCSnapshotVersionTypes
+from .cdc_snapshot import (
+    CDCSnapshotFlow,
+    CDCSnapshotSettings,
+    CDCSnapshotTypes,
+    CDCSnapshotVersionTypes,
+    DeduplicateMode,
+)
 from .dataflow_spec import DataflowSpec
 from .dataflow import DataFlow
 from .expectations import DataQualityExpectations, ExpectationType
@@ -36,7 +42,7 @@ __all__ = (
         'DataFlow', 'DataflowSpec', 'FlowGroup', 'View', 'StagingTable',
 
         # Feature-specific classes
-        'CDCFlow', 'CDCSettings', 'CDCSnapshotFlow', 'CDCSnapshotSettings', 'CDCSnapshotTypes', 'CDCSnapshotVersionTypes',
+        'CDCFlow', 'CDCSettings', 'CDCSnapshotFlow', 'CDCSnapshotSettings', 'CDCSnapshotTypes', 'CDCSnapshotVersionTypes', 'DeduplicateMode',
         'DataQualityExpectations', 'ExpectationType',
         'TableMigrationDetails', 'TableMigrationManager',
         'QuarantineManager',
