@@ -1,59 +1,85 @@
 name: Version and Tag on Merge to Main
 
 on:
+  push:
+    branches:
+      - feature/auto-increment-version-and-tag-repo
   pull_request:
     branches:
       - main
     types:
       - closed
 
+permissions:
+  contents: write
+
 jobs:
   tag-version:
     if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
+    runs-on:
+      group: databricks-solutions-protected-runner-group
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # So tags are available
+          ref: main
+          fetch-depth: 0
 
-      - name: Get latest tag
-        id: get_tag
+      - name: Read current version
+        id: current
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "LAST_TAG=$LAST_TAG"
-          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+          VERSION=$(cat VERSION | tr -d '[:space:]')
+          VERSION=${VERSION#v}
+          IFS='.' read -r MAJOR MINOR FIX <<< "$VERSION"
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor=$MINOR" >> $GITHUB_OUTPUT
+          echo "fix=$FIX" >> $GITHUB_OUTPUT
+          echo "Current version: $MAJOR.$MINOR.$FIX"
 
-      - name: Compute next version
+      - name: Determine version bump from branch name
         id: bump
         run: |
-          OLD=${{ steps.get_tag.outputs.last_tag }}
-          VERS=${OLD#v}
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERS"
-          PATCH=$((PATCH + 1))
-          NEW="v$MAJOR.$MINOR.$PATCH"
-          echo "NEW_VERSION=$NEW"
-          echo "new_version=$NEW" >> $GITHUB_OUTPUT
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          BRANCH_LOWER=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]')
+          echo "Merged branch: $BRANCH (normalized: $BRANCH_LOWER)"
 
-      - name: Fail if version is not incremented
-        run: |
-          if [ "${{ steps.get_tag.outputs.last_tag }}" = "${{ steps.bump.outputs.new_version }}" ]; then
-            echo "❌ Version not incremented. Current tag (${{ steps.get_tag.outputs.last_tag }}) is the same as the new tag."
-            exit 1
+          MAJOR=${{ steps.current.outputs.major }}
+          MINOR=${{ steps.current.outputs.minor }}
+          FIX=${{ steps.current.outputs.fix }}
+
+          if [[ "$BRANCH_LOWER" == feature* ]]; then
+            MINOR=$((MINOR + 1))
+            FIX=0
+            echo "Feature branch — bumping minor, resetting fix to 0"
+          elif [[ "$BRANCH_LOWER" == fix* ]]; then
+            FIX=$((FIX + 1))
+            echo "Fix branch — bumping fix"
+          else
+            echo "::warning::Branch '$BRANCH' does not start with 'feature' or 'fix'. Skipping version bump."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
           fi
 
+          NEW_VERSION="$MAJOR.$MINOR.$FIX"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
       - name: Write VERSION file
+        if: steps.bump.outputs.skip != 'true'
         run: |
-          echo "${{ steps.bump.outputs.new_version }}" | sed 's/^v//' > VERSION
+          echo "v${{ steps.bump.outputs.new_version }}" > VERSION
           cat VERSION
 
-      - name: Tag and push
+      - name: Commit, tag, and push
+        if: steps.bump.outputs.skip != 'true'
         env:
-          TAG: ${{ steps.bump.outputs.new_version }}
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git tag $TAG
-          git push origin $TAG
+          git add VERSION
+          git commit -m "Bump version to $NEW_VERSION"
+          git tag "v$NEW_VERSION"
+          git push origin main --tags
