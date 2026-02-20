@@ -1,0 +1,76 @@
+name: Feature Branch - Deploy and Test Samples
+
+on:
+  push:
+    branches:
+      - feature/sample-validations
+  workflow_dispatch:
+    inputs:
+      logical_env:
+        description: 'Logical environment suffix (e.g. _hw)'
+        required: true
+        default: '_hw'
+        type: string
+      compute:
+        description: 'Compute type (0=Classic, 1=Serverless)'
+        required: true
+        default: '1'
+        type: choice
+        options:
+          - '0'
+          - '1'
+      catalog:
+        description: 'Unity Catalog name'
+        required: true
+        default: 'main'
+        type: string
+      schema_namespace:
+        description: 'Schema namespace'
+        required: true
+        default: 'lakeflow_samples'
+        type: string
+      num_runs:
+        description: 'Number of test runs (1-4)'
+        required: true
+        default: '4'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-and-test:
+    runs-on:
+      group: databricks-solutions-protected-runner-group
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Verify Databricks authentication
+        run: databricks auth env
+
+      - name: Deploy and Test Samples
+        working-directory: samples
+        run: |
+          chmod +x deploy_and_test.sh common.sh deploy.sh
+          ./deploy_and_test.sh \
+            -h "${{ secrets.DATABRICKS_HOST }}" \
+            -u "${{ secrets.DATABRICKS_USER }}" \
+            -l "${{ inputs.logical_env || '_hw' }}" \
+            -c "${{ inputs.compute || '1' }}" \
+            -p "DEFAULT" \
+            --catalog "${{ inputs.catalog || 'main' }}" \
+            --schema_namespace "${{ inputs.schema_namespace || 'lakeflow_samples' }}" \
+            --runs "${{ inputs.num_runs || '4' }}"
