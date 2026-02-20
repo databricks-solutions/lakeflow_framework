@@ -1,9 +1,6 @@
 name: Version and Tag on Merge to Main
 
 on:
-  push:
-    branches:
-      - feature/auto-increment-version-and-tag-repo
   pull_request:
     branches:
       - main
@@ -15,7 +12,7 @@ permissions:
 
 jobs:
   tag-version:
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on:
       group: databricks-solutions-protected-runner-group
 
@@ -23,7 +20,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          # ref: main
+          ref: main
           fetch-depth: 0
 
       - name: Read current version
