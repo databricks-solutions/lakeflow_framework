@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   tag-version:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     runs-on:
       group: databricks-solutions-protected-runner-group
 
@@ -23,7 +23,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          ref: main
+          # ref: main
           fetch-depth: 0
 
       - name: Read current version
@@ -40,7 +40,7 @@ jobs:
       - name: Determine version bump from branch name
         id: bump
         run: |
-          BRANCH="${{ github.event.pull_request.head.ref }}"
+          BRANCH="${{ github.event.pull_request.head.ref || github.ref_name }}"
           BRANCH_LOWER=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]')
           echo "Merged branch: $BRANCH (normalized: $BRANCH_LOWER)"
 
@@ -82,4 +82,4 @@ jobs:
           git add VERSION
           git commit -m "Bump version to $NEW_VERSION"
           git tag "v$NEW_VERSION"
-          git push origin main --tags
+          git push origin HEAD --tags
