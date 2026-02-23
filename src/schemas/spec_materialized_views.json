@@ -45,7 +45,15 @@
                             "dataQualityExpectationsEnabled": {"type": "boolean"},
                             "dataQualityExpectationsPath": {"type": "string"},
                             "quarantineMode": {"type": "string", "enum": ["off", "flag", "table"], "default": "off"},
-                            "quarantineTargetDetails": {"type": "object"}
+                            "quarantineTargetDetails": {"type": "object"},
+                            "configFlags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["disableOperationalMetadata"]
+                                },
+                                "default": []
+                            }
                         },
                         "additionalProperties": false,
                         "oneOf": [

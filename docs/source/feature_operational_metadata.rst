@@ -191,3 +191,120 @@ The below example illustrates the default configuration for a generic bronze and
             }
         ]
     }
+
+Disabling Operational Metadata in a Dataflow Spec
+-------------------------------------------------
+You can disable operational metadata for a dataflow spec or for a target table.
+
+Disabling at Dataflow Spec Level
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use the ``features`` object to disable operational metadata for a dataflow spec.
+
+.. tabs::
+
+   .. tab:: JSON
+
+      .. code-block:: json
+         :emphasize-lines: 5,6,7
+
+         {
+             "dataFlowId": "feature_materialized_views",
+             "dataFlowGroup": "feature_samples",
+             "dataFlowType": "materialized_view",
+             "features": {
+                "operationalMetadataEnabled": false
+             }
+         }
+
+   .. tab:: YAML
+
+      .. code-block:: yaml
+         :emphasize-lines: 4,5
+
+         dataFlowId: feature_materialized_views
+         dataFlowGroup: feature_samples
+         dataFlowType: materialized_view
+         features:
+           operationalMetadataEnabled: false
+
+Disabling at Target Table Level
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use the ``configFlags`` array to disable operational metadata for a target table.
+
+.. tabs::
+
+   .. tab:: JSON
+
+      .. code-block:: json
+         :emphasize-lines: 24
+
+        {
+            "dataFlowId": "crm_1",
+            "dataFlowGroup": "crm",
+            "dataFlowType": "standard",
+            "sourceType": "delta",
+            "sourceSystem": "crm",
+            "sourceViewName": "v_customer_address",
+            "sourceDetails": {
+                "database": "source_db",
+                "table": "customer_address",
+                "cdfEnabled": true,
+                "schemaPath": "schemas/customer_address.json"
+            },
+            "mode": "stream",
+            "targetFormat": "delta",
+            "targetDetails": {
+                "table": "customer_address",
+                "tableProperties": {
+                    "delta.autoOptimize.optimizeWrite": "true",
+                    "delta.autoOptimize.autoCompact": "true"
+                },
+                "partitionColumns": ["country_code"],
+                "schemaPath": "schemas/customer_address.json",
+                "configFlags": ["disableOperationalMetadata"]
+            },
+            "dataQualityExpectationsEnabled": true,
+            "quarantineMode": "table",
+            "quarantineTargetDetails": {
+                "targetFormat": "delta",
+                "table": "customer_address_quarantine",
+                "tableProperties": {}
+            }
+        }
+
+   .. tab:: YAML
+
+      .. code-block:: yaml
+         :emphasize-lines: 22,23
+        
+        dataFlowId: crm_1
+        dataFlowGroup: crm
+        dataFlowType: standard
+        sourceType: delta
+        sourceSystem: crm
+        sourceViewName: v_customer_address
+        sourceDetails:
+          database: source_db
+          table: customer_address
+          cdfEnabled: true
+          schemaPath: schemas/customer_address.json
+        mode: stream
+        targetFormat: delta
+        targetDetails:
+          table: customer_address
+          tableProperties:
+            delta.autoOptimize.optimizeWrite: 'true'
+            delta.autoOptimize.autoCompact: 'true'
+          partitionColumns:
+            - country_code
+          schemaPath: schemas/customer_address.json
+          configFlags: 
+            - disableOperationalMetadata
+        dataQualityExpectationsEnabled: true
+        quarantineMode: table
+        quarantineTargetDetails:
+          targetFormat: delta
+          table: customer_address_quarantine
+          tableProperties: {}
