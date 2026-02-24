@@ -514,7 +514,6 @@ class DataflowSpecBuilder:
 
         # Substitute secrets in the dataflow spec with SecretValue objects
         spec_data = self.secrets_manager.substitute_secrets(spec_data)
-
         self.logger.info(f"Adding Dataflow Spec: {spec_data.get(self.Keys.DATA_FLOW_ID)}.")
         self.processed_specs.append(DataflowSpec(**spec_data))
 

@@ -10,6 +10,7 @@ import pipeline_config
 import utility
 
 from ..enums import TableType, TargetConfigFlags
+from ..features import Features
 
 Self = TypeVar("Self", bound="BaseTargetDelta")
 
@@ -250,7 +251,8 @@ class BaseTargetDelta():
 
     def create_table(
         self,
-        expectations: Dict = None
+        expectations: Dict = None,
+        features: Features = None
     ) -> None:
         """
         Create the target table for the data flow.
@@ -277,13 +279,14 @@ class BaseTargetDelta():
         logger.debug(f"Expectations: {self.table}, {expectations}")
         logger.debug(f"Config Flags: {self.configFlags}")
 
-        self._create_table(schema, expectations)
+        self._create_table(schema, expectations, features)
 
     @abstractmethod
     def _create_table(
         self,
         schema: T.StructType | str,
-        expectations: Dict = None
+        expectations: Dict = None,
+        features: Features = None
     ) -> None:
         """Abstract implementation for target specific table creation logic."""
         pass

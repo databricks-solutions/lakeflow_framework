@@ -110,13 +110,6 @@ class DataFlow:
         self.logger.info(f"Initializing DataFlow for target schema: {self.target_database}, {log_target}")
         self.logger.debug(f"Target Details: {self.target_details.__dict__}")
 
-        # Add operational metadata columns to the schema
-        if not hasattr(self.target_details, 'schema') or not self.target_details.schema:
-            return
-
-        if not self.features.operationalMetadataEnabled:
-            return
-
     def _init_cdc_settings(self):
         """init CDC settings."""
 
@@ -247,7 +240,7 @@ class DataFlow:
                 self._create_flow_groups()
 
                 # create materialized view
-                self.target_details.create_table(expectations)
+                self.target_details.create_table(expectations, features=self.features)
 
         elif self.dataflow_spec.targetFormat in SinkType.__dict__.values():
             
