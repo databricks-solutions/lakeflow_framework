@@ -194,12 +194,12 @@ The below example illustrates the default configuration for a generic bronze and
 
 Disabling Operational Metadata in a Dataflow Spec
 -------------------------------------------------
-You can disable operational metadata for a dataflow spec or for a target table.
+You can disable operational metadata at a dataflow spec level or at a target table level.
 
 Disabling at Dataflow Spec Level
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use the ``features`` object to disable operational metadata for a dataflow spec.
+Use the ``features`` object to disable operational metadata at a dataflow spec level.
 
 .. tabs::
 
@@ -231,7 +231,7 @@ Use the ``features`` object to disable operational metadata for a dataflow spec.
 Disabling at Target Table Level
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use the ``configFlags`` array to disable operational metadata for a target table.
+Use the ``configFlags`` array to disable operational metadata at a target table level.
 
 .. tabs::
 
