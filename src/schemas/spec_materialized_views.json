@@ -38,7 +38,15 @@
                                     "comment": {"type": "string"},
                                     "sparkConf": {"type": "object"},
                                     "private": {"type": "boolean"},
-                                    "rowFilter": {"type": "string"}
+                                    "rowFilter": {"type": "string"},
+                                    "configFlags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": ["disableOperationalMetadata"]
+                                        },
+                                        "default": []
+                                    }
                                 },
                                 "additionalProperties": false
                             },
