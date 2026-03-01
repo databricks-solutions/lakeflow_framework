@@ -31,7 +31,7 @@ class FlowAppendView(BaseFlowWithViews):
 
     @property
     def once(self) -> bool:
-        """Get the once flag."""
+        """Get the once flag. Note: Setting 'once' requires a batch read."""
         return self.flowDetails.get("once", False)
 
     def create_flow(
@@ -55,6 +55,9 @@ class FlowAppendView(BaseFlowWithViews):
             return column_prefix_exceptions
 
         spark = self.spark
+        spark_reader = spark.readStream
+        if self.once:
+            spark_reader = spark.read
         exclude_columns = flow_config.exclude_columns
         column_prefix_exceptions = get_column_prefix_exceptions(flow_config)
 
@@ -62,7 +65,7 @@ class FlowAppendView(BaseFlowWithViews):
 
         @dp.append_flow(name=self.flowName, target=self.targetTable, once=self.once)
         def flow_transform():
-            df = spark.readStream.table(source_view_name)
+            df = spark_reader.table(source_view_name)
             if "column_prefix" in self.flowDetails:
                 prefix = f"{self.columnPrefix.lower()}_"
                 df = df.select([
