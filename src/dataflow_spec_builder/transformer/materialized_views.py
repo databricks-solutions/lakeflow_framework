@@ -60,6 +60,7 @@ class MaterializedViewSpecTransformer(BaseSpecTransformer):
             "dataFlowId": spec_data.get("dataFlowId"),
             "dataFlowGroup": spec_data.get("dataFlowGroup"),
             "dataFlowType": spec_data.get("dataFlowType"),
+            "features": spec_data.get("features", {}),
             "targetFormat": TargetType.DELTA,
             "targetDetails": target_details,
             "quarantineMode": mv_config.get("quarantineMode"),

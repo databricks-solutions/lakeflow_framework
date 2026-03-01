@@ -24,7 +24,8 @@
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "target/feature_periodic_snapshot_customer_schema.json"
+        "schemaPath": "target/feature_periodic_snapshot_customer_schema.json",
+        "configFlags": ["disableOperationalMetadata"]
     },
     "cdcSnapshotSettings": {
         "snapshotType": "periodic",

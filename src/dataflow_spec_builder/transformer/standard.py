@@ -42,6 +42,7 @@ class StandardSpecTransformer(BaseSpecTransformer):
             "dataFlowId": spec_data.get("dataFlowId"),
             "dataFlowGroup": spec_data.get("dataFlowGroup"),
             "dataFlowType": spec_data.get("dataFlowType"),
+            "features": spec_data.get("features", {}),
             "targetFormat": spec_data.get("targetFormat"),
             "targetDetails": spec_data.get("targetDetails"),
             "quarantineMode": spec_data.get("quarantineMode"),

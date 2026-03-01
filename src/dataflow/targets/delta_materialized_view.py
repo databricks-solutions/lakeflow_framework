@@ -4,6 +4,7 @@ from typing import Dict, Optional
 from pyspark import pipelines as dp
 from pyspark.sql import types as T
 
+from ..features import Features
 from ..operational_metadata import OperationalMetadataMixin
 from ..sql import SqlMixin
 
@@ -50,7 +51,8 @@ class TargetDeltaMaterializedView(BaseTargetDelta, SqlMixin, OperationalMetadata
     def _create_table(
         self,
         schema: T.StructType | str,
-        expectations: Dict = None
+        expectations: Dict = None,
+        features: Features = None
     ) -> None:
         """Create the target table for the data flow."""
         spark = self.spark
@@ -98,7 +100,8 @@ class TargetDeltaMaterializedView(BaseTargetDelta, SqlMixin, OperationalMetadata
             df = spark.sql(sql)
             
             # Add operational metadata if needed
-            if operational_metadata_schema:
+            operational_metadata_enabled = features.operationalMetadataEnabled if features else True
+            if operational_metadata_schema and operational_metadata_enabled:
                 df = self._add_operational_metadata(
                     spark,
                     df,

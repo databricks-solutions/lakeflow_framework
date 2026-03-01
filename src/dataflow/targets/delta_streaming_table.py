@@ -5,6 +5,7 @@ from pyspark import pipelines as dp
 from pyspark.sql import types as T
 
 from .base import BaseTargetDelta
+from ..features import Features
 
 
 @dataclass(kw_only=True)
@@ -40,7 +41,8 @@ class TargetDeltaStreamingTable(BaseTargetDelta):
     def _create_table(
         self,
         schema: T.StructType | str,
-        expectations: Dict = None
+        expectations: Dict = None,
+        features: Features = None
     ) -> None:
         """Create the target table for the data flow."""
         dp.create_streaming_table(
