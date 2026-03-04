@@ -332,18 +332,11 @@ class CDCSnapshotFlow:
         dbutils = pipeline_config.get_dbutils()
         all_files = []
         
-        if recursive:
-            # Recursive file lookup
-            for f in dbutils.fs().ls(path):
-                if f.isDir():
-                    all_files.extend(self._list_files(f.path, recursive=True))
-                else:
-                    all_files.append(f)
-        else:
-            # Non-recursive file lookup - only immediate files and directories
-            for f in dbutils.fs().ls(path):
-                if not f.isDir():
-                    all_files.append(f)
+        for f in dbutils.fs().ls(path):
+            all_files.append(f)
+
+            if recursive and f.isDir():
+                all_files.extend(self._list_files(f.path, recursive=True))
                     
         return all_files
 
@@ -382,7 +375,7 @@ class CDCSnapshotFlow:
     def _get_version_string_from_match(self, match: re.Match) -> Optional[str]:
         """From a regex match, concatenate all groups named version_* (sorted) to form version string."""
         groupdict = match.groupdict()
-        version_keys = sorted(k for k in groupdict if k.startswith('version_'))
+        version_keys = [k for k in groupdict if k.startswith('version_')]
         if not version_keys:
             return None
         return ''.join(groupdict[k] or '' for k in version_keys)
@@ -400,20 +393,14 @@ class CDCSnapshotFlow:
         dynamic_idx = self._get_dynamic_path_index(path)
         path_parts = path.split('/')
         parent_dir = '/'.join(path_parts[:dynamic_idx]) or '.'
-        file_pattern_regex = '/'.join(pattern.split('/')[dynamic_idx:])
+        # Anchor pattern so we only match full path (e.g. exclude customer.parquet/_SUCCESS)
+        file_pattern_regex = '/'.join(pattern.split('/')[dynamic_idx:]) + r'/?$'
 
         self.logger.debug(f"CDC Snapshot: Listing files in {parent_dir} with pattern {file_pattern_regex}")
-        
+
         # List files using the configured recursive file lookup option
         recursive_file_lookup = self.source.recursiveFileLookup
         self.logger.debug(f"CDC Snapshot: Using recursive file lookup: {recursive_file_lookup}")
-        if recursive_file_lookup:
-            last_segment = file_pattern_regex.split('/')[-1]
-            if '{version}' in last_segment or '(?P<version_' in last_segment or '{fragment}' in last_segment or '(?P<fragment>' in last_segment:
-                raise ValueError(
-                    f"CDC Snapshot: Recursive file lookup was enabled but the path does not cater for recursive lookup. "
-                    "Please update the path format to cater for recursive lookup. See documentation for details."
-                )
         files_list = self._list_files(parent_dir, recursive=recursive_file_lookup)
         files_with_path_info = [FilePathInfo(full_path=f.path, filename_with_version_path='/'.join(f.path.split('/')[dynamic_idx:])) for f in files_list]
         
@@ -422,10 +409,12 @@ class CDCSnapshotFlow:
         # Extract version from filename and filter by latest_snapshot_version if provided
         available_versions = []
         seen_versions: set = set()
+        d = []
         for file in files_with_path_info:
             self.logger.debug(f"CDC Snapshot: Processing file: {file.filename_with_version_path}")
             try:
                 version_info = self._extract_version_from_filename(file.filename_with_version_path, file_pattern_regex)
+                d.append((file.filename_with_version_path, file_pattern_regex, version_info))
                 if version_info is None:
                     continue
 
@@ -448,7 +437,7 @@ class CDCSnapshotFlow:
             except ValueError as e:
                 self.logger.warning(f"CDC Snapshot: Skipping file '{file.filename_with_version_path}' - {e}")
                 continue
-        
+    
         return available_versions
 
     def _get_available_table_versions(self, latest_snapshot_version: Optional[Union[int, datetime]]) -> List[VersionInfo]:
@@ -518,15 +507,18 @@ class CDCSnapshotFlow:
         """
         regex_pattern = self._path_to_regex_pattern(file_pattern)
         match = re.match(regex_pattern, filename)
+
         if not match:
             self.logger.debug(f"CDC Snapshot: No match for filename: {filename}")
             self.logger.debug(f"CDC Snapshot: Regex pattern: {regex_pattern}")
             return None
 
         version_str = self._get_version_string_from_match(match)
+
         if not version_str:
             self.logger.debug(f"CDC Snapshot: No version_* groups in pattern for filename: {filename}")
             return None
+
         self.logger.debug(f"CDC Snapshot: Version string match found: {version_str}")
 
         try:
@@ -581,21 +573,20 @@ class CDCSnapshotFlow:
             dynamic_idx = self._get_dynamic_path_index(path)
             path_parts = path.split('/')
             parent_dir = '/'.join(path_parts[:dynamic_idx]) or '.'
-            file_pattern_regex = '/'.join(pattern.split('/')[dynamic_idx:])
+            # Anchor pattern so we only match full path (e.g. exclude customer.parquet/_SUCCESS)
+            file_pattern_regex = '/'.join(pattern.split('/')[dynamic_idx:]) + r'/?$'
+            regex_pattern = self._path_to_regex_pattern(file_pattern_regex)
 
-            dbutils = pipeline_config.get_dbutils()
             recursive_file_lookup = self.source.recursiveFileLookup
             files_list = self._list_files(parent_dir, recursive=recursive_file_lookup)
 
-            compiled = re.compile(file_pattern_regex)
             target_version = version_info.formatted_value
             files_to_read: List[str] = []
+
             for f in files_list:
-                if not f.isFile():
-                    continue
                 full_path = f.path
                 relative_path = '/'.join(full_path.split('/')[dynamic_idx:])
-                match = compiled.match(relative_path)
+                match = re.match(regex_pattern, relative_path)
                 if not match:
                     continue
                 version_str = self._get_version_string_from_match(match)
