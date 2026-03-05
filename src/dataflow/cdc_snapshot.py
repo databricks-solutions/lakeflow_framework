@@ -1,8 +1,6 @@
 import bisect
 from dataclasses import dataclass, field
 from datetime import datetime
-import fnmatch
-import os
 import re
 from typing import Dict, List, Literal, Optional, Union
 
@@ -309,9 +307,8 @@ class CDCSnapshotFlow:
 
         except Exception as e:
             self.logger.error(f"CDC Snapshot: Error processing snapshots: {e}")
-            if isinstance(e, ValueError):
-                raise e
-            return None
+            raise
+
 
     def _get_available_versions(self, latest_snapshot_version: Optional[Union[int, datetime]]) -> List[VersionInfo]:
         """Get list of available versions from source."""
@@ -335,53 +332,89 @@ class CDCSnapshotFlow:
         dbutils = pipeline_config.get_dbutils()
         all_files = []
         
-        if recursive:
-            # Recursive file lookup
-            for f in dbutils.fs().ls(path):
-                if f.isDir():
-                    all_files.extend(self._list_files(f.path, recursive=True))
-                else:
-                    all_files.append(f)
-        else:
-            # Non-recursive file lookup - only immediate files and directories
-            for f in dbutils.fs().ls(path):
-                if not f.isDir():
-                    all_files.append(f)
+        for f in dbutils.fs().ls(path):
+            all_files.append(f)
+
+            if recursive and f.isDir():
+                all_files.extend(self._list_files(f.path, recursive=True))
                     
         return all_files
-    
-    def _get_available_file_versions(self, latest_snapshot_version: Optional[Union[int, datetime]]) -> List[VersionInfo]:
-        """Get list of available versions from file path."""
-        version_path_parts = [part for part in self.source.path.split('/') if '{version}' in part]
-        if not version_path_parts:
-            raise ValueError("No {version} found in path")
-        version_part_idx = self.source.path.split('/').index(version_path_parts[0])
-        parent_dir = '/'.join(self.source.path.split('/')[:version_part_idx])
-        file_pattern = '/'.join(self.source.path.split('/')[version_part_idx:])
 
-        self.logger.debug(f"CDC Snapshot: Listing files in {parent_dir} with pattern {file_pattern}")
+    def _path_to_regex_pattern(self, path: str) -> str:
+        """Convert path to normalized regex pattern with named groups.
         
+        Curly-brace syntax is converted to named capture groups:
+        - {version} -> (?P<version_main>.+)  (single capture group for version)
+        - {fragment} -> (?P<fragment>.*?)     (single capture group for fragment)
+        
+        If path already contains regex named groups (?P<version_ or (?P<fragment>,
+        it is returned as-is (already a regex pattern).
+        """
+        if re.search(r'\(\?P<version_', path) or re.search(r'\(\?P<fragment>', path):
+            return path
+        if '{version}' not in path and '{fragment}' not in path:
+            return path
+        escaped = re.escape(path)
+        normalized = (
+            escaped
+            .replace(r'\{version\}', r'(?P<version_main>.+)')
+            .replace(r'\{fragment\}', r'(?P<fragment>.*?)')
+        )
+        return normalized
+
+    def _get_dynamic_path_index(self, path: str) -> int:
+        """Return index of first path segment that contains version or fragment (curly or regex)."""
+        path_parts = path.split('/')
+        for idx, part in enumerate(path_parts):
+            if '{version}' in part or '{fragment}' in part:
+                return idx
+            if '(?P<version_' in part or '(?P<fragment>' in part:
+                return idx
+        raise ValueError(f"No version or fragment placeholder found in path: {path}")
+
+    def _get_version_string_from_match(self, match: re.Match) -> Optional[str]:
+        """From a regex match, concatenate all groups named version_* (sorted) to form version string."""
+        groupdict = match.groupdict()
+        version_keys = [k for k in groupdict if k.startswith('version_')]
+        if not version_keys:
+            return None
+        return ''.join(groupdict[k] or '' for k in version_keys)
+
+    def _has_fragment_group(self, pattern: str) -> bool:
+        """Return True if pattern has a fragment capture group."""
+        if '{fragment}' in pattern:
+            return True
+        return bool(re.search(r'\(\?P<fragment>', pattern))
+
+    def _get_available_file_versions(self, latest_snapshot_version: Optional[Union[int, datetime]]) -> List[VersionInfo]:
+        """Get list of available versions from file path (supports regex and {version}/{fragment} syntax)."""
+        path = self.source.path
+        pattern = self._path_to_regex_pattern(path)
+        dynamic_idx = self._get_dynamic_path_index(path)
+        path_parts = path.split('/')
+        parent_dir = '/'.join(path_parts[:dynamic_idx]) or '.'
+        # Anchor pattern so we only match full path (e.g. exclude customer.parquet/_SUCCESS)
+        file_pattern_regex = '/'.join(pattern.split('/')[dynamic_idx:]) + r'/?$'
+
+        self.logger.debug(f"CDC Snapshot: Listing files in {parent_dir} with pattern {file_pattern_regex}")
+
         # List files using the configured recursive file lookup option
         recursive_file_lookup = self.source.recursiveFileLookup
         self.logger.debug(f"CDC Snapshot: Using recursive file lookup: {recursive_file_lookup}")
-        if recursive_file_lookup:
-            last_segment = file_pattern.split('/')[-1]
-            if '{version}' in last_segment:
-                raise ValueError(
-                    f"CDC Snapshot: Recursive file lookup was enabled but the path '{file_pattern}' does not cater for recursive lookup. "
-                    "Please update the path format to cater for recursive lookup. See documentation for details."
-                )
         files_list = self._list_files(parent_dir, recursive=recursive_file_lookup)
-        files_with_path_info = [FilePathInfo(full_path=f.path, filename_with_version_path='/'.join(f.path.split('/')[version_part_idx:])) for f in files_list]
+        files_with_path_info = [FilePathInfo(full_path=f.path, filename_with_version_path='/'.join(f.path.split('/')[dynamic_idx:])) for f in files_list]
         
-        self.logger.debug(f"CDC Snapshot: Found {len(files_with_path_info)}")
+        self.logger.debug(f"CDC Snapshot: Found {len(files_with_path_info)} files")
         
         # Extract version from filename and filter by latest_snapshot_version if provided
         available_versions = []
+        seen_versions: set = set()
+        d = []
         for file in files_with_path_info:
             self.logger.debug(f"CDC Snapshot: Processing file: {file.filename_with_version_path}")
             try:
-                version_info = self._extract_version_from_filename(file.filename_with_version_path, file_pattern)
+                version_info = self._extract_version_from_filename(file.filename_with_version_path, file_pattern_regex)
+                d.append((file.filename_with_version_path, file_pattern_regex, version_info))
                 if version_info is None:
                     continue
 
@@ -393,13 +426,18 @@ class CDCSnapshotFlow:
                 if latest_snapshot_version is not None and version_info.raw_value <= latest_snapshot_version:
                     continue
                 
+                # Dedupe by version (multiple fragments can share same version)
+                version_key = (version_info.raw_value,)
+                if version_key in seen_versions:
+                    continue
+                seen_versions.add(version_key)
                 available_versions.append(version_info)
                 self.logger.debug(f"CDC Snapshot: Added version {version_info.formatted_value} to available versions")
 
             except ValueError as e:
                 self.logger.warning(f"CDC Snapshot: Skipping file '{file.filename_with_version_path}' - {e}")
                 continue
-        
+    
         return available_versions
 
     def _get_available_table_versions(self, latest_snapshot_version: Optional[Union[int, datetime]]) -> List[VersionInfo]:
@@ -462,15 +500,25 @@ class CDCSnapshotFlow:
         return available_versions
 
     def _extract_version_from_filename(self, filename: str, file_pattern: str) -> Optional[VersionInfo]:
-        """Extract version from filename using pattern"""
-        regex_pattern = re.escape(file_pattern).replace(r'\{version\}', r'(.+?)').replace(r'\{fragment\}', r'.*?')
+        """Extract version from filename using pattern (regex or curly-brace; normalized to regex).
+        
+        Version is taken from all named groups starting with version_, concatenated in name order.
+        Curly-brace {version} is converted to (?P<version_main>.+); {fragment} to (?P<fragment>.*?).
+        """
+        regex_pattern = self._path_to_regex_pattern(file_pattern)
         match = re.match(regex_pattern, filename)
-        if not match or not match.group(1):
-            self.logger.debug(f"CDC Snapshot: No version string match found for filename: {filename}")
+
+        if not match:
+            self.logger.debug(f"CDC Snapshot: No match for filename: {filename}")
             self.logger.debug(f"CDC Snapshot: Regex pattern: {regex_pattern}")
             return None
 
-        version_str = match.group(1)
+        version_str = self._get_version_string_from_match(match)
+
+        if not version_str:
+            self.logger.debug(f"CDC Snapshot: No version_* groups in pattern for filename: {filename}")
+            return None
+
         self.logger.debug(f"CDC Snapshot: Version string match found: {version_str}")
 
         try:
@@ -520,36 +568,53 @@ class CDCSnapshotFlow:
         )
 
         if self.sourceType == CDCSnapshotSourceTypes.FILE:
-            file_path = self.source.path.replace("{version}", version_info.formatted_value)
-            
-            if '{fragment}' in file_path:
-                search_pattern = file_path.replace('{fragment}', "*")
-                directory = os.path.dirname(search_pattern)
-                filename_pattern = os.path.basename(search_pattern)
-                dbutils = pipeline_config.get_dbutils()
-                files = [f.path for f in dbutils.fs.ls(directory) if fnmatch.fnmatch(f.name, filename_pattern)]
-            else:
-                files = [file_path]
-            
+            path = self.source.path
+            pattern = self._path_to_regex_pattern(path)
+            dynamic_idx = self._get_dynamic_path_index(path)
+            path_parts = path.split('/')
+            parent_dir = '/'.join(path_parts[:dynamic_idx]) or '.'
+            # Anchor pattern so we only match full path (e.g. exclude customer.parquet/_SUCCESS)
+            file_pattern_regex = '/'.join(pattern.split('/')[dynamic_idx:]) + r'/?$'
+            regex_pattern = self._path_to_regex_pattern(file_pattern_regex)
+
+            recursive_file_lookup = self.source.recursiveFileLookup
+            files_list = self._list_files(parent_dir, recursive=recursive_file_lookup)
+
+            target_version = version_info.formatted_value
+            files_to_read: List[str] = []
+
+            for f in files_list:
+                full_path = f.path
+                relative_path = '/'.join(full_path.split('/')[dynamic_idx:])
+                match = re.match(regex_pattern, relative_path)
+                if not match:
+                    continue
+                version_str = self._get_version_string_from_match(match)
+                if version_str is None or version_str != target_version:
+                    continue
+                files_to_read.append(full_path)
+
+            if not files_to_read:
+                self.logger.warning(f"CDC Snapshot: No files found for version {target_version}")
+                return None
+
+            self.logger.info(f"CDC Snapshot: Reading {len(files_to_read)} file(s) for version {target_version}")
+            schema_path = self.source.schemaPath
+            select_exp = self.source.selectExp
             df = None
-            for file in files:
+            for file_path in sorted(files_to_read):
                 self.logger.debug(f"CDC Snapshot: Reading file: {file_path}")
-
-                schema_path = self.source.schemaPath
-                select_exp = self.source.selectExp
-
                 file_df = SourceBatchFiles(
-                    path=file,
+                    path=file_path,
                     format=self.source.format,
                     readerOptions=self.source.readerOptions,
                     schemaPath=schema_path,
                     selectExp=select_exp
                 ).read_source(read_config)
-
-                if df:
-                    df = df.union(file_df)
-                else:
+                if df is None:
                     df = file_df
+                else:
+                    df = df.union(file_df)
 
             # Apply filter if specified
             if self.source.filter:
