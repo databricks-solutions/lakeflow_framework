@@ -89,16 +89,20 @@ class JSONValidator:
             Validates the provided JSON data against the loaded schema and returns a list of validation errors.
     """
 
-    def __init__(self, schema_path: str):
+    def __init__(self, schema_path: str, schema_store: Dict = None):
         try:
             with open(schema_path, "r", encoding="utf-8") as schema_file:
                 self.schema = json.load(schema_file)
         except Exception as e:
             raise ValueError(f"JSON Schema not found: {schema_path}") from e
 
-        # Resolve references
+        # Resolve references — optional in-memory store overrides file-based $ref resolution.
         self.base_uri = "file://" + os.path.abspath(os.path.dirname(schema_path)) + "/"
-        self.resolver = js.RefResolver(base_uri=self.base_uri, referrer=self.schema)
+        self.resolver = js.RefResolver(
+            base_uri=self.base_uri,
+            referrer=self.schema,
+            store=schema_store or {},
+        )
         self.validator = js.Draft7Validator(self.schema, resolver=self.resolver)
 
     def validate(self, json_data: Dict) -> List:

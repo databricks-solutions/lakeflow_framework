@@ -1,52 +1,37 @@
-from dataclasses import dataclass
-from typing import Dict
+from __future__ import annotations
 
-from pyspark import pipelines as dp
-from pyspark.sql import types as T
+from typing import ClassVar
 
-from .base import BaseTargetDelta
-from ..features import Features
+from pyspark import pipelines as sdp
+
+from dataflow.target import Target
+from dataflow.targets.mixins.delta import DeltaMixin
 
 
-@dataclass(kw_only=True)
-class TargetDeltaStreamingTable(BaseTargetDelta):
+class StreamingTableDelta(Target, DeltaMixin):
     """
-    Target details structure for Delta targets.
+    Delta Streaming Table target.
 
-    Attributes:
-        table (str): Table name.
-        type (str, optional): Type of table ["st", "mv"]. Defaults to "st".
-        tableProperties (Dict, optional): Properties of the target table.
-        partitionColumns (List[str], optional): List of partition columns.
-        clusterByColumns (List[str], optional): List of cluster by columns.        
-        clusterByAuto (bool, optional): Whether to enable cluster by auto.
-        schemaPath (str, optional): Path to the schema file (JSON or DDL format).
-        tablePath (str, optional): Path to the Delta table.
-        rowFilter (str, optional): Row filter for the target table.
-        sparkConf (Dict, optional): Spark configuration for the target table.
+    Creates a Spark Declarative Pipelines streaming table backed by Delta.
+    Flow groups are processed **after** this table is created.
 
-    Properties:
-        schema_type (str): Type of schema ["json", "ddl"].
-        schema (Union[Dict, str]): Schema structure.
-        schema_json (Dict): Schema JSON.
-        schema_struct (StructType): Schema structure.
-        schema_ddl (str): Schema DDL.
+    Spec fields are declared in
+    :class:`~dataflow.targets.mixins.delta.DeltaMixin`.
 
-    Methods:
-        add_columns: Add columns to the target schema.
-        remove_columns: Remove columns from the target schema.
-        add_table_properties: Add table properties to the target details.
-        create_table: Create the target table for the data flow.
+    Set ``"targetFormat": "streaming_table_delta"`` in the dataflow spec.
+
+    .. note::
+       Backward-compat: the old ``"targetFormat": "delta"`` with
+       ``"targetDetails": {"type": "st", ...}`` is handled transparently by
+       :meth:`~dataflow.dataflow_spec.DataflowSpec.get_target_details`.
     """
-    def _create_table(
-        self,
-        schema: T.StructType | str,
-        expectations: Dict = None,
-        features: Features = None
-    ) -> None:
-        """Create the target table for the data flow."""
-        dp.create_streaming_table(
-            name=self.table,
+
+    target_type: ClassVar[str] = "streaming_table_delta"
+    creates_before_flows: ClassVar[bool] = True
+
+    def create_target(self) -> None:
+        sdp.create_streaming_table(
+            name=self.target_name,
             comment=self.comment,
             spark_conf=self.sparkConf,
             row_filter=self.rowFilter,
@@ -55,8 +40,17 @@ class TargetDeltaStreamingTable(BaseTargetDelta):
             cluster_by=self.clusterByColumns,
             cluster_by_auto=self.clusterByAuto,
             path=self.tablePath,
-            schema=schema,
-            expect_all=expectations.get("expect_all") if expectations else None,
-            expect_all_or_drop=expectations.get("expect_all_or_drop") if expectations else None,
-            expect_all_or_fail=expectations.get("expect_all_or_fail") if expectations else None
+            schema=self._table_schema,
+            expect_all=(
+                self._expectations.get("expect_all")
+                if self._expectations else None
+            ),
+            expect_all_or_drop=(
+                self._expectations.get("expect_all_or_drop")
+                if self._expectations else None
+            ),
+            expect_all_or_fail=(
+                self._expectations.get("expect_all_or_fail")
+                if self._expectations else None
+            ),
         )

@@ -10,7 +10,7 @@ from dataflow.expectations import DataQualityExpectations
 from dataflow.features import Features
 from dataflow.flow_group import FlowGroup
 from dataflow.flows import BaseFlowWithViews
-from dataflow.targets import TargetFactory
+from dataflow.target import Target
 from dataflow.view import View
 
 
@@ -139,6 +139,52 @@ class DataflowSpec:
         """Retrieve a list of FlowGroup objects from the flowGroups attribute."""
         return [FlowGroup(**item) for item in self.flowGroups]
 
-    def get_target_details(self) -> Any:
-        """Retrieve the target details based on the target format."""
-        return TargetFactory.create(self.targetFormat, self.targetDetails)
+    def get_target_details(self) -> Target:
+        """Instantiate and return the target for this spec.
+
+        Handles backward-compatible format remapping:
+
+        * ``"delta"`` + ``targetDetails.type == "st"``
+          → ``"streaming_table_delta"``
+        * ``"delta"`` + ``targetDetails.type == "mv"``
+          → ``"materialized_view_delta"``
+        * ``"foreach_batch_sink"`` + ``targetDetails.type == "basic_sql"``
+          → ``"sql_foreach_batch_sink"``
+        * ``"foreach_batch_sink"`` + ``targetDetails.type == "python_function"``
+          → ``"python_foreach_batch_sink"``
+
+        All other formats map directly to a registered target_type.
+        """
+        # Import here to trigger auto-discovery of all target classes.
+        import dataflow.targets  # noqa: F401
+
+        target_format = self.targetFormat
+        target_details = dict(self.targetDetails)  # shallow copy — avoid mutation
+
+        # Backward compat: legacy "delta" format with nested "type" field.
+        if target_format == "delta":
+            table_type = target_details.pop("type", "st").lower()
+            if table_type == "st":
+                target_format = "streaming_table_delta"
+            elif table_type == "mv":
+                target_format = "materialized_view_delta"
+            else:
+                raise ValueError(
+                    f"Unknown delta table type {table_type!r}. "
+                    "Expected 'st' or 'mv'."
+                )
+
+        # Backward compat: legacy "foreach_batch_sink" with nested "type" field.
+        elif target_format == "foreach_batch_sink":
+            sink_subtype = target_details.pop("type", "").lower()
+            if sink_subtype == "basic_sql":
+                target_format = "sql_foreach_batch_sink"
+            elif sink_subtype == "python_function":
+                target_format = "python_foreach_batch_sink"
+            else:
+                raise ValueError(
+                    f"Unknown foreach_batch_sink type {sink_subtype!r}. "
+                    "Expected 'basic_sql' or 'python_function'."
+                )
+
+        return Target(target_type=target_format, **target_details)

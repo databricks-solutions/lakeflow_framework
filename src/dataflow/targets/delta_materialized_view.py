@@ -1,112 +1,108 @@
-from dataclasses import dataclass
-from typing import Dict, Optional
+from __future__ import annotations
 
-from pyspark import pipelines as dp
-from pyspark.sql import types as T
+from typing import ClassVar, Optional
 
-from ..features import Features
-from ..operational_metadata import OperationalMetadataMixin
-from ..sql import SqlMixin
+from pyspark import pipelines as sdp
 
-from .base import BaseTargetDelta
+from dataflow.field import Field
+from dataflow.operational_metadata import OperationalMetadataMixin
+from dataflow.target import Target
+from dataflow.targets.mixins.delta import DeltaMixin
+from dataflow.targets.mixins.sql import SqlMixin
 
 
-@dataclass(kw_only=True)
-class TargetDeltaMaterializedView(BaseTargetDelta, SqlMixin, OperationalMetadataMixin):
+class MaterializedViewDelta(Target, DeltaMixin, SqlMixin, OperationalMetadataMixin):
     """
-    Target details structure for Delta targets.
+    Delta Materialized View target.
 
-    Attributes:
-        table (str): Table name.
-        type (str, optional): Type of table ["st", "mv"]. Defaults to "st".
-        tableProperties (Dict, optional): Properties of the target table.
-        partitionColumns (List[str], optional): List of partition columns.
-        clusterByColumns (List[str], optional): List of cluster by columns.        
-        clusterByAuto (bool, optional): Whether to enable cluster by auto.
-        schemaPath (str, optional): Path to the schema file (JSON or DDL format).
-        tablePath (str, optional): Path to the Delta table.
-        sourceView (str, optional): Source view name.
-        sqlPath (str, optional): Path to the SQL file.
-        sqlStatement (str, optional): SQL statement.
-        rowFilter (str, optional): Row filter for the target table.
-        sparkConf (Dict, optional): Spark configuration for the target table.
+    A SQL-backed materialized view.  The query is sourced from one of:
 
-    Properties:
-        schema_type (str): Type of schema ["json", "ddl"].
-        schema (Union[Dict, str]): Schema structure.
-        schema_json (Dict): Schema JSON.
-        schema_struct (StructType): Schema structure.
-        schema_ddl (str): Schema DDL.
-        rawSql (str): Raw SQL statement.
+    * ``sourceView`` — generates ``SELECT * FROM live.<view>``
+    * ``sqlPath``    — path to a ``.sql`` file (from :class:`SqlMixin`)
+    * ``sqlStatement`` — inline SQL string (from :class:`SqlMixin`)
 
-    Methods:
-        add_columns: Add columns to the target schema.
-        add_table_properties: Add table properties to the target details.
-        create_table: Create the target table for the data flow.
-        get_sql (str): SQL with substitutions applied.
-        remove_columns: Remove columns from the target schema.
+    Flow groups are processed **before** the MV is created so that any
+    intermediate views the MV depends on are available.
+
+    Additional spec field (``targetDetails`` key)
+    ---------------------------------------------
+    * ``sourceView`` — name of a pipeline view to select from
+
+    Set ``"targetFormat": "materialized_view_delta"`` in the dataflow spec.
+
+    .. note::
+       Backward-compat: the old ``"targetFormat": "delta"`` with
+       ``"targetDetails": {"type": "mv", ...}`` is handled transparently by
+       :meth:`~dataflow.dataflow_spec.DataflowSpec.get_target_details`.
     """
-    sourceView: Optional[str] = None
 
-    def _create_table(
-        self,
-        schema: T.StructType | str,
-        expectations: Dict = None,
-        features: Features = None
-    ) -> None:
-        """Create the target table for the data flow."""
+    target_type: ClassVar[str] = "materialized_view_delta"
+    creates_before_flows: ClassVar[bool] = False  # MV is created after flow groups
+    _json_schema_constraints: ClassVar[dict] = {
+        "anyOf": [
+            {"required": ["sourceView"]},
+            {"required": ["sqlPath"]},
+            {"required": ["sqlStatement"]},
+        ]
+    }
+
+    sourceView: Optional[str] = Field(required=False)
+
+    def create_target(self) -> None:
         spark = self.spark
         logger = self.logger
-        operational_metadata_schema = self.operational_metadata_schema
+        op_meta_schema = self.operational_metadata_schema
         pipeline_details = self.pipeline_details
-        substitution_manager = self.substitution_manager
-
-        msg = (
-            f"SQL Settings for MV: {self.table}\n"
-            f"Source View: {self.sourceView}\n"
-            f"SQL Path: {self.sqlPath}\n"
-            f"SQL Statement: {self.sqlStatement}\n"
-        )
-        logger.debug(msg)
+        sm = self.substitution_manager
 
         if not self.sourceView and not self.sqlPath and not self.sqlStatement:
             raise ValueError(
-                "Error: sourceView or sqlPath or sql Statement must be set when creating a Materialized View"
+                f"MaterializedViewDelta '{self.target_name}': one of "
+                "sourceView, sqlPath, or sqlStatement must be set."
             )
 
-        sql = None
         if self.sourceView:
             sql = f"SELECT * FROM live.{self.sourceView}"
-        elif self.rawSql:
-            sql = substitution_manager.substitute_string(self.rawSql)
-        
-        @dp.table(
-            name=self.table,
+        else:
+            raw = self.rawSql
+            sql = sm.substitute_string(raw) if (sm and raw) else raw
+
+        logger.debug(
+            f"MV '{self.target_name}' — sourceView={self.sourceView!r}, "
+            f"sqlPath={self.sqlPath!r}"
+        )
+
+        @sdp.table(
+            name=self.target_name,
             comment=self.comment,
             spark_conf=self.sparkConf,
             row_filter=self.rowFilter,
             path=self.tablePath,
-            schema=schema,
+            schema=self._table_schema,
             table_properties=self.tableProperties,
             partition_cols=self.partitionColumns,
             cluster_by=self.clusterByColumns,
             cluster_by_auto=self.clusterByAuto,
-            private=self.private
+            private=self.private,
         )
-        @dp.expect_all(expectations.get("expect_all", {}) if expectations else {})
-        @dp.expect_all_or_drop(expectations.get("expect_all_or_drop", {}) if expectations else {})
-        @dp.expect_all_or_fail(expectations.get("expect_all_or_fail", {}) if expectations else {})
+        @sdp.expect_all(
+            self._expectations.get("expect_all", {}) if self._expectations else {}
+        )
+        @sdp.expect_all_or_drop(
+            self._expectations.get("expect_all_or_drop", {}) if self._expectations else {}
+        )
+        @sdp.expect_all_or_fail(
+            self._expectations.get("expect_all_or_fail", {}) if self._expectations else {}
+        )
         def mv_query():
             df = spark.sql(sql)
-            
-            # Add operational metadata if needed
-            operational_metadata_enabled = features.operationalMetadataEnabled if features else True
-            if operational_metadata_schema and operational_metadata_enabled:
+            features = self._features
+            op_meta_enabled = features.operationalMetadataEnabled if features else True
+            if op_meta_schema and op_meta_enabled:
                 df = self._add_operational_metadata(
                     spark,
                     df,
-                    operational_metadata_schema,
-                    pipeline_details.__dict__
+                    op_meta_schema,
+                    pipeline_details.__dict__,
                 )
-
             return df

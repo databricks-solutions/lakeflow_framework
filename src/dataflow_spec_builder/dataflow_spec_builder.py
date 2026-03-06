@@ -8,6 +8,7 @@ from constants import (
     FrameworkPaths, PipelineBundlePaths, SupportedSpecFormat, PipelineBundleSuffixesJson, PipelineBundleSuffixesYaml
 )
 from dataflow.dataflow_spec import DataflowSpec
+from dataflow.target_schema import generate_target_schema
 import pipeline_config
 from secrets_manager import SecretsManager
 import utility
@@ -130,11 +131,23 @@ class DataflowSpecBuilder:
         self.filter_target_tables = self._parse_filter(self.filters.get("target_tables"))
         self.filter_files = self._parse_filter(self.filters.get("files"))
 
+        # Build the target schema store so $ref to definitions_targets.json
+        # is resolved from the generated in-memory schema rather than from disk.
+        _schemas_dir = os.path.join(self.framework_path, "schemas")
+        _targets_uri = "file://" + os.path.abspath(
+            os.path.join(_schemas_dir, "definitions_targets.json")
+        )
+        _schema_store = {_targets_uri: generate_target_schema()}
+
         # Initialize validators
         self.main_validator = utility.JSONValidator(
-            os.path.join(self.framework_path,FrameworkPaths.MAIN_SPEC_SCHEMA_PATH))
+            os.path.join(self.framework_path, FrameworkPaths.MAIN_SPEC_SCHEMA_PATH),
+            schema_store=_schema_store,
+        )
         self.flow_validator = utility.JSONValidator(
-            os.path.join(self.framework_path,FrameworkPaths.FLOW_GROUP_SPEC_SCHEMA_PATH))
+            os.path.join(self.framework_path, FrameworkPaths.FLOW_GROUP_SPEC_SCHEMA_PATH),
+            schema_store=_schema_store,
+        )
 
         # Initialize storage
         self.processed_specs: List[DataflowSpec] = []

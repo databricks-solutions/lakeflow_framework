@@ -7,12 +7,9 @@ from constants import MetaDataColumnDefs, SystemColumns
 import pipeline_config
 import utility
 
-from .enums import QuarantineMode, TableType, TargetType, Mode
-from .targets import (
-    TargetFactory,
-    TargetDeltaMaterializedView,
-    TargetDeltaStreamingTable
-)
+from dataflow.target import Target
+from .enums import QuarantineMode, Mode
+from .targets import MaterializedViewDelta, StreamingTableDelta
 
 
 class QuarantineManager():
@@ -38,8 +35,8 @@ class QuarantineManager():
         self,
         quarantine_mode: str,
         data_quality_rules: Dict = None,
-        target_format: str = TargetType.DELTA,
-        target_details: TargetDeltaStreamingTable | TargetDeltaMaterializedView = None,
+        target_format: str = None,
+        target_details: Target = None,
         quarantine_target_details: Dict = None
     ):
         self.spark = pipeline_config.get_spark()
@@ -52,11 +49,11 @@ class QuarantineManager():
         self.quarantine_target_details = quarantine_target_details
         self.target_details = target_details
         self.quarantine_rules = f"NOT({ ' AND '.join(data_quality_rules.values()) })"
-        self.mode = Mode.STREAM if (
-            (self.target_format == TargetType.DELTA and self.target_details.type == TableType.STREAMING.value)
-            or self.target_format in (TargetType.KAFKA_SINK) #TODO: Add other types as they become supported
+        # Streaming mode: streaming tables and kafka sinks; batch mode: everything else (e.g. MVs).
+        self.mode = Mode.STREAM if isinstance(
+            target_details, (StreamingTableDelta,)
         ) else Mode.BATCH
-        self.target = getattr(self.target_details, 'table') or getattr(self.target_details, 'sink_name')
+        self.target = target_details.target_name
         self.quarantine_table = None
 
         self._init_quarantine()
@@ -79,48 +76,48 @@ class QuarantineManager():
             "tablePath": self.quarantine_target_details.get("path", None)
         }
         if self.mode == Mode.STREAM:
-
-            quarantine_details["type"] = TableType.STREAMING.value
+            quarantine_details["type"] = "streaming_table_delta"
             self._create_quarantine_table(quarantine_details)
 
         if self.mode == Mode.BATCH:
-            
-            quarantine_view_name=f"v_{self.target}_quarantine"
-            quarantine_details["type"] = TableType.MATERIALIZED_VIEW.value
+            quarantine_view_name = f"v_{self.target}_quarantine"
+            quarantine_details["type"] = "materialized_view_delta"
             quarantine_details["sourceView"] = quarantine_view_name
 
-            quarantine_view_name=f"v_{self.target}_quarantine"
             self._create_quarantine_view_mv(
                 quarantine_view_name=quarantine_view_name,
-                target_details=self.target_details
+                target_details=self.target_details,
             )
 
             self._create_quarantine_table(quarantine_details)
 
     def _create_quarantine_table(self, quarantine_details: Dict):
         """Create the quarantine table."""
-        self.quarantine_table = TargetFactory.create(TargetType.DELTA, quarantine_details)
+        target_type = quarantine_details.pop("type", "streaming_table_delta")
+        self.quarantine_table = Target(target_type=target_type, **quarantine_details)
 
-        self.logger.info("Creating Quarantine Table: %s, Mode: %s, Partition Columns: %s, Cluster By Columns: %s, Cluster By Auto: %s",
-            self.quarantine_table.table, self.mode, self.quarantine_table.partitionColumns,
-            self.quarantine_table.clusterByColumns, self.quarantine_table.clusterByAuto)
+        self.logger.info(
+            "Creating Quarantine Table: %s, Mode: %s, "
+            "Partition Columns: %s, Cluster By Columns: %s, Cluster By Auto: %s",
+            self.quarantine_table.target_name, self.mode,
+            self.quarantine_table.partitionColumns,
+            self.quarantine_table.clusterByColumns,
+            self.quarantine_table.clusterByAuto,
+        )
 
-        self.quarantine_table.create_table()
+        self.quarantine_table.create()
 
     def add_quarantine_columns_delta(
         self,
-        target_details: TargetDeltaStreamingTable | TargetDeltaMaterializedView
-    ) -> TargetDeltaStreamingTable | TargetDeltaMaterializedView:
-        """
-        Add quarantine columns to the target details.
-
-        Args:
-            target_details (TargetDelta): Target details.
-        """
-        if self.target_format == TargetType.DELTA and self.quarantine_mode == QuarantineMode.FLAG:
-            if target_details.schema:
-                return target_details.add_columns([QuarantineManager.QUARANTINE_COLUMN])
-
+        target_details: Target,
+    ) -> Target:
+        """Add quarantine flag column to the target schema when in FLAG mode."""
+        if (
+            not target_details.is_sink
+            and self.quarantine_mode == QuarantineMode.FLAG
+            and target_details.schema
+        ):
+            return target_details.add_columns([QuarantineManager.QUARANTINE_COLUMN])
         return target_details
 
     def create_quarantine_flow(self, source_view_name: str):
@@ -145,7 +142,7 @@ class QuarantineManager():
 
             self._create_quarantine_flow(
                 quarantine_view_name=quarantine_view_name,
-                quarantine_table_name=self.quarantine_table.table
+                quarantine_table_name=self.quarantine_table.target_name,
             )
 
         else:
@@ -156,7 +153,7 @@ class QuarantineManager():
     def _create_quarantine_view_mv(
         self,
         quarantine_view_name: str,
-        target_details: TargetDeltaMaterializedView
+        target_details: Target,
     ) -> str:
         """Create a view with the quarantine flag."""
         quarantine_column_name = QuarantineManager.QUARANTINE_COLUMN["name"]

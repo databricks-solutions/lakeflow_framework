@@ -1,36 +1,39 @@
-from dataclasses import dataclass, field
-from typing import Dict, Any
+from __future__ import annotations
 
-from .base import BaseSink
-from ..enums import SinkType
+from typing import ClassVar
+
+from pyspark import pipelines as sdp
+
+from dataflow.field import Field
+from dataflow.target import Target
 
 
-@dataclass(kw_only=True)
-class TargetDeltaSink(BaseSink):
+class DeltaSink(Target):
     """
-    Target details structure for Kafka Sinks.
+    Delta Sink target.
 
-    Attributes:
-        name (str): Name of the sink.
-        sinkOptions (Dict, optional): Options for the Delta writer.
+    Creates a ``delta`` sink using the Spark Declarative Pipelines API.
+
+    Spec fields (``targetDetails`` keys)
+    ------------------------------------
+    * ``name``        — sink name (required)
+    * ``sinkOptions`` — dict of Delta writer options
+
+    Set ``"targetFormat": "delta_sink"`` in the dataflow spec.
     """
-    name: str
-    sinkOptions: Dict = field(default_factory=dict)
 
-    def __post_init__(self):
-        BaseSink.__init__(self)
+    target_type: ClassVar[str] = "delta_sink"
+    is_sink: ClassVar[bool] = True
+    creates_before_flows: ClassVar[bool] = True
+
+    target_name: str = Field(spec_field="name")
+    sinkOptions: dict = Field(default={})
 
     @property
     def sink_name(self) -> str:
-        """Returns the name of the sink."""
-        return self.name
+        """Alias for :attr:`target_name` (backward compatibility)."""
+        return self.target_name
 
-    @property
-    def sink_type(self) -> str:
-        """Returns the type of the sink."""
-        return SinkType.DELTA_SINK
-
-    @property
-    def sink_options(self) -> Dict[str, Any]:
-        """Returns the options for the sink configuration."""
-        return self.sinkOptions
+    def create_target(self) -> None:
+        self.logger.info(f"Creating Delta Sink: {self.target_name}")
+        sdp.create_sink(f"`{self.target_name}`", self.target_type, self.sinkOptions)

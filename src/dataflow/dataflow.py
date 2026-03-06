@@ -8,7 +8,7 @@ import pipeline_config
 from .cdc_snapshot import CDCSnapshotFlow
 from .dataflow_config import DataFlowConfig
 from .dataflow_spec import DataflowSpec
-from .enums import QuarantineMode, SinkType, TargetType, TableType
+from .enums import QuarantineMode
 from .flows.base import BaseFlow, BaseFlowWithViews, FlowConfig
 from .flow_group import FlowGroup
 from .table_migration import TableMigrationManager
@@ -101,11 +101,10 @@ class DataFlow:
             if hasattr(self.target_details, 'database') and self.target_details.database
             else f"{self.pipeline_catalog}.{self.pipeline_schema}"
         )
-        
-        log_target = f"target type: {self.dataflow_spec.targetFormat}, target: " + (
-            getattr(self.target_details, 'sink_name')
-            if self.dataflow_spec.targetFormat in SinkType.__dict__.values()
-            else getattr(self.target_details, 'table')
+
+        log_target = (
+            f"target type: {type(self.target_details).__name__}, "
+            f"target: {self.target_details.target_name}"
         )
         self.logger.info(f"Initializing DataFlow for target schema: {self.target_database}, {log_target}")
         self.logger.debug(f"Target Details: {self.target_details.__dict__}")
@@ -183,28 +182,27 @@ class DataFlow:
         """init table migration."""
         self.table_migration_manager = None
 
-        if not self.dataflow_spec.targetFormat == TargetType.DELTA:
-            self.logger.info("Table migration not supported for target type: %s", self.dataflow_spec.targetFormat)
+        if self.target_details.is_sink:
+            self.logger.info("Table migration not supported for sink target type: %s", type(self.target_details).__name__)
             return
 
         if not self.dataflow_spec.tableMigrationDetails:
-            self.logger.info("Table migration not enabled for table: %s", self.target_details.table)
+            self.logger.info("Table migration not enabled for table: %s", self.target_details.target_name)
             return
 
         self.table_migration_manager = TableMigrationManager(
             dataflow_spec=self.dataflow_spec,
             target_database=self.target_database,
-            target_table_name=self.target_details.table,
+            target_table_name=self.target_details.target_name,
             cdc_settings=self.cdc_settings,
             dataflow_config=self.dataflow_config,
         )
 
     def create_dataflow(self):
         """Create the data flow based on the specifications."""
-        log_target = f"target type: {self.dataflow_spec.targetFormat}, target: " + (
-            getattr(self.target_details, 'sink_name')
-            if self.dataflow_spec.targetFormat in SinkType.__dict__.values()
-            else getattr(self.target_details, 'table')
+        log_target = (
+            f"target type: {type(self.target_details).__name__}, "
+            f"target: {self.target_details.target_name}"
         )
         log_msg = (
             f"Flow ID: {self.dataflow_spec.dataFlowId}\n"
@@ -220,38 +218,25 @@ class DataFlow:
         if self.quarantine_enabled and self.quarantine_mode == QuarantineMode.FLAG:
             expectations = self.expectations.get_expectations_as_expect_all()
 
-        if self.dataflow_spec.targetFormat == TargetType.DELTA:
-            
-            if self.target_details.type == TableType.STREAMING.value:
-                
-                # create streaming table
-                self.target_details.create_table(expectations)
+        target = self.target_details
 
-                # setup table migration
-                if self.table_migration_manager:
-                    self.table_migration_manager.create_flow()
-
-                # create flow groups
-                self._create_flow_groups()
-
-            if self.target_details.type == TableType.MATERIALIZED_VIEW.value:
-                
-                # create flow groups
-                self._create_flow_groups()
-
-                # create materialized view
-                self.target_details.create_table(expectations, features=self.features)
-
-        elif self.dataflow_spec.targetFormat in SinkType.__dict__.values():
-            
-            # create sink
-            self.target_details.create_sink()
-
-            # create flow groups
+        if target.is_sink:
+            target.create()
             self._create_flow_groups()
-        
+
+        elif target.creates_before_flows:
+            # e.g. StreamingTableDelta: create table first, then flow groups
+            target.create(expectations, features=self.features)
+
+            if self.table_migration_manager:
+                self.table_migration_manager.create_flow()
+
+            self._create_flow_groups()
+
         else:
-            raise ValueError(f"Unsupported target format: {self.dataflow_spec.targetFormat}")
+            # e.g. MaterializedViewDelta: flow groups first, then create the MV
+            self._create_flow_groups()
+            target.create(expectations, features=self.features)
 
     def _create_flow_groups(self):
         """Create flow groups."""
@@ -268,7 +253,7 @@ class DataFlow:
         if staging_tables:
             self.logger.info("Creating Staging Tables...")
             for staging_table in staging_tables.values():
-                staging_table.create_table()
+                staging_table.create()
 
                 # Support direct historical snapshots into Staging Tables in Flows
                 cdc_snapshot_settings = staging_table.get_cdc_snapshot_settings()
@@ -428,8 +413,5 @@ class DataFlow:
         return exceptions
 
     def is_target(self, name: str) -> bool:
-        """Check if the table is the target."""
-        if self.dataflow_spec.targetFormat in SinkType.__dict__.values():
-            return name == self.target_details.sink_name
-        else:
-            return name == self.target_details.table
+        """Check if *name* refers to the top-level target (not a staging table)."""
+        return name == self.target_details.target_name

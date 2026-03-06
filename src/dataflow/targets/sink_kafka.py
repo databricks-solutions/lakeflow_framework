@@ -1,37 +1,51 @@
-from dataclasses import dataclass, field
-from typing import Dict, Any
+from __future__ import annotations
 
-from .base import BaseSink
-from ..enums import SinkType
+from typing import ClassVar
+
+from pyspark import pipelines as sdp
+
+from dataflow.field import Field
+from dataflow.target import Target
 
 
-@dataclass(kw_only=True)
-class TargetKafkaSink(BaseSink):
+class KafkaSink(Target):
     """
-    Target details structure for Kafka Sinks.
+    Kafka Sink target.
 
-    Attributes:
-        name (str): Name of the sink.
-        sinkOptions (Dict, optional): Options for the Kafka writer.
+    Creates a ``kafka`` sink using the Spark Declarative Pipelines API.
+
+    Spec fields (``targetDetails`` keys)
+    ------------------------------------
+    * ``name``        — sink name (required)
+    * ``sinkOptions`` — dict of Kafka writer options
+
+    Set ``"targetFormat": "kafka_sink"`` in the dataflow spec.
     """
-    name: str
-    sinkOptions: Dict = field(default_factory=dict)
 
-    def __post_init__(self):
-        """Post init validation."""
-        BaseSink.__init__(self)
+    target_type: ClassVar[str] = "kafka_sink"
+    is_sink: ClassVar[bool] = True
+    creates_before_flows: ClassVar[bool] = True
+
+    target_name: str = Field(spec_field="name")
+    sinkOptions: dict = Field(default={}, schema_extra={
+        "properties": {
+            "topic": {"type": "string"},
+            "kafka.bootstrap.servers": {"type": "string"},
+            "kafka.group.id": {"type": "string"},
+            "kafka.security.protocol": {"type": "string", "default": "SASL_SSL"},
+            "kafka.ssl.keystore.location": {"type": "string"},
+            "kafka.ssl.keystore.password": {"type": "string"},
+            "kafka.ssl.truststore.location": {"type": "string"},
+            "kafka.ssl.truststore.password": {"type": "string"},
+        },
+        "required": ["topic", "kafka.bootstrap.servers"],
+    })
 
     @property
     def sink_name(self) -> str:
-        """Returns the name of the sink."""
-        return self.name
+        """Alias for :attr:`target_name` (backward compatibility)."""
+        return self.target_name
 
-    @property
-    def sink_type(self) -> str:
-        """Returns the type of the sink."""
-        return SinkType.KAFKA_SINK
-
-    @property
-    def sink_options(self) -> Dict[str, Any]:
-        """Returns the options for the sink configuration."""
-        return self.sinkOptions
+    def create_target(self) -> None:
+        self.logger.info(f"Creating Kafka Sink: {self.target_name}")
+        sdp.create_sink(f"`{self.target_name}`", self.target_type, self.sinkOptions)

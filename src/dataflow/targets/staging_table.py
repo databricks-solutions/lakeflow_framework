@@ -1,35 +1,44 @@
-from dataclasses import dataclass, field
-from typing import Dict
+from __future__ import annotations
 
-from ..cdc import CDCSettings
-from ..cdc_snapshot import CDCSnapshotSettings
+from typing import Optional
 
-from .delta_streaming_table import TargetDeltaStreamingTable
+from dataflow.cdc import CDCSettings
+from dataflow.cdc_snapshot import CDCSnapshotSettings
+from dataflow.field import Field
+from dataflow.targets.delta_streaming_table import StreamingTableDelta
 
 
-@dataclass(kw_only=True)
-class StagingTable(TargetDeltaStreamingTable):
+class StagingTable(StreamingTableDelta):
     """
-    A structure to hold a target used for defining a staging table inside a flow.
+    Staging table used within a flow group.
 
-    Attributes:
-        cdcSettings (Dict, optional): CDC settings.
-        cdcSnapshotSettings (Dict, optional): CDC snapshot settings.
-    
-    Methods:
-        get_cdc_settings() -> CDCSettings: Get CDC settings.
-        get_cdc_snapshot_settings() -> CDCSnapshotSettings: Get CDC snapshot settings.
+    Extends :class:`StreamingTableDelta` with per-table CDC and CDC-snapshot
+    settings so that intermediate tables in multi-hop pipelines can carry
+    their own change-data-capture configuration independently from the
+    top-level dataflow spec.
+
+    This class is **not** registered in the target registry (it does not
+    redeclare ``target_type``) and is constructed directly by
+    :class:`~dataflow.flow_group.FlowGroup`.
+
+    Additional spec fields
+    ----------------------
+    * ``cdcSettings``         — CDC settings dict (forwarded to
+                                :class:`~dataflow.cdc.CDCSettings`)
+    * ``cdcSnapshotSettings`` — CDC snapshot settings dict (forwarded to
+                                :class:`~dataflow.cdc_snapshot.CDCSnapshotSettings`)
     """
 
-    cdcSettings: Dict = field(default_factory=dict)
-    cdcSnapshotSettings: Dict = field(default_factory=dict)
+    cdcSettings: Optional[dict] = Field(required=False)
+    cdcSnapshotSettings: Optional[dict] = Field(required=False)
 
-    def get_cdc_settings(self) -> CDCSettings:
-        """Get CDC configuration."""
-        return CDCSettings(**self.cdcSettings) \
-            if self.cdcSettings else None
+    def get_cdc_settings(self) -> Optional[CDCSettings]:
+        """Return :class:`~dataflow.cdc.CDCSettings` if configured."""
+        return CDCSettings(**self.cdcSettings) if self.cdcSettings else None
 
-    def get_cdc_snapshot_settings(self) -> CDCSnapshotSettings:
-        """Get CDC snapshot settings."""
-        return CDCSnapshotSettings(**self.cdcSnapshotSettings) \
+    def get_cdc_snapshot_settings(self) -> Optional[CDCSnapshotSettings]:
+        """Return :class:`~dataflow.cdc_snapshot.CDCSnapshotSettings` if configured."""
+        return (
+            CDCSnapshotSettings(**self.cdcSnapshotSettings)
             if self.cdcSnapshotSettings else None
+        )
