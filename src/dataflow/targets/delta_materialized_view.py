@@ -4,6 +4,7 @@ from typing import ClassVar, Optional
 
 from pyspark import pipelines as sdp
 
+from dataflow.constraints import RequireOneOf
 from dataflow.field import Field
 from dataflow.operational_metadata import OperationalMetadataMixin
 from dataflow.target import Target
@@ -38,13 +39,9 @@ class MaterializedViewDelta(Target, DeltaMixin, SqlMixin, OperationalMetadataMix
 
     target_type: ClassVar[str] = "materialized_view_delta"
     creates_before_flows: ClassVar[bool] = False  # MV is created after flow groups
-    _json_schema_constraints: ClassVar[dict] = {
-        "anyOf": [
-            {"required": ["sourceView"]},
-            {"required": ["sqlPath"]},
-            {"required": ["sqlStatement"]},
-        ]
-    }
+    _schema_constraints: ClassVar[list] = [
+        RequireOneOf("sourceView", "sqlPath", "sqlStatement"),
+    ]
 
     sourceView: Optional[str] = Field(required=False)
 

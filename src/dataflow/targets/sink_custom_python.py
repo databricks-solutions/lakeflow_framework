@@ -6,9 +6,10 @@ from pyspark import pipelines as sdp
 
 from dataflow.field import Field
 from dataflow.target import Target
+from dataflow.targets.mixins.sink import SinkMixin
 
 
-class CustomPythonSink(Target):
+class CustomPythonSink(Target, SinkMixin):
     """
     Custom Python Sink target.
 
@@ -23,16 +24,7 @@ class CustomPythonSink(Target):
     """
 
     target_type: ClassVar[str] = "custom_python_sink"
-    is_sink: ClassVar[bool] = True
-    creates_before_flows: ClassVar[bool] = True
-
-    target_name: str = Field(spec_field="name")
     sinkOptions: dict = Field(default={})
-
-    @property
-    def sink_name(self) -> str:
-        """Alias for :attr:`target_name` (backward compatibility)."""
-        return self.target_name
 
     def create_target(self) -> None:
         self.logger.info(f"Creating Custom Python Sink: {self.target_name}")

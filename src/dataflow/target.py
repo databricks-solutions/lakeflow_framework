@@ -132,7 +132,7 @@ class Target(metaclass=TargetMeta):
     target_type: ClassVar[str]
     is_sink: ClassVar[bool] = False
     creates_before_flows: ClassVar[bool] = True
-    _json_schema_constraints: ClassVar[dict] = {}
+    _schema_constraints: ClassVar[list] = []
 
     # ---- universal spec field ----------------------------------------- #
     configFlags: list[str] = Field(required=False, default=[])
@@ -189,6 +189,21 @@ class Target(metaclass=TargetMeta):
         parent = super()
         if hasattr(parent, "__post_init__"):
             parent.__post_init__()
+        # Enforce declarative constraints after all post-inits in the MRO
+        # have run, so fields reflect any transformations (e.g. database
+        # prefix applied to target_name in DeltaMixin) before validation fires.
+        self._validate_constraints()
+
+    def _validate_constraints(self) -> None:
+        """Run every :class:`~dataflow.constraints.SchemaConstraint` in the MRO.
+
+        Iterates ``_schema_constraints`` lists base-to-derived across the full
+        MRO, calling :meth:`~dataflow.constraints.SchemaConstraint.validate`
+        on each.  Raises :exc:`ValueError` on the first violation found.
+        """
+        for klass in reversed(type(self).__mro__):
+            for constraint in klass.__dict__.get("_schema_constraints", []):
+                constraint.validate(self)
 
     # ------------------------------------------------------------------
     # Introspection
@@ -222,9 +237,9 @@ class Target(metaclass=TargetMeta):
         * Field types are inferred from Python type annotations via
           :func:`~dataflow.field._py_type_to_json_schema`.  An explicit
           ``json_type`` on the :class:`~dataflow.field.Field` takes priority.
-        * Cross-field constraints (``oneOf``, ``anyOf``, ``allOf``) are
-          collected from ``_json_schema_constraints`` across the entire MRO,
-          base-to-derived, so subclasses can extend without repeating.
+        * Cross-field constraints declared in ``_schema_constraints`` across
+          the entire MRO are collected base-to-derived and merged, so
+          subclasses extend without repeating parent constraints.
         """
         import typing
         hints = typing.get_type_hints(cls)
@@ -239,16 +254,16 @@ class Target(metaclass=TargetMeta):
         if required:
             schema["required"] = required
 
-        # Merge _json_schema_constraints from base → derived (derived wins on
-        # scalar keys; list keys like oneOf/anyOf/allOf are concatenated).
+        # Collect _schema_constraints from base → derived, merge their
+        # JSON Schema fragments (list keys are concatenated; scalar keys
+        # follow last-write-wins so derived classes can override).
         for klass in reversed(cls.__mro__):
-            constraints = klass.__dict__.get("_json_schema_constraints") or {}
-            for key, val in constraints.items():
-                if key in ("oneOf", "anyOf", "allOf") and key in schema:
-                    val_list = val if isinstance(val, list) else [val]
-                    schema[key] = schema[key] + val_list
-                else:
-                    schema[key] = val
+            for constraint in klass.__dict__.get("_schema_constraints", []):
+                for key, val in constraint.to_json_schema().items():
+                    if key in ("oneOf", "anyOf", "allOf") and key in schema:
+                        schema[key] = schema[key] + (val if isinstance(val, list) else [val])
+                    else:
+                        schema[key] = val
 
         return schema
 

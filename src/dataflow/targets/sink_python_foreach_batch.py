@@ -7,9 +7,10 @@ from pyspark import pipelines as sdp
 import utility
 from dataflow.field import Field
 from dataflow.target import Target
+from dataflow.targets.mixins.sink import SinkMixin
 
 
-class PythonForEachBatchSink(Target):
+class PythonForEachBatchSink(Target, SinkMixin):
     """
     For-each-batch sink that delegates to a user-supplied Python function.
 
@@ -36,16 +37,7 @@ class PythonForEachBatchSink(Target):
     """
 
     target_type: ClassVar[str] = "python_foreach_batch_sink"
-    is_sink: ClassVar[bool] = True
-    creates_before_flows: ClassVar[bool] = True
-
-    target_name: str = Field(spec_field="name")
     config: dict = Field(default={})
-
-    @property
-    def sink_name(self) -> str:
-        """Alias for :attr:`target_name` (backward compatibility)."""
-        return self.target_name
 
     def create_target(self) -> None:
         module_ref = self.config.get("module")

@@ -6,6 +6,7 @@ from typing import ClassVar, Optional, Union
 import pyspark.sql.types as T
 
 import utility
+from dataflow.constraints import MutuallyExclusive
 from dataflow.enums import TargetConfigFlags
 from dataflow.field import Field
 from dataflow.target import TargetMeta
@@ -44,10 +45,9 @@ class DeltaMixin(metaclass=TargetMeta):
                                (inherited from :class:`~dataflow.target.Target`)
     """
 
-    is_sink: ClassVar[bool] = False
-    _json_schema_constraints: ClassVar[dict] = {
-        "oneOf": [{"not": {"required": ["clusterByColumns", "partitionColumns"]}}]
-    }
+    _schema_constraints: ClassVar[list] = [
+        MutuallyExclusive("clusterByColumns", "partitionColumns"),
+    ]
 
     # ---- spec fields -------------------------------------------------- #
     target_name: str = Field(spec_field="table")
@@ -76,7 +76,7 @@ class DeltaMixin(metaclass=TargetMeta):
         self._schema_struct: Optional[T.StructType] = None
         self._schema_ddl: Optional[str] = None
         self._schema_lines: list[str] = []
-        self._schema_constraints: list[str] = []
+        self._ddl_constraints: list[str] = []
         self._table_schema: Optional[Union[T.StructType, str]] = None
 
         # Allow parent/sibling post-inits to run first (cooperative MI).
@@ -98,11 +98,6 @@ class DeltaMixin(metaclass=TargetMeta):
             self.target_name = f"{self.database}.{self.target_name}"
 
         # Validate mutually exclusive cluster/partition options.
-        if self.partitionColumns and self.clusterByColumns:
-            raise ValueError(
-                f"'{self.target_name}': partitionColumns and clusterByColumns are "
-                "mutually exclusive."
-            )
         if self.partitionColumns and self.clusterByAuto:
             raise ValueError(
                 f"'{self.target_name}': partitionColumns and clusterByAuto are "
@@ -138,7 +133,7 @@ class DeltaMixin(metaclass=TargetMeta):
                 self._schema_ddl = fh.read()
             lines = [ln.strip().rstrip(",") for ln in self._schema_ddl.split("\n")]
             lines = [ln for ln in lines if not ln.startswith("--")]
-            self._schema_constraints = [
+            self._ddl_constraints = [
                 ln for ln in lines if ln.startswith(CONSTRAINT_KEYWORDS)
             ]
             self._schema_lines = [
@@ -178,9 +173,9 @@ class DeltaMixin(metaclass=TargetMeta):
     @property
     def schema_ddl(self) -> Optional[str]:
         """Schema as a DDL string (column definitions + constraints), or ``None``."""
-        if not self._schema_lines and not self._schema_constraints:
+        if not self._schema_lines and not self._ddl_constraints:
             return None
-        return ",\n".join(self._schema_lines + self._schema_constraints)
+        return ",\n".join(self._schema_lines + self._ddl_constraints)
 
     # ---- backward-compatibility alias --------------------------------- #
 

@@ -6,10 +6,11 @@ from pyspark import pipelines as sdp
 
 from dataflow.field import Field
 from dataflow.target import Target
+from dataflow.targets.mixins.sink import SinkMixin
 from dataflow.targets.mixins.sql import SqlMixin
 
 
-class SqlForEachBatchSink(Target, SqlMixin):
+class SqlForEachBatchSink(Target, SinkMixin, SqlMixin):
     """
     For-each-batch sink that executes a SQL statement against each micro-batch.
 
@@ -38,23 +39,13 @@ class SqlForEachBatchSink(Target, SqlMixin):
     """
 
     target_type: ClassVar[str] = "sql_foreach_batch_sink"
-    is_sink: ClassVar[bool] = True
-    creates_before_flows: ClassVar[bool] = True
-
-    target_name: str = Field(spec_field="name")
     config: dict = Field(default={})
-
-    @property
-    def sink_name(self) -> str:
-        """Alias for :attr:`target_name` (backward compatibility)."""
-        return self.target_name
 
     def __post_init__(self) -> None:
         # Populate SqlMixin fields from the nested config dict before
         # super().__post_init__ runs, so that SqlMixin.rawSql works correctly.
-        fp = self.field_prefix
-        self.__dict__[fp + "sqlPath"] = self.config.get("sqlPath")
-        self.__dict__[fp + "sqlStatement"] = self.config.get("sqlStatement")
+        self.sqlPath = self.config.get("sqlPath")
+        self.sqlStatement = self.config.get("sqlStatement")
         super().__post_init__()
 
     def create_target(self) -> None:

@@ -6,9 +6,10 @@ from pyspark import pipelines as sdp
 
 from dataflow.field import Field
 from dataflow.target import Target
+from dataflow.targets.mixins.sink import SinkMixin
 
 
-class KafkaSink(Target):
+class KafkaSink(Target, SinkMixin):
     """
     Kafka Sink target.
 
@@ -23,10 +24,6 @@ class KafkaSink(Target):
     """
 
     target_type: ClassVar[str] = "kafka_sink"
-    is_sink: ClassVar[bool] = True
-    creates_before_flows: ClassVar[bool] = True
-
-    target_name: str = Field(spec_field="name")
     sinkOptions: dict = Field(default={}, schema_extra={
         "properties": {
             "topic": {"type": "string"},
@@ -40,11 +37,6 @@ class KafkaSink(Target):
         },
         "required": ["topic", "kafka.bootstrap.servers"],
     })
-
-    @property
-    def sink_name(self) -> str:
-        """Alias for :attr:`target_name` (backward compatibility)."""
-        return self.target_name
 
     def create_target(self) -> None:
         self.logger.info(f"Creating Kafka Sink: {self.target_name}")

@@ -1,5 +1,5 @@
 """
-Dynamic generation of the ``definitions_targets.json`` JSON Schema.
+Dynamic generation of the target JSON Schema (replaces ``definitions_targets.json``).
 
 The schema is built entirely from:
 
@@ -7,8 +7,8 @@ The schema is built entirely from:
   ``dataflow.targets`` is imported (metaclass registration).
 * :class:`~dataflow.field.Field` descriptors — provide field names, types,
   required status, patterns, enums, and nested schemas.
-* ``_json_schema_constraints`` classvars — cross-field constraints
-  (``oneOf``, ``anyOf``, ``allOf``) that cannot be expressed per-field.
+* ``_schema_constraints`` classvars — :class:`~dataflow.constraints.SchemaConstraint`
+  instances for cross-field rules that cannot be expressed per-field.
 * :class:`~dataflow.enums.TargetConfigFlags` — drives the ``configFlags``
   enum values so they stay in sync with the Python constant.
 
@@ -19,10 +19,9 @@ Obtain the schema dict::
     from dataflow.target_schema import generate_target_schema
     schema = generate_target_schema()
 
-The returned dict is structurally equivalent to
-``src/schemas/definitions_targets.json`` and is suitable for injecting into
-a :class:`jsonschema.RefResolver` store so that ``$ref`` references to that
-file are resolved from memory rather than from disk.
+The returned dict is injected into a :class:`jsonschema.RefResolver` store
+so that ``$ref`` references to ``definitions_targets.json`` in the static
+schema files are resolved from memory rather than from disk.
 """
 from __future__ import annotations
 
