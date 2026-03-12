@@ -51,6 +51,12 @@ resources:
             full_refresh: false
           depends_on:
             - task_key: staging_load
+        - task_key: bronze_template_samples_pipeline
+          pipeline_task:
+            pipeline_id: ${var.lakeflow_samples_bronze_template_samples_pipeline_id}
+            full_refresh: false
+          depends_on:
+            - task_key: staging_load
 
         # Silver pipelines
         - task_key: silver_base_samples_pipeline
@@ -111,10 +117,13 @@ resources:
             - task_key: feature_samples_pipeline_general
             - task_key: feature_samples_pipeline_data_quality
             - task_key: feature_samples_pipeline_snapshots
+            - task_key: feature_samples_pipeline_table_migration
             - task_key: yaml_sample_pipeline
+            - task_key: bronze_template_samples_pipeline
             - task_key: silver_base_samples_pipeline
             - task_key: silver_multi_source_streaming_basic_pipeline
             - task_key: silver_multi_source_streaming_decomp_final_pipeline
+            - task_key: silver_stream_static_streaming_dwh_pipeline
             - task_key: gold_stream_static_pipeline
 
       queue:
