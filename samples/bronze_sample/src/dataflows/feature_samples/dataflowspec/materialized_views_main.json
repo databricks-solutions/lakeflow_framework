@@ -41,6 +41,13 @@
                     "spark.sql.session.timeZone": "Australia/Sydney"
                 }
             }
+        },
+        "feature_mv_with_refresh_policy": {
+            "sqlStatement": "SELECT * FROM {staging_schema}.customer",
+            "refreshPolicy": "incremental_strict",
+            "tableDetails": {
+                "configFlags": ["disableOperationalMetadata"]
+            }
         }
     }
 }

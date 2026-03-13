@@ -30,6 +30,9 @@ class TargetDeltaMaterializedView(BaseTargetDelta, SqlMixin, OperationalMetadata
         sqlStatement (str, optional): SQL statement.
         rowFilter (str, optional): Row filter for the target table.
         sparkConf (Dict, optional): Spark configuration for the target table.
+        refreshPolicy (str, optional): Refresh policy for the materialized view.
+            One of: "auto", "incremental", "incremental_strict", "full".
+            Defaults to None (uses the SDP default of "auto").
 
     Properties:
         schema_type (str): Type of schema ["json", "ddl"].
@@ -47,6 +50,7 @@ class TargetDeltaMaterializedView(BaseTargetDelta, SqlMixin, OperationalMetadata
         remove_columns: Remove columns from the target schema.
     """
     sourceView: Optional[str] = None
+    refreshPolicy: Optional[str] = None
 
     def _create_table(
         self,
@@ -80,7 +84,8 @@ class TargetDeltaMaterializedView(BaseTargetDelta, SqlMixin, OperationalMetadata
         elif self.rawSql:
             sql = substitution_manager.substitute_string(self.rawSql)
         
-        @dp.table(
+        decorator = dp.materialized_view if self.refreshPolicy else dp.table
+        decorator_kwargs = dict(
             name=self.table,
             comment=self.comment,
             spark_conf=self.sparkConf,
@@ -93,6 +98,10 @@ class TargetDeltaMaterializedView(BaseTargetDelta, SqlMixin, OperationalMetadata
             cluster_by_auto=self.clusterByAuto,
             private=self.private
         )
+        if self.refreshPolicy:
+            decorator_kwargs["refresh_policy"] = self.refreshPolicy
+
+        @decorator(**decorator_kwargs)
         @dp.expect_all(expectations.get("expect_all", {}) if expectations else {})
         @dp.expect_all_or_drop(expectations.get("expect_all_or_drop", {}) if expectations else {})
         @dp.expect_all_or_fail(expectations.get("expect_all_or_fail", {}) if expectations else {})

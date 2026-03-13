@@ -50,7 +50,8 @@ class MaterializedViewSpecTransformer(BaseSpecTransformer):
             "table": mv_name,
             "type": TableType.MATERIALIZED_VIEW,
             "sqlPath": mv_config.get("sqlPath"),
-            "sqlStatement": mv_config.get("sqlStatement")
+            "sqlStatement": mv_config.get("sqlStatement"),
+            "refreshPolicy": mv_config.get("refreshPolicy")
         })
         return target_details
 
