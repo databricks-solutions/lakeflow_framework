@@ -12,6 +12,7 @@ Materialized Views
      - - `Materialized Views <https://docs.databricks.com/aws/en/dlt/materialized-views>`_
        - `Delta Live Tables Python Reference <https://docs.databricks.com/en/delta-live-tables/python-ref.html>`_
        - `Delta Live Tables SQL Reference <https://docs.databricks.com/en/delta-live-tables/sql-ref.html>`_
+       - `Incremental Refresh for Materialized Views <https://docs.databricks.com/aws/en/optimizations/incremental-refresh>`_
 
 Overview
 --------
@@ -83,7 +84,8 @@ The following schema details the configuration for a Materialized View Data Flow
                      "dataQualityExpectationsEnabled": false,
                      "dataQualityExpectationsPath": "",
                      "quarantineMode": "off",
-                     "quarantineTargetDetails": {}
+                     "quarantineTargetDetails": {},
+                     "refreshPolicy": "auto"
                  }
              }
          }
@@ -114,6 +116,7 @@ The following schema details the configuration for a Materialized View Data Flow
              dataQualityExpectationsPath: ''
              quarantineMode: 'off'
              quarantineTargetDetails: {}
+             refreshPolicy: auto
 
 Source Type Details
 ~~~~~~~~~~~~~~~~~~~
@@ -217,6 +220,11 @@ Materialized Views support several additional configuration options:
   - Set quarantine mode
   - Configure quarantine target details
 
+- **Refresh Policy** *(Beta — requires DBR 17.3+)*
+  - Control how the MV is refreshed: ``auto``, ``incremental``, ``incremental_strict``, or ``full``
+  - When set, the framework uses ``@dp.materialized_view()`` with the ``refresh_policy`` parameter
+  - ``incremental_strict`` disallows non-deterministic functions (e.g. ``current_timestamp()``); use ``disableOperationalMetadata`` in ``configFlags`` when needed
+
 Example Configuration
 -------------------
 
@@ -258,6 +266,13 @@ A complete example of a materialized view configuration:
                      "quarantineTargetDetails": {
                          "targetFormat": "delta"
                      }
+                 },
+                 "mv_with_refresh_policy": {
+                     "sqlStatement": "SELECT * FROM {staging_schema}.customer",
+                     "refreshPolicy": "incremental_strict",
+                     "tableDetails": {
+                         "configFlags": ["disableOperationalMetadata"]
+                     }
                  }
              }
          }
@@ -289,5 +304,11 @@ A complete example of a materialized view configuration:
              quarantineMode: table
              quarantineTargetDetails:
                targetFormat: delta
+           mv_with_refresh_policy:
+             sqlStatement: SELECT * FROM {staging_schema}.customer
+             refreshPolicy: incremental_strict
+             tableDetails:
+               configFlags:
+                 - disableOperationalMetadata
 
 For more detailed information about configuration options, refer to the :doc:`dataflow_spec_reference` documentation. 

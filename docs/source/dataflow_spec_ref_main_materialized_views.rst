@@ -39,7 +39,8 @@ The following schema details the configuration for a Materialized View Data Flow
                     "dataQualityExpectationsEnabled": false,
                     "dataQualityExpectationsPath": "",
                     "quarantineMode": "off",
-                    "quarantineTargetDetails": {}
+                    "quarantineTargetDetails": {},
+                    "refreshPolicy": "auto"
                 }
             }
         }
@@ -70,6 +71,7 @@ The following schema details the configuration for a Materialized View Data Flow
             dataQualityExpectationsPath: ''
             quarantineMode: 'off'
             quarantineTargetDetails: {}
+            refreshPolicy: auto
 
 Example:
 --------
@@ -121,6 +123,13 @@ The below demonstrates a Materialized View Data Flow Spec:
                     "quarantineTargetDetails": {
                         "targetFormat": "delta"
                     }
+                },
+                "mv_with_refresh_policy": {
+                    "sqlStatement": "SELECT * FROM {staging_schema}.customer",
+                    "refreshPolicy": "incremental_strict",
+                    "tableDetails": {
+                        "configFlags": ["disableOperationalMetadata"]
+                    }
                 }
             }
         }
@@ -161,6 +170,12 @@ The below demonstrates a Materialized View Data Flow Spec:
             quarantineMode: table
             quarantineTargetDetails:
               targetFormat: delta
+          mv_with_refresh_policy:
+            sqlStatement: SELECT * FROM {staging_schema}.customer
+            refreshPolicy: incremental_strict
+            tableDetails:
+              configFlags:
+                - disableOperationalMetadata
 
 The above dataflow spec sample contains the following core components:
 
@@ -271,6 +286,13 @@ These properties define the materialized view specific configuration:
    * - **private** (*optional*)
      - ``boolean``
      - Create a table, but do not publish the table to the metastore.
+   * - **refreshPolicy** (*optional*)
+     - ``string``
+     - *(Beta — requires DBR 17.3+)* The refresh policy for the materialized view.
+       One of: ``auto``, ``incremental``, ``incremental_strict``, ``full``.
+       When set, the framework uses ``@dp.materialized_view()`` with the ``refresh_policy`` parameter.
+       Note: ``incremental_strict`` disallows non-deterministic functions such as ``current_timestamp()``.
+       When using operational metadata with ``incremental_strict``, add ``disableOperationalMetadata`` to ``configFlags``.
 
 .. _dataflow-spec-materialized-view-data-quality-configuration:
 
