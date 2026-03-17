@@ -1,0 +1,18 @@
+resources:
+  pipelines:
+    PIPELINE_NAME:
+      name: PIPELINE_NAME
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      channel: CURRENT
+      serverless: true
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: /Workspace/${workspace.file_path}/src
+        framework.sourcePath: /Workspace/${var.framework_source_path}
+        workspace.host: ${workspace.host}
+        bundle.target: ${bundle.target}
+        pipeline.layer: ${var.layer}
