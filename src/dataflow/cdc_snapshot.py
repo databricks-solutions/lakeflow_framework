@@ -408,29 +408,24 @@ class CDCSnapshotFlow:
         
         # Extract version from filename and filter by latest_snapshot_version if provided
         available_versions = []
-        seen_versions: set = set()
-        d = []
         for file in files_with_path_info:
             self.logger.debug(f"CDC Snapshot: Processing file: {file.filename_with_version_path}")
             try:
                 version_info = self._extract_version_from_filename(file.filename_with_version_path, file_pattern_regex)
-                d.append((file.filename_with_version_path, file_pattern_regex, version_info))
                 if version_info is None:
                     continue
 
                 self.logger.debug(f"CDC Snapshot: Extracted version from filename: {version_info.formatted_value}. Raw version: {version_info.raw_value}")
-                
+
                 if latest_snapshot_version is None and self.source.startingVersion is not None and version_info.raw_value < self.source.startingVersion:
                     continue
-                
+
                 if latest_snapshot_version is not None and version_info.raw_value <= latest_snapshot_version:
                     continue
-                
+
                 # Dedupe by version (multiple fragments can share same version)
-                version_key = (version_info.raw_value,)
-                if version_key in seen_versions:
+                if any(v.raw_value == version_info.raw_value for v in available_versions):
                     continue
-                seen_versions.add(version_key)
                 available_versions.append(version_info)
                 self.logger.debug(f"CDC Snapshot: Added version {version_info.formatted_value} to available versions")
 
