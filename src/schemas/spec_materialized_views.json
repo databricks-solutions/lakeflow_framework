@@ -50,6 +50,10 @@
                                 },
                                 "additionalProperties": false
                             },
+                            "refreshPolicy": {
+                                "type": "string",
+                                "enum": ["auto", "incremental", "incremental_strict", "full"]
+                            },
                             "dataQualityExpectationsEnabled": {"type": "boolean"},
                             "dataQualityExpectationsPath": {"type": "string"},
                             "quarantineMode": {"type": "string", "enum": ["off", "flag", "table"], "default": "off"},
