@@ -1,5 +1,20 @@
 from dataclasses import dataclass
 from enum import Enum
+import os
+
+
+def _has_visible_children(directory: str) -> bool:
+    """
+    Return True if `directory` exists and contains at least one child name not prefixed with `.`
+    """
+    if not os.path.isdir(directory):
+        return False
+    try:
+        names = os.listdir(directory)
+    except OSError:
+        return False
+    return any(not n.startswith(".") for n in names)
+
 
 @dataclass(frozen=True)
 class FrameworkSettings:
@@ -39,13 +54,18 @@ class FrameworkPaths:
     """
     FrameworkPaths is a class that contains constants for various paths and file masks used in the Lakeflow Framework.
 
+    CONFIG_PATH and CONFIG_OVERRIDES_PATH are static path segments (./config and ./config_overrides).
+    At runtime, which root to use for framework config files should be chosen with
+    resolve_framework_config_path(framework_path).
+
     Attributes:
-        CONFIG_PATH (str): Path to the config directory.
+        CONFIG_PATH (str): Path to the config directory (./config).
+        CONFIG_OVERRIDES_PATH (str): Overrides the config directory (./config_overrides).
         EXTENSIONS_PATH (str): The path for extensions.
-        GLOBAL_CONFIG (tuple): Paths to the global configuration files.
+        GLOBAL_CONFIG (tuple): Basenames of global configuration files (under the resolved config root).
         GLOBAL_SUBSTITUTIONS (tuple): Paths to the global substitutions files.
         GLOBAL_SECRETS (tuple): Paths to the global secrets files.
-        DATAFLOW_SPEC_MAPPING_PATH (str): Path to the dataflow spec mapping directory.
+        DATAFLOW_SPEC_MAPPING (str): Directory segment for dataflow spec mapping (under the resolved root).
         MAIN_SPEC_SCHEMA_PATH (str): Path to the main specification schema file.
         FLOW_GROUP_SPEC_SCHEMA_PATH (str): Path to the flow group specification schema file.
         EXPECTATIONS_SPEC_SCHEMA_PATH (str): Path to the expectations specification schema file.
@@ -54,11 +74,12 @@ class FrameworkPaths:
         TEMPLATE_SPEC_SCHEMA_PATH (str): Path to the template specification schema file.
     """
     CONFIG_PATH: str = "./config"
+    CONFIG_OVERRIDES_PATH: str = "./config_overrides"
     EXTENSIONS_PATH: str = "./extensions"
-    GLOBAL_CONFIG: tuple = ("./config/global.json", "./config/global.yaml", "./config/global.yml")
+    GLOBAL_CONFIG: tuple = (f"global.json", f"global.yaml", f"global.yml")
     GLOBAL_SUBSTITUTIONS: tuple = ("_substitutions.json", "_substitutions.yaml", "_substitutions.yml")
     GLOBAL_SECRETS: tuple = ("_secrets.json", "_secrets.yaml", "_secrets.yml")
-    DATAFLOW_SPEC_MAPPING_PATH: str = "./config/dataflow_spec_mapping"
+    DATAFLOW_SPEC_MAPPING: str = "dataflow_spec_mapping"
     REQUIREMENTS_FILE: str = "requirements.txt"
 
     # Spec schema definitions paths
@@ -69,7 +90,18 @@ class FrameworkPaths:
     SECRETS_SCHEMA_PATH: str = "./schemas/secrets.json"
     TEMPLATE_DEFINITION_SPEC_SCHEMA_PATH: str = "./schemas/spec_template_definition.json"
     TEMPLATE_SPEC_SCHEMA_PATH: str = "./schemas/spec_template.json"
- 
+
+
+def resolve_framework_config_path(framework_path: str) -> str:
+    """
+    Return FrameworkPaths.CONFIG_OVERRIDES_PATH when framework_path/config_overrides
+    exists and has at least one non-hidden entry; otherwise FrameworkPaths.CONFIG_PATH.
+    """
+    overrides_dir = os.path.join(framework_path, FrameworkPaths.CONFIG_OVERRIDES_PATH)
+    if _has_visible_children(overrides_dir):
+        return FrameworkPaths.CONFIG_OVERRIDES_PATH
+    return FrameworkPaths.CONFIG_PATH
+
 
 class SupportedSpecFormat(str, Enum):
     """Supported specification file formats."""
