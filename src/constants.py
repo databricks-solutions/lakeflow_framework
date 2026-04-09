@@ -54,13 +54,13 @@ class FrameworkPaths:
     """
     FrameworkPaths is a class that contains constants for various paths and file masks used in the Lakeflow Framework.
 
-    CONFIG_PATH and CONFIG_OVERRIDES_PATH are static path segments (./config and ./config_overrides).
+    CONFIG_PATH and CONFIG_OVERRIDE_PATH are static path segments (./config and ./config_override).
     At runtime, which root to use for framework config files should be chosen with
     resolve_framework_config_path(framework_path).
 
     Attributes:
         CONFIG_PATH (str): Path to the config directory (./config).
-        CONFIG_OVERRIDES_PATH (str): Overrides the config directory (./config_overrides).
+        CONFIG_OVERRIDE_PATH (str): Overrides the config directory (./config_override).
         EXTENSIONS_PATH (str): The path for extensions.
         GLOBAL_CONFIG (tuple): Basenames of global configuration files (under the resolved config root).
         GLOBAL_SUBSTITUTIONS (tuple): Paths to the global substitutions files.
@@ -74,7 +74,7 @@ class FrameworkPaths:
         TEMPLATE_SPEC_SCHEMA_PATH (str): Path to the template specification schema file.
     """
     CONFIG_PATH: str = "./config"
-    CONFIG_OVERRIDES_PATH: str = "./config_overrides"
+    CONFIG_OVERRIDE_PATH: str = "./config_override"
     EXTENSIONS_PATH: str = "./extensions"
     GLOBAL_CONFIG: tuple = ("global.json", "global.yaml", "global.yml")
     GLOBAL_SUBSTITUTIONS: tuple = ("_substitutions.json", "_substitutions.yaml", "_substitutions.yml")
@@ -94,12 +94,12 @@ class FrameworkPaths:
 
 def resolve_framework_config_path(framework_path: str) -> str:
     """
-    Return FrameworkPaths.CONFIG_OVERRIDES_PATH when framework_path/config_overrides
+    Return FrameworkPaths.CONFIG_OVERRIDE_PATH when framework_path/config_override
     exists and has at least one non-hidden entry; otherwise FrameworkPaths.CONFIG_PATH.
     """
-    overrides_dir = os.path.join(framework_path, FrameworkPaths.CONFIG_OVERRIDES_PATH)
-    if _has_visible_children(overrides_dir):
-        return FrameworkPaths.CONFIG_OVERRIDES_PATH
+    override_dir = os.path.join(framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH)
+    if _has_visible_children(override_dir):
+        return FrameworkPaths.CONFIG_OVERRIDE_PATH
     return FrameworkPaths.CONFIG_PATH
 
 
