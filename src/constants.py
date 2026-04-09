@@ -76,7 +76,7 @@ class FrameworkPaths:
     CONFIG_PATH: str = "./config"
     CONFIG_OVERRIDES_PATH: str = "./config_overrides"
     EXTENSIONS_PATH: str = "./extensions"
-    GLOBAL_CONFIG: tuple = (f"global.json", f"global.yaml", f"global.yml")
+    GLOBAL_CONFIG: tuple = ("global.json", "global.yaml", "global.yml")
     GLOBAL_SUBSTITUTIONS: tuple = ("_substitutions.json", "_substitutions.yaml", "_substitutions.yml")
     GLOBAL_SECRETS: tuple = ("_secrets.json", "_secrets.yaml", "_secrets.yml")
     DATAFLOW_SPEC_MAPPING: str = "dataflow_spec_mapping"
