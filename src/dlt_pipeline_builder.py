@@ -169,6 +169,12 @@ class DLTPipelineBuilder:
         # Initialize substitution manager
         self._init_substitution_manager()
 
+        # Initialize table migration state volume path (after substitution manager so tokens are resolved)
+        table_migration_path = self.pipeline_config.get("table_migration_state_volume_path", None)
+        if table_migration_path:
+            table_migration_path = self.substitution_manager.substitute_string(table_migration_path)
+        pipeline_config.initialize_table_migration(table_migration_path)
+
         # Initialize secrets manager
         self._init_secrets_manager()
 
@@ -237,9 +243,6 @@ class DLTPipelineBuilder:
 
         # Initialize mandatory configuration singleton
         pipeline_config.initialize_mandatory_configuration()
-
-        # Initialize table migration state volume path
-        pipeline_config.initialize_table_migration(self.pipeline_config.get("table_migration_state_volume_path", None))
 
     def _init_pipeline_bundle_spec_format(self, pipeline_bundle_config: Dict[str, Any]) -> None:
         """Initialize the pipeline bundle spec format."""
