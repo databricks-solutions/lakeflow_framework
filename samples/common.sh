@@ -307,3 +307,64 @@ restore_substitutions_file() {
         unset SUBSTITUTIONS_FILE_MODIFIED
     fi
 }
+
+# Function to update pipeline bundle global.json|yaml with table_migration_state_volume_path (same catalog/schema rules as substitutions)
+update_pipeline_global_config_file() {
+    local global_config_file="$1"
+    local checkpoint_path="/Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume/checkpoint_state"
+
+    # Only update if using non-default values (match update_substitutions_file)
+    if [[ "$catalog" == "$DEFAULT_CATALOG" && "$schema_namespace" == "$DEFAULT_SCHEMA_NAMESPACE" ]]; then
+        return 0
+    fi
+
+    if [[ ! -f "$global_config_file" ]]; then
+        log_error "Pipeline global config file not found: $global_config_file"
+        return 1
+    fi
+
+    if ! grep -q 'table_migration_state_volume_path' "$global_config_file"; then
+        log_info "No table_migration_state_volume_path in $global_config_file, skipping global config update"
+        return 0
+    fi
+
+    log_info "Updating pipeline global config: $global_config_file"
+    log_info "Using table_migration_state_volume_path: $checkpoint_path"
+
+    if [[ -f "${global_config_file}.backup" ]]; then
+        log_warning "Existing backup found from previous run, restoring original before proceeding"
+        cp "${global_config_file}.backup" "$global_config_file"
+        log_info "Restored original from existing backup: ${global_config_file}.backup"
+    else
+        cp "$global_config_file" "${global_config_file}.backup"
+        log_info "Created backup: ${global_config_file}.backup"
+    fi
+
+    if [[ "$global_config_file" == *.yaml || "$global_config_file" == *.yml ]]; then
+        log_info "Detected YAML format for global config"
+        sed -i '' "s|table_migration_state_volume_path:.*|table_migration_state_volume_path: $checkpoint_path|" "$global_config_file"
+    else
+        log_info "Detected JSON format for global config"
+        sed -i '' "s|\"table_migration_state_volume_path\": \"[^\"]*\"|\"table_migration_state_volume_path\": \"$checkpoint_path\"|" "$global_config_file"
+    fi
+
+    log_success "Successfully updated pipeline global config file"
+    export PIPELINE_GLOBAL_CONFIG_MODIFIED=true
+
+    log_info "Updated pipeline global config content:"
+    cat "$global_config_file"
+    echo ""
+}
+
+# Function to restore pipeline global config from backup
+restore_pipeline_global_config_file() {
+    local global_config_file="$1"
+
+    if [[ -f "${global_config_file}.backup" && "$PIPELINE_GLOBAL_CONFIG_MODIFIED" == "true" ]]; then
+        log_info "Restoring original pipeline global config file"
+        cp "${global_config_file}.backup" "$global_config_file"
+        rm -f "${global_config_file}.backup"
+        log_success "Restored original pipeline global config file"
+        unset PIPELINE_GLOBAL_CONFIG_MODIFIED
+    fi
+}
