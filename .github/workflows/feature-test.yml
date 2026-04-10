@@ -61,6 +61,9 @@ jobs:
       - name: Verify Databricks authentication
         run: databricks auth env
 
+      - name: Deploy framework 
+        run: databricks bundle deploy
+
       - name: Deploy and Test Samples
         working-directory: samples
         run: |
@@ -68,7 +71,7 @@ jobs:
           ./deploy_and_test.sh \
             -h "${{ secrets.DATABRICKS_HOST }}" \
             -u "${{ secrets.DATABRICKS_USER }}" \
-            -l "${{ inputs.logical_env || '_hw' }}" \
+            -l "${{ inputs.logical_env || '_ci_test' }}" \
             -c "${{ inputs.compute || '1' }}" \
             -p "DEFAULT" \
             --catalog "${{ inputs.catalog || 'main' }}" \
