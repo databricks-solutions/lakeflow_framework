@@ -1,0 +1,7 @@
+Use this ./config_override folder for your own customised framework-level config, following the same layout as the default ./config folder.
+When this folder contains any non-hidden files, the framework uses it instead of the ./config folder, for
+ * global config
+ * substitutions
+ * secrets
+ * dataflow spec mappings
+ * and operational metadata.
