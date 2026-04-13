@@ -362,9 +362,6 @@ class DataFlow:
         cdc_settings = self._get_cdc_settings(flow, staging_tables)
         self.logger.debug("Retrieved CDC settings: %s", cdc_settings)
 
-        # Get columns to exclude
-        exclude_columns = self._get_exclude_columns(flow)
-        
         # Get column prefix exceptions
         prefix_exceptions = self._get_column_prefix_exceptions()
 
@@ -376,7 +373,6 @@ class DataFlow:
             target_config_flags = staging_tables.get(flow.targetTable).configFlags
 
         return FlowConfig(
-            exclude_columns=exclude_columns,
             target_config_flags=target_config_flags,
             additional_column_prefix_exceptions=prefix_exceptions,
             **cdc_settings,
@@ -402,18 +398,6 @@ class DataFlow:
             "cdc_settings": cdc_settings,
             "cdc_snapshot_settings": cdc_snapshot_settings
         }
-
-    def _get_exclude_columns(self, flow: BaseFlow, staging_tables: Dict[str, StagingTable]) -> List[str]:
-        """Get list of columns to exclude based on quarantine and CDF settings.
-
-        Note: In TABLE quarantine mode, the is_quarantined column is NOT added to the source view
-        (it only exists in the separate quarantine view/flow). So we must not add it to exclude_columns,
-        as that would cause CDC merge to fail when it tries to reference a non-existent column in
-        except_column_list. In FLAG mode, is_quarantined IS part of the target schema and is written
-        through — no exclusion needed either.
-        """
-        exclude_columns = []
-        return exclude_columns
 
     def _get_column_prefix_exceptions(self) -> List[str]:
         """Get list of columns to exclude from prefix treatment."""

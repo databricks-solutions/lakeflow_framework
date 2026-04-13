@@ -3,7 +3,6 @@ from typing import List
 from pyspark import pipelines as dp
 
 import pipeline_config
-import utility
 
 from ..dataflow_config import DataFlowConfig
 
@@ -58,7 +57,6 @@ class FlowAppendView(BaseFlowWithViews):
         spark_reader = spark.readStream
         if self.once:
             spark_reader = spark.read
-        exclude_columns = flow_config.exclude_columns
         column_prefix_exceptions = get_column_prefix_exceptions(flow_config)
 
         source_view_name = f'live.{self.sourceView}'
@@ -74,6 +72,4 @@ class FlowAppendView(BaseFlowWithViews):
                     else df[column] for column in df.columns
                 ])
 
-            if exclude_columns:
-                df = utility.drop_columns(df, exclude_columns)
             return df
