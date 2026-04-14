@@ -122,10 +122,10 @@ Single Command line deployment:
 4. Once deployment is complete, you can find the deployed bundles under ``/Users/<username>/.bundle/``
 
 Using the Samples
-----------------
+-----------------
 
 Test Data and Orchestrator
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Test Data and Orchestrator bundle includes:
 

@@ -91,7 +91,7 @@ The ``cdcSnapshotSettings`` object contains the following properties:
      - ``string``
      - (*optional*) How to deduplicate source snapshot data before CDC. Default: ``off`` (no deduplication). Use ``full_row`` to deduplicate based on the full row (deterministic) excluding the ``_metadata`` column if present. Use ``keys_only`` to keep the first row per key(s): This is non-deterministic; as it preserves the first row per key(s) without ordering on any other columns.
 
-  .. warning::
+.. warning::
      The ``keys_only`` option is **non-deterministic**. It preserves the first row per key(s). Use it with caution and only when you accept that which duplicate row is kept may vary between runs.
 
 .. _cdc-apply-changes-from-snapshot-source:

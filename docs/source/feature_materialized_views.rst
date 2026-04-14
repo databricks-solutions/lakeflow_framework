@@ -32,6 +32,7 @@ Key Features:
 
     To support Incremental refresh, some keywords and clauses require row-tracking to be enabled on the queried data sources.
     Refer to the the following links for details on:
+    
         - `Incremental Refresh <https://docs.databricks.com/aws/en/optimizations/incremental-refresh#support-for-materialized-view-incremental-refresh>`_
         - `Row Tracking <https://docs.databricks.com/aws/en/delta/row-tracking>`_
 

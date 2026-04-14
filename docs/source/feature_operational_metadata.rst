@@ -72,7 +72,7 @@ The operational metadata configuration file must follow the schema below:
    * - **name**
      - The name of the operational metadata column.
    * - **type**
-     - The data_type of the column. For a list of valid data types please refer to the Databricks documentation: `https://docs.databricks.com/en/sql/language-manual/sql-ref-datatypes.html`_
+     - The data_type of the column. For a list of valid data types please refer to the Databricks `documentation <https://docs.databricks.com/en/sql/language-manual/sql-ref-datatypes.html>`__.
    * - **nullable**
      - A boolean that indicates whether the field can be null or not.
    * - **metadata**
@@ -94,7 +94,7 @@ The operational metadata configuration file must follow the schema below:
      - Payload
    * - **sql**
      - The column values will be derived by executing the SQL string provided in the payload.
-     - Any valid SQL function or expression, per the Databricks `SQL Language Reference <https://docs.databricks.com/en/sql/language-manual/index.html>`_.
+     - Any valid SQL function or expression, per the Databricks `SQL Language Reference <https://docs.databricks.com/en/sql/language-manual/index.html>`__.
    * - **pipeline_detail**
      - The name of any single ``pipeline_detail`` attribute.
      - The following attributes are available:
@@ -220,6 +220,7 @@ Use the ``features`` object to disable operational metadata at a dataflow spec l
    .. tab:: YAML
 
       .. code-block:: yaml
+
          :emphasize-lines: 4,5
 
          dataFlowId: feature_materialized_views
@@ -238,6 +239,7 @@ Use the ``configFlags`` array to disable operational metadata at a target table 
    .. tab:: JSON
 
       .. code-block:: json
+        
          :emphasize-lines: 24
 
         {
@@ -277,6 +279,7 @@ Use the ``configFlags`` array to disable operational metadata at a target table 
    .. tab:: YAML
 
       .. code-block:: yaml
+
          :emphasize-lines: 22,23
         
         dataFlowId: crm_1
