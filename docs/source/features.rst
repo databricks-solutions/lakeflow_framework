@@ -11,6 +11,7 @@ Framework Features
    feature_data_quality_expectations
    feature_data_quality_quarantine
    feature_direct_publishing_mode
+   feature_framework_configuration
    feature_liquid_clustering
    feature_logging
    feature_logical_environment
@@ -28,7 +29,6 @@ Framework Features
    Source Types <feature_source_types>
    feature_spark_configuration
    feature_substitutions
-   feature_famework_configuration
    feature_table_migration
    Target Types <feature_target_types>
    feature_templates
