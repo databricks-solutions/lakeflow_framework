@@ -55,7 +55,7 @@ Configuration
 
 Global Configuration
 ~~~~~~~~~~~~~~~~~~~~~
-Configure these parameters globally for all pipelines in your ``src/config/global.json|yaml`` file:
+Configure these parameters globally for all pipelines in your ``src/config/default/global.json|yaml`` file:
 
 .. tabs::
 

@@ -29,7 +29,7 @@ Configuration
 -------------
 
 | **Scope: Global**
-| In the Framework bundle, operational metadata columns are defined in JSON configuration files at Lakehouse layer level (e.g. bronze, silver, gold). The configuration files are locate at and must be named as follows: ``src/config/operational_metadata_<layer>.json`` 
+| In the Framework bundle, operational metadata columns are defined in JSON configuration files at Lakehouse layer level (e.g. bronze, silver, gold). The configuration files are locate at and must be named as follows: ``src/config/default/operational_metadata_<layer>.json`` 
 
 .. admonition:: Layer Config
    :class: note

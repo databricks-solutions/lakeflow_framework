@@ -1,0 +1,8 @@
+Use this ./config/override folder for your own customised framework-level config, using the same layout as the default ./config/default folder.
+Doing so isolates your fork from upstream changes to ./config/default in the open-source project, so merges do not overwrite or conflict with your settings.
+When this folder contains any non-hidden files, the framework reads from here instead of ./config/default for:
+ * global config
+ * substitutions
+ * secrets
+ * dataflow spec mappings
+ * operational metadata.

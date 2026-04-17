@@ -17,7 +17,7 @@ Configuration
 -------------
 
 | **Scope: Global**
-| Mandatory table properties are defined in the global configuration file located at ``src/config/global.json|yaml`` under the ``mandatory_table_properties`` section.
+| Mandatory table properties are defined in the global configuration file located at ``src/config/default/global.json|yaml`` under the ``mandatory_table_properties`` section.
 
 Configuration Schema
 ------------------

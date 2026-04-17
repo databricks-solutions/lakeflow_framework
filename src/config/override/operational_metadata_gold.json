@@ -1,0 +1,57 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "meta_load_details",
+            "type": {
+                "type": "struct",
+                "fields": [
+                    {
+                        "name": "record_insert_timestamp",
+                        "type": "timestamp",
+                        "nullable": false,
+                        "metadata": {
+                            "mapping": {
+                                "type": "sql",
+                                "sql": "current_timestamp()"
+                            }
+                        }
+                    },
+                    {
+                        "name": "record_update_timestamp",
+                        "type": "timestamp",
+                        "nullable": false,
+                        "metadata": {
+                            "mapping": {
+                                "type": "sql",
+                                "sql": "current_timestamp()"
+                            }
+                        }
+                    },
+                    {
+                        "name": "pipeline_start_timestamp",
+                        "type": "timestamp",
+                        "nullable": true,
+                        "metadata": {
+                            "mapping": {
+                                "type": "pipeline_detail",
+                                "key": "start_utc_timestamp"
+                            }
+                        }
+                    },
+                    {
+                        "name": "pipeline_update_id",
+                        "type": "string",
+                        "nullable": true,
+                        "metadata": {
+                            "mapping": {
+                                "type": "pipeline_detail",
+                                "key": "update_id"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

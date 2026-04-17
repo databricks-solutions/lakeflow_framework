@@ -544,14 +544,24 @@ def _has_visible_children(directory: str) -> bool:
 
 def resolve_framework_config_path(framework_path: str) -> str:
     """
-    Return FrameworkPaths.CONFIG_OVERRIDE_PATH when the config override path has at least one
-    non-hidden child and mirrors required ``./config`` layout; otherwise FrameworkPaths.CONFIG_PATH.
+    Return FrameworkPaths.CONFIG_OVERRIDE_PATH when the override directory has at least one
+    non-hidden child and mirrors the required layout; otherwise FrameworkPaths.CONFIG_PATH.
 
     Raises:
-        FileNotFoundError: If override is non-empty but required paths are missing under config_override.
+        FileNotFoundError: If neither default nor override config roots contain valid files,
+            or if the override root is active but incomplete.
     """
+    config_dir = os.path.join(framework_path, FrameworkPaths.CONFIG_PATH)
     override_dir = os.path.join(framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH)
     if not _has_visible_children(override_dir):
+        if not _has_visible_children(config_dir):
+            raise FileNotFoundError(
+                f"No valid files found under {FrameworkPaths.CONFIG_PATH} or "
+                f"{FrameworkPaths.CONFIG_OVERRIDE_PATH} in the framework bundle "
+                f"({framework_path!s}). Please add framework configuration under "
+                f"{FrameworkPaths.CONFIG_PATH} (for example a global config file, "
+                f"the {FrameworkPaths.DATAFLOW_SPEC_MAPPING} directory, and related files)."
+            )
         return FrameworkPaths.CONFIG_PATH
 
     mapping_dir = os.path.join(override_dir, FrameworkPaths.DATAFLOW_SPEC_MAPPING)
@@ -562,7 +572,7 @@ def resolve_framework_config_path(framework_path: str) -> str:
         raise FileNotFoundError(
             f"Using {FrameworkPaths.CONFIG_OVERRIDE_PATH} requires both a global config file "
             f"({' or '.join(FrameworkPaths.GLOBAL_CONFIG)}) and the "
-            f"{FrameworkPaths.DATAFLOW_SPEC_MAPPING} directory under ./config_override. "
-            f"Copy the full ./config tree into {FrameworkPaths.CONFIG_OVERRIDE_PATH}."
+            f"{FrameworkPaths.DATAFLOW_SPEC_MAPPING} directory under that path. "
+            f"Copy the full {FrameworkPaths.CONFIG_PATH} tree into {FrameworkPaths.CONFIG_OVERRIDE_PATH}."
         )
     return FrameworkPaths.CONFIG_OVERRIDE_PATH

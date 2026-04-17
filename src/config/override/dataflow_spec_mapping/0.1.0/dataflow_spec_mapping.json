@@ -1,0 +1,16 @@
+{
+    "global": {
+        "rename_all": {
+            "cdcApplyChanges": "cdcSettings",
+            "cdcApplyChangesFromSnapshot": "cdcSnapshotSettings"
+        },
+        "rename_specific": {
+            "targetDetails.topic": "targetDetails.name",
+            "targetDetails.kafkaOptions": "targetDetails.sinkOptions"
+        
+        },
+        "move": {
+            "targetDetails.topic": "targetDetails.kafkaOptions.topic"
+        }
+    }
+}

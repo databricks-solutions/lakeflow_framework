@@ -35,8 +35,8 @@ Configuration
 -------------
 
 | **Scope: Global**
-| In the Framework bundle, substitutions are defined in the following configuration file: ``src/config/<deployment environment/target>_substitutions.json|yaml``
-| e.g. ``src/config/dev_substitutions.json|yaml``
+| In the Framework bundle, substitutions are defined in the following configuration file: ``src/config/default/<deployment environment/target>_substitutions.json|yaml``
+| e.g. ``src/config/default/dev_substitutions.json|yaml``
 
 | **Scope: Pipeline**
 | In a Pipeline bundle, substitutions are defined in the following configuration file: ``src/pipeline_configs/<deployment environment/target>_substitutions.json|yaml``

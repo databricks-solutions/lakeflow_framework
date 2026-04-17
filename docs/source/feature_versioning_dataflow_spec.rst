@@ -27,7 +27,7 @@ The versioning system applies transformation mappings that can rename fields, mo
 Mapping File Structure
 ----------------------
 DataFlow specification mappings are stored in version-specific directories under:
-``src/config/dataflow_spec_mapping/[version]/dataflow_spec_mapping.json``
+``src/config/default/dataflow_spec_mapping/[version]/dataflow_spec_mapping.json``
 
 Each mapping file contains transformation rules organized by:
 
@@ -242,7 +242,7 @@ Best Practices
 Version Management
 ------------------
 1. Mapping versions should follow semantic versioning (MAJOR.MINOR.PATCH)
-2. Each mapping version should be stored in its own directory under ``src/config/dataflow_spec_mapping/``
+2. Each mapping version should be stored in its own directory under ``src/config/default/dataflow_spec_mapping/``
 3. Maintain documentation of what each version transforms and why
 4. Keep mapping files immutable once deployed to ensure consistency
 5. Create new mapping versions rather than modifying existing ones

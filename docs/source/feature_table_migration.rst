@@ -40,7 +40,7 @@ Set as an attribute when creating your Data Flow Spec, refer to the :doc:`datafl
 
 **Required Global Configuration**
 
-When table migration is enabled, you must specify the volume path for checkpoint state storage in your ``global.json|yaml`` configuration file at either the framework level (``src/config/global.json|yaml``) or pipeline bundle level (``src/pipeline_configs/global.json|yaml``):
+When table migration is enabled, you must specify the volume path for checkpoint state storage in your ``global.json|yaml`` configuration file at either the framework level (``src/config/default/global.json|yaml``) or pipeline bundle level (``src/pipeline_configs/global.json|yaml``):
 
 .. tabs::
 

@@ -17,7 +17,7 @@ Configuration
 -------------
 
 | **Scope: Global**
-| In the Framework bundle, Spark configurations are defined in the global configuration file located at: ``src/config/global.json|yaml`` under the ``spark_config`` section.
+| In the Framework bundle, Spark configurations are defined in the global configuration file located at: ``src/config/default/global.json|yaml`` under the ``spark_config`` section.
 
 | **Scope: Bundle**
 | In a Pipeline bundle, Spark configurations are defined in the global configuration file located at: ``src/pipeline_configs/global.json|yaml`` under the ``spark_config`` section.
