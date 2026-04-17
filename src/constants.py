@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-import os
-
 
 @dataclass(frozen=True)
 class FrameworkSettings:
