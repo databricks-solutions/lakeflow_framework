@@ -18,10 +18,13 @@ Writing Documentation
 --------------------------
 
 1. If a new feature is added or change to existing feature, ensure the feature is well documented in a new feature file or update the existing feature file with the name feature_<feature_name>.rst and add it to the :doc:`features` page.
+
    - In the feature file, include:
+
      - Feature description
      - Configuration options
      - Usage examples / sample code
+
 2. Update Data Flow Spec reference where applicable
 
 

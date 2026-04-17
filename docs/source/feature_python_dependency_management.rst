@@ -99,6 +99,7 @@ The recommended approach is to reference a ``requirements.txt`` file in your pip
 
 For example:
 .. code-block:: text
+  
    :caption: my_pipeline_bundle/requirements.txt
     requests>=2.28.0
     openpyxl

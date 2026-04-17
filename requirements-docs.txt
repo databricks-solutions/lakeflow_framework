@@ -8,3 +8,4 @@ sphinx-copybutton
 sphinx_rtd_theme
 sphinx-design
 sphinxcontrib-spelling
+docutils<0.22
