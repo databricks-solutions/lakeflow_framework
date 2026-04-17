@@ -2,7 +2,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Tuple, Optional, Any
 
-from constants import FrameworkPaths, resolve_framework_config_path
+from constants import FrameworkPaths
 import pipeline_config
 import utility
 
@@ -44,7 +44,7 @@ class SpecMapper:
             max_workers: Maximum parallel workers for processing
         """
         self.framework_path = framework_path
-        self._framework_config_path = resolve_framework_config_path(framework_path)
+        self._framework_config_path = utility.resolve_framework_config_path(framework_path)
         self.max_workers = max_workers
         self._mapping_cache: Dict[str, Dict] = {}
         

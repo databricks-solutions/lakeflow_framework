@@ -3,19 +3,6 @@ from enum import Enum
 import os
 
 
-def _has_visible_children(directory: str) -> bool:
-    """
-    Return True if `directory` exists and contains at least one child name not prefixed with `.`
-    """
-    if not os.path.isdir(directory):
-        return False
-    try:
-        names = os.listdir(directory)
-    except OSError:
-        return False
-    return any(not n.startswith(".") for n in names)
-
-
 @dataclass(frozen=True)
 class FrameworkSettings:
     """
@@ -55,8 +42,8 @@ class FrameworkPaths:
     FrameworkPaths is a class that contains constants for various paths and file masks used in the Lakeflow Framework.
 
     CONFIG_PATH and CONFIG_OVERRIDE_PATH are static path segments (./config and ./config_override).
-    At runtime, which root to use for framework config files should be chosen with
-    resolve_framework_config_path(framework_path).
+    At runtime, which root to use for framework config files should be chosen using
+    utility.resolve_framework_config_path(framework_path).
 
     Attributes:
         CONFIG_PATH (str): Path to the config directory (./config).
@@ -90,17 +77,6 @@ class FrameworkPaths:
     SECRETS_SCHEMA_PATH: str = "./schemas/secrets.json"
     TEMPLATE_DEFINITION_SPEC_SCHEMA_PATH: str = "./schemas/spec_template_definition.json"
     TEMPLATE_SPEC_SCHEMA_PATH: str = "./schemas/spec_template.json"
-
-
-def resolve_framework_config_path(framework_path: str) -> str:
-    """
-    Return FrameworkPaths.CONFIG_OVERRIDE_PATH when framework_path/config_override
-    exists and has at least one non-hidden entry; otherwise FrameworkPaths.CONFIG_PATH.
-    """
-    override_dir = os.path.join(framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH)
-    if _has_visible_children(override_dir):
-        return FrameworkPaths.CONFIG_OVERRIDE_PATH
-    return FrameworkPaths.CONFIG_PATH
 
 
 class SupportedSpecFormat(str, Enum):

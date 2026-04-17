@@ -16,7 +16,6 @@ from constants import (
     PipelineBundlePaths,
     DLTPipelineSettingKeys,
     SupportedSpecFormat,
-    resolve_framework_config_path,
 )
 from dataflow import DataFlow
 from dataflow_spec_builder import DataflowSpecBuilder
@@ -119,7 +118,7 @@ class DLTPipelineBuilder:
 
         self.bundle_path = config_values[DLTPipelineSettingKeys.BUNDLE_SOURCE_PATH]
         self.framework_path = config_values[DLTPipelineSettingKeys.FRAMEWORK_SOURCE_PATH]
-        self._framework_config_path = resolve_framework_config_path(self.framework_path)
+        self._framework_config_path = utility.resolve_framework_config_path(self.framework_path)
         self.workspace_host = config_values[DLTPipelineSettingKeys.WORKSPACE_HOST]
 
         # Load optional parameters

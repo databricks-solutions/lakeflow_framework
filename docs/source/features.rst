@@ -28,6 +28,7 @@ Framework Features
    Source Types <feature_source_types>
    feature_spark_configuration
    feature_substitutions
+   feature_famework_configuration
    feature_table_migration
    Target Types <feature_target_types>
    feature_templates
