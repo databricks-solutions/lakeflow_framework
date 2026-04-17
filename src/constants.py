@@ -41,7 +41,10 @@ class FrameworkPaths:
 
     Attributes:
         CONFIG_PATH (str): Path to the config directory.
-        EXTENSIONS_PATH (str): The path for extensions.
+        EXTENSIONS_PATH (str): The path for extensions (legacy flat layout; prefer EXTENSIONS_LIBRARIES_PATH).
+        EXTENSIONS_LIBRARIES_PATH (str): Importable Python modules (on sys.path).
+        PRE_INIT_HOOKS_PATH (str): Executable .py hooks before initialize_pipeline SDP declarations.
+        POST_INIT_HOOKS_PATH (str): Executable .py hooks after SDP declarations.
         GLOBAL_CONFIG (tuple): Paths to the global configuration files.
         GLOBAL_SUBSTITUTIONS (tuple): Paths to the global substitutions files.
         GLOBAL_SECRETS (tuple): Paths to the global secrets files.
@@ -55,6 +58,9 @@ class FrameworkPaths:
     """
     CONFIG_PATH: str = "./config"
     EXTENSIONS_PATH: str = "./extensions"
+    EXTENSIONS_LIBRARIES_PATH: str = "./extensions/libraries"
+    PRE_INIT_HOOKS_PATH: str = "./extensions/pre_init"
+    POST_INIT_HOOKS_PATH: str = "./extensions/post_init"
     GLOBAL_CONFIG: tuple = ("./config/global.json", "./config/global.yaml", "./config/global.yml")
     GLOBAL_SUBSTITUTIONS: tuple = ("_substitutions.json", "_substitutions.yaml", "_substitutions.yml")
     GLOBAL_SECRETS: tuple = ("_secrets.json", "_secrets.yaml", "_secrets.yml")
@@ -112,7 +118,10 @@ class PipelineBundlePaths:
         DATAFLOW_SPEC_PATH (str): The path for dataflow specifications.
         DML_PATH (str): The path for DML (Data Manipulation Language) files.
         DQE_PATH (str): The path for data quality expectations.
-        EXTENSIONS_PATH (str): The path for extensions.
+        EXTENSIONS_PATH (str): The path for extensions (legacy flat layout; prefer EXTENSIONS_LIBRARIES_PATH).
+        EXTENSIONS_LIBRARIES_PATH (str): Importable Python modules (on sys.path).
+        PRE_INIT_HOOKS_PATH (str): Executable .py hooks before initialize_pipeline SDP declarations.
+        POST_INIT_HOOKS_PATH (str): Executable .py hooks after SDP declarations.
         GLOBAL_CONFIG_FILE (tuple): The file names for global configuration files.
         PIPELINE_CONFIGS_PATH (str): The path for pipeline configuration files.
         PYTHON_FUNCTION_PATH (str): The path for python functions.
@@ -124,6 +133,9 @@ class PipelineBundlePaths:
     DML_PATH: str = "./dml"
     DQE_PATH: str = "./expectations"
     EXTENSIONS_PATH: str = "./extensions"
+    EXTENSIONS_LIBRARIES_PATH: str = "./extensions/libraries"
+    PRE_INIT_HOOKS_PATH: str = "./extensions/pre_init"
+    POST_INIT_HOOKS_PATH: str = "./extensions/post_init"
     GLOBAL_CONFIG_FILE: tuple = ("./global.json", "./global.yaml", "./global.yml")
     PIPELINE_CONFIGS_PATH: str = "./pipeline_configs"
     PYTHON_FUNCTION_PATH: str = "./python_functions"

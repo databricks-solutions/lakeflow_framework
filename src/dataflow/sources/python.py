@@ -20,7 +20,7 @@ class SourcePython(OperationalMetadataMixin):
     
     - functionPath: Path to a Python file containing a 'get_df' function
     - pythonModule: Module.function reference (e.g., 'transforms.get_customer_data')
-                   The module must be in the extensions directory (added to sys.path)
+                   The module must be under extensions/libraries (added to sys.path)
     - pythonFunction: Direct function reference (for internal framework use)
 
     Attributes:

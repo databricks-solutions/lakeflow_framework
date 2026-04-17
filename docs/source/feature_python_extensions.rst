@@ -11,52 +11,84 @@ Python Extensions
 
 Overview
 --------
-Python Extensions allow data engineers to write custom Python modules that extend the framework's capabilities. Extensions are organized in a central ``extensions/`` directory and can be imported as standard Python modules throughout your dataflow specifications.
+Python Extensions let you add custom Python code that integrates with the framework. There are two kinds of assets under ``src/extensions/``:
+
+1. **Importable modules** (``extensions/libraries/``) — added to Python's path so Data Flow Specs can reference them with ``module`` syntax (sources, transforms, sinks).
+2. **Init hook scripts** (``extensions/pre_init/`` and ``extensions/post_init/``) — optional ``.py`` files executed at pipeline initialization time (see `Init hooks`_).
 
 .. important::
 
-    Extensions provide a powerful mechanism for implementing custom logic—sources, transforms, and sinks—while maintaining clean separation between framework code and business logic.
+    Extensions provide a powerful mechanism for implementing custom logic—sources, transforms, and sinks, while maintaining clean separation between framework code and business logic. Shared helpers belong in ``libraries/``; hook folders are for scripts that run once per pipeline update, not for packages you import from specs.
+
+.. admonition:: Deprecation Notice
+  :class: warning
+
+    As of v0.10.0, importable modules moved from a flat ``src/extensions/`` directory to ``src/extensions/libraries/``. The flat layout still works but emits a **deprecation warning** when top-level ``*.py`` files exist under ``extensions/`` and ``libraries/`` is absent.
 
 This feature allows development teams to:
 
-- **Centralize Custom Logic**: Organize all custom Python code in one location
-- **Reuse Across Dataflows**: Reference the same functions from multiple dataflow specs
-- **Maintain Clean Imports**: Use standard Python module imports (e.g., ``transforms.my_function``)
-- **Manage Dependencies**: Install additional Python packages via ``requirements_additional.txt``
-- **Test Independently**: Extensions can be unit tested outside of Spark Declarative Pipelines
+- **Centralize custom logic**: Organize importable code under ``extensions/libraries/``
+- **Reuse across dataflows**: Reference the same functions from multiple dataflow specs
+- **Maintain clean imports**: Use standard Python module imports (e.g., ``transforms.my_function``)
+- **Run setup and teardown**: Use ``pre_init`` / ``post_init`` hooks for registration, Spark configuration, or ``@dp.on_event_hook`` without mixing them into library modules
+- **Manage dependencies**: Install additional Python packages via ``requirements_additional.txt``
+- **Test independently**: Extension libraries can be unit tested outside of Spark Declarative Pipelines
 
 .. note::
 
-    Extensions are loaded during pipeline initialization when the framework adds the ``extensions/`` directory to the Python path. Any additional dependencies specified in ``requirements_additional.txt`` are installed before the pipeline starts.
+    The framework adds **``extensions/libraries/``** (under both the framework and the bundle) to ``sys.path`` during pipeline initialization. Init hooks are **not** on ``sys.path``; they are executed with ``runpy.run_path`` like ``python your_script.py``. Any additional dependencies specified in ``requirements_additional.txt`` are installed before the pipeline starts.
 
 How It Works
 ------------
 
-The extension system consists of three main components:
+The extension system has these parts:
 
-1. **Extensions Directory**: A ``src/extensions/`` folder in your pipeline bundle containing Python modules
-2. **Module References**: Dataflow specs reference extension functions using ``module`` syntax (e.g., ``transforms.my_function``)
-3. **Dependency Management**: Optional ``requirements_additional.txt`` files for installing pip packages
+1. **Libraries directory** — ``src/extensions/libraries/`` in your pipeline bundle (and optionally under the framework bundle) holds importable Python modules.
+2. **Init hook directories** — ``src/extensions/pre_init/`` and ``src/extensions/post_init/`` hold optional scripts run before and after SDP declarations inside ``DLTPipelineBuilder.initialize_pipeline()``.
+3. **Module references** — Dataflow specs reference extension functions using ``module`` syntax (e.g., ``transforms.my_function``).
+4. **Dependency management** — Optional ``requirements_additional.txt`` files for installing pip packages.
 
 Directory Structure
 ^^^^^^^^^^^^^^^^^^^
 
-Extensions live in the ``src/extensions/`` directory of your pipeline bundle:
+Importable modules and hook scripts use this layout (framework bundle mirrors the same shape):
 
 ::
 
     my_pipeline_bundle/
     ├── src/
     │   ├── extensions/
-    │   │   ├── __init__.py           # Optional, for package imports
-    │   │   ├── sources.py            # Custom source functions
-    │   │   ├── transforms.py         # Custom transform functions
-    │   │   └── sinks.py              # Custom sink functions
+    │   │   ├── libraries/            # On sys.path — importable modules
+    │   │   │   ├── __init__.py       # Optional
+    │   │   │   ├── sources.py        # Custom source functions
+    │   │   │   ├── transforms.py     # Custom transform functions
+    │   │   │   └── sinks.py          # Custom sink functions
+    │   │   ├── pre_init/             # Optional — run before SDP table/view declarations
+    │   │   └── post_init/            # Optional — run after declarations (e.g. event hooks)
     │   ├── dataflows/
     │   │   └── ...
     │   └── pipeline_configs/
     │       └── ...
     └── requirements_additional.txt   # Optional pip dependencies
+
+.. admonition:: Deprecation Notice
+  :class: warning
+
+    As of v0.10.0, importable modules moved from a flat ``src/extensions/`` directory to ``src/extensions/libraries/``. The flat layout still works but emits a **deprecation warning** when top-level ``*.py`` files exist under ``extensions/`` and ``libraries/`` is absent.
+
+Init hooks
+^^^^^^^^^^
+
+- **pre_init**: Runs after the builder has loaded configs and dataflow specs (substitutions, secrets, operational metadata, Spark config from framework config) and **before** any ``DataFlow.create_dataflow()`` / SDP declarations.
+- **post_init**: Runs **after** all dataflows for the pipeline have been created (the SDP graph is assembled; the pipeline update has not started yet).
+
+Within each folder, scripts run in **sorted filename order**. Files whose names start with ``_`` are skipped. A hook that raises an exception fails the pipeline. Framework ``extensions/`` hooks run before bundle hooks at each phase.
+
+Use **numeric prefixes** (e.g. ``01_setup.py``, ``02_register.py``) to fix order. Hooks may call ``pipeline_config.get_spark()``, ``get_logger()``, and other singletons directly.
+
+.. seealso::
+
+    The repository file ``docs/extensions-and-init-hooks.md`` contains the same layout summary in Markdown.
 
 Dependency Management
 ---------------------
@@ -73,7 +105,7 @@ Custom functions that generate DataFrames for use as data sources.
 
 
 .. code-block:: python
-   :caption: src/extensions/sources.py
+   :caption: src/extensions/libraries/sources.py
 
     from pyspark.sql import DataFrame, SparkSession
     from pyspark.sql import functions as F
@@ -173,11 +205,7 @@ Custom functions that transform DataFrames after they are read from a source.
 **Example:**
 
 .. code-block:: python
-   :caption: src/extensions/transforms.py
-
-    from pyspark.sql import DataFrame
-    from pyspark.sql import functions as F
-    from typing import Dict
+   :caption: src/extensions/libraries/transforms.py
 
     from pyspark.sql import DataFrame
     from pyspark.sql import functions as F
@@ -283,7 +311,7 @@ Custom functions for ``foreach_batch_sink`` targets that process micro-batches.
 **Example:**
 
 .. code-block:: python
-   :caption: src/extensions/sinks.py
+   :caption: src/extensions/libraries/sinks.py
 
     from pyspark.sql import DataFrame
     from typing import Dict
@@ -376,4 +404,3 @@ Additional Resources
 - :doc:`feature_python_functions` - Python transform functions (file path approach)
 - :doc:`dataflow_spec_ref_source_details` - Complete source configuration reference
 - :doc:`dataflow_spec_ref_target_details` - Complete target configuration reference
-

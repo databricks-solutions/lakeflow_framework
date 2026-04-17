@@ -612,14 +612,18 @@ class DataflowSpecBuilder:
         
         Search order for regular specs:
             1. base_path/python_functions/<filename>
-            2. bundle_path/extensions/python_functions/<filename>
-            3. framework_path/extensions/python_functions/<filename>
+            2. bundle_path/extensions/libraries/<filename>
+            3. framework_path/extensions/libraries/<filename>
+            4. bundle_path/extensions/<filename> (legacy)
+            5. framework_path/extensions/<filename> (legacy)
         
         Search order for template-generated specs (adds one additional location):
             1. base_path/python_functions/<filename>
             2. bundle_path/templates/python_functions/<filename>
-            3. bundle_path/extensions/python_functions/<filename>
-            4. framework_path/extensions/python_functions/<filename>
+            3. bundle_path/extensions/libraries/<filename>
+            4. framework_path/extensions/libraries/<filename>
+            5. bundle_path/extensions/<filename> (legacy)
+            6. framework_path/extensions/<filename> (legacy)
         """
         search_paths = {
             "base dataflow directory":
@@ -627,9 +631,13 @@ class DataflowSpecBuilder:
             "templates directory":
                 os.path.join(self.bundle_path, PipelineBundlePaths.TEMPLATE_PATH,
                     PipelineBundlePaths.PYTHON_FUNCTION_PATH, filename),
-            "bundle extensions directory":
+            "bundle extensions libraries directory":
+                os.path.join(self.bundle_path, PipelineBundlePaths.EXTENSIONS_LIBRARIES_PATH, filename),
+            "framework extensions libraries directory":
+                os.path.join(self.framework_path, FrameworkPaths.EXTENSIONS_LIBRARIES_PATH, filename),
+            "bundle extensions directory (legacy)":
                 os.path.join(self.bundle_path, PipelineBundlePaths.EXTENSIONS_PATH, filename),
-            "framework extensions directory":
+            "framework extensions directory (legacy)":
                 os.path.join(self.framework_path, FrameworkPaths.EXTENSIONS_PATH, filename),
         }
         

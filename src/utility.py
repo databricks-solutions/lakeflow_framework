@@ -404,7 +404,7 @@ def load_python_function_from_module(
     """
     Load and validate a Python function from an extension module.
     
-    The module must be importable via sys.path (typically from the extensions directory
+    The module must be importable via sys.path (typically from extensions/libraries,
     which is added to sys.path during pipeline initialization).
     
     Args:
