@@ -121,8 +121,6 @@ If you are using GitHub Actions for your CI/CD pipelines, you can use the **comp
      - If ``true``, skip dataflow spec version mapping (strict validation only). Default: ``false``
    * - ``verbose``
      - If ``true``, enables verbose script output (``-v``). Default: ``false``
-   * - ``python-version``
-     - Python version for the runner. Default: ``3.11``
 
 **Example workflow**
 
@@ -139,7 +137,6 @@ If you are using GitHub Actions for your CI/CD pipelines, you can use the **comp
              path: src
              # no-mapping: 'false'
              # verbose: 'false'
-             # python-version: '3.11'
 
 The ``uses`` line can reference the ``databricks-solutions/lakeflow_framework`` (upstream) or **your organisation's fork/clone** of the Lakeflow Framework repository. The path ``.github/actions/validate-dataflows`` is the same; set the owner and pin ``@<ref>`` to a tag or commit that exists on whichever repository you rely on.
 

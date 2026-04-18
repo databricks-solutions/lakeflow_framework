@@ -42,10 +42,6 @@ inputs:
     description: If ``true``, pass ``-v`` to the script for extra logging.
     required: false
     default: 'false'
-  python-version:
-    description: Python version to install for the runner.
-    required: false
-    default: '3.11'
 
 runs:
   using: composite
@@ -53,7 +49,7 @@ runs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: '3.13'
 
     - name: Install jsonschema
       shell: bash
