@@ -244,43 +244,43 @@ update_substitutions_file() {
         log_info "Detected YAML format"
         
         # Update staging_schema
-        sed -i '' "s|staging_schema:.*|staging_schema: $catalog.${schema_namespace}_staging${logical_env}|" "$substitutions_file"
+        perl -i - pe "s|staging_schema:.*|staging_schema: $catalog.${schema_namespace}_staging${logical_env}|" "$substitutions_file"
         
         # Update bronze_schema
-        sed -i '' "s|bronze_schema:.*|bronze_schema: $catalog.${schema_namespace}_bronze${logical_env}|" "$substitutions_file"
+        perl -i - pe "s|bronze_schema:.*|bronze_schema: $catalog.${schema_namespace}_bronze${logical_env}|" "$substitutions_file"
         
         # Update silver_schema
-        sed -i '' "s|silver_schema:.*|silver_schema: $catalog.${schema_namespace}_silver${logical_env}|" "$substitutions_file"
+        perl -i - pe "s|silver_schema:.*|silver_schema: $catalog.${schema_namespace}_silver${logical_env}|" "$substitutions_file"
         
         # Update gold_schema (if present)
-        sed -i '' "s|gold_schema:.*|gold_schema: $catalog.${schema_namespace}_gold${logical_env}|" "$substitutions_file"
+        perl -i - pe "s|gold_schema:.*|gold_schema: $catalog.${schema_namespace}_gold${logical_env}|" "$substitutions_file"
         
         # Update dpm_schema (if present)
-        sed -i '' "s|dpm_schema:.*|dpm_schema: $catalog.${schema_namespace}_dpm${logical_env}|" "$substitutions_file"
+        perl -i - pe "s|dpm_schema:.*|dpm_schema: $catalog.${schema_namespace}_dpm${logical_env}|" "$substitutions_file"
         
         # Update sample_file_location
-        sed -i '' "s|sample_file_location:.*|sample_file_location: /Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume|" "$substitutions_file"
+        perl -i - pe "s|sample_file_location:.*|sample_file_location: /Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume|" "$substitutions_file"
     else
         # JSON format: "key": "value"
         log_info "Detected JSON format"
         
         # Update staging_schema
-        sed -i '' "s|\"staging_schema\": \"[^\"]*\"|\"staging_schema\": \"$catalog.${schema_namespace}_staging${logical_env}\"|" "$substitutions_file"
+        perl -i - pe "s|\"staging_schema\": \"[^\"]*\"|\"staging_schema\": \"$catalog.${schema_namespace}_staging${logical_env}\"|" "$substitutions_file"
         
         # Update bronze_schema
-        sed -i '' "s|\"bronze_schema\": \"[^\"]*\"|\"bronze_schema\": \"$catalog.${schema_namespace}_bronze${logical_env}\"|" "$substitutions_file"
+        perl -i - pe "s|\"bronze_schema\": \"[^\"]*\"|\"bronze_schema\": \"$catalog.${schema_namespace}_bronze${logical_env}\"|" "$substitutions_file"
         
         # Update silver_schema
-        sed -i '' "s|\"silver_schema\": \"[^\"]*\"|\"silver_schema\": \"$catalog.${schema_namespace}_silver${logical_env}\"|" "$substitutions_file"
+        perl -i - pe "s|\"silver_schema\": \"[^\"]*\"|\"silver_schema\": \"$catalog.${schema_namespace}_silver${logical_env}\"|" "$substitutions_file"
         
         # Update gold_schema
-        sed -i '' "s|\"gold_schema\": \"[^\"]*\"|\"gold_schema\": \"$catalog.${schema_namespace}_gold${logical_env}\"|" "$substitutions_file"
+        perl -i - pe "s|\"gold_schema\": \"[^\"]*\"|\"gold_schema\": \"$catalog.${schema_namespace}_gold${logical_env}\"|" "$substitutions_file"
         
         # Update dpm_schema
-        sed -i '' "s|\"dpm_schema\": \"[^\"]*\"|\"dpm_schema\": \"$catalog.${schema_namespace}_dpm${logical_env}\"|" "$substitutions_file"
+        perl -i - pe "s|\"dpm_schema\": \"[^\"]*\"|\"dpm_schema\": \"$catalog.${schema_namespace}_dpm${logical_env}\"|" "$substitutions_file"
         
         # Update sample_file_location
-        sed -i '' "s|\"sample_file_location\": \"[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume\"|" "$substitutions_file"
+        perl -i - pe "s|\"sample_file_location\": \"[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume\"|" "$substitutions_file"
     fi
     
     log_success "Successfully updated substitutions file"
@@ -342,10 +342,10 @@ update_pipeline_global_config_file() {
 
     if [[ "$global_config_file" == *.yaml || "$global_config_file" == *.yml ]]; then
         log_info "Detected YAML format for global config"
-        sed -i '' "s|table_migration_state_volume_path:.*|table_migration_state_volume_path: $checkpoint_path|" "$global_config_file"
+        perl -i - pe "s|table_migration_state_volume_path:.*|table_migration_state_volume_path: $checkpoint_path|" "$global_config_file"
     else
         log_info "Detected JSON format for global config"
-        sed -i '' "s|\"table_migration_state_volume_path\": \"[^\"]*\"|\"table_migration_state_volume_path\": \"$checkpoint_path\"|" "$global_config_file"
+        perl -i - pe "s|\"table_migration_state_volume_path\": \"[^\"]*\"|\"table_migration_state_volume_path\": \"$checkpoint_path\"|" "$global_config_file"
     fi
 
     log_success "Successfully updated pipeline global config file"
