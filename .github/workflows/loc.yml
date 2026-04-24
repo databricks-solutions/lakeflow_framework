@@ -6,14 +6,17 @@ on:
 
 jobs:
   lines-of-code:
-    runs-on: ubuntu-latest
+    runs-on:
+      group: databricks-solutions-protected-runner-group
+      labels: linux-ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Count lines of code
         run: |
-          curl -s https://raw.githubusercontent.com/AlDanial/cloc/master/cloc | perl - --csv --out=loc.csv .
+          # Pin cloc to a specific release (v2.08)
+          curl -s https://raw.githubusercontent.com/AlDanial/cloc/f40b5c1a1011c384b0efdd13948758cf246cffbf/cloc | perl - --csv --out=loc.csv .
           LOC=$(tail -n1 loc.csv | cut -d',' -f5)
           echo "Lines of code: $LOC"
 
@@ -22,7 +25,7 @@ jobs:
         run: |
           # Define the badge
           LOC_BADGE="![Lines of Code](https://img.shields.io/badge/lines_of_code-${LOC}-blue)"
-          
+
           # Check if README.md contains the badge
           if grep -q "![Lines of Code]" README.md; then
             # Update the existing badge
@@ -40,5 +43,3 @@ jobs:
           git add README.md
           git commit -m "Update Lines of Code badge"
           git push
-
-
