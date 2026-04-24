@@ -23,7 +23,7 @@
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "target/customer_address_schema.json"
+        "schemaPath": "target_customer_address_schema.json"
     },
     "cdcSettings": {
         "keys": [

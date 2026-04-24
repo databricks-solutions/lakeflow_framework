@@ -8,7 +8,7 @@
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "target/customer_schema.json",
+        "schemaPath": "target_customer_schema.json",
         "configFlags": ["disableOperationalMetadata"]
     },
     "cdcSnapshotSettings": {

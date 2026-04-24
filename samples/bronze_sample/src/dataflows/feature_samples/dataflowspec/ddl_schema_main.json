@@ -17,6 +17,6 @@
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "target/feature_ddl_schema.ddl"
+        "schemaPath": "target_feature_ddl_schema.ddl"
     }
 }

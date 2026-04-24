@@ -8,7 +8,7 @@
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "target/feature_historic_snapshot_customer_schema.json",
+        "schemaPath": "target_feature_historic_snapshot_customer_schema.json",
         "configFlags": ["disableOperationalMetadata"]
     },
     "cdcSnapshotSettings": {

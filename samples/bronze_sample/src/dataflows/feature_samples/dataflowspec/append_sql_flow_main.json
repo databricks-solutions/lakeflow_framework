@@ -8,7 +8,7 @@
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "target/customer_address_schema.json"
+        "schemaPath": "target_customer_address_schema.json"
     },
     "dataQualityExpectationsEnabled": true,
     "dataQualityExpectationsPath": "./customer_address_dqe.json",
