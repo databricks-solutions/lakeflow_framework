@@ -3,7 +3,7 @@
 databricks-connect==17.3.*
 databricks-dlt==0.3.0
 delta-spark==4.0.0
-pyspark==4.0.0
+pyspark==4.1.1
 jsonschema==4.26.0
 
 ## testing packages
