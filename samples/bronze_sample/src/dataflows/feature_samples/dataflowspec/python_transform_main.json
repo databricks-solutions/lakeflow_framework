@@ -20,6 +20,6 @@
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "target/feature_python_function_transform_schema.json"
+        "schemaPath": "target_feature_python_function_transform_schema.json"
     }
 }

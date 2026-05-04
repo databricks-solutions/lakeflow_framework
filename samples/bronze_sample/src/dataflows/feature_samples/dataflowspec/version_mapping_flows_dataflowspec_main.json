@@ -9,7 +9,7 @@
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "target/feature_version_mapping_flows_schema.json"
+        "schemaPath": "target_feature_version_mapping_flows_schema.json"
     },
     "cdcApplyChanges": {
         "keys": [

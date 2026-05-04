@@ -25,7 +25,7 @@
             },
             "versionType": "timestamp",
             "datetimeFormat": "%Y_%m_%d",
-            "schemaPath": "source/feature_historic_snapshot_customer_schema.json",
+            "schemaPath": "source_feature_historic_snapshot_customer_schema.json",
             "selectExp": [
                 "CUSTOMER_ID",
                 "FIRST_NAME",
