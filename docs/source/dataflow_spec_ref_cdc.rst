@@ -18,7 +18,7 @@ The ``cdcSettings`` and ``cdcSnapshotSettings`` enable and pass configuration in
      - See :ref:`cdcSnapshotSettings` for more information.
 
 cdcSettings
-~~~~~~~~~~~~~~~~~   
+~~~~~~~~~~~~~~~~~
 
 The ``cdcSettings`` object contains the following properties:
 
@@ -36,7 +36,7 @@ The ``cdcSettings`` object contains the following properties:
      - The column name specifying the logical order of CDC events in the source data. Delta Live Tables uses this sequencing to handle change events that arrive out of order.
    * - **scd_type**
      - ``string``
-     - Whether to store records as SCD type 1 or SCD type 2. Set to ``1`` for SCD type 1 or 2 for SCD type ``2``.   
+     - Whether to store records as SCD type 1 or SCD type 2. Set to ``1`` for SCD type 1 or 2 for SCD type ``2``.
    * - **apply_as_deletes**
      - ``string``
      - (*optional*) Specifies when a CDC event should be treated as a DELETE rather than an upsert.
@@ -147,6 +147,27 @@ CDC Historical Snapshot Source Configuration
   .. note::
     If ``recursiveFileLookup`` is set to ``true``, ensure that the ``path`` parameter is compatible with recursive directory traversal. When using the ``{version}`` placeholder, place it in the directory portion of the path rather than the filename (e.g. ``/data/{version}/file.parquet``). When using regex named capture groups, the pattern spans the full relative path from the first dynamic segment, so ``recursiveFileLookup`` must be ``true`` if the version spans multiple directory levels.
 
+  The ``source`` object contains the following properties for ``table`` based sources:
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Parameter
+       - Type
+       - Description
+     * - **table**
+       - ``string``
+       - The table name to load the source data from, as either a 2-part ``schema.table`` (resolving to *<pipeline_target>*.schema.table) or 3-part ``catalog.schema.table`` identifier.
+     * - **versionColumn**
+       - ``string``
+       - The column name to use for versioning.
+     * - **startingVersion**
+       - ``string`` or ``integer``
+       - (*optional*) The version to start processing from.
+     * - **selectExp**
+       - ``list``
+       - (*optional*) A list of select expressions to apply to the source data.
+
 .. _file-path-patterns:
 
 File Path Patterns
@@ -235,23 +256,3 @@ File Path Patterns
 
   See ``samples/bronze_sample/src/dataflows/feature_samples/dataflowspec/historical_snapshot_files_datetime_recursive_and_partitioned_regex_main.json`` for a complete working example.
 
-  The ``source`` object contains the following properties for ``table`` based sources:
-
-  .. list-table::
-     :header-rows: 1
-
-     * - Parameter
-       - Type
-       - Description
-     * - **table**
-       - ``string``
-       - The table name to load the source data from.
-     * - **versionColumn**
-       - ``string``
-       - The column name to use for versioning.
-     * - **startingVersion**
-       - ``string`` or ``integer``
-       - (*optional*) The version to start processing from.
-     * - **selectExp**
-       - ``list``
-       - (*optional*) A list of select expressions to apply to the source data.
