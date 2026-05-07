@@ -37,8 +37,9 @@ jobs:
 
       - name: Determine version bump from branch name
         id: bump
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
         run: |
-          BRANCH="${{ github.event.pull_request.head.ref || github.ref_name }}"
           BRANCH_LOWER=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]')
           echo "Merged branch: $BRANCH (normalized: $BRANCH_LOWER)"
 

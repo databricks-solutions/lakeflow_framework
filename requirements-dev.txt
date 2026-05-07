@@ -1,16 +1,17 @@
 ## requirements-dev.txt: dependencies for local development.
-databricks-connect
-databricks-dlt
-delta
-pyspark
-jsonschema
+## Databricks dependencies — pinned to DBR 17.3 LTS compatible versions
+databricks-connect==17.3.*
+databricks-dlt==0.3.0
+delta-spark==4.0.0
+pyspark==4.0.0
+jsonschema==4.26.0
 
 ## testing packages
-pytest
+pytest==9.0.3
 
 ## Dependencies for building wheel files
-setuptools
-wheel
+setuptools==82.0.1
+wheel==0.47.0
 
 # The following packages are only required for building documentation and are not required at runtime
 -r requirements-docs.txt
