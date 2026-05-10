@@ -7,19 +7,35 @@
 #   ./scripts/generate_lockfiles.sh
 #
 # Prerequisites:
-#   pip install uv   (or: pip install pip-tools)
+#   pip install pip-tools
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-echo "Generating hashed lockfile for requirements-docs.txt..."
-uv pip compile \
-    "$REPO_ROOT/requirements-docs.txt" \
-    --generate-hashes \
-    --output-file "$REPO_ROOT/requirements-docs.lock"
+REQUIREMENTS_FILES=(
+    "requirements.txt"
+    "requirements-dev.txt"
+    "requirements-docs.txt"
+)
 
-echo "Done. Commit requirements-docs.lock to the repository."
+for req_file in "${REQUIREMENTS_FILES[@]}"; do
+    lock_file="${req_file%.txt}.lock"
+    echo "Generating hashed lockfile for ${req_file}..."
+    pip-compile \
+        "$REPO_ROOT/$req_file" \
+        --generate-hashes \
+        --output-file "$REPO_ROOT/$lock_file" \
+        --no-emit-index-url
+
+done
+
 echo ""
-echo "To verify: pip install --require-hashes -r requirements-docs.lock"
+echo "Done. Commit the following lockfiles to the repository:"
+for req_file in "${REQUIREMENTS_FILES[@]}"; do
+    echo "  - ${req_file%.txt}.lock"
+done
+echo ""
+echo "To verify, run (for each lockfile):"
+echo "  pip install --require-hashes --no-deps -r <lockfile>"

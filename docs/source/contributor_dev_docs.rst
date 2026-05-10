@@ -54,11 +54,50 @@ Sphinx has been configured to generate the following formats:
 Dependencies
 ~~~~~~~~~~~~
 
-To install the dependencies, ensure that the following command dev step up is executed and if not run the following command in the root directory of the repository:
+The documentation build dependencies are pinned in ``requirements-docs.lock``,
+a hashed lockfile generated from ``requirements-docs.txt``. Installing from the
+lockfile (rather than the unpinned ``requirements-docs.txt``) guarantees a
+reproducible build and lets ``pip`` verify each package against its expected
+hash.
+
+To install the documentation dependencies, run the following command from the
+root directory of the repository:
 
 .. code-block:: bash
 
-   pip install -r requirements-dev.txt
+   pip install --require-hashes --no-deps -r requirements-docs.lock
+
+.. note::
+
+   ``--require-hashes`` makes ``pip`` verify the SHA-256 hash of every
+   downloaded wheel/sdist against the hash recorded in the lockfile.
+   ``--no-deps`` is safe (and recommended) here because the lockfile already
+   contains the complete, fully-resolved transitive dependency set.
+
+If you have already installed the full dev dependencies via
+``requirements-dev.lock`` (see :doc:`contributor_dev_env`), you do **not** need
+to install the documentation dependencies separately —
+``requirements-dev.lock`` already includes everything in
+``requirements-docs.lock``.
+
+Updating dependencies / regenerating the lockfile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you add, remove, or bump a documentation dependency, edit
+``requirements-docs.txt`` (the unhashed source-of-truth file) and then
+regenerate the lockfile by running the helper script from the root of the
+repository:
+
+.. code-block:: bash
+
+   ./scripts/generate_lockfiles.sh
+
+This script regenerates ``requirements.lock``, ``requirements-dev.lock``, and
+``requirements-docs.lock`` from their corresponding ``.txt`` files using
+``pip-compile`` (from the ``pip-tools`` package, which you can install with
+``pip install pip-tools``). Commit the regenerated ``.lock`` files alongside
+your change to ``requirements-docs.txt`` in the same pull request so that CI
+and other contributors stay in sync.
 
 Building the Documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
