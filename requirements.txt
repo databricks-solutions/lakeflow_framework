@@ -1,5 +1,5 @@
 ## requirements.txt: dependencies for runtime.
 ## Core dependencies
-jsonschema
+jsonschema==4.26.0
 
 ## Add any additional dependencies needed for custom functionality below here

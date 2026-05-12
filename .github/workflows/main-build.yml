@@ -15,10 +15,11 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on:
       group: databricks-solutions-protected-runner-group
+      labels: linux-ubuntu-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: main
           fetch-depth: 0
@@ -36,8 +37,9 @@ jobs:
 
       - name: Determine version bump from branch name
         id: bump
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
         run: |
-          BRANCH="${{ github.event.pull_request.head.ref || github.ref_name }}"
           BRANCH_LOWER=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]')
           echo "Merged branch: $BRANCH (normalized: $BRANCH_LOWER)"
 
