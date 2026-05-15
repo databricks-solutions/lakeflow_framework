@@ -60,6 +60,7 @@ class FrameworkPaths:
         GLOBAL_SUBSTITUTIONS (tuple): Paths to the global substitutions files.
         GLOBAL_SECRETS (tuple): Paths to the global secrets files.
         DATAFLOW_SPEC_MAPPING (str): Directory segment for dataflow spec mapping (under the resolved root).
+        LOGGER_CONFIG (str): Basename of the pluggable logger configuration file (under the resolved config root).
         MAIN_SPEC_SCHEMA_PATH (str): Path to the main specification schema file.
         FLOW_GROUP_SPEC_SCHEMA_PATH (str): Path to the flow group specification schema file.
         EXPECTATIONS_SPEC_SCHEMA_PATH (str): Path to the expectations specification schema file.
@@ -78,6 +79,7 @@ class FrameworkPaths:
     GLOBAL_SUBSTITUTIONS: tuple = ("_substitutions.json", "_substitutions.yaml", "_substitutions.yml")
     GLOBAL_SECRETS: tuple = ("_secrets.json", "_secrets.yaml", "_secrets.yml")
     DATAFLOW_SPEC_MAPPING: str = "dataflow_spec_mapping"
+    LOGGER_CONFIG: str = "logger.json"
     REQUIREMENTS_FILE: str = "requirements.txt"
 
     # Spec schema definitions paths
@@ -138,6 +140,7 @@ class PipelineBundlePaths:
         EXTENSIONS_PATH (str): DEPRECATED (v0.13.0) — flat extensions/ on sys.path; removed in v1.0.0. Migrate to src/python/.
         GLOBAL_CONFIG_FILE (tuple): The file names for global configuration files.
         PIPELINE_CONFIGS_PATH (str): The path for pipeline configuration files.
+        LOGGER_CONFIG (str): Basename of the pluggable logger configuration file (under pipeline_configs).
         PYTHON_FUNCTION_PATH (str): The path for python functions.
         SCHEMA_PATH (str): The path for schema files.
         TEMPLATE_PATH (str): Path to the template directory.
@@ -153,6 +156,7 @@ class PipelineBundlePaths:
     EXTENSIONS_PATH: str = "./extensions"  # DEPRECATED (v0.13.0) — migrate to python/; removed v1.0.0
     GLOBAL_CONFIG_FILE: tuple = ("./global.json", "./global.yaml", "./global.yml")
     PIPELINE_CONFIGS_PATH: str = "./pipeline_configs"
+    LOGGER_CONFIG: str = "logger.json"
     PYTHON_FUNCTION_PATH: str = "./python_functions"
     SCHEMA_PATH: str = "./schemas"
     TEMPLATE_PATH: str = "./templates"

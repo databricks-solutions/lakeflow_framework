@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "allow_pipeline_logger_override": false,
+  "mirror_to_stdout": true,
+  "level": "INFO",
+  "factory_args": {}
+}

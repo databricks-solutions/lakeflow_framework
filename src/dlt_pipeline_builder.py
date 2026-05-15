@@ -19,6 +19,7 @@ from pipeline_details import PipelineDetails
 from secrets_manager import SecretsManager
 from substitution_manager import SubstitutionManager
 
+import logger as pipeline_logger
 import pipeline_config
 import utility
 
@@ -81,10 +82,18 @@ class DLTPipelineBuilder:
         self.substitution_manager = None
         self.driver_cores = os.cpu_count()
         self.default_max_workers = self.driver_cores - 1 if self.driver_cores else 1
-        
+
         # Initialize logger
+        self._load_mandatory_paths()
         log_level = self.spark.conf.get(DLTPipelineSettingKeys.LOG_LEVEL, "INFO").upper()
-        self.logger = utility.set_logger("DltFramework", log_level)
+        self.logger = pipeline_logger.resolve_pipeline_logger(
+            spark=self.spark,
+            dbutils=self.dbutils,
+            framework_path=self.framework_path,
+            bundle_path=self.bundle_path,
+            framework_config_root=self._framework_config_path,
+            spark_log_level=log_level,
+        )
         self.logger.info("Initializing Pipeline...")
         self.logger.info("Logical cores (threads): %s", self.driver_cores)
         self.logger.info("Max workers: %s", self.default_max_workers)
@@ -100,14 +109,13 @@ class DLTPipelineBuilder:
         self._init_configurations()
         self._init_pipeline_components()
 
-    def _init_configurations(self) -> None:
-        """Load and validate all necessary configurations."""
-        # Load mandatory parameters
+    def _load_mandatory_paths(self) -> None:
+        """Load mandatory Spark conf paths required before logger and config init."""
         config_values = {
             param: self.spark.conf.get(param, None)
             for param in self.MANDATORY_CONFIG_PARAMS
         }
-        
+
         missing_params = [param for param, value in config_values.items() if not value]
         if missing_params:
             raise ValueError(f"Missing mandatory config parameters: {missing_params}")
@@ -117,6 +125,8 @@ class DLTPipelineBuilder:
         self._framework_config_path = utility.resolve_framework_config_path(self.framework_path)
         self.workspace_host = config_values[DLTPipelineSettingKeys.WORKSPACE_HOST]
 
+    def _init_configurations(self) -> None:
+        """Load and validate all necessary configurations."""
         # Load optional parameters
         ignore_validation_errors = self.spark.conf.get(
             DLTPipelineSettingKeys.PIPELINE_IGNORE_VALIDATION_ERRORS, "false"
