@@ -14,7 +14,7 @@ from constants import (
 )
 from dataflow import DataFlow
 from dataflow_spec_builder import DataflowSpecBuilder
-from extension_loader import add_extensions_libraries_to_sys_path, run_init_hooks
+from bundle_loader import register_bundle_sys_paths, run_init_scripts
 from pipeline_details import PipelineDetails
 from secrets_manager import SecretsManager
 from substitution_manager import SubstitutionManager
@@ -399,8 +399,8 @@ class DLTPipelineBuilder:
                 self.spark.conf.set(prop, value)
 
     def _preload_extensions(self) -> None:
-        """Add extensions/libraries directories to sys.path (legacy flat extensions/ supported)."""
-        add_extensions_libraries_to_sys_path(
+        """Register src/libraries/ and src/python/ on sys.path (legacy flat extensions/ supported with deprecation)."""
+        register_bundle_sys_paths(
             self.framework_path,
             self.bundle_path,
             self.logger,
@@ -412,7 +412,7 @@ class DLTPipelineBuilder:
             """Create a dataflow from a specification."""
             return DataFlow(dataflow_spec=spec).create_dataflow()
 
-        run_init_hooks(self.framework_path, self.bundle_path, "pre_init", self.logger)
+        run_init_scripts(self.framework_path, self.bundle_path, "pre", self.logger)
 
         self.logger.info("Initializing Pipeline...")
         pipeline_builder_threading_disabled = self.pipeline_config.get(
@@ -440,4 +440,4 @@ class DLTPipelineBuilder:
                 for future in futures:
                     future.result()
 
-        run_init_hooks(self.framework_path, self.bundle_path, "post_init", self.logger)
+        run_init_scripts(self.framework_path, self.bundle_path, "post", self.logger)

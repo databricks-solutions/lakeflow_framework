@@ -18,7 +18,7 @@ supported, as needed, without overly complicating the Framework.
 
 There are two approaches to defining Python sources:
 
-1. **Extensions**: Define functions in the ``src/extensions/`` directory and reference them by module name using ``pythonModule``
+1. **Pipeline logic modules**: Define functions in the ``src/python/`` directory and reference them by module name using ``pythonModule``
 2. **File Path**: Define functions in ``./python_functions/`` directories and reference by file path using ``functionPath``
 
 Sample Bundle
@@ -29,32 +29,40 @@ Samples are available in the ``bronze_sample`` bundle in the ``src/dataflows/fea
 Configuration
 -------------
 
-Using Extensions
-~~~~~~~~~~~~~~~~
+Using Pipeline Logic Modules (``src/python/``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The extensions approach allows you to organize your Python source functions in a central location and import them as standard Python modules.
+Place your Python source functions in ``src/python/`` — the framework adds this directory
+to ``sys.path`` at pipeline initialisation so spec strings resolve without extra configuration.
 
-**1. Create an Extension Module**
+.. admonition:: Deprecation Notice
+   :class: warning
 
-Create your source functions in the ``extensions/`` directory at the bundle root:
+   The legacy ``src/extensions/`` directory is **deprecated as of v0.13.0** and will be
+   **removed in v1.0.0**. Move ``.py`` files to ``src/python/`` — existing ``pythonModule``
+   strings in Data Flow Specs are unchanged.
+
+**1. Create a module in ``src/python/``**
+
+Create your source functions in the ``src/python/`` directory:
 
 ::
 
     my_pipeline_bundle/
     ├── src/
-    │   ├── extensions/
+    │   ├── python/
     │   │   └── sources.py      # Your source functions
     │   ├── dataflows/
     │   │   └── ...
 
-Your extension module can contain multiple functions. Each function must:
+Your module can contain multiple functions. Each function must:
 
 * Accept ``spark`` (SparkSession) and ``tokens`` (Dict) as parameters
 * Return a DataFrame
 
 .. code-block:: python
 
-    # src/extensions/sources.py
+    # src/python/sources.py
     from pyspark.sql import DataFrame, SparkSession
     from pyspark.sql import functions as F
     from typing import Dict
@@ -237,7 +245,7 @@ When using ``sourceType: "python"``, the ``sourceDetails`` object supports the f
      - Description
    * - ``pythonModule``
      - One of pythonModule/functionPath
-     - Module and function reference (e.g., ``sources.get_customer_cdf``). The module must be in the ``src/extensions/`` directory.
+     - Module and function reference (e.g., ``sources.get_customer_cdf``). The module must be in the ``src/python/`` directory.
    * - ``functionPath``
      - One of pythonModule/functionPath
      - Path to a Python file containing a ``get_df`` function. Resolved relative to the ``./python_functions/`` directory.
