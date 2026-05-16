@@ -11,6 +11,7 @@ Framework Features
    feature_data_quality_expectations
    feature_data_quality_quarantine
    feature_direct_publishing_mode
+   feature_framework_configuration
    feature_liquid_clustering
    feature_logging
    feature_logical_environment

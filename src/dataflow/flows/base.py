@@ -18,13 +18,11 @@ class FlowConfig:
     making the interface consistent while allowing for type-specific parameters.
 
     Attributes:
-        exclude_columns: List of columns to exclude from the data
         additional_column_prefix_exceptions: List of additional columns to exclude from prefix
         cdc_settings: The CDC Settings.
         cdc_snapshot_settings: The CDC Snapshot Settings.
         target_config_flags: The target config flags.
     """
-    exclude_columns: Optional[List[str]] = None
     additional_column_prefix_exceptions: Optional[List[str]] = None
     cdc_settings: Optional[CDCSettings] = None
     cdc_snapshot_settings: Optional[CDCSnapshotSettings] = None

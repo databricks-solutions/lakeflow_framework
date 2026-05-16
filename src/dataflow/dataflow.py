@@ -362,9 +362,6 @@ class DataFlow:
         cdc_settings = self._get_cdc_settings(flow, staging_tables)
         self.logger.debug("Retrieved CDC settings: %s", cdc_settings)
 
-        # Get columns to exclude
-        exclude_columns = self._get_exclude_columns(flow)
-        
         # Get column prefix exceptions
         prefix_exceptions = self._get_column_prefix_exceptions()
 
@@ -376,7 +373,6 @@ class DataFlow:
             target_config_flags = staging_tables.get(flow.targetTable).configFlags
 
         return FlowConfig(
-            exclude_columns=exclude_columns,
             target_config_flags=target_config_flags,
             additional_column_prefix_exceptions=prefix_exceptions,
             **cdc_settings,
@@ -402,21 +398,6 @@ class DataFlow:
             "cdc_settings": cdc_settings,
             "cdc_snapshot_settings": cdc_snapshot_settings
         }
-
-    def _get_exclude_columns(self, flow: BaseFlow) -> List[str]:
-        """Get list of columns to exclude based on quarantine and CDF settings."""
-        exclude_columns = []
-        
-        # Add quarantine flag if enabled for this target
-        is_target = self.is_target(flow.targetTable)
-        if (
-            self.quarantine_enabled
-            and self.quarantine_mode == QuarantineMode.TABLE
-            and is_target
-        ):
-            exclude_columns.append(QuarantineManager.QUARANTINE_COLUMN.get("name"))
-        
-        return exclude_columns
 
     def _get_column_prefix_exceptions(self) -> List[str]:
         """Get list of columns to exclude from prefix treatment."""

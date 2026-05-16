@@ -40,7 +40,7 @@ Framework-Level Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 | **Scope: Framework**
-| The global specification format is defined in the Framework's global configuration file: ``src/config/global.json|yaml``
+| The global specification format is defined in the Framework's global configuration file: ``src/config/default/global.json|yaml``
 
 .. tabs::
 
@@ -235,7 +235,7 @@ Configuration Examples
 Example 1: Framework Enforces JSON Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Framework Configuration** (``src/config/global.json|yaml``):
+**Framework Configuration** (``src/config/default/global.json|yaml``):
 
 .. tabs::
 
@@ -263,7 +263,7 @@ Example 1: Framework Enforces JSON Format
 Example 2: Framework Allows Format Flexibility
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Framework Configuration** (``src/config/global.json|yaml``):
+**Framework Configuration** (``src/config/default/global.json|yaml``):
 
 .. tabs::
 
@@ -312,7 +312,7 @@ Example 2: Framework Allows Format Flexibility
 Example 3: Framework Defaults to YAML
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Framework Configuration** (``src/config/global.json|yaml``):
+**Framework Configuration** (``src/config/default/global.json|yaml``):
 
 .. tabs::
 

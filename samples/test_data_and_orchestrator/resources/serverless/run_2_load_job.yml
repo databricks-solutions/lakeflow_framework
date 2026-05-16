@@ -8,6 +8,7 @@ resources:
             notebook_path: ${workspace.file_path}/src/run_2_staging_load
             base_parameters:
               catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
               logical_env: ${var.logical_env}
 
         # Bronze pipelines

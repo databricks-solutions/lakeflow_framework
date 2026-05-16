@@ -117,6 +117,8 @@ def setup(app):
     app.add_config_value('markdown_anchor_sections', True, 'env')
     app.add_config_value('markdown_docinfo', False, 'env')
     app.add_config_value('markdown_bullet', '*', 'env')
+    app.add_config_value('markdown_file_suffix', '.md', 'env')
+    app.add_config_value('markdown_flavor', 'github', 'env')
     app.add_builder(CustomMarkdownBuilder)
     return {
         'version': '0.1',

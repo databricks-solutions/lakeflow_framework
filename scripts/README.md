@@ -33,7 +33,7 @@ python scripts/validate_dataflows.py -v
 
 **Version Mapping (enabled by default):**
 - Automatically detects `dataFlowVersion` property in spec files
-- Applies version-specific transformations from `src/config/dataflow_spec_mapping/{version}/`
+- Applies version-specific transformations from `src/config/default/dataflow_spec_mapping/{version}/`
 - Transforms old property names to current schema (e.g., `cdcApplyChanges` → `cdcSettings`)
 - Useful for validating legacy spec files against the current schema
 - Shows which files had mappings applied with a version indicator `[v0.1.0]`

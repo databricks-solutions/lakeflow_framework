@@ -39,6 +39,10 @@ class FrameworkPaths:
     """
     FrameworkPaths is a class that contains constants for various paths and file masks used in the Lakeflow Framework.
 
+    CONFIG_PATH and CONFIG_OVERRIDE_PATH are static path segments (./config/default and ./config/override).
+    At runtime, which root to use for framework config files should be chosen using
+    utility.resolve_framework_config_path(framework_path).
+
     Attributes:
         CONFIG_PATH (str): Path to the config directory.
         EXTENSIONS_PATH (str): The path for extensions (legacy flat layout; prefer EXTENSIONS_LIBRARIES_PATH).
@@ -48,7 +52,7 @@ class FrameworkPaths:
         GLOBAL_CONFIG (tuple): Paths to the global configuration files.
         GLOBAL_SUBSTITUTIONS (tuple): Paths to the global substitutions files.
         GLOBAL_SECRETS (tuple): Paths to the global secrets files.
-        DATAFLOW_SPEC_MAPPING_PATH (str): Path to the dataflow spec mapping directory.
+        DATAFLOW_SPEC_MAPPING (str): Directory segment for dataflow spec mapping (under the resolved root).
         MAIN_SPEC_SCHEMA_PATH (str): Path to the main specification schema file.
         FLOW_GROUP_SPEC_SCHEMA_PATH (str): Path to the flow group specification schema file.
         EXPECTATIONS_SPEC_SCHEMA_PATH (str): Path to the expectations specification schema file.
@@ -56,15 +60,16 @@ class FrameworkPaths:
         TEMPLATE_DEFINITION_SPEC_SCHEMA_PATH (str): Path to the template definition specification schema file.
         TEMPLATE_SPEC_SCHEMA_PATH (str): Path to the template specification schema file.
     """
-    CONFIG_PATH: str = "./config"
+    CONFIG_PATH: str = "./config/default"
+    CONFIG_OVERRIDE_PATH: str = "./config/override"
     EXTENSIONS_PATH: str = "./extensions"
     EXTENSIONS_LIBRARIES_PATH: str = "./extensions/libraries"
     PRE_INIT_HOOKS_PATH: str = "./extensions/pre_init"
     POST_INIT_HOOKS_PATH: str = "./extensions/post_init"
-    GLOBAL_CONFIG: tuple = ("./config/global.json", "./config/global.yaml", "./config/global.yml")
+    GLOBAL_CONFIG: tuple = ("global.json", "global.yaml", "global.yml")
     GLOBAL_SUBSTITUTIONS: tuple = ("_substitutions.json", "_substitutions.yaml", "_substitutions.yml")
     GLOBAL_SECRETS: tuple = ("_secrets.json", "_secrets.yaml", "_secrets.yml")
-    DATAFLOW_SPEC_MAPPING_PATH: str = "./config/dataflow_spec_mapping"
+    DATAFLOW_SPEC_MAPPING: str = "dataflow_spec_mapping"
     REQUIREMENTS_FILE: str = "requirements.txt"
 
     # Spec schema definitions paths
@@ -75,7 +80,7 @@ class FrameworkPaths:
     SECRETS_SCHEMA_PATH: str = "./schemas/secrets.json"
     TEMPLATE_DEFINITION_SPEC_SCHEMA_PATH: str = "./schemas/spec_template_definition.json"
     TEMPLATE_SPEC_SCHEMA_PATH: str = "./schemas/spec_template.json"
- 
+
 
 class SupportedSpecFormat(str, Enum):
     """Supported specification file formats."""

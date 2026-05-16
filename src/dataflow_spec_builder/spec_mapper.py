@@ -44,6 +44,7 @@ class SpecMapper:
             max_workers: Maximum parallel workers for processing
         """
         self.framework_path = framework_path
+        self._framework_config_path = utility.resolve_framework_config_path(framework_path)
         self.max_workers = max_workers
         self._mapping_cache: Dict[str, Dict] = {}
         
@@ -121,7 +122,8 @@ class SpecMapper:
         
         mapping_path = os.path.join(
             self.framework_path,
-            FrameworkPaths.DATAFLOW_SPEC_MAPPING_PATH,
+            self._framework_config_path,
+            FrameworkPaths.DATAFLOW_SPEC_MAPPING,
             version,
             "dataflow_spec_mapping.json"
         )

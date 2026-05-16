@@ -69,10 +69,15 @@ def find_project_root() -> Path:
 def find_dataflow_files(search_path: Path) -> List[Path]:
     """
     Find all dataflow *_main.json files recursively.
-    
+
+    Matches both layouts:
+    - **/dataflows/**/dataflowspec/*_main.json (upstream samples)
+    - **/dataflows/*_main.json               (flat layout used by template-form
+      consumers that keep one file per dataflow type at the top of dataflows/)
+
     Args:
         search_path: Directory or file path to search
-        
+
     Returns:
         List of Path objects for dataflow files
     """
@@ -81,8 +86,37 @@ def find_dataflow_files(search_path: Path) -> List[Path]:
             return [search_path]
         else:
             return []
-    
-    return list(search_path.rglob("**/dataflows/**/dataflowspec/*_main.json"))
+
+    # Find every *_main.json under the search root, then keep the ones that
+    # are under (or in) a "dataflows" directory — so the search works whether
+    # the caller points at a project root or at the dataflows dir itself.
+    candidates = list(search_path.rglob("*_main.json"))
+    is_dataflows_root = (search_path.name == "dataflows")
+    return sorted({
+        p for p in candidates
+        if is_dataflows_root or "dataflows" in p.resolve().parts
+    })
+
+
+# Spec form detection — top-level shape of a *_main.json determines which
+# schema to validate against.
+SPEC_FORM_TEMPLATE = "template"   # { "template": "...", "parameterSets": [...] }
+SPEC_FORM_EXPANDED = "expanded"   # { "dataFlowId": ..., "dataFlowType": ..., ... }
+
+
+def detect_spec_form(data: Dict) -> str:
+    """Infer whether a dataflow spec is template-instantiating or expanded form."""
+    if isinstance(data, dict) and "template" in data and "parameterSets" in data:
+        return SPEC_FORM_TEMPLATE
+    return SPEC_FORM_EXPANDED
+
+
+def get_schema_path(project_root: Path, form: str) -> Path:
+    """Return the schema path for a given spec form."""
+    schemas = project_root / "src" / "schemas"
+    if form == SPEC_FORM_TEMPLATE:
+        return schemas / "spec_template.json"
+    return schemas / "main.json"
 
 
 def load_dataflow_spec_mapping(project_root: Path, version: str) -> Optional[Dict]:
@@ -393,10 +427,9 @@ Examples:
         print(f"{RED}Error: Path does not exist: {args.path}{RESET}")
         return 1
     
-    # Find project root and schema
+    # Find project root (the per-file schema is selected after spec-form detection)
     try:
         project_root = find_project_root()
-        schema_path = project_root / "src" / "schemas" / "main.json"
     except FileNotFoundError as e:
         print(f"{RED}Error: {e}{RESET}")
         return 1
@@ -406,9 +439,9 @@ Examples:
     
     if args.verbose:
         print(f"{BLUE}Project root: {project_root}{RESET}")
-        print(f"{BLUE}Schema path: {schema_path}{RESET}")
         print(f"{BLUE}Search path: {search_path}{RESET}")
-        print(f"{BLUE}Apply mapping: {apply_mapping}{RESET}\n")
+        print(f"{BLUE}Apply mapping: {apply_mapping}{RESET}")
+        print(f"{BLUE}Schema selection: per-file (template form -> spec_template.json, otherwise main.json){RESET}\n")
     
     # Find files to validate
     files = find_dataflow_files(search_path)
@@ -434,16 +467,27 @@ Examples:
             rel_path = file_path.relative_to(project_root)
         except ValueError:
             rel_path = file_path
-        
+
+        # Detect spec form per file and pick the matching schema.
+        # Falls through to expanded-form validation on read errors so the file
+        # still gets a clear error from validate_file().
+        try:
+            with open(file_path) as f:
+                spec_form = detect_spec_form(json.load(f))
+        except Exception:
+            spec_form = SPEC_FORM_EXPANDED
+        schema_path = get_schema_path(project_root, spec_form)
+
         is_valid, error_messages, version_applied = validate_file(
-            file_path, schema_path, 
+            file_path, schema_path,
             apply_mapping=apply_mapping,
             project_root=project_root
         )
-        
+
+        form_label = f" {BLUE}[{spec_form}]{RESET}"
         if is_valid:
             version_str = f" {BLUE}[v{version_applied}]{RESET}" if version_applied else ""
-            print(f"{GREEN}✓{RESET} {rel_path}{version_str}")
+            print(f"{GREEN}✓{RESET} {rel_path}{form_label}{version_str}")
             passed += 1
             if version_applied:
                 mapped_count += 1
@@ -451,7 +495,7 @@ Examples:
             version_str = f" {BLUE}[v{version_applied}]{RESET}" if version_applied else ""
             error_count = len(error_messages)
             error_label = "error" if error_count == 1 else "errors"
-            print(f"{RED}✗{RESET} {rel_path}{version_str} {RED}({error_count} {error_label}){RESET}")
+            print(f"{RED}✗{RESET} {rel_path}{form_label}{version_str} {RED}({error_count} {error_label}){RESET}")
             for i, message in enumerate(error_messages, 1):
                 print(f"  {RED}{i}. {message}{RESET}")
             failed += 1

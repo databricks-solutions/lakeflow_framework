@@ -1,7 +1,5 @@
 from pyspark import pipelines as dp
 
-import utility
-
 from ..dataflow_config import DataFlowConfig
 from ..enums import Mode
 from ..sources.sql import SourceSql
@@ -46,8 +44,6 @@ class FlowAppendSql(BaseFlow, SqlMixin):
         Args:
             config: FlowConfig object containing all necessary parameters
         """
-        exclude_columns = flow_config.exclude_columns
-
         source_sql = SourceSql(
             sqlPath=self.sqlPath,
             sqlStatement=self.sqlStatement
@@ -65,6 +61,4 @@ class FlowAppendSql(BaseFlow, SqlMixin):
         @dp.append_flow(name=self.flowName, target=self.targetTable, once=self.once)
         def flow_transform():
             df = source_sql.read_source(read_config)
-            if exclude_columns:
-                df = utility.drop_columns(df, exclude_columns)
             return df

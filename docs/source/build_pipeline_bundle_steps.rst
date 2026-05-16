@@ -116,11 +116,11 @@ The databricks.yml needs to be adjusted to include the following configurations:
       workspace:
         host: https://<workspace>.databricks.com/
       variables:
-        framework_source_path: /Workspace/Users/${var.owner}/.bundle/nab_dlt_framework/dev/files/src
+        framework_source_path: /Workspace/Users/${var.owner}/.bundle/lakeflow_framework/dev/current/files/src
 
 .. note::
     * The ``framework_source_path`` variable should point to the location of where the Lakeflow Framework bundle is deployed in the Databricks workspace. 
-    * By default the Lakeflow Framework Bundle is deployed to the owner's (person deploying the bundle) workspace files how folder under the ``.bundle/<project name>/<target environment>/files/`` directory.
+    * By default the Lakeflow Framework Bundle is deployed to the owner's (person deploying the bundle) workspace folder in the ``.bundle/<project name>/<target environment>/<framework_version>/files/src`` directory.
     * The ``owner`` can either be passed via the command line or via your CI/CD tool to allow deployment to the appropriate workspace files location in the given deployment context. See the :doc:`deploy_pipeline_bundle` section for more information.
 
 3. Select your Bundle Structure

@@ -38,6 +38,12 @@ if ! update_substitutions_file "yaml_sample/src/pipeline_configs/dev_substitutio
     exit 1
 fi
 
+# Update pipeline global config file with table migration state volume path
+if ! update_pipeline_global_config_file "yaml_sample/src/pipeline_configs/global.json"; then
+    log_error "Failed to update pipeline global config file. Exiting."
+    exit 1
+fi
+
 # Change to yaml_sample directory for deployment
 cd yaml_sample
 
@@ -49,3 +55,6 @@ cd ..
 
 # Restore original substitutions file
 restore_substitutions_file "yaml_sample/src/pipeline_configs/dev_substitutions.yaml"
+
+# Restore original pipeline global config file
+restore_pipeline_global_config_file "yaml_sample/src/pipeline_configs/global.json"
