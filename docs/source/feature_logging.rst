@@ -98,11 +98,11 @@ Configuration Schema
    * - ``library``
      - —
      - ✓ / ✓
-     - Optional distribution name to probe (for example ``adh_logger``). If set and not importable, the framework falls back to the default logger and logs a warning.
+     - Optional distribution name to probe (for example ``custom_logger``). If set and not importable, the framework falls back to the default logger and logs a warning.
    * - ``module``
      - —
      - ✓ / ✓
-     - Python module to import (for example ``adh_logger.databricks``).
+     - Python module to import (for example ``custom_logger.databricks``).
    * - ``factory``
      - —
      - ✓ / ✓
@@ -137,7 +137,7 @@ After mandatory Spark configuration provides ``framework.sourcePath`` and ``bund
 
 Keys present in only one file are retained. The pipeline bundle must not rely on defining ``allow_pipeline_logger_override``; set it only in the framework file.
 
-Example — enable adh_logger in the pipeline bundle
+Example — enable logger in the pipeline bundle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Install the library on the pipeline (wheel or PyPI in the pipeline **libraries** list), then add ``pipeline_configs/logger.json``:
@@ -146,8 +146,8 @@ Install the library on the pipeline (wheel or PyPI in the pipeline **libraries**
 
    {
      "enabled": true,
-     "library": "adh_logger",
-     "module": "adh_logger.databricks",
+     "library": "custom_logger",
+     "module": "custom_logger.lakeflow_logger",
      "factory": "get_logger",
      "factory_args": {
        "log_to_output": false,
@@ -160,7 +160,7 @@ Install the library on the pipeline (wheel or PyPI in the pipeline **libraries**
 
 .. tip::
 
-   When ``mirror_to_stdout`` is ``true``, set ``factory_args.log_to_output`` to ``false`` on adh_logger to avoid duplicate output in the notebook cell (Application Insights via the custom logger, framework-formatted lines on stdout for the pipeline **Logs** UI).
+   When ``mirror_to_stdout`` is ``true``, set ``factory_args.log_to_output`` to ``false`` on custom_logger to avoid duplicate output in the notebook cell (Application Insights via the custom logger, framework-formatted lines on stdout for the pipeline **Logs** UI).
 
 Resolution and Fallback
 ^^^^^^^^^^^^^^^^^^^^^^^
