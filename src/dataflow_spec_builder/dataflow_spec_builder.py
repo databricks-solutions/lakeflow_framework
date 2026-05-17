@@ -248,7 +248,8 @@ class DataflowSpecBuilder:
                 file_format=self.spec_file_format,
                 file_suffix=suffixes,
                 recursive=True,
-                max_workers=self.max_workers
+                max_workers=self.max_workers,
+                logger=self.logger,
             )
             
             main_files_data = {}

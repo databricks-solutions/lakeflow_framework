@@ -1,0 +1,5 @@
+{
+  "enabled": false,
+  "allow_pipeline_logger_override": false,
+  "level": "INFO"
+}
