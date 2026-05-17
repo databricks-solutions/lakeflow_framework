@@ -248,14 +248,18 @@ def resolve_logger(
 
 
 def load_framework_logger_config(framework_path: str, framework_config_root: str) -> Dict[str, Any]:
-    """Load framework logger.json from the resolved config root (default or override)."""
-    import os
+    """Load framework logger.json using the local-config resolver.
 
-    from utility import resolve_framework_config_path
+    Loads ``src/config/default/logger.json`` and deep-merges
+    ``src/local/config/logger.json`` on top if present.
+    The legacy ``framework_config_root`` argument is accepted for backward
+    compatibility but ignored when it points to ``config/default``; when it
+    points to ``config/override`` a deprecation warning is emitted by the
+    underlying resolver.
+    """
+    from config_resolver import load_framework_config
 
-    root = framework_config_root or resolve_framework_config_path(framework_path)
-    path = os.path.join(framework_path, root, FrameworkPaths.LOGGER_CONFIG)
-    return load_logger_config(path)
+    return load_framework_config(FrameworkPaths.LOGGER_CONFIG, framework_path, fail_on_not_exists=False)
 
 
 def load_bundle_logger_config(bundle_path: str) -> Dict[str, Any]:

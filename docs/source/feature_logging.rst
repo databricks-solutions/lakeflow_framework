@@ -58,12 +58,16 @@ Pluggable Logger Configuration (``logger.json``)
 Custom logging is configured in ``logger.json`` files—not in ``global.json``—so the framework can initialize logging before loading merged global configuration.
 
 | **Scope: Framework**
-| Shipped defaults: ``{framework_path}/config/default/logger.json``
-| Custom framework settings: ``{framework_path}/config/override/logger.json`` (when the override directory is active; see :doc:`feature_framework_configuration`)
+| Shipped defaults: ``{framework_path}/src/config/default/logger.json``
+| Custom framework settings: ``{framework_path}/src/local/config/logger.json`` (sparse overlay — only include the keys you want to change)
 
 .. important::
 
-   Do **not** edit ``config/default/logger.json`` in the framework bundle. To change framework-level logging, add a new ``logger.json`` under ``config/override/``. When ``config/override/`` is in use, the framework reads **all** framework configuration from that directory (not only ``logger.json``), so the override tree must include the required layout described in :doc:`feature_framework_configuration`.
+   Do **not** edit ``src/config/default/logger.json`` in the framework bundle.
+   To change framework-level logging, create a sparse ``logger.json`` under
+   ``src/local/config/`` containing only the keys you want to override.
+   The framework deep-merges the local file on top of the defaults — no need
+   to copy the full file. See :doc:`feature_framework_configuration` for details.
 
 | **Scope: Pipeline bundle**
 | ``{bundle_path}/pipeline_configs/logger.json``
@@ -373,11 +377,10 @@ Create ``src/local/libraries/structured_stdout_logger.py``:
        """Factory called by the framework as factory(dbutils, spark, **factory_args)."""
        return StructuredStdoutLogger(level=level, logger_name=logger_name)
 
-**Step 2 — Enable the logger via** ``config/override/logger.json``
+**Step 2 — Enable the logger via** ``src/local/config/logger.json``
 
-Add or update ``src/config/override/logger.json`` in the framework bundle
-(the override directory must include the full required layout — see
-:doc:`feature_framework_configuration`):
+Add or update ``src/local/config/logger.json`` in the framework bundle
+(a sparse file is sufficient — only the keys you want to set are needed):
 
 .. code-block:: json
 
@@ -551,7 +554,7 @@ Common causes:
 - **Missing** ``enabled: true`` — the default config has ``enabled: false``;
   the override config must explicitly set it to ``true``.
 - **Config not found** — ``logger.json`` must live at
-  ``src/config/override/logger.json`` (framework bundle) or
+  ``src/local/config/logger.json`` (framework bundle) or
   ``pipeline_configs/logger.json`` (pipeline bundle). Confirm the file is
   present and valid JSON.
 

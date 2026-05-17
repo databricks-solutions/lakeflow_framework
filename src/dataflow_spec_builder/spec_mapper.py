@@ -2,6 +2,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Tuple, Optional, Any
 
+from config_resolver import resolve_framework_config_dir
 from constants import FrameworkPaths
 import pipeline_config
 import utility
@@ -44,7 +45,6 @@ class SpecMapper:
             max_workers: Maximum parallel workers for processing
         """
         self.framework_path = framework_path
-        self._framework_config_path = utility.resolve_framework_config_path(framework_path)
         self.max_workers = max_workers
         self._mapping_cache: Dict[str, Dict] = {}
         
@@ -121,9 +121,7 @@ class SpecMapper:
             return self._mapping_cache[version]
         
         mapping_path = os.path.join(
-            self.framework_path,
-            self._framework_config_path,
-            FrameworkPaths.DATAFLOW_SPEC_MAPPING,
+            resolve_framework_config_dir(FrameworkPaths.DATAFLOW_SPEC_MAPPING, self.framework_path),
             version,
             "dataflow_spec_mapping.json"
         )
