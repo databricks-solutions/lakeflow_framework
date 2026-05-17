@@ -20,6 +20,10 @@ if TYPE_CHECKING:
 
 _REQUIRED_LOG_METHODS = ("debug", "info", "warning", "error", "critical", "exception")
 
+
+class CustomLoggerConfigWarning(UserWarning):
+    """Emitted when the custom logger fails to initialise and the framework falls back to the default logger."""
+
 _DEFAULT_LOGGER_CONFIG: Dict[str, Any] = {
     "enabled": False,
     "factory_args": {},
@@ -230,8 +234,15 @@ def resolve_logger(
         custom = factory(dbutils, spark, **factory_args)
         _validate_logger_api(custom)
     except Exception as exc:
-        default_logger.warning(
-            "Failed to initialize custom logger: %s",
+        import warnings as _warnings
+        _warnings.warn(
+            f"Custom logger failed to initialise — falling back to framework default logger. "
+            f"Check 'module' and 'factory' in your logger.json. Error: {exc}",
+            CustomLoggerConfigWarning,
+            stacklevel=2,
+        )
+        default_logger.error(
+            "Custom logger failed to initialise (falling back to default): %s",
             exc,
             exc_info=True,
         )
