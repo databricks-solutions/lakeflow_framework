@@ -1,4 +1,4 @@
-Custom Python, Libraries & Init Scripts
+Python Code, Libraries & Init Scripts
 =======================================
 
 .. list-table::
@@ -18,26 +18,41 @@ Overview
 The framework supports three mechanisms for adding custom code to the framework or a pipeline bundle. Each
 addresses a different concern and has a dedicated place in both bundle structures:
 
-**Cluster libraries** — third-party or in-house Python packages that need to be
-installed on the Databricks cluster before your pipeline runs. The framework plays no
-role in installation; the Databricks Asset Bundle `pipeline environments <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_ mechanism handles it.
-Libraries can live in:
+.. list-table::
+   :header-rows: 1
+   :widths: 5 20 20 55
 
-- an artifact repository e.g. Artifactory or Nexus,
-- on PyPI,
-- in a Unity Catalog Volume
-- under ``src/libraries/`` if you want/need to bundle the wheel with your pipeline code
+   * - #
+     - Mechanism
+     - Location
+     - Purpose
+   * - 1
+     - **Cluster libraries**
+     - External:
 
-**Pipeline Python Code** — custom Python modules and packages written by your team
-that are referenced directly by Data Flow Specs (sources, transforms, sinks). These
-live under ``src/python/`` and are added to ``sys.path`` at pipeline initialisation so
-specs can resolve them by module path.
-
-**Init scripts** — lightweight ``.py`` files that run at fixed points in the pipeline
-initialisation lifecycle. Scripts under ``src/init/pre/`` run before SDP dataflow
-declarations; scripts under ``src/init/post/`` run after. Use them for Spark
-configuration, event hook registration, or any one-time setup that must happen outside
-of Data Flow logic.
+         - PyPI
+         - UC Volume
+         - Artifact repository e.g. Artifactory, Nexus
+       | **OR**
+       | Bundled wheel: ``src/libraries/``
+     - Third-party or in-house Python packages installed on the cluster before the pipeline
+       runs. The framework plays no role in installation; the Databricks Asset Bundle
+       `pipeline environments <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_
+       mechanism handles it. Bundling under ``src/libraries/`` is a fallback for when an
+       external registry is not available or practical.
+   * - 2
+     - **Pipeline Python Code**
+     - ``src/python/``
+     - Custom modules and packages written by your team that are referenced directly by
+       Data Flow Specs (sources, transforms, sinks). Added to ``sys.path`` at pipeline
+       initialisation so specs can resolve them by module path.
+   * - 3
+     - **Init scripts**
+     - ``src/init/pre/`` and ``src/init/post/``
+     - Lightweight ``.py`` files that run at fixed points in the pipeline initialisation
+       lifecycle. ``pre/`` scripts run before SDP dataflow declarations; ``post/`` scripts
+       run after. Use them for Spark configuration, event hook registration, or any
+       one-time setup that must happen outside of Data Flow logic.
 
 Each mechanism is independent. You can use any combination.
 
@@ -137,8 +152,8 @@ Directory Structure
     └── requirements_additional.txt   # Optional pip dependencies
     └── resource.yaml
 
-1. Cluster Library Installation
----------------------------------
+Cluster Library Installation
+-----------------------------
 
 Cluster libraries are Python packages installed on the Databricks cluster by the
 Databricks Asset Bundle (DAB) `pipeline environments <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_ mechanism; the framework is not involved
@@ -184,8 +199,8 @@ importable without a full wheel build — this is a secondary, convenience role.
    ``.whl`` files** — wheels must be declared in ``libraries:`` YAML and are installed
    by the cluster, not ``sys.path``.
 
-2. Python modules and packages used by Data Flow Specs (``src/python/``)
--------------------------------------------------------------------------------
+Pipeline Python Code (``src/python/``)
+---------------------------------------
 
 ``src/python/`` is the **single home for all Python modules and packages referenced by Data Flow
 Specs** — sources, transforms, sinks, and shared utility modules. The framework adds
@@ -411,8 +426,8 @@ Custom functions for ``foreach_batch_sink`` targets that process micro-batches.
        for record in df.toJSON().collect():
            requests.post(api_url, json=record)
 
-3. Init scripts
----------------
+Init scripts (``src/init``)
+---------------------------
 
 Init scripts are Notebooks and other plain ``.py`` files executed by the framework around
 ``DLTPipelineBuilder.initialize_pipeline()``.

@@ -22,6 +22,7 @@ Framework Features
    feature_python_dependency_management
    feature_python_extensions
    feature_python_functions
+   feature_python_source
    feature_schemas
    feature_spec_format
    feature_secrets
