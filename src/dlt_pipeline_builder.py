@@ -203,17 +203,40 @@ class DLTPipelineBuilder:
         self._apply_spark_config()
 
     def _load_framework_global_config(self) -> Dict[str, Any]:
-        """Load the framework global config, deep-merging any src/local/config/ overlay."""
-        for name in FrameworkPaths.GLOBAL_CONFIG:
-            result = load_framework_config(name, self.framework_path, fail_on_not_exists=False)
-            if result:
-                self.logger.info("Retrieving Global Framework Config From: %s", name)
-                return result
-        raise FileNotFoundError(
-            f"Framework global config file not found. Expected one of "
-            f"{list(FrameworkPaths.GLOBAL_CONFIG)} under "
-            f"{os.path.join(self.framework_path, FrameworkPaths.CONFIG_PATH)}"
+        """Load the framework global config, deep-merging any src/local/config/ overrides."""
+        from config_resolver import load_framework_config
+
+        override_dir = os.path.join(self.framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH)
+        is_override = any(
+            os.path.exists(os.path.join(override_dir, n)) for n in FrameworkPaths.GLOBAL_CONFIG
         )
+
+        if is_override:
+            import warnings
+            warnings.warn(
+                f"{FrameworkPaths.CONFIG_OVERRIDE_PATH} is deprecated (v0.13.0) and will be "
+                f"removed in v1.0.0. Migrate your overrides to {FrameworkPaths.LOCAL_CONFIG_PATH} "
+                "— only the keys you want to change are needed (sparse files are supported). "
+                "See the framework configuration documentation for migration steps.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self._active_config_path = FrameworkPaths.CONFIG_OVERRIDE_PATH
+        else:
+            self._active_config_path = FrameworkPaths.CONFIG_PATH
+
+        self.logger.info(
+            "Retrieving Global Framework Config From: %s",
+            os.path.join(self.framework_path, self._active_config_path),
+        )
+        result = load_framework_config(
+            FrameworkPaths.GLOBAL_CONFIG,
+            self.framework_path,
+            config_path=self._active_config_path,
+            fail_on_not_exists=True,
+        )
+        self.logger.info("Global Framework Config (resolved): %s", result)
+        return result
 
     def _load_pipeline_bundle_global_config_file(self) -> Dict[str, Any]:
         """Load a global config file"""
@@ -383,8 +406,12 @@ class DLTPipelineBuilder:
 
         self.logger.info("Operational Metadata: layer set to %s", layer)
         config_name = f"operational_metadata_{layer}.json"
-        metadata_json = load_framework_config(config_name, self.framework_path, fail_on_not_exists=False)
-        self.logger.info("Operational Metadata config: %s", config_name)
+        metadata_json = load_framework_config(
+            config_name, self.framework_path,
+            config_path=getattr(self, "_active_config_path", FrameworkPaths.CONFIG_PATH),
+            fail_on_not_exists=False,
+        )
+        self.logger.info("Operational Metadata config (resolved): %s", metadata_json)
         self.operational_metadata_schema = (
             T.StructType.fromJson(metadata_json) if metadata_json else None
         )

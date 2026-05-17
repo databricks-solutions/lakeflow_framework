@@ -7,39 +7,64 @@ until v1.0.0.
 """
 import os
 import warnings
-from typing import Dict
+from typing import Dict, Sequence, Union
 
 from constants import FrameworkPaths
 
 
 def load_framework_config(
-    name: str,
+    name: Union[str, Sequence[str]],
     framework_path: str,
+    config_path: str = FrameworkPaths.CONFIG_PATH,
     fail_on_not_exists: bool = True,
 ) -> Dict:
-    """Load a framework config file with ``src/local/config/`` deep-merge overlay support.
+    """Load a config file from *config_path* with ``src/local/config/`` deep-merge overlay.
 
-    Resolution order:
+    The caller is responsible for determining the active base path (override or default)
+    and passing it via ``config_path``.  This function contains no override-detection
+    logic — it only loads from the given path and applies the ``src/local/config/``
+    sparse overlay on top.
 
-    1. Load the full file from ``src/config/default/<name>`` (always authoritative).
-    2. If ``src/local/config/<name>`` exists, deep-merge it on top.
-       Only the keys present in the overlay file are changed — all other keys
-       retain their default values (sparse / partial files are supported).
+    When *name* is a sequence (e.g. ``FrameworkPaths.GLOBAL_CONFIG``), the function
+    resolves to the single matching file within ``config_path``, raising ``ValueError``
+    if more than one match is found.
 
     Args:
-        name: Config file name relative to the config root,
-              e.g. ``"global.json"`` or ``"operational_metadata_bronze.json"``.
-        framework_path: Absolute path to the framework bundle's ``src/`` directory
-                        (the value of ``framework.sourcePath``).
-        fail_on_not_exists: When ``True`` (default) raise ``FileNotFoundError`` if
-                            the default file is absent.  When ``False`` return ``{}``.
+        name: Config file name (e.g. ``"logger.json"``) **or** a sequence of alternative
+              filenames (e.g. ``FrameworkPaths.GLOBAL_CONFIG``).
+        framework_path: Absolute path to the framework bundle's ``src/`` directory.
+        config_path: Relative path segment for the base config directory, e.g.
+                     ``FrameworkPaths.CONFIG_PATH`` (default) or
+                     ``FrameworkPaths.CONFIG_OVERRIDE_PATH`` when the caller has
+                     determined that the deprecated override directory is active.
+        fail_on_not_exists: When ``True`` (default) raise ``FileNotFoundError`` if the
+                            base file is absent.  When ``False`` return ``{}``.
     """
     from utility import load_config_file_auto, deep_merge
 
-    default_path = os.path.join(framework_path, FrameworkPaths.CONFIG_PATH, name)
-    local_path = os.path.join(framework_path, FrameworkPaths.LOCAL_CONFIG_PATH, name)
+    base_dir = os.path.join(framework_path, config_path)
+    local_dir = os.path.join(framework_path, FrameworkPaths.LOCAL_CONFIG_PATH)
 
-    defaults = load_config_file_auto(default_path, fail_on_not_exists=fail_on_not_exists) or {}
+    if not isinstance(name, str):
+        names = name
+        matches = [n for n in names if os.path.exists(os.path.join(base_dir, n))]
+        if len(matches) > 1:
+            raise ValueError(
+                f"Multiple config files found in {config_path}. "
+                f"Only one is allowed: {[os.path.join(base_dir, n) for n in matches]}"
+            )
+        if not matches:
+            if fail_on_not_exists:
+                raise FileNotFoundError(
+                    f"Config file not found. Expected one of {list(names)} under {base_dir}"
+                )
+            return {}
+        name = matches[0]
+
+    base_path = os.path.join(base_dir, name)
+    local_path = os.path.join(local_dir, name)
+
+    defaults = load_config_file_auto(base_path, fail_on_not_exists=fail_on_not_exists) or {}
 
     if os.path.exists(local_path):
         overlay = load_config_file_auto(local_path, fail_on_not_exists=False) or {}

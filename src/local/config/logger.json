@@ -1,9 +1,0 @@
-{
-  "enabled": true,
-  "module": "structured_stdout_logger",
-  "factory": "get_logger",
-  "level": "INFO",
-  "factory_args": {
-    "logger_name": "CustomSampleLogger"
-  }
-}

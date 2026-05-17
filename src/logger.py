@@ -259,18 +259,40 @@ def resolve_logger(
 
 
 def load_framework_logger_config(framework_path: str, framework_config_root: str) -> Dict[str, Any]:
-    """Load framework logger.json using the local-config resolver.
+    """Load framework logger.json, deep-merging any src/local/config/ overlay.
 
-    Loads ``src/config/default/logger.json`` and deep-merges
-    ``src/local/config/logger.json`` on top if present.
-    The legacy ``framework_config_root`` argument is accepted for backward
-    compatibility but ignored when it points to ``config/default``; when it
-    points to ``config/override`` a deprecation warning is emitted by the
-    underlying resolver.
+    Checks whether ``config/override/logger.json`` exists (DEPRECATED v0.13.0).
+    If so, emits a ``DeprecationWarning`` and uses the override as the base.
+    Otherwise uses ``config/default/logger.json``.  A sparse
+    ``src/local/config/logger.json`` overlay is always deep-merged on top.
     """
+    import os as _os
+    import warnings as _warnings
     from config_resolver import load_framework_config
 
-    return load_framework_config(FrameworkPaths.LOGGER_CONFIG, framework_path, fail_on_not_exists=False)
+    override_path = _os.path.join(
+        framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH, FrameworkPaths.LOGGER_CONFIG
+    )
+    if _os.path.exists(override_path):
+        _warnings.warn(
+            f"{FrameworkPaths.CONFIG_OVERRIDE_PATH}/{FrameworkPaths.LOGGER_CONFIG} is deprecated "
+            f"(v0.13.0) and will be removed in v1.0.0. Migrate to "
+            f"{FrameworkPaths.LOCAL_CONFIG_PATH}/{FrameworkPaths.LOGGER_CONFIG} — only the keys "
+            "you want to change are needed (sparse files are supported). "
+            "See the framework configuration documentation for migration steps.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        config_path = FrameworkPaths.CONFIG_OVERRIDE_PATH
+    else:
+        config_path = FrameworkPaths.CONFIG_PATH
+
+    return load_framework_config(
+        FrameworkPaths.LOGGER_CONFIG,
+        framework_path,
+        config_path=config_path,
+        fail_on_not_exists=False,
+    )
 
 
 def load_bundle_logger_config(bundle_path: str) -> Dict[str, Any]:
@@ -293,4 +315,6 @@ def resolve_pipeline_logger(
     framework_cfg = load_framework_logger_config(framework_path, framework_config_root or "")
     bundle_cfg = load_bundle_logger_config(bundle_path)
     effective = merge_logger_config(framework_cfg, bundle_cfg)
-    return resolve_logger(spark, dbutils, effective, spark_log_level=spark_log_level)
+    logger = resolve_logger(spark, dbutils, effective, spark_log_level=spark_log_level)
+    logger.info("Resolved pipeline logger config: %s", effective)
+    return logger
