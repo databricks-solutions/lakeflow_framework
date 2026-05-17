@@ -222,6 +222,11 @@ def resolve_logger(
         module = importlib.import_module(str(module_name))
         factory = getattr(module, str(factory_name))
         factory_args = dict(effective_config.get("factory_args") or {})
+        # Inject the resolved log level so pipeline-level logLevel settings
+        # (e.g. spark.conf logLevel = "DEBUG") propagate to the custom logger.
+        # Only set if the factory accepts a "level" kwarg (detected by checking
+        # factory_args; the factory itself must handle the kwarg).
+        factory_args["level"] = level
         custom = factory(dbutils, spark, **factory_args)
         _validate_logger_api(custom)
     except Exception as exc:

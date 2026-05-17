@@ -114,7 +114,7 @@ Configuration Schema
    * - ``level``
      - ``"INFO"``
      - ✓ / ✓
-     - Minimum log level for the resolved logger (may be overridden by Spark ``logLevel``).
+     - Minimum log level for the resolved logger. Overridden by the Spark ``logLevel`` pipeline setting when set. The resolved level is also automatically injected as a ``"level"`` key in ``factory_args``.
    * - ``mirror_to_stdout``
      - ``false``
      - ✓ / ✓
@@ -180,11 +180,18 @@ must be met to ensure compatibility with both the framework call sites and the
        loggers should match this to avoid unnecessary work when a message is below
        the active level.
    * - 5
+     - **Accept** ``level`` **in the factory signature**
+     - The framework injects the resolved log level as a ``"level"`` keyword
+       argument into ``factory_args`` before calling the factory (this is how
+       the Spark ``logLevel`` pipeline setting propagates to the custom logger).
+       Declare ``level: str = "INFO"`` in the factory signature and pass it to
+       the logger instance so runtime level changes take effect.
+   * - 6
      - **Accept and ignore** ``dbutils`` **and** ``spark`` **in the factory**
      - The factory is called as ``factory(dbutils, spark, **factory_args)``.
        Both arguments are always injected even if unused. Declare them in the
        factory signature.
-   * - 6
+   * - 7
      - **Implement** ``close()`` **(optional but recommended)**
      - Called by ``CompositeLogger.close()`` on shutdown. If your logger holds
        open connections or buffers, flush and release them here. A no-op
@@ -231,7 +238,7 @@ must be met to ensure compatibility with both the framework call sites and the
        def close(self): pass
 
 
-   def create_logger(dbutils, spark, level="INFO", **factory_args):
+   def get_logger(dbutils, spark, level="INFO", **factory_args):
        return MyCustomLogger(level=level)
 
 Example — framework-level structured stdout logger (``src/local/``)
@@ -357,7 +364,7 @@ Create ``src/local/libraries/structured_stdout_logger.py``:
            pass
 
 
-   def create_logger(
+   def get_logger(
        dbutils: Any,
        spark: Any,
        level: str = "INFO",
@@ -377,7 +384,7 @@ Add or update ``src/config/override/logger.json`` in the framework bundle
    {
      "enabled": true,
      "module": "structured_stdout_logger",
-     "factory": "create_logger",
+     "factory": "get_logger",
      "level": "INFO",
      "factory_args": {
        "logger_name": "DltFramework"
@@ -521,3 +528,77 @@ Structured stdout logger output (JSON, via ``structured_stdout_logger``):
    {"timestamp": "2025-02-06T04:05:46.161000+00:00", "level": "INFO", "logger": "DltFramework", "message": "Initializing Pipeline..."}
    {"timestamp": "2025-02-06T04:05:48.254000+00:00", "level": "INFO", "logger": "DltFramework", "message": "Creating Flow: flow_name"}
    {"timestamp": "2025-02-06T04:06:26.527000+00:00", "level": "ERROR", "logger": "DltFramework", "message": "Failed to process Data Flow Spec: schema mismatch", "exc_info": "Traceback (most recent call last):\n  ..."}
+
+Troubleshooting
+---------------
+
+Custom logger not loading / pipeline still uses default logger
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The framework always falls back to the default stdout logger on any initialisation
+error rather than failing the pipeline. Check the pipeline logs for a warning
+beginning with ``Failed to initialize custom logger:`` — the message will contain
+the original exception.
+
+Common causes:
+
+- **Module not on** ``sys.path`` — if the module lives in ``src/local/libraries/``
+  it is registered automatically. If it is a cluster library, confirm the
+  library is installed on the pipeline cluster and the ``module`` path matches
+  the installed package's import path.
+- **Wrong** ``factory`` **name** — the value must match the exact function name
+  exported by the module (case-sensitive).
+- **Missing** ``enabled: true`` — the default config has ``enabled: false``;
+  the override config must explicitly set it to ``true``.
+- **Config not found** — ``logger.json`` must live at
+  ``src/config/override/logger.json`` (framework bundle) or
+  ``pipeline_configs/logger.json`` (pipeline bundle). Confirm the file is
+  present and valid JSON.
+
+Logger ignores ``logLevel = "DEBUG"`` set in pipeline settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The resolved log level is injected automatically into ``factory_args`` as
+``"level"`` before the factory is called. The factory **must** accept a
+``level`` keyword argument and forward it to the logger instance — see
+requirement 5 in the `Custom Logger Contract`_ above.
+
+If the third-party logger uses a different parameter name (e.g. ``log_level``),
+add a thin wrapper (see below) that maps the argument:
+
+.. code-block:: python
+
+   # src/local/libraries/my_logger_wrapper.py
+   from mylib import get_logger as _get_logger
+
+   def get_logger(dbutils, spark, level="INFO", **factory_args):
+       return _get_logger(dbutils, spark, log_level=level, **factory_args)
+
+Third-party logger cannot be called as ``factory(dbutils, spark, **factory_args)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some loggers require multi-step initialisation, a context manager, or arguments
+that are incompatible with the framework's injection. Place a thin wrapper in
+``src/local/libraries/`` (framework bundle) or as a cluster-installed module
+(pipeline bundle). The wrapper's ``get_logger`` handles the adaptation and
+``logger.json`` points to the wrapper rather than the upstream library:
+
+.. code-block:: python
+
+   # src/local/libraries/my_logger_wrapper.py
+   from my_logger.databricks import get_logger as _get_logger
+
+   def get_logger(dbutils, spark, level="INFO", **factory_args):
+       """Thin adapter — translates framework call convention to my_logger."""
+       return _get_logger(dbutils, spark, level=level, log_to_output=False, **factory_args)
+
+.. code-block:: json
+
+   {
+     "enabled": true,
+     "module": "my_logger_wrapper",
+     "factory": "get_logger",
+     "level": "INFO",
+     "factory_args": {}
+   }
+
