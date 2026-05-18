@@ -11,7 +11,7 @@
 When a custom logger is active there are two potential sources of stdout output:
 
 1. The custom logger itself (e.g. structured JSON written via `print()`).
-2. The `DltFramework` Python `logging.Logger` which was already writing
+2. The `lakeflowframework` Python `logging.Logger` which was already writing
    plain-text lines to stdout before the custom logger existed.
 
 Without an explicit policy both sources emit simultaneously, producing duplicate
@@ -34,15 +34,15 @@ Two use-cases must be supported:
 When a custom logger initialises successfully and `mirror_to_stdout` is `false`
 (default):
 
-- All handlers are removed from the `DltFramework` `logging.Logger` instance.
+- All handlers are removed from the `lakeflowframework` `logging.Logger` instance.
 - A `logging.NullHandler` is attached so any code holding a direct
-  `logging.getLogger("DltFramework")` reference stays quiet.
+  `logging.getLogger("lakeflowframework")` reference stays quiet.
 - The custom logger is returned directly — it is the sole output path.
 
 When `mirror_to_stdout` is `true`:
 
 - The custom logger is wrapped in a **`CompositeLogger`** together with the
-  default `DltFramework` stdout handler.
+  default `lakeflowframework` stdout handler.
 - Every log call is forwarded to the custom logger first (primary), then to the
   default logger (mirror).
 - `CompositeLogger` passes `*args` and `**kwargs` through to the mirror logger
@@ -59,8 +59,8 @@ default logger is returned unchanged.
 - Customers who want dual output set `mirror_to_stdout: true` and (if their
   custom logger also writes to stdout) suppress that output via a factory arg
   (e.g. `log_to_output: false`).
-- The `DltFramework` `logging.Logger` instance is modified in-place when
-  silenced. Any code that obtained a direct `logging.getLogger("DltFramework")`
+- The `lakeflowframework` `logging.Logger` instance is modified in-place when
+  silenced. Any code that obtained a direct `logging.getLogger("lakeflowframework")`
   reference before logger resolution will stop producing output — this is the
   intended behaviour.
 - `mirror_to_stdout: false` is the breaking change relative to the previous

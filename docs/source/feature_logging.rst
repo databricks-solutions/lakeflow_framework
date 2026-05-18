@@ -11,7 +11,7 @@ Logging
    * - **Databricks Docs:**
      - NA
 
-The Lakeflow Framework provides logging capabilities to track pipeline execution and troubleshoot issues. By default, logging uses Python's standard ``logging`` module with a plain text stdout handler (logger name ``DltFramework``).
+The Lakeflow Framework provides logging capabilities to track pipeline execution and troubleshoot issues. By default, logging uses Python's standard ``logging`` module with a plain text stdout handler (logger name ``lakeflowframework``).
 
 You can optionally plug in a **custom logger** via a dedicated ``logger.json`` config file.
 
@@ -29,7 +29,7 @@ The framework supports two logging modes. The active mode is determined by the `
 
 The framework supports the following loggers:
 
-- **Standard Logger**: Python's standard ``logging`` module with a plain text stdout handler (logger name ``DltFramework``).
+- **Standard Logger**: Python's standard ``logging`` module with a plain text stdout handler (logger name ``lakeflowframework``).
 - **Custom Logger**: A custom logger that can be configured via a ``logger.json`` configuration file.
 
 Log Levels
@@ -283,7 +283,7 @@ Create ``src/local/libraries/structured_stdout_logger.py``:
    class StructuredStdoutLogger:
        """Emits each log record as a single-line JSON object to stdout."""
 
-       def __init__(self, level: str = "INFO", logger_name: str = "DltFramework") -> None:
+       def __init__(self, level: str = "INFO", logger_name: str = "lakeflowframework") -> None:
            self._level_value: int = getattr(logging, level.upper(), logging.INFO)
            self._logger_name: str = logger_name
 
@@ -369,7 +369,7 @@ Create ``src/local/libraries/structured_stdout_logger.py``:
        dbutils: Any,
        spark: Any,
        level: str = "INFO",
-       logger_name: str = "DltFramework",
+       logger_name: str = "lakeflowframework",
    ) -> StructuredStdoutLogger:
        """Factory called by the framework as factory(dbutils, spark, **factory_args)."""
        return StructuredStdoutLogger(level=level, logger_name=logger_name)
@@ -388,7 +388,7 @@ Add or update ``src/config/override/logger.json`` in the framework bundle
      "factory": "get_logger",
      "level": "INFO",
      "factory_args": {
-       "logger_name": "DltFramework"
+       "logger_name": "lakeflowframework"
      }
    }
 
@@ -402,8 +402,8 @@ Deploy the framework bundle and run a pipeline. Log output in the Databricks
 
 .. code-block:: json
 
-   {"timestamp": "2026-05-17T00:20:00.123456+00:00", "level": "INFO", "logger": "DltFramework", "message": "Initializing Pipeline..."}
-   {"timestamp": "2026-05-17T00:20:01.456789+00:00", "level": "ERROR", "logger": "DltFramework", "message": "Failed to process Data Flow Spec: schema mismatch", "exc_info": "Traceback (most recent call last):\n  ..."}
+   {"timestamp": "2026-05-17T00:20:00.123456+00:00", "level": "INFO", "logger": "lakeflowframework", "message": "Initializing Pipeline..."}
+   {"timestamp": "2026-05-17T00:20:01.456789+00:00", "level": "ERROR", "logger": "lakeflowframework", "message": "Failed to process Data Flow Spec: schema mismatch", "exc_info": "Traceback (most recent call last):\n  ..."}
 
 Example — enable a third-party logger in the pipeline bundle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -578,30 +578,30 @@ Default stdout logger output (plain text):
 
 .. code-block:: text
 
-   2025-02-06 04:05:46,161 - DltFramework - INFO - Initializing Pipeline...
-   2025-02-06 04:05:46,772 - DltFramework - INFO - Retrieving Global Framework Config From: {path}
-   2025-02-06 04:05:46,908 - DltFramework - INFO - Retrieving Pipeline Configs From: {path}
+   2025-02-06 04:05:46,161 - lakeflowframework - INFO - Initializing Pipeline...
+   2025-02-06 04:05:46,772 - lakeflowframework - INFO - Retrieving Global Framework Config From: {path}
+   2025-02-06 04:05:46,908 - lakeflowframework - INFO - Retrieving Pipeline Configs From: {path}
 
 Flow creation:
 
 .. code-block:: text
 
-   2025-02-06 04:05:48,254 - DltFramework - INFO - Creating Flow: flow_name
-   2025-02-06 04:05:48,254 - DltFramework - INFO - Creating View: view_name, mode: stream, source type: delta
+   2025-02-06 04:05:48,254 - lakeflowframework - INFO - Creating Flow: flow_name
+   2025-02-06 04:05:48,254 - lakeflowframework - INFO - Creating View: view_name, mode: stream, source type: delta
 
 Error handling:
 
 .. code-block:: text
 
-   2025-02-06 04:06:26,527 - DltFramework - ERROR - Failed to process Data Flow Spec: {error_details}
+   2025-02-06 04:06:26,527 - lakeflowframework - ERROR - Failed to process Data Flow Spec: {error_details}
 
 Structured stdout logger output (JSON, via ``structured_stdout_logger``):
 
 .. code-block:: json
 
-   {"timestamp": "2025-02-06T04:05:46.161000+00:00", "level": "INFO", "logger": "DltFramework", "message": "Initializing Pipeline..."}
-   {"timestamp": "2025-02-06T04:05:48.254000+00:00", "level": "INFO", "logger": "DltFramework", "message": "Creating Flow: flow_name"}
-   {"timestamp": "2025-02-06T04:06:26.527000+00:00", "level": "ERROR", "logger": "DltFramework", "message": "Failed to process Data Flow Spec: schema mismatch", "exc_info": "Traceback (most recent call last):\n  ..."}
+   {"timestamp": "2025-02-06T04:05:46.161000+00:00", "level": "INFO", "logger": "lakeflowframework", "message": "Initializing Pipeline..."}
+   {"timestamp": "2025-02-06T04:05:48.254000+00:00", "level": "INFO", "logger": "lakeflowframework", "message": "Creating Flow: flow_name"}
+   {"timestamp": "2025-02-06T04:06:26.527000+00:00", "level": "ERROR", "logger": "lakeflowframework", "message": "Failed to process Data Flow Spec: schema mismatch", "exc_info": "Traceback (most recent call last):\n  ..."}
 
 
 
