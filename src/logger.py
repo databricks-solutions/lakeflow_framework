@@ -64,7 +64,7 @@ def load_logger_config(config_path: str) -> Dict[str, Any]:
         data = get_json_from_file(config_path, fail_on_not_exists=False)
         return data if isinstance(data, dict) else {}
     except Exception as exc:
-        bootstrap = create_default_logger("DltFramework.LoggerConfig")
+        bootstrap = create_default_logger("lakeflowframework.config")
         bootstrap.warning(
             "Failed to load logger config from %s: %s. Using empty logger config for this source.",
             config_path,
@@ -194,7 +194,7 @@ def resolve_logger(
     dbutils: "DBUtils",
     effective_config: Dict[str, Any],
     spark_log_level: Optional[str] = None,
-    logger_name: str = "DltFramework",
+    logger_name: str = "lakeflowframework",
 ) -> Any:
     """
     Resolve the pipeline logger: default only, custom only, or CompositeLogger.

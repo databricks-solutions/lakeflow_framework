@@ -9,7 +9,7 @@
 ## Context
 
 The framework previously used a single hard-coded `logging.Logger` instance
-(`DltFramework`) writing plain-text records to stdout. Customers with structured
+(`lakeflowframework`) writing plain-text records to stdout. Customers with structured
 logging infrastructure (Application Insights, Splunk, Datadog, internal JSON
 pipelines) had no way to integrate the framework's log output without patching
 the framework itself.
@@ -47,7 +47,7 @@ Introduce a **factory-based pluggable logger** configured entirely via
    `src/config/default/`, or `src/config/override/` if still present — deprecated v0.13.0)
    and the pipeline bundle (`pipeline_configs/`); deep-merge per precedence rules
    (framework wins by default; `allow_pipeline_logger_override: true` inverts).
-2. If `enabled` is `false`, return the default `DltFramework` stdout logger.
+2. If `enabled` is `false`, return the default `lakeflowframework` stdout logger.
 3. If `library` is set and not importable, fall back to the default logger with a
    warning.
 4. Import `module`, call `factory(dbutils, spark, **factory_args)`, validate that
@@ -84,7 +84,7 @@ full contract table and reference implementation.
   `src/local/libraries/` or as a cluster-installed package; `logger.json`
   points to the wrapper.
 - Pipeline startup always succeeds regardless of logging misconfiguration.
-- The framework default logger (`DltFramework` / plain-text stdout) remains the
+- The framework default logger (`lakeflowframework` / plain-text stdout) remains the
   default; no action needed from customers who do not require a custom logger.
 - The `level` kwarg injection is part of the public factory contract — custom
   logger authors must handle it.
