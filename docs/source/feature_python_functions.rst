@@ -20,7 +20,7 @@ The functions get called and executed by the framework directly after a View rea
 
 There are two approaches to defining Python transforms:
 
-1. **Extensions**: Define functions in the ``src/dataflows/extensions/`` directory and reference them by module name
+1. **Pipeline logic modules**: Define functions in the ``src/python/`` directory and reference them by module name
 2. **File Path**: Define functions in ``./python_functions/`` directories and reference by file path
 
 Sample Bundle
@@ -31,29 +31,37 @@ Samples are available in the ``bronze_sample`` bundle in the ``src/dataflows/fea
 Configuration
 -------------
 
-Using Extensions
-~~~~~~~~~~~~~~~~
+Using Pipeline Logic Modules (``src/python/``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The extensions approach allows you to organize your Python functions in a central location and import them as standard Python modules.
+Place your Python transform functions in ``src/python/`` — the framework adds this directory
+to ``sys.path`` at pipeline initialisation so spec strings resolve without extra configuration.
 
-**1. Create an Extension Module**
+.. admonition:: Deprecation Notice
+   :class: warning
 
-Create your transform functions in the ``extensions/`` directory at the bundle root:
+   The legacy ``src/extensions/`` directory is **deprecated as of v0.13.0** and will be
+   **removed in v1.0.0**. Move ``.py`` files to ``src/python/`` — existing ``pythonTransform.module``
+   strings in Data Flow Specs are unchanged.
+
+**1. Create a module in ``src/python/``**
+
+Create your transform functions in the ``src/python/`` directory:
 
 ::
 
     my_pipeline_bundle/
     ├── src/
-    │   ├── extensions/
+    │   ├── python/
     │   │   └── transforms.py      # Your transform functions
     │   ├── dataflows/
     │   │   └── ...
 
-Your extension module can contain multiple functions:
+Your module can contain multiple functions:
 
 .. code-block:: python
 
-    # src/extensions/transforms.py
+    # src/python/transforms.py
     from pyspark.sql import DataFrame
     from pyspark.sql import functions as F
     from typing import Dict
@@ -142,7 +150,7 @@ Use ``pythonTransform.module`` to reference your function:
            tableProperties:
              delta.enableChangeDataFeed: 'true'
 
-**Using Tokens with Extensions**
+**Using Tokens with Pipeline Logic Modules**
 
 You can pass configuration tokens to your transform function:
 
@@ -277,7 +285,7 @@ The ``pythonTransform`` object supports the following properties:
      - Description
    * - ``module``
      - One of module/functionPath
-     - Module and function reference (e.g., ``transforms.customer_aggregation``). The module must be in the ``src/dataflows/extensions/`` directory.
+     - Module and function reference (e.g., ``transforms.customer_aggregation``). The module must be in the ``src/python/`` directory.
    * - ``functionPath``
      - One of module/functionPath
      - Path to a Python file containing an ``apply_transform`` function. Resolved relative to the ``./python_functions/`` directory.

@@ -609,17 +609,25 @@ class DataflowSpecBuilder:
     def _resolve_python_function_path(self, filename: str, base_path: str, spec_data: Dict) -> str:
         """
         Resolve Python function path with context-aware fallback logic.
-        
+
         Search order for regular specs:
             1. base_path/python_functions/<filename>
-            2. bundle_path/extensions/python_functions/<filename>
-            3. framework_path/extensions/python_functions/<filename>
-        
+            2. bundle_path/src/python/<filename>
+            3. framework_path/src/python/<filename>
+            4. bundle_path/src/libraries/<filename>
+            5. framework_path/src/libraries/<filename>
+            6. bundle_path/extensions/<filename> (legacy — deprecated v0.13.0)
+            7. framework_path/extensions/<filename> (legacy — deprecated v0.13.0)
+
         Search order for template-generated specs (adds one additional location):
             1. base_path/python_functions/<filename>
             2. bundle_path/templates/python_functions/<filename>
-            3. bundle_path/extensions/python_functions/<filename>
-            4. framework_path/extensions/python_functions/<filename>
+            3. bundle_path/python/<filename>
+            4. framework_path/local/python/<filename>
+            5. bundle_path/libraries/<filename>
+            6. framework_path/local/libraries/<filename>
+            7. bundle_path/extensions/<filename> (legacy — deprecated v0.13.0)
+            8. framework_path/extensions/<filename> (legacy — deprecated v0.13.0)
         """
         search_paths = {
             "base dataflow directory":
@@ -627,9 +635,17 @@ class DataflowSpecBuilder:
             "templates directory":
                 os.path.join(self.bundle_path, PipelineBundlePaths.TEMPLATE_PATH,
                     PipelineBundlePaths.PYTHON_FUNCTION_PATH, filename),
-            "bundle extensions directory":
+            "bundle python directory":
+                os.path.join(self.bundle_path, PipelineBundlePaths.PYTHON_PATH, filename),
+            "framework local/python directory":
+                os.path.join(self.framework_path, FrameworkPaths.LOCAL_PYTHON_PATH, filename),
+            "bundle libraries directory":
+                os.path.join(self.bundle_path, PipelineBundlePaths.LIBRARIES_PATH, filename),
+            "framework local/libraries directory":
+                os.path.join(self.framework_path, FrameworkPaths.LOCAL_LIBRARIES_PATH, filename),
+            "bundle extensions directory (legacy)":
                 os.path.join(self.bundle_path, PipelineBundlePaths.EXTENSIONS_PATH, filename),
-            "framework extensions directory":
+            "framework extensions directory (legacy)":
                 os.path.join(self.framework_path, FrameworkPaths.EXTENSIONS_PATH, filename),
         }
         

@@ -1,5 +1,5 @@
-Python Extensions
-=================
+Python Code, Libraries & Init Scripts
+=======================================
 
 .. list-table::
    :header-rows: 0
@@ -8,89 +8,244 @@ Python Extensions
      - :bdg-info:`Pipeline Bundle`
    * - **Configuration Scope:**
      - :bdg-info:`Pipeline`
+   * - **Databricks Docs:**
+     - - https://docs.databricks.com/aws/en/ldp/developer/external-dependencies
+       - https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment
 
 Overview
 --------
-Python Extensions allow data engineers to write custom Python modules that extend the framework's capabilities. Extensions are organized in a central ``extensions/`` directory and can be imported as standard Python modules throughout your dataflow specifications.
 
-.. important::
+The framework supports three mechanisms for adding custom code to the framework or a pipeline bundle. Each
+addresses a different concern and has a dedicated place in both bundle structures:
 
-    Extensions provide a powerful mechanism for implementing custom logic—sources, transforms, and sinks—while maintaining clean separation between framework code and business logic.
+.. list-table::
+   :header-rows: 1
+   :widths: 5 20 20 55
 
-This feature allows development teams to:
+   * - #
+     - Mechanism
+     - Location
+     - Purpose
+   * - 1
+     - **Cluster libraries**
+     - External:
 
-- **Centralize Custom Logic**: Organize all custom Python code in one location
-- **Reuse Across Dataflows**: Reference the same functions from multiple dataflow specs
-- **Maintain Clean Imports**: Use standard Python module imports (e.g., ``transforms.my_function``)
-- **Manage Dependencies**: Install additional Python packages via ``requirements_additional.txt``
-- **Test Independently**: Extensions can be unit tested outside of Spark Declarative Pipelines
+         - PyPI
+         - UC Volume
+         - Artifact repository e.g. Artifactory, Nexus
+       | **OR**
+       | Bundled wheel: ``src/libraries/``
+     - Third-party or in-house Python packages installed on the cluster before the pipeline
+       runs. The framework plays no role in installation; the Databricks Asset Bundle
+       `pipeline environments <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_
+       mechanism handles it. Bundling under ``src/libraries/`` is a fallback for when an
+       external registry is not available or practical.
+   * - 2
+     - **Pipeline Python Code**
+     - ``src/python/``
+     - Custom modules and packages written by your team that are referenced directly by
+       Data Flow Specs (sources, transforms, sinks). Added to ``sys.path`` at pipeline
+       initialisation so specs can resolve them by module path.
+   * - 3
+     - **Init scripts**
+     - ``src/init/pre/`` and ``src/init/post/``
+     - Lightweight ``.py`` files that run at fixed points in the pipeline initialisation
+       lifecycle. ``pre/`` scripts run before SDP dataflow declarations; ``post/`` scripts
+       run after. Use them for Spark configuration, event hook registration, or any
+       one-time setup that must happen outside of Data Flow logic.
 
-.. note::
+Each mechanism is independent. You can use any combination.
 
-    Extensions are loaded during pipeline initialization when the framework adds the ``extensions/`` directory to the Python path. Any additional dependencies specified in ``requirements_additional.txt`` are installed before the pipeline starts.
+Two bundle contexts
+-------------------
 
-How It Works
-------------
+The framework operates with two bundles, each of which carries its own ``src/`` tree:
 
-The extension system consists of three main components:
+.. list-table::
+   :header-rows: 1
+   :widths: 25 25 50
 
-1. **Extensions Directory**: A ``src/extensions/`` folder in your pipeline bundle containing Python modules
-2. **Module References**: Dataflow specs reference extension functions using ``module`` syntax (e.g., ``transforms.my_function``)
-3. **Dependency Management**: Optional ``requirements_additional.txt`` files for installing pip packages
+   * - Bundle
+     - Spark conf key
+     - Role
+   * - **Framework bundle**
+     - ``framework.sourcePath``
+     - Carries framework code. Custom code lives exclusively under ``src/local/`` —
+       the fork-safe area for org-specific customisations that should not be merged
+       back upstream.
+   * - **Pipeline bundle**
+     - ``bundle.sourcePath``
+     - Carries your pipeline's Data Flow Specs, pipeline config, and any
+       bundle-specific libraries, pipeline logic modules, and init scripts.
+
+**``src/local/`` — framework bundle only**
+
+``src/local/`` is the **only** place for custom code in the framework bundle
+(``framework.sourcePath``). It is a customer-owned directory that framework upgrades
+and upstream merges will never overwrite. The framework bundle has **no** top-level
+``src/libraries/``, ``src/python/``, or ``src/init/`` — those paths exist only in
+pipeline bundles:
+
+- ``src/local/libraries/`` — org-wide shared modules or wheels (``sys.path`` registered)
+- ``src/local/python/`` — org-wide pipeline logic modules available to all pipelines (``sys.path`` registered)
+- ``src/local/init/pre/`` and ``src/local/init/post/`` — org-wide lifecycle scripts, run before the pipeline bundle's scripts at each phase
+
+Where does custom code live?
+-----------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 30 35
+
+   * - What
+     - Pipeline bundle
+     - Framework bundle (``src/local/`` only)
+   * - Bundle wheel (if bundled with pipeline)
+     - ``src/libraries/``
+     - ``src/local/libraries/``
+   * - Loose ``.py`` modules on ``sys.path``
+     - ``src/libraries/``
+     - ``src/local/libraries/``
+   * - Pipeline logic modules (spec-referenced)
+     - ``src/python/``
+     - ``src/local/python/``
+   * - Pre-init lifecycle scripts
+     - ``src/init/pre/``
+     - ``src/local/init/pre/``
+   * - Post-init lifecycle scripts
+     - ``src/init/post/``
+     - ``src/local/init/post/``
+
+.. admonition:: Deprecation Notice
+   :class: warning
+
+   As of **v0.13.0**, the legacy ``extensions/`` directory (top-level ``.py`` files
+   added to ``sys.path``) is **deprecated** and emits a ``DeprecationWarning`` at
+   pipeline startup. It will be **removed in v1.0.0**. Migrate by moving ``.py`` files
+   to ``src/python/`` — spec ``module`` strings in Data Flow Specs are unchanged.
 
 Directory Structure
-^^^^^^^^^^^^^^^^^^^
-
-Extensions live in the ``src/extensions/`` directory of your pipeline bundle:
+-------------------
 
 ::
 
     my_pipeline_bundle/
     ├── src/
-    │   ├── extensions/
-    │   │   ├── __init__.py           # Optional, for package imports
-    │   │   ├── sources.py            # Custom source functions
-    │   │   ├── transforms.py         # Custom transform functions
-    │   │   └── sinks.py              # Custom sink functions
+    │   ├── libraries/            # Optional: bundle-local wheels + sys.path loose .py
+    │   │   ├── my_package.whl    # Referenced in resource.yaml libraries: section
+    │   │   └── shared_utils.py   # Available on sys.path (not spec-referenced)
+    │   │
+    │   ├── python/               # Spec-referenced Python (sys.path)
+    │   │   ├── sources.py        # Custom source functions
+    │   │   ├── transforms.py     # Custom transform functions
+    │   │   └── sinks.py          # Custom sink functions
+    │   │
+    │   ├── init/
+    │   │   ├── pre/              # Run before SDP declarations
+    │   │   │   └── 01_setup.py
+    │   │   └── post/             # Run after SDP declarations
+    │   │       └── 01_hooks.py
+    │   │
     │   ├── dataflows/
-    │   │   └── ...
     │   └── pipeline_configs/
     │       └── ...
     └── requirements_additional.txt   # Optional pip dependencies
+    └── resource.yaml
 
-Dependency Management
----------------------
+Cluster Library Installation
+-----------------------------
 
-Extensions may require additional Python packages beyond the framework's core dependencies. For detailed information on managing Python dependencies, see :doc:`feature_python_dependency_management`.
+Cluster libraries are Python packages installed on the Databricks cluster by the
+Databricks Asset Bundle (DAB) `pipeline environments <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_ mechanism; the framework is not involved
+in installation at all.
 
-Extension Examples
-------------------
+You can reference libraries from any source that DAB supports. ``src/libraries/`` is
+not the preferred location, it is simply the natural place to put a wheel *if* you
+choose to bundle it alongside your pipeline code. Most teams source libraries from one
+of the following:
 
-Source Extensions
-^^^^^^^^^^^^^^^^^
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-Custom functions that generate DataFrames for use as data sources.
+   * - Source
+     - Example ``environment.dependencies`` entry in ``resource.yaml``
+   * - **PyPI** *(most common)*
+     - ``- requests>=2.28``
+   * - **UC Volumes**
+     - ``- /Volumes/catalog/schema/my_pkg.whl``
+   * - **Artifact repository** (Artifactory, Nexus)
+     - ``- https://artifactory.example.com/path/my_pkg.whl``
+   * - **Bundle wheel** (wheel travels with pipeline code)
+     - ``- /Workspace/${workspace.file_path}/src/libraries/my_package.whl``
 
+``src/libraries/`` is only needed for the last case. The framework also adds this
+directory to ``sys.path`` for loose ``.py`` modules or packages that you want
+importable without a full wheel build — this is a secondary, convenience role.
+
+.. code-block:: yaml
+   :caption: resource.yaml (DAB pipeline definition)
+
+   pipelines:
+     my_pipeline:
+       environment:
+         dependencies:
+           - /Workspace/${workspace.file_path}/src/libraries/my_package.whl
+
+.. note::
+
+   The framework also adds ``src/libraries/`` to ``sys.path`` so **loose** ``.py``
+   modules and packages placed there are directly importable. This is a **no-op for
+   ``.whl`` files** — wheels must be declared in ``libraries:`` YAML and are installed
+   by the cluster, not ``sys.path``.
+
+Pipeline Python Code (``src/python/``)
+---------------------------------------
+
+``src/python/`` is the **single home for all Python modules and packages referenced by Data Flow
+Specs** — sources, transforms, sinks, and shared utility modules. The framework adds
+this directory to ``sys.path`` at pipeline initialisation so modules are importable
+as top-level names.
+
+Import layout options
+^^^^^^^^^^^^^^^^^^^^^
+
+Both flat and package layouts are supported. Choose based on bundle size and
+collision risk:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 40 40
+
+   * - Layout
+     - Example spec string
+     - When to use
+   * - **Flat** — ``.py`` files directly under ``src/python/``
+     - ``"pythonModule": "transforms.my_function"``
+     - Simple bundles with few modules; matches the sample style; short, readable spec strings.
+   * - **Package** — namespaced subdirectory with ``__init__.py``
+     - ``"pythonModule": "myorg.transforms.my_function"``
+     - Larger bundles; avoids name collisions when multiple bundles are on the same
+       cluster; scales as the module count grows.
+
+Python Sources
+^^^^^^^^^^^^^^
+
+Custom code that generates DataFrames for use as data sources.
 
 .. code-block:: python
-   :caption: src/extensions/sources.py
+   :caption: src/python/sources.py
 
-    from pyspark.sql import DataFrame, SparkSession
-    from pyspark.sql import functions as F
-    from typing import Dict
+   from pyspark.sql import DataFrame, SparkSession
+   from typing import Dict
 
-    def get_customer_cdf(spark: SparkSession, tokens: Dict) -> DataFrame:
-        """
-        Get customer data with Change Data Feed enabled.
-        """
-        source_table = tokens["sourceTable"]
-        reader_options = {"readChangeFeed": "true"}
-        
-        return (
-            spark.readStream
-            .options(**reader_options)
-            .table(source_table)
-        )
+   def get_customer_cdf(spark: SparkSession, tokens: Dict) -> DataFrame:
+       source_table = tokens["sourceTable"]
+       return (
+           spark.readStream
+           .options(readChangeFeed="true")
+           .table(source_table)
+       )
 
     def get_api_data(spark: SparkSession, tokens: Dict) -> DataFrame:
         """
@@ -111,7 +266,7 @@ Custom functions that generate DataFrames for use as data sources.
    .. tab:: JSON
 
       .. code-block:: json
-         :emphasize-lines: 12
+         :emphasize-lines: 10
 
          {
              "dataFlowId": "customer_from_extension",
@@ -121,9 +276,7 @@ Custom functions that generate DataFrames for use as data sources.
              "sourceType": "python",
              "sourceViewName": "v_customer",
              "sourceDetails": {
-                 "tokens": {
-                     "sourceTable": "{staging_schema}.customer"
-                 },
+                 "tokens": {"sourceTable": "{staging_schema}.customer"},
                  "pythonModule": "sources.get_customer_cdf"
              },
              "mode": "stream",
@@ -136,7 +289,7 @@ Custom functions that generate DataFrames for use as data sources.
    .. tab:: YAML
 
       .. code-block:: yaml
-         :emphasize-lines: 10
+         :emphasize-lines: 9
 
          dataFlowId: customer_from_extension
          dataFlowGroup: my_dataflows
@@ -153,10 +306,10 @@ Custom functions that generate DataFrames for use as data sources.
          targetDetails:
            table: customer
 
-Transform Extensions
-^^^^^^^^^^^^^^^^^^^^
+Transforms
+^^^^^^^^^^
 
-Custom functions that transform DataFrames after they are read from a source.
+Custom code that transforms DataFrames after they are read from a source.
 
 **Function Signatures:**
 
@@ -173,16 +326,12 @@ Custom functions that transform DataFrames after they are read from a source.
 **Example:**
 
 .. code-block:: python
-   :caption: src/extensions/transforms.py
-
-    from pyspark.sql import DataFrame
-    from pyspark.sql import functions as F
-    from typing import Dict
+   :caption: src/python/transforms.py
 
     from pyspark.sql import DataFrame
     from pyspark.sql import functions as F
 
-    def explode_deletes_function_transform(df: DataFrame) -> DataFrame:
+    def explode_deletes(df: DataFrame) -> DataFrame:
         """
         Duplicates delete records and adjusts sequence_by timestamp.
         For deletes: is_delete=0 gets +1ms, is_delete=1 gets +2ms.
@@ -220,7 +369,7 @@ Custom functions that transform DataFrames after they are read from a source.
              "dataFlowId": "customer",
              "dataFlowGroup": "my_dataflows",
              "dataFlowType": "standard",
-             "sourceSystem": "erp",
+             "sourceSystem": "example",
              "sourceType": "delta",
              "sourceViewName": "v_customer",
              "sourceDetails": {
@@ -228,7 +377,7 @@ Custom functions that transform DataFrames after they are read from a source.
                  "table": "customer",
                  "cdfEnabled": true,
                  "pythonTransform": {
-                     "module": "transforms.explode_deletes_function_transform",
+                     "module": "transforms.explode_deletes"
                  }
              },
              "mode": "stream",
@@ -254,126 +403,78 @@ Custom functions that transform DataFrames after they are read from a source.
            table: customer
            cdfEnabled: true
            pythonTransform:
-             module: transforms.explode_deletes_function_transform
+             module: transforms.explode_deletes
          mode: stream
          targetFormat: delta
          targetDetails:
-           table: customer_aggregated
+           table: customer
 
-Sink Extensions
-^^^^^^^^^^^^^^^
+Sinks
+^^^^^
 
 Custom functions for ``foreach_batch_sink`` targets that process micro-batches.
 
-**Function Signature:**
+.. code-block:: python
+   :caption: src/python/sinks.py
+
+   from pyspark.sql import DataFrame
+   from typing import Dict
+
+   def write_to_external_api(df: DataFrame, batch_id: int, tokens: Dict) -> None:
+       import requests
+       api_url = tokens["apiUrl"]
+       for record in df.toJSON().collect():
+           requests.post(api_url, json=record)
+
+Init scripts (``src/init``)
+---------------------------
+
+Init scripts are Notebooks and other plain ``.py`` files executed by the framework around
+``DLTPipelineBuilder.initialize_pipeline()``.
+
+- **pre** (``src/init/pre/``) — runs after configs and specs are loaded, **before**
+  any ``DataFlow.create_dataflow()`` / SDP declarations.
+- **post** (``src/init/post/``) — runs **after** all dataflows for the pipeline have
+  been created (the SDP graph is assembled; the pipeline update has not started yet).
+
+Execution rules
+^^^^^^^^^^^^^^^
+
+- Framework bundle scripts run before pipeline bundle scripts at each phase.
+- Within each directory, scripts run in **sorted filename order**.
+- Files whose names start with ``_`` are **skipped**.
+- Each file is executed with ``runpy.run_path(..., run_name='__main__')``.
+- A script that raises an exception **fails the pipeline**.
+
+Use numeric prefixes to fix order: ``01_setup.py``, ``02_register.py``.
 
 .. code-block:: python
+   :caption: src/init/pre/01_setup.py
 
-    def my_batch_handler(df: DataFrame, batch_id: int, tokens: Dict) -> None:
-        """
-        Process a micro-batch of data.
-        
-        Args:
-            df: The micro-batch DataFrame
-            batch_id: The batch identifier
-            tokens: Dictionary of token values from the dataflow spec
-        """
-        ...
+   """Register a custom Spark config before SDP declarations."""
+   import pipeline_config
 
-**Example:**
+   spark = pipeline_config.get_spark()
+   spark.conf.set("spark.sql.adaptive.enabled", "true")
 
 .. code-block:: python
-   :caption: src/extensions/sinks.py
+   :caption: src/init/post/01_hooks.py
 
-    from pyspark.sql import DataFrame
-    from typing import Dict
+   """Register a pipeline event hook after the SDP graph is assembled."""
+   from pyspark import pipelines as dp
+   import pipeline_config
 
-    def write_to_external_api(df: DataFrame, batch_id: int, tokens: Dict) -> None:
-        """
-        Send each batch to an external API.
-        """
-        import requests  # From requirements_additional.txt
-        
-        api_url = tokens["apiUrl"]
-        api_key = tokens["apiKey"]
-        
-        # Convert to JSON and send
-        records = df.toJSON().collect()
-        for record in records:
-            requests.post(
-                api_url,
-                headers={"Authorization": f"Bearer {api_key}"},
-                json=record
-            )
+   logger = pipeline_config.get_logger()
 
-**Reference in Dataflow Spec:**
-
-.. tabs::
-
-   .. tab:: JSON
-
-      .. code-block:: json
-         :emphasize-lines: 19
-
-         {
-             "dataFlowId": "customer_to_api",
-             "dataFlowGroup": "my_dataflows",
-             "dataFlowType": "standard",
-             "sourceSystem": "erp",
-             "sourceType": "delta",
-             "sourceViewName": "v_customer_api",
-             "sourceDetails": {
-                 "database": "{silver_schema}",
-                 "table": "customer",
-                 "cdfEnabled": true
-             },
-             "mode": "stream",
-             "targetFormat": "foreach_batch_sink",
-             "targetDetails": {
-                 "name": "customer_api_sink",
-                 "type": "python_function",
-                 "config": {
-                     "module": "sinks.write_to_external_api",
-                     "tokens": {
-                         "apiUrl": "https://api.example.com/customers",
-                         "apiKey": "{api_secret_key}"
-                     }
-                 }
-             }
-         }
-
-   .. tab:: YAML
-
-      .. code-block:: yaml
-         :emphasize-lines: 17
-
-         dataFlowId: customer_to_api
-         dataFlowGroup: my_dataflows
-         dataFlowType: standard
-         sourceSystem: erp
-         sourceType: delta
-         sourceViewName: v_customer_api
-         sourceDetails:
-           database: '{silver_schema}'
-           table: customer
-           cdfEnabled: true
-         mode: stream
-         targetFormat: foreach_batch_sink
-         targetDetails:
-           name: customer_api_sink
-           type: python_function
-           config:
-             module: sinks.write_to_external_api
-             tokens:
-               apiUrl: https://api.example.com/customers
-               apiKey: '{api_secret_key}'
+   @dp.on_event_hook
+   def log_event(event):
+       logger.info("Pipeline event: %s", event)
 
 Additional Resources
 --------------------
 
-- :doc:`feature_python_dependency_management` - Managing Python dependencies
-- :doc:`feature_python_source` - Using Python as a source type
-- :doc:`feature_python_functions` - Python transform functions (file path approach)
-- :doc:`dataflow_spec_ref_source_details` - Complete source configuration reference
-- :doc:`dataflow_spec_ref_target_details` - Complete target configuration reference
-
+- :doc:`feature_python_dependency_management` — managing Python dependencies
+- :doc:`feature_python_source` — using Python as a source type
+- :doc:`feature_python_functions` — Python transform functions (file path approach)
+- :doc:`dataflow_spec_ref_source_details` — complete source configuration reference
+- :doc:`dataflow_spec_ref_target_details` — complete target configuration reference

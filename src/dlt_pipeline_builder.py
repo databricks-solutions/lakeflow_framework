@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
 import os
-import sys
 
 from pyspark import pipelines as dp
 from pyspark.dbutils import DBUtils
@@ -15,6 +14,7 @@ from constants import (
 )
 from dataflow import DataFlow
 from dataflow_spec_builder import DataflowSpecBuilder
+from bundle_loader import register_bundle_sys_paths, run_init_scripts
 from pipeline_details import PipelineDetails
 from secrets_manager import SecretsManager
 from substitution_manager import SubstitutionManager
@@ -179,7 +179,7 @@ class DLTPipelineBuilder:
         # Initialize secrets manager
         self._init_secrets_manager()
 
-        # Preload shared Python modules
+        # Preload shared Python modules (extensions/libraries on sys.path)
         self._preload_extensions()
         
         # Initialize dataflow specifications
@@ -399,31 +399,27 @@ class DLTPipelineBuilder:
                 self.spark.conf.set(prop, value)
 
     def _preload_extensions(self) -> None:
-        """Add shared extension directories to sys.path."""
-        # Framework extensions
-        framework_extensions = os.path.join(self.framework_path, FrameworkPaths.EXTENSIONS_PATH)
-        if os.path.exists(framework_extensions):
-            sys.path.insert(0, framework_extensions)
-            self.logger.info("Added framework extensions to sys.path: %s", framework_extensions)
-        
-        # Bundle extensions
-        bundle_extensions = os.path.join(self.bundle_path, PipelineBundlePaths.EXTENSIONS_PATH)
-        if os.path.exists(bundle_extensions):
-            sys.path.insert(0, bundle_extensions)
-            self.logger.info("Added bundle extensions to sys.path: %s", bundle_extensions)
+        """Register src/libraries/ and src/python/ on sys.path (legacy flat extensions/ supported with deprecation)."""
+        register_bundle_sys_paths(
+            self.framework_path,
+            self.bundle_path,
+            self.logger,
+        )
 
     def initialize_pipeline(self) -> None:
         """Initialize the Spark Declarative Pipeline."""
         def create_dataflow(spec):
             """Create a dataflow from a specification."""
             return DataFlow(dataflow_spec=spec).create_dataflow()
-        
+
+        run_init_scripts(self.framework_path, self.bundle_path, "pre", self.logger)
+
         self.logger.info("Initializing Pipeline...")
         pipeline_builder_threading_disabled = self.pipeline_config.get(
             FrameworkSettings.PIPELINE_BUILDER_DISABLE_THREADING_KEY,
             True
         )
-        
+
         self.logger.info("Processing Dataflow Specs...")
         if pipeline_builder_threading_disabled:
             self.logger.info("Pipeline Builder Threading Disabled, creating dataflows sequentially...")
@@ -443,3 +439,5 @@ class DLTPipelineBuilder:
                 ]
                 for future in futures:
                     future.result()
+
+        run_init_scripts(self.framework_path, self.bundle_path, "post", self.logger)
