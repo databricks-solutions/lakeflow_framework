@@ -1,0 +1,6 @@
+{
+    "mandatory_table_properties": {
+        "delta.logRetentionDuration": "interval 8 days",
+        "delta.deletedFileRetentionDuration": "interval 8 days"
+    }
+}
