@@ -70,27 +70,16 @@ Custom Logger Configuration
 Custom logging is configured in ``logger.json`` files—not in ``global.json``—so the framework can initialize logging before loading merged global configuration.
 
 | **Scope: Framework**
-| Shipped defaults: ``{framework_path}/config/default/logger.json``
-| Custom framework settings: ``{framework_path}/config/override/logger.json`` (when the override directory is active; see :doc:`feature_framework_configuration`)
+| Framework-level custom logger: ``{framework_path}/src/local/config/logger.json`` 
 
-.. important::
+.. note::
 
-   Do **not** edit ``config/default/logger.json`` in the framework bundle. To change framework-level logging, add a new ``logger.json`` under ``config/override/``. When ``config/override/`` is in use, the framework reads **all** framework configuration from that directory (not only ``logger.json``), so the override tree must include the required layout described in :doc:`feature_framework_configuration`.
+   There is no ``config/default/logger.json`` shipped with the framework. The standard logger is always active unless you explicitly enable a custom logger by creating ``src/local/config/logger.json`` with ``enabled: true``. The default values for all logger config fields are defined in code and documented in the schema below.
 
 | **Scope: Pipeline bundle**
 | ``{bundle_path}/pipeline_configs/logger.json``
 
-If a file is missing, that side contributes an empty configuration. The shipped framework default disables the custom logger path:
-
-.. code-block:: json
-
-   {
-     "enabled": false,
-     "allow_pipeline_logger_override": false,
-     "mirror_to_stdout": false,
-     "level": "INFO",
-     "factory_args": {}
-   }
+If a file is missing, that side contributes an empty configuration and the standard logger remains active.
 
 Configuration Schema
 ^^^^^^^^^^^^^^^^^^^^
