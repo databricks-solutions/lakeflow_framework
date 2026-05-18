@@ -20,8 +20,20 @@ You can optionally plug in a **custom logger** via a dedicated ``logger.json`` c
 
   * Framework code and extensions should use the singleton accessor ``pipeline_config.get_logger()`` rather than creating their own loggers.
 
+Overview
+--------
+
+Supported Loggers
+^^^^^^^^^^^^^^^^^
+The framework supports two logging modes. The active mode is determined by the ``logger.json`` configuration file; the standard logger is used when no custom logger is configured.
+
+The framework supports the following loggers:
+
+- **Standard Logger**: Python's standard ``logging`` module with a plain text stdout handler (logger name ``DltFramework``).
+- **Custom Logger**: A custom logger that can be configured via a ``logger.json`` configuration file.
+
 Log Levels
-----------
+^^^^^^^^^^
 
 The framework supports standard Python logging levels:
 
@@ -32,57 +44,42 @@ The framework supports standard Python logging levels:
 - **CRITICAL**: Critical errors that may cause pipeline failure
 
 Spark ``logLevel`` Configuration
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The default log level for all pipelines is **INFO**.
 
 To specify a different log level, set the ``logLevel`` parameter in the **Configuration** section of a Spark Declarative Pipeline. Spark ``logLevel`` takes precedence over the ``level`` field in ``logger.json`` when the logger is resolved.
 
 Setting the Log Level in the Pipeline YAML
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Add ``logLevel`` in the configuration section of your pipeline resource YAML:
 
 .. image:: images/screenshot_pipeline_log_level_yaml.png
 
 Setting the Log Level in the Databricks UI
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Browse to your pipeline, open **Settings**, and add ``logLevel`` under **Advanced Configuration**:
 
 .. image:: images/screenshot_pipeline_log_level_ui.png
 
-Pluggable Logger Configuration (``logger.json``)
-------------------------------------------------
+Custom Logger Configuration
+----------------------------
 
 Custom logging is configured in ``logger.json`` files—not in ``global.json``—so the framework can initialize logging before loading merged global configuration.
 
 | **Scope: Framework**
-| Shipped defaults: ``{framework_path}/src/config/default/logger.json``
-| Custom framework settings: ``{framework_path}/src/local/config/logger.json`` (sparse overlay — only include the keys you want to change)
+| Framework-level custom logger: ``{framework_path}/src/local/config/logger.json`` 
 
-.. important::
+.. note::
 
-   Do **not** edit ``src/config/default/logger.json`` in the framework bundle.
-   To change framework-level logging, create a sparse ``logger.json`` under
-   ``src/local/config/`` containing only the keys you want to override.
-   The framework deep-merges the local file on top of the defaults — no need
-   to copy the full file. See :doc:`feature_framework_configuration` for details.
+   There is no ``config/default/logger.json`` shipped with the framework. The standard logger is always active unless you explicitly enable a custom logger by creating ``src/local/config/logger.json`` with ``enabled: true``. The default values for all logger config fields are defined in code and documented in the schema below.
 
 | **Scope: Pipeline bundle**
 | ``{bundle_path}/pipeline_configs/logger.json``
 
-If a file is missing, that side contributes an empty configuration. The shipped framework default disables the custom logger path:
-
-.. code-block:: json
-
-   {
-     "enabled": false,
-     "allow_pipeline_logger_override": false,
-     "mirror_to_stdout": false,
-     "level": "INFO",
-     "factory_args": {}
-   }
+If a file is missing, that side contributes an empty configuration and the standard logger remains active.
 
 Configuration Schema
 ^^^^^^^^^^^^^^^^^^^^
@@ -472,18 +469,78 @@ Using the Logger in Code
 
 Custom loggers that support async flushing may require an explicit ``close()`` at the end of the pipeline. Consider a **post_init** hook under ``extensions/post_init/`` that calls ``close()`` on the primary logger when exposed.
 
-Permissions to View Logs
-^^^^^^^^^^^^^^^^^^^^^^^^
+Troubleshooting
+^^^^^^^^^^^^^^^^
 
-By default, only the pipeline owner has permission to view logs for a pipeline execution.
+Custom logger not loading / pipeline still uses default logger
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To grant other users access, add the following Spark configuration to the framework using the :doc:`feature_spark_configuration` feature:
+The framework always falls back to the default stdout logger on any initialisation
+error rather than failing the pipeline. Check the pipeline logs for a warning
+beginning with ``Failed to initialize custom logger:`` — the message will contain
+the original exception.
 
-.. code-block:: text
+Common causes:
 
-    "spark.databricks.acl.needAdminPermissionToViewLogs": "false"
+- **Module not on** ``sys.path`` — if the module lives in ``src/local/libraries/``
+  it is registered automatically. If it is a cluster library, confirm the
+  library is installed on the pipeline cluster and the ``module`` path matches
+  the installed package's import path.
+- **Wrong** ``factory`` **name** — the value must match the exact function name
+  exported by the module (case-sensitive).
+- **Missing** ``enabled: true`` — the default config has ``enabled: false``;
+  the override config must explicitly set it to ``true``.
+- **Config not found** — ``logger.json`` must live at
+  ``src/config/override/logger.json`` (framework bundle) or
+  ``pipeline_configs/logger.json`` (pipeline bundle). Confirm the file is
+  present and valid JSON.
 
-This is documented in the Databricks documentation: https://docs.databricks.com/en/compute/clusters-manage.html
+Logger ignores ``logLevel = "DEBUG"`` set in pipeline settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The resolved log level is injected automatically into ``factory_args`` as
+``"level"`` before the factory is called. The factory **must** accept a
+``level`` keyword argument and forward it to the logger instance — see
+requirement 5 in the `Custom Logger Contract`_ above.
+
+If the third-party logger uses a different parameter name (e.g. ``log_level``),
+add a thin wrapper (see below) that maps the argument:
+
+.. code-block:: python
+
+   # src/local/libraries/my_logger_wrapper.py
+   from mylib import get_logger as _get_logger
+
+   def get_logger(dbutils, spark, level="INFO", **factory_args):
+       return _get_logger(dbutils, spark, log_level=level, **factory_args)
+
+Third-party logger cannot be called as ``factory(dbutils, spark, **factory_args)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some loggers require multi-step initialisation, a context manager, or arguments
+that are incompatible with the framework's injection. Place a thin wrapper in
+``src/local/libraries/`` (framework bundle) or as a cluster-installed module
+(pipeline bundle). The wrapper's ``get_logger`` handles the adaptation and
+``logger.json`` points to the wrapper rather than the upstream library:
+
+.. code-block:: python
+
+   # src/local/libraries/my_logger_wrapper.py
+   from my_logger.databricks import get_logger as _get_logger
+
+   def get_logger(dbutils, spark, level="INFO", **factory_args):
+       """Thin adapter — translates framework call convention to my_logger."""
+       return _get_logger(dbutils, spark, level=level, log_to_output=False, **factory_args)
+
+.. code-block:: json
+
+   {
+     "enabled": true,
+     "module": "my_logger_wrapper",
+     "factory": "get_logger",
+     "level": "INFO",
+     "factory_args": {}
+   }
 
 Viewing the default STDOUT Logs
 --------------------------------
@@ -499,6 +556,19 @@ View logs in the Databricks UI:
 4. A new browser tab opens with output in the **STDOUT** section (including framework mirror output when ``mirror_to_stdout`` is enabled):
 
    .. image:: images/screenshot_logs_viewing_2.png
+
+Permissions to View Logs
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, only the pipeline owner has permission to view logs for a pipeline execution.
+
+To grant other users access, add the following Spark configuration to the framework using the :doc:`feature_spark_configuration` feature:
+
+.. code-block:: text
+
+    "spark.databricks.acl.needAdminPermissionToViewLogs": "false"
+
+This is documented in the Databricks documentation: https://docs.databricks.com/en/compute/clusters-manage.html
 
 Example Log Messages
 --------------------
@@ -532,9 +602,8 @@ Structured stdout logger output (JSON, via ``structured_stdout_logger``):
    {"timestamp": "2025-02-06T04:05:48.254000+00:00", "level": "INFO", "logger": "DltFramework", "message": "Creating Flow: flow_name"}
    {"timestamp": "2025-02-06T04:06:26.527000+00:00", "level": "ERROR", "logger": "DltFramework", "message": "Failed to process Data Flow Spec: schema mismatch", "exc_info": "Traceback (most recent call last):\n  ..."}
 
-Troubleshooting
----------------
 
+<<<<<<< HEAD
 Custom logger not loading / pipeline still uses default logger
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -604,4 +673,6 @@ that are incompatible with the framework's injection. Place a thin wrapper in
      "level": "INFO",
      "factory_args": {}
    }
+=======
+>>>>>>> feature/pluggable-logger
 
