@@ -1,0 +1,23 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "id",
+            "type": "integer",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "raw_phone",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "phone_e164",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        }
+    ]
+}

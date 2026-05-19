@@ -40,8 +40,11 @@ variables:
     lookup:
       pipeline: "${var.name_prefix}Lakeflow Framework - Bronze - Base Pipeline (${var.logical_env})"  
   lakeflow_samples_feature_samples_pipeline_general_id:
-    lookup:      
+    lookup:
       pipeline: "${var.name_prefix}Lakeflow Framework - Feature Samples - General Pipeline (${var.logical_env})"
+  lakeflow_samples_feature_samples_pipeline_libraries_id:
+    lookup:
+      pipeline: "${var.name_prefix}Lakeflow Framework - Feature Samples - Libraries Pipeline (${var.logical_env})"
   lakeflow_samples_feature_samples_pipeline_data_quality_id:
     lookup:      
       pipeline: "${var.name_prefix}Lakeflow Framework - Feature Samples - Data Quality Pipeline (${var.logical_env})"

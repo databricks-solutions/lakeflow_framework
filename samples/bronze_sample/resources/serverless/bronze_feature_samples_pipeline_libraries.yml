@@ -1,0 +1,29 @@
+resources:
+  pipelines:
+    lakeflow_samples_feature_samples_pipeline_libraries:
+      name: Lakeflow Framework - Feature Samples - Libraries Pipeline (${var.logical_env})
+      channel: CURRENT
+      serverless: true
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+
+      libraries:
+        # Framework entry point notebook
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      environment:
+        # Cluster library installed from the bundled wheel in src/libraries/.
+        # Demonstrates the bundle-local wheel install approach.
+        dependencies:
+          - ${workspace.file_path}/src/libraries/phonenumbers-9.0.30-py2.py3-none-any.whl
+
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
+        bundle.target: ${bundle.target}
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        pipeline.layer: ${var.layer}
+        logicalEnv: ${var.logical_env}
+        pipeline.dataFlowGroupFilter: feature_samples_libraries
+      root_path: ${workspace.file_path}/src/dataflows/feature_samples

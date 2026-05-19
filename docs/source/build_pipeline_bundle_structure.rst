@@ -65,14 +65,54 @@ The high-level structure of a Pipeline Bundle never changes and is as follows:
     │   └── my_first_pipeline.yml
     ├── scratch/
     ├── src/
-    │   ├── dataflows
-    │   └── pipeline_configs
+    │   ├── dataflows/               # Data Flow Spec files (required)
+    │   ├── init/
+    │   │   ├── pre/                 # Lifecycle scripts — run before SDP declarations (optional)
+    │   │   └── post/                # Lifecycle scripts — run after SDP declarations (optional)
+    │   ├── libraries/               # Cluster-install artefacts + sys.path loose .py (optional)
+    │   ├── pipeline_configs/        # Global and env-specific pipeline config (required)
+    │   └── python/                  # Spec-referenced Python modules and packages (optional)
     ├── databricks.yml
     └── README.md
 
 .. note::
 
   Refer to the :doc:`concepts` section for more details on the different components of a Pipeline Bundle.
+
+The ``src/`` directories serve distinct purposes:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Directory
+     - Purpose
+   * - ``src/dataflows/``
+     - All Data Flow Spec files. The framework reads every spec file recursively regardless
+       of sub-folder structure. See below for organisation options.
+   * - ``src/init/pre/`` and ``src/init/post/``
+     - **Optional.** Lifecycle ``.py`` scripts executed before and after SDP declarations
+       inside ``initialize_pipeline()``. Run in sorted filename order; files starting
+       with ``_`` are skipped.
+   * - ``src/libraries/``
+     - **Optional.** Wheels bundled with the pipeline and referenced in the DAB
+       ``libraries:`` YAML, plus any loose ``.py`` modules that need to be on
+       ``sys.path`` without being spec-referenced. Libraries may equally be sourced from
+       PyPI, UC Volumes, or artifact repositories — ``src/libraries/`` is only needed
+       when the wheel travels with the bundle.
+   * - ``src/pipeline_configs/``
+     - Global and environment-specific pipeline configuration (``global.json``,
+       substitutions, secrets).
+   * - ``src/python/``
+     - **Optional.** All customer Python referenced by Data Flow Specs —
+       ``pythonModule``, ``pythonTransform.module``, and custom sinks. Added to
+       ``sys.path`` at pipeline initialisation.
+
+.. seealso::
+
+   :doc:`feature_python_extensions` — full reference for ``src/libraries/``,
+   ``src/python/``, ``src/init/``, and ``src/local/config/``, including examples,
+   deprecation notices, and the cluster library installation options.
 
 It is the structure of the ``src/dataflows`` directory that is flexible and can be organised in the way that best suits your standards and ways of working. The Framework will:
 

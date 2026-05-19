@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
 import os
-import sys
 
 from pyspark import pipelines as dp
 from pyspark.dbutils import DBUtils
@@ -10,15 +9,18 @@ import pyspark.sql.types as T
 from pyspark.sql import SparkSession
 from typing import Dict, Any
 
+from config_resolver import load_framework_config, resolve_framework_config_path
 from constants import (
     FrameworkPaths, FrameworkSettings, PipelineBundlePaths, DLTPipelineSettingKeys, SupportedSpecFormat
 )
 from dataflow import DataFlow
 from dataflow_spec_builder import DataflowSpecBuilder
+from bundle_loader import register_bundle_sys_paths, run_init_scripts
 from pipeline_details import PipelineDetails
 from secrets_manager import SecretsManager
 from substitution_manager import SubstitutionManager
 
+import logger as pipeline_logger
 import pipeline_config
 import utility
 
@@ -81,10 +83,20 @@ class DLTPipelineBuilder:
         self.substitution_manager = None
         self.driver_cores = os.cpu_count()
         self.default_max_workers = self.driver_cores - 1 if self.driver_cores else 1
-        
-        # Initialize logger
+
+        # Bootstrap mandatory paths and register sys.path
+        self._load_mandatory_paths()
+        register_bundle_sys_paths(self.framework_path, self.bundle_path)
+
+        # Resolve the main logger
         log_level = self.spark.conf.get(DLTPipelineSettingKeys.LOG_LEVEL, "INFO").upper()
-        self.logger = utility.set_logger("DltFramework", log_level)
+        self.logger = pipeline_logger.resolve_pipeline_logger(
+            spark=self.spark,
+            dbutils=self.dbutils,
+            framework_path=self.framework_path,
+            bundle_path=self.bundle_path,
+            spark_log_level=log_level,
+        )
         self.logger.info("Initializing Pipeline...")
         self.logger.info("Logical cores (threads): %s", self.driver_cores)
         self.logger.info("Max workers: %s", self.default_max_workers)
@@ -100,23 +112,24 @@ class DLTPipelineBuilder:
         self._init_configurations()
         self._init_pipeline_components()
 
-    def _init_configurations(self) -> None:
-        """Load and validate all necessary configurations."""
-        # Load mandatory parameters
+    def _load_mandatory_paths(self) -> None:
+        """Load mandatory Spark conf paths required before logger and config init."""
         config_values = {
             param: self.spark.conf.get(param, None)
             for param in self.MANDATORY_CONFIG_PARAMS
         }
-        
+
         missing_params = [param for param, value in config_values.items() if not value]
         if missing_params:
             raise ValueError(f"Missing mandatory config parameters: {missing_params}")
 
         self.bundle_path = config_values[DLTPipelineSettingKeys.BUNDLE_SOURCE_PATH]
         self.framework_path = config_values[DLTPipelineSettingKeys.FRAMEWORK_SOURCE_PATH]
-        self._framework_config_path = utility.resolve_framework_config_path(self.framework_path)
+        self._framework_config_path = resolve_framework_config_path(self.framework_path)
         self.workspace_host = config_values[DLTPipelineSettingKeys.WORKSPACE_HOST]
 
+    def _init_configurations(self) -> None:
+        """Load and validate all necessary configurations."""
         # Load optional parameters
         ignore_validation_errors = self.spark.conf.get(
             DLTPipelineSettingKeys.PIPELINE_IGNORE_VALIDATION_ERRORS, "false"
@@ -178,9 +191,6 @@ class DLTPipelineBuilder:
 
         # Initialize secrets manager
         self._init_secrets_manager()
-
-        # Preload shared Python modules
-        self._preload_extensions()
         
         # Initialize dataflow specifications
         self._init_dataflow_specs()
@@ -191,24 +201,41 @@ class DLTPipelineBuilder:
         # Apply Spark configurations
         self._apply_spark_config()
 
-    def _load_framework_global_config_file(self) -> Dict[str, Any]:
-        """Load a global config file"""
-        global_config_paths = [
-            os.path.join(self.framework_path, self._framework_config_path, path)
-            for path in FrameworkPaths.GLOBAL_CONFIG
-        ]
-        
-        # Check if more than one global config exists
-        existing_configs = [path for path in global_config_paths if os.path.exists(path)]
-        if len(existing_configs) > 1:
-            raise ValueError(f"Multiple framework global config files found. Only one is allowed: {existing_configs}")
-        
-        if not existing_configs:
-            raise FileNotFoundError(f"Framework global config file not found, in path: {global_config_paths}")
-        
-        global_config_path = existing_configs[0]
-        self.logger.info("Retrieving Global Framework Config From: %s", global_config_path)
-        return utility.load_config_file_auto(global_config_path, False) or {}
+    def _load_framework_global_config(self) -> Dict[str, Any]:
+        """Load the framework global config, deep-merging any src/local/config/ overrides."""
+        from config_resolver import load_framework_config
+
+        override_dir = os.path.join(self.framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH)
+        is_override = any(
+            os.path.exists(os.path.join(override_dir, n)) for n in FrameworkPaths.GLOBAL_CONFIG
+        )
+
+        if is_override:
+            import warnings
+            warnings.warn(
+                f"{FrameworkPaths.CONFIG_OVERRIDE_PATH} is deprecated (v0.13.0) and will be "
+                f"removed in v1.0.0. Migrate your overrides to {FrameworkPaths.LOCAL_CONFIG_PATH} "
+                "— only the keys you want to change are needed (sparse files are supported). "
+                "See the framework configuration documentation for migration steps.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self._active_config_path = FrameworkPaths.CONFIG_OVERRIDE_PATH
+        else:
+            self._active_config_path = FrameworkPaths.CONFIG_PATH
+
+        self.logger.info(
+            "Retrieving Global Framework Config From: %s",
+            os.path.join(self.framework_path, self._active_config_path),
+        )
+        result = load_framework_config(
+            FrameworkPaths.GLOBAL_CONFIG,
+            self.framework_path,
+            config_path=self._active_config_path,
+            fail_on_not_exists=True,
+        )
+        self.logger.info("Global Framework Config (resolved): %s", result)
+        return result
 
     def _load_pipeline_bundle_global_config_file(self) -> Dict[str, Any]:
         """Load a global config file"""
@@ -226,11 +253,11 @@ class DLTPipelineBuilder:
         
         pipeline_config_path = existing_configs[0]
         self.logger.info("Retrieving Pipeline Global Config From: %s", pipeline_config_path)
-        return utility.get_json_from_file(pipeline_config_path, False) or {}
+        return utility.load_config_file_auto(pipeline_config_path, False) or {}
 
     def _load_merged_config(self) -> None:
         """Load and merge global and pipeline-specific configurations."""
-        self.pipeline_config = self._load_framework_global_config_file()
+        self.pipeline_config = self._load_framework_global_config()
         pipeline_bundle_config = self._load_pipeline_bundle_global_config_file()
 
         # Initialize pipeline bundle spec format
@@ -377,11 +404,13 @@ class DLTPipelineBuilder:
             return
 
         self.logger.info("Operational Metadata: layer set to %s", layer)
-        metadata_path = os.path.join(
-            self.framework_path, self._framework_config_path, f"operational_metadata_{layer}.json"
+        config_name = f"operational_metadata_{layer}.json"
+        metadata_json = load_framework_config(
+            config_name, self.framework_path,
+            config_path=getattr(self, "_active_config_path", FrameworkPaths.CONFIG_PATH),
+            fail_on_not_exists=False,
         )
-        self.logger.info("Operational Metadata Path: %s", metadata_path)
-        metadata_json = utility.get_json_from_file(metadata_path, False)
+        self.logger.info("Operational Metadata config (resolved): %s", metadata_json)
         self.operational_metadata_schema = (
             T.StructType.fromJson(metadata_json) if metadata_json else None
         )
@@ -398,32 +427,20 @@ class DLTPipelineBuilder:
                 self.logger.info("Set Spark Config: %s = %s", prop, value)
                 self.spark.conf.set(prop, value)
 
-    def _preload_extensions(self) -> None:
-        """Add shared extension directories to sys.path."""
-        # Framework extensions
-        framework_extensions = os.path.join(self.framework_path, FrameworkPaths.EXTENSIONS_PATH)
-        if os.path.exists(framework_extensions):
-            sys.path.insert(0, framework_extensions)
-            self.logger.info("Added framework extensions to sys.path: %s", framework_extensions)
-        
-        # Bundle extensions
-        bundle_extensions = os.path.join(self.bundle_path, PipelineBundlePaths.EXTENSIONS_PATH)
-        if os.path.exists(bundle_extensions):
-            sys.path.insert(0, bundle_extensions)
-            self.logger.info("Added bundle extensions to sys.path: %s", bundle_extensions)
-
     def initialize_pipeline(self) -> None:
         """Initialize the Spark Declarative Pipeline."""
         def create_dataflow(spec):
             """Create a dataflow from a specification."""
             return DataFlow(dataflow_spec=spec).create_dataflow()
-        
+
+        run_init_scripts(self.framework_path, self.bundle_path, "pre", self.logger)
+
         self.logger.info("Initializing Pipeline...")
         pipeline_builder_threading_disabled = self.pipeline_config.get(
             FrameworkSettings.PIPELINE_BUILDER_DISABLE_THREADING_KEY,
             True
         )
-        
+
         self.logger.info("Processing Dataflow Specs...")
         if pipeline_builder_threading_disabled:
             self.logger.info("Pipeline Builder Threading Disabled, creating dataflows sequentially...")
@@ -443,3 +460,5 @@ class DLTPipelineBuilder:
                 ]
                 for future in futures:
                     future.result()
+
+        run_init_scripts(self.framework_path, self.bundle_path, "post", self.logger)

@@ -39,18 +39,29 @@ class FrameworkPaths:
     """
     FrameworkPaths is a class that contains constants for various paths and file masks used in the Lakeflow Framework.
 
-    CONFIG_PATH and CONFIG_OVERRIDE_PATH are static path segments (./config/default and ./config/override).
-    At runtime, which root to use for framework config files should be chosen using
-    utility.resolve_framework_config_path(framework_path).
+    All LOCAL_* paths are relative to ``framework.sourcePath`` (which resolves to the ``src/``
+    directory of the framework bundle, e.g. ``.../files/src``).  Customer code in the framework
+    bundle lives exclusively under ``local/`` — there are no top-level ``src/libraries/``,
+    ``src/python/`` or ``src/init/`` directories in the framework bundle.
+
+    CONFIG_PATH and CONFIG_OVERRIDE_PATH are static path segments (./config/default and
+    ./config/override). At runtime, which root to use for framework config files should be chosen
+    using utility.resolve_framework_config_path(framework_path).
 
     Attributes:
-        CONFIG_PATH (str): Path to the default config directory (./config/default).
-        CONFIG_OVERRIDE_PATH (str): Overrides the config directory (./config/override).
-        EXTENSIONS_PATH (str): The path for extensions.
-        GLOBAL_CONFIG (tuple): Basenames of global configuration files (under the resolved config root).
+        CONFIG_PATH (str): Path to the config/default directory.
+        CONFIG_OVERRIDE_PATH (str): DEPRECATED (v0.13.0) — use src/local/config/ instead; removed in v1.0.0.
+        LOCAL_CONFIG_PATH (str): Sparse overlay directory for framework config files. Files here are deep-merged on top of config/default equivalents.
+        LOCAL_LIBRARIES_PATH (str): Org-wide cluster-install artefacts + loose .py/packages on sys.path.
+        LOCAL_PYTHON_PATH (str): Org-wide pipeline logic modules called via pythonModule/pythonTransform.
+        LOCAL_INIT_PRE_PATH (str): Org-wide pre-init lifecycle scripts run before SDP declarations.
+        LOCAL_INIT_POST_PATH (str): Org-wide post-init lifecycle scripts run after SDP declarations.
+        EXTENSIONS_PATH (str): DEPRECATED (v0.13.0) — flat extensions/ on sys.path; removed in v1.0.0. Migrate to src/local/python/.
+        GLOBAL_CONFIG (tuple): Paths to the global configuration files.
         GLOBAL_SUBSTITUTIONS (tuple): Paths to the global substitutions files.
         GLOBAL_SECRETS (tuple): Paths to the global secrets files.
         DATAFLOW_SPEC_MAPPING (str): Directory segment for dataflow spec mapping (under the resolved root).
+        LOGGER_CONFIG (str): Basename of the pluggable logger configuration file (under the resolved config root).
         MAIN_SPEC_SCHEMA_PATH (str): Path to the main specification schema file.
         FLOW_GROUP_SPEC_SCHEMA_PATH (str): Path to the flow group specification schema file.
         EXPECTATIONS_SPEC_SCHEMA_PATH (str): Path to the expectations specification schema file.
@@ -59,12 +70,18 @@ class FrameworkPaths:
         TEMPLATE_SPEC_SCHEMA_PATH (str): Path to the template specification schema file.
     """
     CONFIG_PATH: str = "./config/default"
-    CONFIG_OVERRIDE_PATH: str = "./config/override"
-    EXTENSIONS_PATH: str = "./extensions"
+    CONFIG_OVERRIDE_PATH: str = "./config/override"  # DEPRECATED (v0.13.0) — use local/config/; removed v1.0.0
+    LOCAL_CONFIG_PATH: str = "./local/config"
+    LOCAL_LIBRARIES_PATH: str = "./local/libraries"
+    LOCAL_PYTHON_PATH: str = "./local/python"
+    LOCAL_INIT_PRE_PATH: str = "./local/init/pre"
+    LOCAL_INIT_POST_PATH: str = "./local/init/post"
+    EXTENSIONS_PATH: str = "./extensions"  # DEPRECATED (v0.13.0) — migrate to local/python/; removed v1.0.0
     GLOBAL_CONFIG: tuple = ("global.json", "global.yaml", "global.yml")
     GLOBAL_SUBSTITUTIONS: tuple = ("_substitutions.json", "_substitutions.yaml", "_substitutions.yml")
     GLOBAL_SECRETS: tuple = ("_secrets.json", "_secrets.yaml", "_secrets.yml")
     DATAFLOW_SPEC_MAPPING: str = "dataflow_spec_mapping"
+    LOGGER_CONFIG: str = "logger.json"
     REQUIREMENTS_FILE: str = "requirements.txt"
 
     # Spec schema definitions paths
@@ -118,9 +135,14 @@ class PipelineBundlePaths:
         DATAFLOW_SPEC_PATH (str): The path for dataflow specifications.
         DML_PATH (str): The path for DML (Data Manipulation Language) files.
         DQE_PATH (str): The path for data quality expectations.
-        EXTENSIONS_PATH (str): The path for extensions.
+        LIBRARIES_PATH (str): Cluster-install artefacts + loose .py/packages on sys.path (primary).
+        PYTHON_PATH (str): Data Flow Spec-referenced Python — modules called via pythonModule/pythonTransform.
+        INIT_PRE_PATH (str): Pre-init lifecycle scripts run before SDP declarations.
+        INIT_POST_PATH (str): Post-init lifecycle scripts run after SDP declarations.
+        EXTENSIONS_PATH (str): DEPRECATED (v0.13.0) — flat extensions/ on sys.path; removed in v1.0.0. Migrate to src/python/.
         GLOBAL_CONFIG_FILE (tuple): The file names for global configuration files.
         PIPELINE_CONFIGS_PATH (str): The path for pipeline configuration files.
+        LOGGER_CONFIG (str): Basename of the pluggable logger configuration file (under pipeline_configs).
         PYTHON_FUNCTION_PATH (str): The path for python functions.
         SCHEMA_PATH (str): The path for schema files.
         TEMPLATE_PATH (str): Path to the template directory.
@@ -129,9 +151,14 @@ class PipelineBundlePaths:
     DATAFLOW_SPEC_PATH: str = "dataflowspec"
     DML_PATH: str = "./dml"
     DQE_PATH: str = "./expectations"
-    EXTENSIONS_PATH: str = "./extensions"
+    LIBRARIES_PATH: str = "./libraries"
+    PYTHON_PATH: str = "./python"
+    INIT_PRE_PATH: str = "./init/pre"
+    INIT_POST_PATH: str = "./init/post"
+    EXTENSIONS_PATH: str = "./extensions"  # DEPRECATED (v0.13.0) — migrate to python/; removed v1.0.0
     GLOBAL_CONFIG_FILE: tuple = ("./global.json", "./global.yaml", "./global.yml")
     PIPELINE_CONFIGS_PATH: str = "./pipeline_configs"
+    LOGGER_CONFIG: str = "logger.json"
     PYTHON_FUNCTION_PATH: str = "./python_functions"
     SCHEMA_PATH: str = "./schemas"
     TEMPLATE_PATH: str = "./templates"

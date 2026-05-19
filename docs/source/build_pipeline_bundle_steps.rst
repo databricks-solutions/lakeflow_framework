@@ -55,8 +55,13 @@ A new Pipeline Bundle can be created using the following methods.
       │   └── my_first_pipeline.yml
       ├── scratch/
       ├── src/
-      │   ├── dataflows
-      │   └── pipeline_configs
+      │   ├── dataflows/
+      │   ├── init/
+      │   │   ├── pre/
+      │   │   └── post/
+      │   ├── libraries/
+      │   ├── pipeline_configs/
+      │   └── python/
       ├── databricks.yml
       └── README.md
 
@@ -78,8 +83,8 @@ A new Pipeline Bundle can be created using the following methods.
 
   You can always copy an existing Pipeline Bundle to use as a starting point for a new Pipeline Bundle. If doing this bear in mind that you may need to:
 
-  - Reset the targets and parameter in the ``databricks.yml`` file
-  - Clean out the following folders: ``resources``, ``src/dataflows`` and ``src/pipeline_configs``
+  - Reset the targets and parameters in the ``databricks.yml`` file
+  - Clear out the following folders: ``resources/``, ``src/dataflows/``, ``src/pipeline_configs/``, ``src/python/``, ``src/libraries/``, ``src/init/pre/``, and ``src/init/post/``
 
 2. Update the ``databricks.yml`` File
 -------------------------------------
@@ -173,7 +178,21 @@ Iterate over the following steps to create each individual Data Flow:
 
   If necessary add any substitutions required for your Data Flow to the substitutions file.
 
-3. **Build the Data Flow Spec:**
+3. **Add Init Scripts** *(optional)*:
+
+  If your pipeline requires Spark configuration, event hook registration, or any one-time setup that must run outside of Data Flow logic, add ``.py`` scripts to:
+
+  - ``src/init/pre/`` — run **before** SDP dataflow declarations
+  - ``src/init/post/`` — run **after** SDP dataflow declarations
+
+  Scripts are executed in sorted filename order. Files whose names begin with ``_`` are skipped. Use a numeric prefix (e.g. ``01_setup.py``) to control execution order.
+
+  Refer to the :doc:`feature_python_extensions` section for full details.
+
+  .. note::
+      This step is optional and only required when pipeline-level lifecycle setup is needed.
+
+4. **Build the Data Flow Spec:**
 
   a. Create a sub-directory per you selected bundle structure:
 
@@ -206,6 +225,17 @@ Iterate over the following steps to create each individual Data Flow:
       If you have data quality expectations in your Data Flow, you will need to create an expectations file for your target table in the ``expectations`` sub-directory of your Data Flow Spec's home folder.
 
       Refer to the :doc:`feature_data_quality_expectations` section for guidance on how to create an expectations file.
+
+    f. **Add Pipeline Logic Modules** *(optional)*:
+
+      If your Data Flow Spec references custom Python code — e.g. ``pythonModule``, ``pythonTransform.module``, or a custom sink — add the corresponding ``.py`` modules or packages to ``src/python/``.
+
+      The framework adds ``src/python/`` to ``sys.path`` at pipeline initialisation so spec strings such as ``"module": "my_transforms"`` resolve without any extra configuration.
+
+      Refer to the :doc:`feature_python_extensions` section for details on flat vs. package layout options.
+
+      .. note::
+          This step is optional and only required when your Data Flow Spec references a custom Python module.
 
 7. Create your Pipeline Definitions
 -----------------------------------
@@ -303,3 +333,14 @@ To create a single Pipeline definition, follow these steps:
               pipeline.dataFlowIdFilter: <value_flow_id>
               pipeline.flowGroupIdFilter: <value_flow_group_id>
               pipeline.fileFilter: <value_file_path>
+
+4. **Add Cluster Libraries** *(optional)*:
+
+  If your pipeline requires third-party or in-house Python packages installed on the cluster, add them via ``environment.dependencies`` in your pipeline resource YAML. Refer to the :doc:`feature_python_extensions` section for full details. Sources include:
+
+  - **PyPI** — ``- my_package>=1.0``
+  - **UC Volumes** — ``- /Volumes/catalog/schema/my_pkg.whl``
+  - **Artifact repository** (Artifactory, Nexus) — ``- https://artifactory.example.com/my_pkg.whl``
+  - **Bundle wheel** (wheel stored with the pipeline code) — ``- /Workspace/${workspace.file_path}/src/libraries/my_package.whl``
+
+  For the last case, place the ``.whl`` file in ``src/libraries/``. You may also place loose ``.py`` files or packages there if they need to be on ``sys.path`` without being spec-referenced (e.g. a shared utility imported indirectly).

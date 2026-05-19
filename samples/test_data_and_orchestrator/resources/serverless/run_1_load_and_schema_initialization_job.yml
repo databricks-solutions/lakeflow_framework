@@ -33,6 +33,12 @@ resources:
             full_refresh: true
           depends_on: 
             - task_key: staging_load
+        - task_key: feature_samples_pipeline_libraries
+          pipeline_task:
+            pipeline_id: ${var.lakeflow_samples_feature_samples_pipeline_libraries_id}
+            full_refresh: true
+          depends_on:
+            - task_key: staging_load
         - task_key: feature_samples_pipeline_data_quality
           pipeline_task:
             pipeline_id: ${var.lakeflow_samples_feature_samples_pipeline_data_quality_id}
