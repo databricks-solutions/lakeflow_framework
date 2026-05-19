@@ -375,16 +375,22 @@ Create ``src/local/libraries/structured_stdout_logger.py``:
        return StructuredStdoutLogger(level=level, logger_name=logger_name)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 **Step 2 — Enable the logger via** ``src/local/config/logger.json``
 
 Add or update ``src/local/config/logger.json`` in the framework bundle
 (a sparse file is sufficient — only the keys you want to set are needed):
 =======
+=======
+>>>>>>> origin/main
 **Step 2 — Enable the logger via** ``config/override/logger.json``
 
 Add or update ``src/config/override/logger.json`` in the framework bundle
 (the override directory must include the full required layout — see
 :doc:`feature_framework_configuration`):
+<<<<<<< HEAD
+>>>>>>> origin/main
+=======
 >>>>>>> origin/main
 
 .. code-block:: json
@@ -609,5 +615,3 @@ Structured stdout logger output (JSON, via ``structured_stdout_logger``):
    {"timestamp": "2025-02-06T04:05:46.161000+00:00", "level": "INFO", "logger": "lakeflowframework", "message": "Initializing Pipeline..."}
    {"timestamp": "2025-02-06T04:05:48.254000+00:00", "level": "INFO", "logger": "lakeflowframework", "message": "Creating Flow: flow_name"}
    {"timestamp": "2025-02-06T04:06:26.527000+00:00", "level": "ERROR", "logger": "lakeflowframework", "message": "Failed to process Data Flow Spec: schema mismatch", "exc_info": "Traceback (most recent call last):\n  ..."}
-
-
