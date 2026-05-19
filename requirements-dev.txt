@@ -1,6 +1,6 @@
 ## requirements-dev.txt: dependencies for local development.
 ## Databricks dependencies — pinned to DBR 17.3 LTS compatible versions
-databricks-connect==16.1.0
+databricks-connect==16.1.7
 databricks-dlt==0.3.0
 delta-spark==4.2.0
 pyspark==4.1.1
