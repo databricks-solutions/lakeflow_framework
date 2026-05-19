@@ -1,5 +1,5 @@
 Multi-Source Streaming
-=====================
+======================
 
 .. list-table::
    :header-rows: 0
@@ -22,10 +22,10 @@ Configuration
 -------------
 
 In a Pipeline Bundle bundle, multi-source streaming is configured in the Data Flow Spec using the ``flow_groups`` and ``flows`` attributes. 
-This is documented in :ref:`_flow-group-configuration` and :ref:`_flow-configuration`. 
+This is documented in :ref:`flow-group-configuration <dataflow-spec-flows-flow-groups-configuration>` and :ref:`flow-configuration <dataflow-spec-flows-flow-configuration>`. 
 
 Key Features
------------
+------------
 - Write to a single streaming table from multiple source streams
 - Add or Remove streaming sources without requiring a full table refresh
 - Support for backfilling historical data
@@ -33,7 +33,7 @@ Key Features
 - Maintain separate checkpoints for each flow
 
 Important Considerations
-----------------------
+------------------------
 - Flow names are used to identify streaming checkpoints
 - Renaming an existing flow creates a new checkpoint
 - Flow names must be unique within a pipeline
@@ -43,6 +43,7 @@ Important Considerations
 
 See Also
 --------
-- :doc:`feature_source_target_types`
+- :doc:`feature_source_types`
+- :doc:`feature_target_types`
 - :doc:`dataflow_spec_ref_source_details`
 - :doc:`dataflow_spec_ref_target_details`

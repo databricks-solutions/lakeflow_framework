@@ -37,7 +37,7 @@ The Framework allows you to specify the Secret Scopes and Secrets you need acces
     DO NOT CHANGE THE SECRET MANAGER IMPLEMENTATION WITHOUT TALKING TO YOUR FRAMEWORK OWNER FIRST!
 
 Configuration
-------------
+-------------
 
 | **Scope: Pipeline**
 | In a Pipeline bundle, secrets are defined in the following configuration file: ``src/pipeline_config/<deployment environment>_secrets.json|yaml``
@@ -51,7 +51,7 @@ An secrets config file has the following structure:
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
 
          {
              "<secret alias_1>": {
@@ -90,7 +90,7 @@ An secrets config file has the following structure:
      - The key of the secret in the specified Secret Scope.
 
 Referencing Secrets in Data Flow Specs
--------------------------------------
+--------------------------------------
 Secrets can be referenced as a value in any part of your data flow specs by using the folowing syntax: ``${secret.<secret_alias>}``.
 
 For example, assume we want to connect to Kafka and we need to provide a keystore password. We would first ensure that the secret is configued in the secrets config file discussed above as follows:
@@ -181,7 +181,7 @@ We can then reference the secret in any data flow spec as per the highligheted l
          quarantineMode: 'off'
 
 Best Practices
--------------
+--------------
 1. Never store secrets in code or configuration files
 2. Use appropriate secret scopes for different environments
 3. Rotate secrets regularly

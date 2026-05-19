@@ -32,7 +32,7 @@ Autocompletion Example
    :alt: Intellisense Values
 
 Validation Example
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 *Schema Validation*
 

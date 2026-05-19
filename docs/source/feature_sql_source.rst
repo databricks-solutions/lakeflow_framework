@@ -56,7 +56,7 @@ These will be substituted per the :doc:`feature_substitutions documentation.
 
 For example:
 
-.. code-block:: sql
+.. code-block:: none
 
     SELECT * FROM {bronze_schema}.my_table
 

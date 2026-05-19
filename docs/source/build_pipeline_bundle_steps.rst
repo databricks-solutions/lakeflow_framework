@@ -134,7 +134,7 @@ The databricks.yml needs to be adjusted to include the following configurations:
 Based on the Use Case and the standards defined in your Org, select the appropriate bundle structure. See the :doc:`build_pipeline_bundle_structure` section for guidance.
 
 4. Select your Data Flow Specification Language / Format
--------------------------------------------------------
+--------------------------------------------------------
 
 Based on the implementation and standards in your Org, you can select the appropriate specification language / format. See the :doc:`feature_spec_format` section details.
 
@@ -149,7 +149,7 @@ Be aware that:
 
 If you haven't already done so, familiarize yourself with the :doc:`feature_substitutions` feature of the Framework.
 
-If you need to use substitutions and the substitutions you require have not been configure globally at the Framework level, you need to now setup your substitutions file. See the :doc:`substitutions` section for guidance.
+If you need to use substitutions and the substitutions you require have not been configure globally at the Framework level, you need to now setup your substitutions file. See the :doc:`feature_substitutions` section for guidance.
 
 .. note::
     This step is optional and only required if substitutions are required to deploy the same pipeline bundle to multiple environments with different resources names. This step can also be actioned later in the build process after the Data Flow Specs have been created.

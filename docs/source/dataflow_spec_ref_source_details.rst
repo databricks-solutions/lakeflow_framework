@@ -1,5 +1,5 @@
 Data Flow Spec - Source Details
-##############################
+###############################
 
 The `sourceDetails` object can be any of the following, based on the `sourceType`:
 

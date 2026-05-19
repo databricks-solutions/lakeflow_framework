@@ -12,10 +12,10 @@ The ``cdcSettings`` and ``cdcSnapshotSettings`` enable and pass configuration in
      - **Description**
    * - **cdcSettings**
      - ``object``
-     - See :ref:`cdcSettings` for more information.
+     - See :ref:`cdcSettings <dataflow_spec_ref_cdc:cdcSettings>` for more information.
    * - **cdcSnapshotSettings**
      - ``object``
-     - See :ref:`cdcSnapshotSettings` for more information.
+     - See :ref:`cdcSnapshotSettings <dataflow_spec_ref_cdc:cdcSnapshotSettings>` for more information.
 
 cdcSettings
 ~~~~~~~~~~~~~~~~~   

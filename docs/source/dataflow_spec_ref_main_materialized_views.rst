@@ -1,5 +1,5 @@
 Creating a Materialized View Data Flow Spec Reference
-####################################################
+#####################################################
 
 A Materialized View Data Flow Spec is designed for creating and maintaining materialized views that aggregate or transform data from source tables.
 
