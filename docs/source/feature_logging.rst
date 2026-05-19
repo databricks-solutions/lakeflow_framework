@@ -374,24 +374,16 @@ Create ``src/local/libraries/structured_stdout_logger.py``:
        """Factory called by the framework as factory(dbutils, spark, **factory_args)."""
        return StructuredStdoutLogger(level=level, logger_name=logger_name)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 **Step 2 — Enable the logger via** ``src/local/config/logger.json``
 
 Add or update ``src/local/config/logger.json`` in the framework bundle
 (a sparse file is sufficient — only the keys you want to set are needed):
-=======
-=======
->>>>>>> origin/main
+
 **Step 2 — Enable the logger via** ``config/override/logger.json``
 
 Add or update ``src/config/override/logger.json`` in the framework bundle
 (the override directory must include the full required layout — see
 :doc:`feature_framework_configuration`):
-<<<<<<< HEAD
->>>>>>> origin/main
-=======
->>>>>>> origin/main
 
 .. code-block:: json
 
