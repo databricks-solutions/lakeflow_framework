@@ -8,6 +8,7 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import logging
+import os
 import sys
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Dict, Optional
@@ -50,30 +51,7 @@ def create_default_logger(logger_name: str, log_level: str = "INFO") -> logging.
     return logger
 
 
-def load_logger_config(config_path: str) -> Dict[str, Any]:
-    """
-    Load logger.json from disk. Missing or invalid files return {} and log a warning
-    via a one-off default logger when possible.
-    """
-    if not config_path or not __import__("os").path.isfile(config_path):
-        return {}
-
-    try:
-        from utility import get_json_from_file
-
-        data = get_json_from_file(config_path, fail_on_not_exists=False)
-        return data if isinstance(data, dict) else {}
-    except Exception as exc:
-        bootstrap = create_default_logger("lakeflowframework.config")
-        bootstrap.warning(
-            "Failed to load logger config from %s: %s. Using empty logger config for this source.",
-            config_path,
-            exc,
-        )
-        return {}
-
-
-def merge_logger_config(
+def get_effective_logger_config(
     framework_config: Optional[Dict[str, Any]],
     bundle_config: Optional[Dict[str, Any]],
 ) -> Dict[str, Any]:
@@ -87,26 +65,27 @@ def merge_logger_config(
     framework = deepcopy(framework_config or {})
     bundle = deepcopy(bundle_config or {})
     bundle.pop("allow_pipeline_logger_override", None)
-
     allow_override = bool(framework.get("allow_pipeline_logger_override", False))
-    # Last update wins: framework by default, bundle when override is allowed.
-    base, override = (framework, bundle) if allow_override else (bundle, framework)
-
+ 
     merged = deepcopy(_DEFAULT_LOGGER_CONFIG)
-    merged.update(base)
-    merged.update(override)
 
-    merged_factory_args = deepcopy(_DEFAULT_LOGGER_CONFIG["factory_args"])
-    merged_factory_args.update(base.get("factory_args") or {})
-    merged_factory_args.update(override.get("factory_args") or {})
-    merged["factory_args"] = merged_factory_args
+    if allow_override:
+        # Bundle config wins: apply framework first, then bundle on top.
+        merged.update(framework)
+        merged.update(bundle)
+        merged["factory_args"] = {
+            **(framework.get("factory_args") or {}),
+            **(bundle.get("factory_args") or {}),
+        }
+    else:
+        # Framework config wins: bundle config is ignored entirely.
+        merged.update(framework)
+        merged["factory_args"] = {
+            **(framework.get("factory_args") or {}),
+        }
 
     merged["allow_pipeline_logger_override"] = allow_override
     return merged
-
-
-def _library_importable(library_name: str) -> bool:
-    return importlib.util.find_spec(library_name) is not None
 
 
 def _validate_logger_api(logger_obj: Any) -> None:
@@ -189,7 +168,73 @@ class CompositeLogger:
         self._log("exception", message, *args, **kwargs)
 
 
-def resolve_logger(
+def _get_logger_config_from_file(config_path: str) -> Dict[str, Any]:
+    """
+    Load logger.json from disk. Missing or invalid files return {} and log a warning
+    via a one-off default logger when possible.
+    """
+    if not config_path or not os.path.isfile(config_path):
+        return {}
+
+    try:
+        from utility import get_json_from_file
+
+        data = get_json_from_file(config_path, fail_on_not_exists=False)
+        return data if isinstance(data, dict) else {}
+    except Exception as exc:
+        bootstrap = create_default_logger("lakeflowframework.config")
+        bootstrap.warning(
+            "Failed to load logger config from %s: %s. Using empty logger config for this source.",
+            config_path,
+            exc,
+        )
+        return {}
+
+
+def _get_framework_logger_config(framework_path: str) -> Dict[str, Any]:
+    """Load framework logger.json configuration.
+
+    Logger defaults are defined in-code as ``_DEFAULT_LOGGER_CONFIG`` — there is no
+    ``config/default/logger.json`` on disk.  This function therefore returns only the
+    *override keys* that should be merged on top of those defaults inside
+    ``merge_logger_config``.
+
+    Resolution order (first match wins):
+
+    1. ``config/override/logger.json`` — DEPRECATED (v0.13.0), removed v1.0.0.
+    2. ``src/local/config/logger.json`` — the canonical location.
+    3. Neither present — returns ``{}``; ``merge_logger_config`` applies
+       ``_DEFAULT_LOGGER_CONFIG`` as the base.
+    """
+    override_path = os.path.join(
+        framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH, FrameworkPaths.LOGGER_CONFIG
+    )
+    if os.path.exists(override_path):
+        import warnings as _warnings
+        _warnings.warn(
+            f"{FrameworkPaths.CONFIG_OVERRIDE_PATH}/{FrameworkPaths.LOGGER_CONFIG} is deprecated "
+            f"(v0.13.0) and will be removed in v1.0.0. Migrate to "
+            f"{FrameworkPaths.LOCAL_CONFIG_PATH}/{FrameworkPaths.LOGGER_CONFIG} — only the keys "
+            "you want to change are needed (sparse files are supported). "
+            "See the framework configuration documentation for migration steps.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return _get_logger_config_from_file(override_path)
+
+    local_path = os.path.join(
+        framework_path, FrameworkPaths.LOCAL_CONFIG_PATH, FrameworkPaths.LOGGER_CONFIG
+    )
+    return _get_logger_config_from_file(local_path)
+
+
+def _get_bundle_logger_config(bundle_path: str) -> Dict[str, Any]:
+    """Load pipeline bundle logger.json from pipeline_configs."""
+    path = os.path.join(bundle_path, PipelineBundlePaths.PIPELINE_CONFIGS_PATH, PipelineBundlePaths.LOGGER_CONFIG)
+    return _get_logger_config_from_file(path)
+
+
+def get_logger(
     spark: "SparkSession",
     dbutils: "DBUtils",
     effective_config: Dict[str, Any],
@@ -207,7 +252,7 @@ def resolve_logger(
         return default_logger
 
     library = effective_config.get("library")
-    if library and not _library_importable(str(library)):
+    if library and not importlib.util.find_spec(str(library)):
         default_logger.warning(
             "Logger library %r not found; using framework default logger only.",
             library,
@@ -258,63 +303,17 @@ def resolve_logger(
     return custom
 
 
-def load_framework_logger_config(framework_path: str, framework_config_root: str) -> Dict[str, Any]:
-    """Load framework logger.json, deep-merging any src/local/config/ overlay.
-
-    Checks whether ``config/override/logger.json`` exists (DEPRECATED v0.13.0).
-    If so, emits a ``DeprecationWarning`` and uses the override as the base.
-    Otherwise uses ``config/default/logger.json``.  A sparse
-    ``src/local/config/logger.json`` overlay is always deep-merged on top.
-    """
-    import os as _os
-    import warnings as _warnings
-    from config_resolver import load_framework_config
-
-    override_path = _os.path.join(
-        framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH, FrameworkPaths.LOGGER_CONFIG
-    )
-    if _os.path.exists(override_path):
-        _warnings.warn(
-            f"{FrameworkPaths.CONFIG_OVERRIDE_PATH}/{FrameworkPaths.LOGGER_CONFIG} is deprecated "
-            f"(v0.13.0) and will be removed in v1.0.0. Migrate to "
-            f"{FrameworkPaths.LOCAL_CONFIG_PATH}/{FrameworkPaths.LOGGER_CONFIG} — only the keys "
-            "you want to change are needed (sparse files are supported). "
-            "See the framework configuration documentation for migration steps.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        config_path = FrameworkPaths.CONFIG_OVERRIDE_PATH
-    else:
-        config_path = FrameworkPaths.CONFIG_PATH
-
-    return load_framework_config(
-        FrameworkPaths.LOGGER_CONFIG,
-        framework_path,
-        config_path=config_path,
-        fail_on_not_exists=False,
-    )
-
-
-def load_bundle_logger_config(bundle_path: str) -> Dict[str, Any]:
-    """Load pipeline bundle logger.json from pipeline_configs."""
-    import os
-
-    path = os.path.join(bundle_path, PipelineBundlePaths.PIPELINE_CONFIGS_PATH, PipelineBundlePaths.LOGGER_CONFIG)
-    return load_logger_config(path)
-
-
 def resolve_pipeline_logger(
     spark: "SparkSession",
     dbutils: "DBUtils",
     framework_path: str,
     bundle_path: str,
-    framework_config_root: Optional[str] = None,
     spark_log_level: Optional[str] = None,
 ) -> Any:
     """Load, merge, and resolve logger from framework and bundle logger.json files."""
-    framework_cfg = load_framework_logger_config(framework_path, framework_config_root or "")
-    bundle_cfg = load_bundle_logger_config(bundle_path)
-    effective = merge_logger_config(framework_cfg, bundle_cfg)
-    logger = resolve_logger(spark, dbutils, effective, spark_log_level=spark_log_level)
+    framework_cfg = _get_framework_logger_config(framework_path)
+    bundle_cfg = _get_bundle_logger_config(bundle_path)
+    effective = get_effective_logger_config(framework_cfg, bundle_cfg)
+    logger = get_logger(spark, dbutils, effective, spark_log_level=spark_log_level)
     logger.info("Resolved pipeline logger config: %s", effective)
     return logger
