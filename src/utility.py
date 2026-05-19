@@ -4,7 +4,6 @@ import inspect
 from functools import reduce
 import logging
 import os
-import sys
 from typing import Callable, Dict, List
 
 import json
@@ -238,7 +237,8 @@ def get_data_from_files_parallel(
     file_format: str,
     file_suffix: str | List[str], 
     recursive: bool = False, 
-    max_workers: int = 10
+    max_workers: int = 10,
+    logger=None,
 ) -> Dict:
     """
     Load data from JSON or YAML files that have a specific suffix using parallel processing.
@@ -304,8 +304,9 @@ def get_data_from_files_parallel(
         file_paths[suffix] = _discover_files(path, suffix, recursive)
     
     for file_suffix, file_paths in file_paths.items():
-        print(f"Loading {file_suffix} files...")
-        print(f"File paths: {file_paths}")
+        if logger is not None:
+            logger.debug("Loading %s files...", file_suffix)
+            logger.debug("File paths: %s", file_paths)
         data[file_suffix] = {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_path = {
@@ -317,14 +318,16 @@ def get_data_from_files_parallel(
                 file_path, file_data, error = future.result()
                 if error:
                     errors[file_path] = error
-                    print(f"Warning: Failed to load {file_path}: {error}")
+                    if logger is not None:
+                        logger.debug("Failed to load %s: %s", file_path, error)
                 elif file_data is not None:
                     data[file_suffix][file_path] = file_data
     
     if errors:
-        print(f"Warning: {len(errors)} files failed to load.")
-        for file_path, error in errors.items():
-            print(f"Warning: {file_path}: {error}")
+        if logger is not None:
+            logger.debug("%d files failed to load.", len(errors))
+            for file_path, error in errors.items():
+                logger.debug("Failed: %s: %s", file_path, error)
 
     return data
 
@@ -511,22 +514,10 @@ def replace_dict_key_value(spec: Dict, target_key: str, new_value: str) -> Dict:
 
 
 def set_logger(logger_name: str, log_level: str = "INFO") -> logging.Logger:
-    """Set up and return a logger with a specified name and log level."""
-    logger = logging.getLogger(logger_name)
-    log_level = getattr(logging, log_level, logging.INFO)
-    logger.setLevel(log_level)
+    """Here for backwards compatibility. Use resolve_logger instead. Set up and return a logger with a specified name and log level."""
+    from logger import create_default_logger
 
-    # Clear existing handlers to avoid duplicate logging
-    if logger.hasHandlers():
-        logger.handlers.clear()
-
-    # Add a new handler
-    console_output_handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    console_output_handler.setFormatter(formatter)
-    logger.addHandler(console_output_handler)
-
-    return logger
+    return create_default_logger(logger_name, log_level)
 
 
 def _has_visible_children(directory: str) -> bool:

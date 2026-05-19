@@ -51,12 +51,13 @@ _PHASE_LABEL: dict[str, str] = {
 }
 
 
-def _add_if_dir(path: str, label: str, logger) -> None:
+def _add_if_dir(path: str, label: str, logger=None) -> None:
     """Insert path at the front of sys.path if it is a directory and not already present."""
     if os.path.isdir(path):
         if path not in sys.path:
             sys.path.insert(0, path)
-        logger.info("Registered %s on sys.path: %s", label, path)
+        if logger is not None:
+            logger.info("Registered %s on sys.path: %s", label, path)
 
 
 def _has_top_level_py(directory: str) -> bool:
@@ -69,7 +70,7 @@ def _has_top_level_py(directory: str) -> bool:
     )
 
 
-def _warn_legacy_extensions(ext_path: str, python_path: str, level: str, logger) -> None:
+def _warn_legacy_extensions(ext_path: str, python_path: str, level: str, logger=None) -> None:
     """Register legacy extensions/ on sys.path and emit a deprecation warning.
 
     extensions/ is always registered when it contains top-level .py files,
@@ -86,14 +87,15 @@ def _warn_legacy_extensions(ext_path: str, python_path: str, level: str, logger)
         + "src/python/ (bundle). "
         "Flat extensions/ sys.path support will be removed in v1.0.0."
     )
-    logger.warning(msg)
+    if logger is not None:
+        logger.warning(msg)
     warnings.warn(msg, DeprecationWarning, stacklevel=3)
 
 
 def register_bundle_sys_paths(
     framework_path: str,
     bundle_path: str,
-    logger,
+    logger=None,
 ) -> None:
     """
     Register sys.path roots for framework (local/) then pipeline bundle (src/).
@@ -101,6 +103,9 @@ def register_bundle_sys_paths(
     Framework bundle uses local/ paths (local/libraries/, local/python/).
     Pipeline bundle uses src/ paths (src/libraries/, src/python/).
     Legacy extensions/ is deprecated in both contexts.
+
+    ``logger`` is optional. When omitted, paths are registered silently — useful
+    for early bootstrap before the real logger is available.
     """
     # Framework bundle: custom code lives under local/ only
     fw_libraries = os.path.normpath(os.path.join(framework_path, FrameworkPaths.LOCAL_LIBRARIES_PATH))
