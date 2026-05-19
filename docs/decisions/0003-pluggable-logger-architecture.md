@@ -43,8 +43,9 @@ Introduce a **factory-based pluggable logger** configured entirely via
 
 **Resolution sequence** (`src/logger.py`, `resolve_pipeline_logger`):
 
-1. Load `logger.json` from the framework bundle (`src/config/override/`) and the
-   pipeline bundle (`pipeline_configs/`); deep-merge per precedence rules
+1. Load `logger.json` from the framework bundle (`src/local/config/` overlay on top of
+   `src/config/default/`, or `src/config/override/` if still present — deprecated v0.13.0)
+   and the pipeline bundle (`pipeline_configs/`); deep-merge per precedence rules
    (framework wins by default; `allow_pipeline_logger_override: true` inverts).
 2. If `enabled` is `false`, return the default `lakeflowframework` stdout logger.
 3. If `library` is set and not importable, fall back to the default logger with a
@@ -53,8 +54,9 @@ Introduce a **factory-based pluggable logger** configured entirely via
    the returned object exposes `debug`, `info`, `warning`, `error`, `critical`,
    and `exception`.
 5. On any failure (import error, factory error, invalid return type), fall back to
-   the default logger with a warning — the pipeline never fails due to logging
-   misconfiguration.
+   the default logger, emit a `CustomLoggerConfigWarning` (Python `warnings` — visible
+   in stderr and catchable with `pytest.warns`), and log an `ERROR` record — the
+   pipeline never fails due to logging misconfiguration.
 6. Apply `mirror_to_stdout` and `CompositeLogger` wrapping (see ADR-0004).
 
 **Resolved log level injection:** before calling the factory the framework

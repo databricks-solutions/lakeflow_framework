@@ -9,6 +9,7 @@ import pyspark.sql.types as T
 from pyspark.sql import SparkSession
 from typing import Dict, Any
 
+from config_resolver import load_framework_config, resolve_framework_config_path
 from constants import (
     FrameworkPaths, FrameworkSettings, PipelineBundlePaths, DLTPipelineSettingKeys, SupportedSpecFormat
 )
@@ -94,7 +95,6 @@ class DLTPipelineBuilder:
             dbutils=self.dbutils,
             framework_path=self.framework_path,
             bundle_path=self.bundle_path,
-            framework_config_root=self._framework_config_path,
             spark_log_level=log_level,
         )
         self.logger.info("Initializing Pipeline...")
@@ -125,7 +125,7 @@ class DLTPipelineBuilder:
 
         self.bundle_path = config_values[DLTPipelineSettingKeys.BUNDLE_SOURCE_PATH]
         self.framework_path = config_values[DLTPipelineSettingKeys.FRAMEWORK_SOURCE_PATH]
-        self._framework_config_path = utility.resolve_framework_config_path(self.framework_path)
+        self._framework_config_path = resolve_framework_config_path(self.framework_path)
         self.workspace_host = config_values[DLTPipelineSettingKeys.WORKSPACE_HOST]
 
     def _init_configurations(self) -> None:
@@ -201,24 +201,41 @@ class DLTPipelineBuilder:
         # Apply Spark configurations
         self._apply_spark_config()
 
-    def _load_framework_global_config_file(self) -> Dict[str, Any]:
-        """Load a global config file"""
-        global_config_paths = [
-            os.path.join(self.framework_path, self._framework_config_path, path)
-            for path in FrameworkPaths.GLOBAL_CONFIG
-        ]
-        
-        # Check if more than one global config exists
-        existing_configs = [path for path in global_config_paths if os.path.exists(path)]
-        if len(existing_configs) > 1:
-            raise ValueError(f"Multiple framework global config files found. Only one is allowed: {existing_configs}")
-        
-        if not existing_configs:
-            raise FileNotFoundError(f"Framework global config file not found, in path: {global_config_paths}")
-        
-        global_config_path = existing_configs[0]
-        self.logger.info("Retrieving Global Framework Config From: %s", global_config_path)
-        return utility.load_config_file_auto(global_config_path, False) or {}
+    def _load_framework_global_config(self) -> Dict[str, Any]:
+        """Load the framework global config, deep-merging any src/local/config/ overrides."""
+        from config_resolver import load_framework_config
+
+        override_dir = os.path.join(self.framework_path, FrameworkPaths.CONFIG_OVERRIDE_PATH)
+        is_override = any(
+            os.path.exists(os.path.join(override_dir, n)) for n in FrameworkPaths.GLOBAL_CONFIG
+        )
+
+        if is_override:
+            import warnings
+            warnings.warn(
+                f"{FrameworkPaths.CONFIG_OVERRIDE_PATH} is deprecated (v0.13.0) and will be "
+                f"removed in v1.0.0. Migrate your overrides to {FrameworkPaths.LOCAL_CONFIG_PATH} "
+                "— only the keys you want to change are needed (sparse files are supported). "
+                "See the framework configuration documentation for migration steps.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self._active_config_path = FrameworkPaths.CONFIG_OVERRIDE_PATH
+        else:
+            self._active_config_path = FrameworkPaths.CONFIG_PATH
+
+        self.logger.info(
+            "Retrieving Global Framework Config From: %s",
+            os.path.join(self.framework_path, self._active_config_path),
+        )
+        result = load_framework_config(
+            FrameworkPaths.GLOBAL_CONFIG,
+            self.framework_path,
+            config_path=self._active_config_path,
+            fail_on_not_exists=True,
+        )
+        self.logger.info("Global Framework Config (resolved): %s", result)
+        return result
 
     def _load_pipeline_bundle_global_config_file(self) -> Dict[str, Any]:
         """Load a global config file"""
@@ -240,7 +257,7 @@ class DLTPipelineBuilder:
 
     def _load_merged_config(self) -> None:
         """Load and merge global and pipeline-specific configurations."""
-        self.pipeline_config = self._load_framework_global_config_file()
+        self.pipeline_config = self._load_framework_global_config()
         pipeline_bundle_config = self._load_pipeline_bundle_global_config_file()
 
         # Initialize pipeline bundle spec format
@@ -387,11 +404,13 @@ class DLTPipelineBuilder:
             return
 
         self.logger.info("Operational Metadata: layer set to %s", layer)
-        metadata_path = os.path.join(
-            self.framework_path, self._framework_config_path, f"operational_metadata_{layer}.json"
+        config_name = f"operational_metadata_{layer}.json"
+        metadata_json = load_framework_config(
+            config_name, self.framework_path,
+            config_path=getattr(self, "_active_config_path", FrameworkPaths.CONFIG_PATH),
+            fail_on_not_exists=False,
         )
-        self.logger.info("Operational Metadata Path: %s", metadata_path)
-        metadata_json = utility.get_json_from_file(metadata_path, False)
+        self.logger.info("Operational Metadata config (resolved): %s", metadata_json)
         self.operational_metadata_schema = (
             T.StructType.fromJson(metadata_json) if metadata_json else None
         )

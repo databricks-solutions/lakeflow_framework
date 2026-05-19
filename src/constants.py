@@ -51,6 +51,7 @@ class FrameworkPaths:
     Attributes:
         CONFIG_PATH (str): Path to the config/default directory.
         CONFIG_OVERRIDE_PATH (str): DEPRECATED (v0.13.0) — use src/local/config/ instead; removed in v1.0.0.
+        LOCAL_CONFIG_PATH (str): Sparse overlay directory for framework config files. Files here are deep-merged on top of config/default equivalents.
         LOCAL_LIBRARIES_PATH (str): Org-wide cluster-install artefacts + loose .py/packages on sys.path.
         LOCAL_PYTHON_PATH (str): Org-wide pipeline logic modules called via pythonModule/pythonTransform.
         LOCAL_INIT_PRE_PATH (str): Org-wide pre-init lifecycle scripts run before SDP declarations.
@@ -70,6 +71,7 @@ class FrameworkPaths:
     """
     CONFIG_PATH: str = "./config/default"
     CONFIG_OVERRIDE_PATH: str = "./config/override"  # DEPRECATED (v0.13.0) — use local/config/; removed v1.0.0
+    LOCAL_CONFIG_PATH: str = "./local/config"
     LOCAL_LIBRARIES_PATH: str = "./local/libraries"
     LOCAL_PYTHON_PATH: str = "./local/python"
     LOCAL_INIT_PRE_PATH: str = "./local/init/pre"
