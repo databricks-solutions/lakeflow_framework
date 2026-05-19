@@ -236,7 +236,7 @@ class DLTPipelineBuilder:
         
         pipeline_config_path = existing_configs[0]
         self.logger.info("Retrieving Pipeline Global Config From: %s", pipeline_config_path)
-        return utility.get_json_from_file(pipeline_config_path, False) or {}
+        return utility.load_config_file_auto(pipeline_config_path, False) or {}
 
     def _load_merged_config(self) -> None:
         """Load and merge global and pipeline-specific configurations."""
