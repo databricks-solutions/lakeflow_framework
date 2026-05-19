@@ -204,7 +204,7 @@ Template dataflow specifications follow the standard dataflow specification nami
 A template dataflow specification with N parameter sets will generate N complete dataflow specifications at runtime, each validated independently.  
 
 Template Processing
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 During the dataflow spec build process, the template processor will:
 
@@ -395,7 +395,7 @@ Key Features
 ------------
 
 Python Function Path Search Priority
-^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Enhanced fallback chain for path values.
 

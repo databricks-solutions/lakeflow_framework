@@ -15,7 +15,7 @@ Ultimately you will need to determine the best way to scope your Pipeline Bundle
 
 .. important::
 
-   Per the :ref:`concepts` section of this documentation:
+   Per the :doc:`concepts` section of this documentation:
    
    * A data flow, and its Data Flow Spec, defines the source(s) and logic required to generate a **single target table**.
    * A Pipeline Bundle can contain multiple Data Flow Specs, and a Pipeline deployed by the bundle may execute the logic for one or more Data Flow Specs.

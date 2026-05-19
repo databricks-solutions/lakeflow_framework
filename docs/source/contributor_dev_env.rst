@@ -4,7 +4,7 @@ Development Environment Setup
 The sections below assumes the Lakeflow Framework repository has been cloned from git and you are in the root directory. If not please do so first.
 
 Setting up for development as a contributor to the Lakeflow Framework
-================================================================
+=====================================================================
 
 Once you have cloned the Lakeflow Framework repository, you'll need to follow the steps below to set up the framework.
 

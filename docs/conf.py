@@ -26,6 +26,8 @@ extensions = [
     'custom_markdown_builder'
 ]
 
+autosectionlabel_prefix_document = True
+
 templates_path = ['source/_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 

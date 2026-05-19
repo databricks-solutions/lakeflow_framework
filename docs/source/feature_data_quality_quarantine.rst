@@ -1,5 +1,5 @@
 Data Quality - Quarantine
-============
+=========================
 
 .. list-table::
    :header-rows: 0

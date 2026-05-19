@@ -46,9 +46,9 @@ Schema File Location
 Schemas must be specified in their own dedicated files and will be locatated in a schemas folder, dependant on your chosen bundle structure as dicussed in the :doc:`build_pipeline_bundle_structure` section.
 
 Data Flow Spec Configuration
----------------------------
+----------------------------
 
-Schema files are then referenced in the Data Flow Spec configuration for the source, staging table or target table they apply to. Refer to the :doc:`data_flow_spec` section for more information.
+Schema files are then referenced in the Data Flow Spec configuration for the source, staging table or target table they apply to. Refer to the :doc:`dataflow_spec_ref_main_flows` section for more information.
 
 
 StructType JSON Format

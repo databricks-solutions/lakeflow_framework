@@ -61,7 +61,4 @@ Set as an attribute when creating your Data Flow Spec, refer to the :doc:`datafl
 Detailed Target Type Configuration Details
 ------------------------------------------
 
-.. toctree::
-   :maxdepth: 1
-
-   feature_materialized_views
+* :doc:`feature_materialized_views`

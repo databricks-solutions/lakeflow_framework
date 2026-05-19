@@ -60,7 +60,7 @@ The structure of the substitutions config file should be as below:
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
 
          {
              "tokens": {
@@ -144,7 +144,7 @@ Data Flow Spec input:
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
 
          {
              ...
@@ -238,7 +238,7 @@ Data Flow Spec output:
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
 
          {
              ...

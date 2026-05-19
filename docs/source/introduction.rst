@@ -1,5 +1,5 @@
 Introduction to the Lakeflow Framework
-##################################
+######################################
 
 The Lakeflow Framework is a meta-data driven, data engineering framework, designed to:
 

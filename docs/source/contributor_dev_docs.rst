@@ -81,7 +81,7 @@ to install the documentation dependencies separately —
 ``requirements-docs.lock``.
 
 Updating dependencies / regenerating the lockfile
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you add, remove, or bump a documentation dependency, edit
 ``requirements-docs.txt`` (the unhashed source-of-truth file) and then
