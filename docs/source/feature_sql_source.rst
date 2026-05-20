@@ -52,7 +52,7 @@ You can use CTEs, subqueries, joins, etc.
 **Substitution Variables**
 
 You can use substitution variables in your SQL query by using the ``{var}`` syntax. 
-These will be substituted per the :doc:`feature_substitutions documentation.
+These will be substituted per the :doc:`feature_substitutions` documentation.
 
 For example:
 

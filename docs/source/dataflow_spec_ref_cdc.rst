@@ -71,7 +71,7 @@ The ``cdcSnapshotSettings`` object contains the following properties:
      - The column or combination of columns that uniquely identify a row in the source data. This is used to identify which CDC events apply to specific records in the target table.
    * - **snapshotType**
      - str
-     - The type of snapshot to process. Set to ``periodic`` for periodic snapshots or ``historical`` for historical snapshots (refer to :ref:`CDC Historical Snapshot Source Configuration` for which type to use). Note that ``historical`` snapshot types are not supported in ``flow`` data flow types.
+     - The type of snapshot to process. Set to ``periodic`` for periodic snapshots or ``historical`` for historical snapshots (refer to :ref:`CDC Historical Snapshot Source Configuration <cdc-apply-changes-from-snapshot-source>` for which type to use). Note that ``historical`` snapshot types are not supported in ``flow`` data flow types.
    * - **scd_type**
      - ``string``
      - Whether to store records as SCD type 1 or SCD type 2. Set to ``1`` for SCD type 1 or 2 for SCD type ``2``.

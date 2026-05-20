@@ -436,7 +436,7 @@ Flows can be defined in one of two ways:
 
        * **append_view** - Uses a source view to append data to a staging or target table.
        * **append_sql** - Uses a raw SQL statement to append data to a staging or target table.
-       * **merge** - Uses the :ref:`CDC API's <feature_cdc>` to merge data from a source view to a staging or target table.
+       * **merge** - Uses the :doc:`CDC API's <feature_cdc>` to merge data from a source view to a staging or target table.
 
    * - :ref:`Flow Details <dataflow-spec-flows-flow-configuration>`
      - Defines the source and target of the flow and any additional properties required for the flow type.

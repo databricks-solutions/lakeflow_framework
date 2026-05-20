@@ -199,6 +199,7 @@ Iterate over the following steps to create each individual Data Flow:
     If necessary, create a new folder in the ``src/dataflows`` directory based on your selected bundle strategy.
   
   b. Create Data Flow Spec file(s):
+
     * Refer to the :doc:`dataflow_spec_reference` section to build your Data Flow Spec
     * Refer to the :doc:`patterns` section for high level patterns and sample code.
     * Refer to the :doc:`deploy_samples` section on how to deploy the samples so you can reference the sample code.
@@ -309,7 +310,7 @@ To create a single Pipeline definition, follow these steps:
   You can add the appropriate Data Flow filter options described above to the Pipeline definition, as show below:
 
   .. code-block:: yaml
-    :emphasize-lines: 20-23
+    :emphasize-lines: 19-22
 
       resources:
         pipelines:

@@ -329,7 +329,7 @@ A `flow` object contains the following properties:
    * - **flowDetails**
      - ``object``
      - Details about the flow, required based on `flowType`.  
-       Properties vary based on `flowType`. See :ref:`Flow Details<Flow Details>`.
+       Properties vary based on `flowType`. See :ref:`Flow Details <dataflow-spec-flows-flow-details>`.
    * - **views** (*optional*)
      - ``object``
      - An object containing views used in the flow. The key for each nested object in this object will become the view names.

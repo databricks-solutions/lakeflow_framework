@@ -14,6 +14,7 @@ Prerequisites
 2. **Project Setup:**
 
    Organise your project files in a logical structure:
+
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     my_project/

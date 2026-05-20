@@ -129,7 +129,7 @@ A template definition is a JSON file that defines a reusable dataflow pattern. I
     - in JSON specs placeholders must always be wrapped in quotes: ``"${param.name}"``
 
 **File Location:**
-- Template definitions: ``<dataflow_base_path>/templates/<name>.json`
+- Template definitions: ``<dataflow_base_path>/templates/<name>.json``
 
 
 Anatomy of a Template Dataflow Specification
