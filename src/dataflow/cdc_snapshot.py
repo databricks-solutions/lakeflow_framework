@@ -306,7 +306,7 @@ class CDCSnapshotFlow:
             return (df, version_info.raw_value)
 
         except Exception as e:
-            self.logger.error(f"CDC Snapshot: Error processing snapshots: {e}")
+            self.logger.error(f"CDC Snapshot: Error processing snapshots: {e}", exc_info=True)
             raise
 
 
@@ -319,26 +319,91 @@ class CDCSnapshotFlow:
         else:
             raise ValueError(f"Unsupported source type: {self.sourceType}")
     
-    def _list_files(self, path, recursive=True):
-        """List files in a directory, with optional recursive file lookup.
-        
-        Args:
-            path: Directory path to list files from
-            recursive: If True, list files recursively. If False, list only files in the immediate directory.
-            
-        Returns:
-            List of file objects from dbutils.fs.ls()
-        """
-        dbutils = pipeline_config.get_dbutils()
-        all_files = []
-        
-        for f in dbutils.fs().ls(path):
-            all_files.append(f)
+    def _list_files(self, path: str, recursive: bool = True) -> List:
+        """List files in a directory, attempting dbutils.fs.ls() first.
 
-            if recursive and f.isDir():
-                all_files.extend(self._list_files(f.path, recursive=True))
-                    
-        return all_files
+        Falls back to Spark binaryFile if dbutils is unavailable (e.g., blocked
+        by Serverless Restricted Access / SEG Py4JSecurityException).
+
+        Args:
+            path: Directory path to list files from.
+            recursive: If True, list files recursively.
+
+        Returns:
+            List of objects with a .path attribute per discovered file.
+        """
+        try:
+            dbutils = pipeline_config.get_dbutils()
+            all_files = []
+            for f in dbutils.fs.ls(path):
+                all_files.append(f)
+                # Recursively list files in subdirectories unless the path ends with .parquet
+                if recursive and f.isDir() and not f.path.rstrip("/").endswith(".parquet"):
+                    all_files.extend(self._list_files(f.path, recursive=True))
+            return all_files
+        except Exception as e:
+            self.logger.warning(
+                f"CDC Snapshot: dbutils.fs.ls() failed at '{path}' "
+                f"({type(e).__name__}: {e}). "
+                f"Falling back to Spark binaryFile for file discovery."
+            )
+
+        # Fallback: Spark binaryFile read is SEG-compatible and needs no dbutils.
+        self.logger.debug("CDC Snapshot: Falling back to Spark binaryFile for file discovery")
+        
+        class _FileInfo:
+            __slots__ = ("path", "name", "size", "modificationTime")
+
+            # binaryFile returns full URIs (e.g. dbfs:/Volumes/...). Normalise to
+            # match the caller's path scheme so split-by-segment indices stay aligned.
+            _prefix = path.startswith("dbfs:")
+
+            def __init__(self, row) -> None:
+                raw = row.path
+                if self._prefix:
+                    self.path = raw if raw.startswith("dbfs:") else f"dbfs:{raw}"
+                else:
+                    self.path = raw[5:] if raw.startswith("dbfs:") else raw
+                self.name = self.path.rstrip("/").rsplit("/", 1)[-1]
+                self.size = row.length
+                self.modificationTime = row.modificationTime
+        
+        spark = pipeline_config.get_spark()
+        rows = (
+            spark.read
+                    .format("binaryFile")
+                    .option("recursiveFileLookup", str(recursive).lower())
+                    .load(path)
+                    .select("path", "modificationTime", "length")
+                    .collect()
+        )
+
+        # binaryFile only returns leaf files, not directories. For parquet "files" that
+        # are actually directories (e.g. customer.parquet/part-00000.parquet), truncate
+        # the path at the .parquet directory level and deduplicate so each snapshot is
+        # counted once.
+        def _truncate_at_parquet_dir(p: str) -> str:
+            segments = p.split("/")
+            for i, seg in enumerate(segments[:-1]):  # skip the last segment
+                if seg.endswith(".parquet"):
+                    return "/".join(segments[: i + 1])
+            return p
+
+        seen_paths = set()
+        files: List[_FileInfo] = []
+        for row in rows:
+            fi = _FileInfo(row)
+            fi.path = _truncate_at_parquet_dir(fi.path)
+            fi.name = fi.path.rstrip("/").rsplit("/", 1)[-1]
+            if fi.path not in seen_paths:
+                seen_paths.add(fi.path)
+                files.append(fi)
+
+        self.logger.debug(
+            f"CDC Snapshot: Spark binaryFile fallback listed {len(files)} file(s) under '{path}'"
+        )
+
+        return files
 
     def _path_to_regex_pattern(self, path: str) -> str:
         """Convert path to normalized regex pattern with named groups.
