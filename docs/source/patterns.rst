@@ -28,6 +28,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        Ingestion and basic 1:1 loads.
 
        |
+
        **Usage Scenario:**
 
        * You are ingesting data or performing one-to-one loads.
@@ -42,6 +43,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        Multi-source streaming and basic transformations.
        
        |
+
        **Usage Scenario:**
 
        * You need to stream multiple tables in a single target table via a basic transform.
@@ -67,6 +69,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        When you have a streaming table that you need to join to one or many additional static tables to derive your desired target data set.
        
        |
+
        **Usage Scenario:**
 
        * You have a single streaming table driving the data flow and want to join to one or more other tables.
@@ -94,6 +97,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        When you have a streaming table that you need to join to one or many additional static tables in order to derive your desired target data set, but you also want updates to the static tables to be reflected as they occur.
        
        |
+
        **Usage Scenario:**
 
        * You want to join multiple streaming tables.
@@ -120,6 +124,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        Constructing a CDC stream from a snapshot source to be used in multi-source streaming or stream-static patterns.
        
        |
+
        **Usage Scenario:**
 
        * You need to stream multiple sources into a single target table but one or more of the sources are snapshot based.

@@ -6,14 +6,14 @@ This section describes the required general steps in a CI/CD pipeline to deploy 
 For specific CI/CD platform example using GitHub Actions, see https://docs.databricks.com/en/dev-tools/bundles/ci-cd-bundles.html
 
 Prerequisites and Assumptions
-----------------------------
+-----------------------------
 1. You have a Databricks access token for the CI/CD agent to authenticate to your Databricks workspace.
 2. CI/CD agent has python and git installed.
 3. CI/CD agent has access to the framework bundle repository.
 
 
 Main Steps in a CI/CD Pipeline
------------------------------
+------------------------------
 1. Install Databricks CLI
     If the CI/CD agent you are using is not already using an image which has Databricks cli installed, you can install it using curl:
 
@@ -72,7 +72,7 @@ Main Steps in a CI/CD Pipeline
 
 
 Example CI/CD bash script
---------------------
+-------------------------
 Here's an example deployment script that can be used in your CI/CD pipeline:
 
 .. code-block:: bash

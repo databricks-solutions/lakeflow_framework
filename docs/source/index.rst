@@ -31,4 +31,3 @@ This documentation covers everything from getting started to advanced orchestrat
    dataflow_spec_reference
    orchestration
    contributor
-   logical_environment

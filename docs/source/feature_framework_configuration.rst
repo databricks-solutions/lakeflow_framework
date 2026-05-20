@@ -93,8 +93,7 @@ supported files and migration instructions.
 
 .. deprecated:: v0.14.0
 
-   ``config/override/``
-   ^^^^^^^^^^^^^^^^^^^^
+   **config/override/**
 
    The ``config/override/`` mechanism (whole-tree replacement) is deprecated as
    of v0.14.0 and will be removed in v1.0.0. Migrate to ``src/local/config/``

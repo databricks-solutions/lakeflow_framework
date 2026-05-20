@@ -42,7 +42,7 @@ Configuration Schema
 
 The operational metadata configuration file must follow the schema below:
 
-.. code-block:: json
+.. code-block:: none
 
     {
         "type": "struct",
@@ -117,7 +117,7 @@ Best Practice Configuration
 It is recommended that you group your data into logically organized struct or map columns to avoid cluttering the table schema, as decribed by the below configuration schema:
 The operational metadata configuration file must follow the schema below:
 
-.. code-block:: json
+.. code-block:: none
 
     {
         "type": "struct",
@@ -238,7 +238,7 @@ Use the ``configFlags`` array to disable operational metadata at a target table 
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
         
          :emphasize-lines: 24
 

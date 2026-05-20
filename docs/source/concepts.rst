@@ -436,14 +436,14 @@ Flows can be defined in one of two ways:
 
        * **append_view** - Uses a source view to append data to a staging or target table.
        * **append_sql** - Uses a raw SQL statement to append data to a staging or target table.
-       * **merge** - Uses the :ref:`CDC API's <feature_cdc>` to merge data from a source view to a staging or target table.
+       * **merge** - Uses the :doc:`CDC API's <feature_cdc>` to merge data from a source view to a staging or target table.
 
    * - :ref:`Flow Details <dataflow-spec-flows-flow-configuration>`
      - Defines the source and target of the flow and any additional properties required for the flow type.
    * - :ref:`Views <dataflow-spec-flows-flow-configuration>` (optional)
      - Views are used to define the source and any additional transformations for a flow. The different types of views are documented in the following sections:
      
-       * :doc:`feature_source_target_types`
+       * :doc:`feature_source_types`
        * :ref:`dataflow-spec-flows-view-configuration`
 
 .. important::
@@ -491,7 +491,7 @@ Data Flow Spec Components:
      - Specifies any additional configuration for the target table, its configuration and properties.
    * - :ref:`Data Quality Expectations (optional) <dataflow-spec-materialized-view-data-quality-configuration>`
      - Enable expectations and specify the location of the expectations file(s).
-   * - :ref:`Quarantine Details (optional) <dataflow-spec-materialized-view-quarantine-configuration>`
+   * - :doc:`Quarantine Details (optional) <dataflow_spec_ref_data_quality>`
      - Set the quarantine mode and if the mode is ``table`` the details of the quarantine table.
 
 Patterns

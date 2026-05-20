@@ -1,5 +1,5 @@
 Data Quality - Expectations
-============
+===========================
 
 .. list-table::
    :header-rows: 0

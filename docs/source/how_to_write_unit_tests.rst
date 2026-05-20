@@ -1,5 +1,5 @@
 How to Create Unit Test Functions for a Project Using `pytest` and `unittest`
-==========================================================================
+=============================================================================
 
 Prerequisites
 -------------
@@ -14,7 +14,8 @@ Prerequisites
 2. **Project Setup:**
 
    Organise your project files in a logical structure:
-::
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     my_project/
     ├── src/

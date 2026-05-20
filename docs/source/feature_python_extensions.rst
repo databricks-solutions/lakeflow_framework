@@ -33,6 +33,7 @@ addresses a different concern and has a dedicated place in both bundle structure
          - PyPI
          - UC Volume
          - Artifact repository e.g. Artifactory, Nexus
+
        | **OR**
        | Bundled wheel: ``src/libraries/``
      - Third-party or in-house Python packages installed on the cluster before the pipeline

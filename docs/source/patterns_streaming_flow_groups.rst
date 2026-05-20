@@ -15,4 +15,4 @@ The diagram below shows a data flow with two flow groups, each with their own fl
 
 .. important::
 
-   Per the :ref:`concepts` section of this documentation, Flow Groups and Flows can be added and removed from a data flow as your requirements and systems evolve. This will not break the existing pipeline and will not require a full refresh of the Pipeline.
+   Per the :doc:`concepts` section of this documentation, Flow Groups and Flows can be added and removed from a data flow as your requirements and systems evolve. This will not break the existing pipeline and will not require a full refresh of the Pipeline.

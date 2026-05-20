@@ -1,5 +1,5 @@
 Materialized Views
-================
+==================
 
 .. list-table::
    :header-rows: 0
@@ -46,7 +46,7 @@ A sample is available in:
 
 
 Data Flow Spec Configuration
----------------------------
+----------------------------
 
 Materialized Views are must be configured in the Materialized Views Data Flow Spec Type. This Data Flow Specification is defined in the :doc:`dataflow_spec_ref_main_materialized_views` documentation.
 
@@ -227,7 +227,7 @@ Materialized Views support several additional configuration options:
   - ``incremental_strict`` disallows non-deterministic functions (e.g. ``current_timestamp()``); use ``disableOperationalMetadata`` in ``configFlags`` when needed
 
 Example Configuration
--------------------
+---------------------
 
 A complete example of a materialized view configuration:
 

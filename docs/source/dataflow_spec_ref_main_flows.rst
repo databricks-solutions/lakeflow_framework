@@ -270,7 +270,7 @@ The `flowGroupDetails` object contains the following properties:
      - An object containing named objects representing staging tables in the flow group. The key for each nested object in this object will become the table names for the staging tables.
    * - **flows**
      - ``array``
-     - An array of flows in the flow group. Items: :ref:`flow-configuration`
+     - An array of flows in the flow group. Items: :ref:`flow-configuration <dataflow-spec-flows-flow-configuration>`
 
 
 .. _dataflow-spec-flows-staging-table-configuration:
@@ -329,7 +329,7 @@ A `flow` object contains the following properties:
    * - **flowDetails**
      - ``object``
      - Details about the flow, required based on `flowType`.  
-       Properties vary based on `flowType`. See :ref:`Flow Details<Flow Details>`.
+       Properties vary based on `flowType`. See :ref:`Flow Details <dataflow-spec-flows-flow-details>`.
    * - **views** (*optional*)
      - ``object``
      - An object containing views used in the flow. The key for each nested object in this object will become the view names.

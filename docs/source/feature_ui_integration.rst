@@ -16,7 +16,7 @@ Overview
 The framework integrates with the Databricks Pipeline Editor UI to provide a seamless experience when creating or editing Data Flow specifications. This allows for live validation and editing of a Data Flow spec while having the ability to debug natively in the Pipeline Editor.
 
 Configuration to enable Pipeline Editor UI Integration
---------------------------------------
+------------------------------------------------------
 To enable UI Integration, you need to add a root_path configuration to your Pipeline resource file that points to the root directory of the Data Flow specifications for that pipeline as shown below.
 
 .. code-block:: yaml

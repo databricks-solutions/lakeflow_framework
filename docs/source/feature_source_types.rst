@@ -80,8 +80,5 @@ Set as an attribute when creating your Data Flow Spec, refer to the :doc:`datafl
 Detailed Source Type Configuration Details
 ------------------------------------------
 
-.. toctree::
-   :maxdepth: 1
-
-   feature_python_source
-   feature_sql_source
+* :doc:`feature_python_source`
+* :doc:`feature_sql_source`

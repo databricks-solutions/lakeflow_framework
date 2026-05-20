@@ -79,7 +79,7 @@ Feature Support
         - Window By
 
 Considerations and Limitations
----------------------------
+------------------------------
 
 .. important::
    - Updates in joined tables will not be reflected until a row with matching keys comes through on the driving streaming table.
@@ -90,7 +90,7 @@ Sample
 - Sample: ``dlt_framework/src/samples/silver_sample/src/dataflows/stream_static_p6``
 
 Example Data Flow
----------------
+-----------------
 
 .. important::
    - The Day 3 load below demonstrates a limitation of this pattern. Updates in any of the static tables will only be loaded once corresponding rows (with the same PK's) in the primary streaming table are updated. This is resolved by the :doc:`Streaming Data Warehouse <patterns_streaming_stream_static_streaming_dwh>` pattern below.

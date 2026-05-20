@@ -1,5 +1,5 @@
 Mandatory Table Properties
-=========================
+==========================
 
 .. list-table::
    :header-rows: 0
@@ -20,7 +20,7 @@ Configuration
 | Mandatory table properties are defined in the global configuration file located at ``src/config/default/global.json|yaml`` under the ``mandatory_table_properties`` section.
 
 Configuration Schema
-------------------
+--------------------
 
 The mandatory table properties configuration are defined as key-value pairs as follows:
 
@@ -28,7 +28,7 @@ The mandatory table properties configuration are defined as key-value pairs as f
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
 
          {
              "mandatory_table_properties": {
@@ -46,7 +46,7 @@ The mandatory table properties configuration are defined as key-value pairs as f
            ...
 
 Common Properties
----------------
+-----------------
 
 Some commonly used table properties include:
 
@@ -73,7 +73,7 @@ Some commonly used table properties include:
      - ``"This table contains..."``
 
 Example Configuration
--------------------
+---------------------
 
 Here's an example configuration that sets some common table properties:
 
