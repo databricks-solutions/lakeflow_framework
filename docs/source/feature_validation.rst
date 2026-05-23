@@ -95,7 +95,7 @@ You can do this in the pipeline resource YAML file or via the Databricks UI in t
 Validation via CI/CD
 --------------------
 
-You can validate Data Flow Specification ``*_main.json`` files in CI without running a Spark Declarative Pipeline. The framework repository includes a ``scripts/validate_dataflows.py`` script: run it from a checkout of Lakeflow Framework repo so it can load JSON Schemas (under ``src/schemas/``) and optional dataflow spec version mappings, then point it at a directory or single ``*_main.json`` in your pipeline bundle or monorepo.
+You can validate Data Flow Specification ``*_main.json`` files in CI without running a Spark Declarative Pipeline. The framework repository includes a ``scripts/validate_dataflows.py`` script: run it from a checkout of Lakeflow Framework repo so it can load JSON Schemas (under ``src/lakeflow_framework/schemas/``) and optional dataflow spec version mappings, then point it at a directory or single ``*_main.json`` in your pipeline bundle or monorepo.
 
 Validating in GitHub Actions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

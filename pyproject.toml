@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "lakeflow-framework"
+dynamic = ["version"]
+description = "Metadata-driven framework for Databricks Spark Declarative Pipelines."
+readme = "README.md"
+license = { file = "LICENSE.md" }
+requires-python = ">=3.10"
+dependencies = [
+    "jsonschema>=4.0",
+]
+
+[project.optional-dependencies]
+contrib = []
+all = ["lakeflow-framework[contrib]"]
+
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+lakeflow_framework = [
+    "config/default/**/*",
+    "schemas/**/*",
+]

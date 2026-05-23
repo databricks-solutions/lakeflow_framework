@@ -21,17 +21,9 @@ Core Concepts
 * **Key Design**
 
   * DABS native
-  * No artifacts or wheel files
-  * Minimized third-party dependencies
+  * Available as a pip package (``pip install lakeflow-framework``) from v0.16.0
   * No control tables
   * Extensible
   * Flexible deployment bundles
-
-* **OO & Best Practices**
-
-  * Encapsulation
-  * Abstraction & Inheritance
-  * Loosely Coupled
-  * Separation of Concerns & Single Responsibility
 
 Please refer to the :doc:`concepts` section for an overview of the different components of the framework.

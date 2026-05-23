@@ -12,6 +12,7 @@ pytest==9.0.3
 ## Dependencies for building wheel files
 setuptools==82.0.1
 wheel==0.47.0
+build==1.2.2
 
 # The following packages are only required for building documentation and are not required at runtime
 -r requirements-docs.txt

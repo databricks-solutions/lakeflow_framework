@@ -64,16 +64,16 @@ class TestDetectSpecForm:
 class TestGetSchemaPath:
     def test_template_form_returns_spec_template_schema(self, tmp_path):
         result = vd.get_schema_path(tmp_path, vd.SPEC_FORM_TEMPLATE)
-        assert result == tmp_path / "src" / "schemas" / "spec_template.json"
+        assert result == tmp_path / "src" / "lakeflow_framework" / "schemas" / "spec_template.json"
 
     def test_expanded_form_returns_main_schema(self, tmp_path):
         result = vd.get_schema_path(tmp_path, vd.SPEC_FORM_EXPANDED)
-        assert result == tmp_path / "src" / "schemas" / "main.json"
+        assert result == tmp_path / "src" / "lakeflow_framework" / "schemas" / "main.json"
 
     def test_unknown_form_falls_back_to_main_schema(self, tmp_path):
         # Defensive: unknown form string should not crash; defaults to main.json
         result = vd.get_schema_path(tmp_path, "some_other_form")
-        assert result == tmp_path / "src" / "schemas" / "main.json"
+        assert result == tmp_path / "src" / "lakeflow_framework" / "schemas" / "main.json"
 
 
 # -----------------------------------------------------------------------------

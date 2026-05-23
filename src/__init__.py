@@ -1,11 +1,13 @@
 """
-Lakeflow Framework - A framework for building Delta Live Tables pipelines.
+Compat shim — src/ package init.
 
-This package provides tools and utilities for creating, managing, and orchestrating
-Delta Live Tables (DLT) pipelines in Databricks.
+Delegates all public symbols to ``lakeflow_framework``.
+This file is kept so that any code that does ``import src`` or uses ``src``
+as a package (unusual) continues to resolve correctly while ``src/`` is on
+``sys.path`` and the canonical import path is ``lakeflow_framework.*``.
 """
 
-from .dataflow import (
+from lakeflow_framework import (  # noqa: F401
     DataFlow,
     FlowConfig,
     FlowGroup,
@@ -15,12 +17,11 @@ from .dataflow import (
     TargetType,
     SinkType,
     View,
-    StagingTable
-)
-from .dataflow.dataflow_spec import DataflowSpec
-from .dataflow_spec_builder import DataflowSpecBuilder, DataQualityExpectationBuilder
-from .dlt_pipeline_builder import DLTPipelineBuilder
-from .pipeline_config import (
+    StagingTable,
+    DataflowSpec,
+    DataflowSpecBuilder,
+    DataQualityExpectationBuilder,
+    DLTPipelineBuilder,
     get_spark,
     get_logger,
     get_operational_metadata_schema,
@@ -31,37 +32,11 @@ from .pipeline_config import (
     initialize_operational_metadata_schema,
     initialize_pipeline_details,
     initialize_substitution_manager,
-    initialize_mandatory_table_properties
+    initialize_mandatory_table_properties,
+    SecretsManager,
+    SubstitutionManager,
+    SystemColumns,
+    MetaDataColumnDefs,
+    utility,
+    __version__,
 )
-from .secrets_manager import SecretsManager
-from .substitution_manager import SubstitutionManager
-from .constants import SystemColumns, MetaDataColumnDefs
-from . import utility
-
-__all__ = [
-    'DLTPipelineBuilder',
-    'DataflowSpec',
-    'DataflowSpecBuilder',
-    'DataQualityExpectationBuilder',
-
-    # Main classes
-    'DataFlow', 'FlowConfig', 'FlowGroup', 'BaseFlow', 'StagingTable', 'View',
-    
-    # Managers
-    'SecretsManager', 'SubstitutionManager', 'TableMigrationManager', 'QuarantineManager',
-    
-    # Types and Enums
-    'TargetType', 'SinkType',
-    
-    # Constants
-    'SystemColumns', 'MetaDataColumnDefs',
-    
-    # Utilities
-    'utility',
-
-    # Pipeline Config
-    'get_spark', 'get_logger', 'get_operational_metadata_schema', 'get_pipeline_details', 'get_substitution_manager', 'get_mandatory_table_properties',
-    'initialize_core', 'initialize_operational_metadata_schema', 'initialize_pipeline_details', 'initialize_substitution_manager', 'initialize_mandatory_table_properties'
-]
-
-__version__ = '0.4.0'
