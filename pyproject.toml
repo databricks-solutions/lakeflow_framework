@@ -5,7 +5,7 @@ build-backend = "setuptools.backends.legacy:build"
 [project]
 name = "lakeflow-framework"
 dynamic = ["version"]
-description = "A metadata-driven framework for building Databricks Spark Declarative Pipelines"
+description = "Metadata-driven framework for Databricks Spark Declarative Pipelines."
 readme = "README.md"
 license = { file = "LICENSE.md" }
 requires-python = ">=3.10"
