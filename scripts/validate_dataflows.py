@@ -59,7 +59,7 @@ def find_project_root() -> Path:
     
     # Go up to find the project root
     while current != current.parent:
-        if (current / "src" / "schemas" / "main.json").exists():
+        if (current / "src" / "lakeflow_framework" / "schemas" / "main.json").exists():
             return current
         current = current.parent
     
@@ -113,7 +113,7 @@ def detect_spec_form(data: Dict) -> str:
 
 def get_schema_path(project_root: Path, form: str) -> Path:
     """Return the schema path for a given spec form."""
-    schemas = project_root / "src" / "schemas"
+    schemas = project_root / "src" / "lakeflow_framework" / "schemas"
     if form == SPEC_FORM_TEMPLATE:
         return schemas / "spec_template.json"
     return schemas / "main.json"

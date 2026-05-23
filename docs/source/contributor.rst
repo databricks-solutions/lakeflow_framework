@@ -9,3 +9,4 @@ Framework Development & Contributors
    contributor_dev_git
    contributor_dev_steps
    contributor_dev_docs
+   contributor_contrib

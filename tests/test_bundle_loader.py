@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from bundle_loader import register_bundle_sys_paths, run_init_scripts
+from lakeflow_framework.bundle_loader import register_bundle_sys_paths, run_init_scripts
 
 logger = logging.getLogger("test_bundle_loader")
 

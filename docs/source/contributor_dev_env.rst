@@ -28,6 +28,23 @@ Once you have cloned the Lakeflow Framework repository, you'll need to follow th
    too, so you do not need a separate install step for building the
    documentation.
 
+   Alternatively, for a quick editable install that resolves imports without
+   locking all transitive hashes (useful for IDE auto-complete and
+   ``pytest`` runs):
+
+   .. code-block:: bash
+
+      pip install -e ".[contrib]"
+
+   This installs the framework in editable mode from ``pyproject.toml``,
+   including the ``[contrib]`` extra.  Use ``pip install -e ".[all]"`` to also
+   pull in any future contrib sub-extras.  You can then build a distribution
+   wheel at any time with:
+
+   .. code-block:: bash
+
+      python -m build
+
    If you change a dependency in any of the ``requirements*.txt`` files,
    regenerate all three lockfiles with the helper script from the repo root:
 
