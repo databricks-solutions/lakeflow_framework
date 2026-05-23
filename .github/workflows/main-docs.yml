@@ -3,6 +3,7 @@ name: Deploy Lakeflow Framework Documentation to GitHub Pages
 on:
   push:
     branches: ["main"]
+    tags: ["v*.*.*"]
 
 permissions:
   contents: read
@@ -20,8 +21,11 @@ jobs:
       group: databricks-solutions-protected-runner-group
       labels: linux-ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout (full history + tags)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0  # required by sphinx-multiversion to walk all refs
+          fetch-tags: true
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -38,10 +42,34 @@ jobs:
           python -m pip install --upgrade pip
           pip install --require-hashes --no-deps -r requirements-docs.lock
 
-      - name: Build HTML
+      - name: Select versions to build
+        # Writes SMV_TAG_WHITELIST to $GITHUB_ENV so the build step picks it up.
+        run: python docs/select_versions.py
+
+      - name: Build versioned HTML
+        # sphinx-multiversion writes one subdirectory per version under the output dir.
+        # The SMV_TAG_WHITELIST env var (set above) controls which tags are built.
         run: |
-          cd docs
-          make html
+          sphinx-multiversion docs docs/build/html
+
+      - name: Create root redirect to main (dev) docs
+        # Visitors who land at the bare GitHub Pages URL are forwarded to the
+        # "main" branch build.  Adjust the meta-refresh target if you later
+        # publish a dedicated "stable" alias.
+        run: |
+          cat > docs/build/html/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Lakeflow Framework Docs</title>
+              <meta http-equiv="refresh" content="0; url=main/">
+            </head>
+            <body>
+              <p>Redirecting to <a href="main/">latest docs</a>…</p>
+            </body>
+          </html>
+          EOF
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
