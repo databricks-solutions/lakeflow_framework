@@ -1,0 +1,55 @@
+{
+    "dataFlowId": "feature_materialized_views",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "materialized_view",
+    "materializedViews": {
+        "mv_source_view": {
+            "sourceView": {
+                "sourceViewName": "v_mv_source_view",
+                "sourceType": "delta",
+                "sourceDetails": {
+                    "database": "{feature_schema}",
+                    "table": "src_customer",
+                    "cdfEnabled": true
+                }
+            }
+        },
+        "mv_sql_path": {
+            "sqlPath": "./feature_mv_sql_path.sql"
+        },
+        "mv_sql_statement": {
+            "sqlStatement": "SELECT * FROM {feature_schema}.src_customer",
+            "tableDetails": {
+                "private": true
+            }
+        },
+        "mv_with_quarantine": {
+            "sqlStatement": "SELECT * FROM {feature_schema}.src_customer_address",
+            "dataQualityExpectationsEnabled": true,
+            "dataQualityExpectationsPath": "./customer_address_dqe.json",
+            "quarantineMode": "table",
+            "quarantineTargetDetails": {
+                "targetFormat": "delta",
+                "clusterByAuto": true
+            }
+        },
+        "mv_chain_mvs": {
+            "sqlStatement": "SELECT * FROM live.mv_sql_statement",
+            "tableDetails": {
+                "comment": "Test Config",
+                "sparkConf": {
+                    "spark.sql.session.timeZone": "Australia/Sydney"
+                }
+            }
+        },
+        "mv_with_refresh_policy": {
+            "sqlStatement": "SELECT * FROM {feature_schema}.src_customer",
+            "refreshPolicy": "incremental_strict",
+            "tableDetails": {
+                "configFlags": [
+                    "disableOperationalMetadata"
+                ]
+            }
+        }
+    }
+}

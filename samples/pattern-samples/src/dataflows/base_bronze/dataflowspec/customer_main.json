@@ -1,0 +1,27 @@
+{
+    "dataFlowId": "base_customer",
+    "dataFlowGroup": "base_bronze",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer",
+    "sourceDetails": {
+        "database": "{staging_schema}",
+        "table": "customer",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "database": "{bronze_schema}",
+        "table": "customer",
+        "comment": "Customer main table",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "customer_schema.json",
+        "sparkConf": {
+            "spark.sql.session.timeZone": "UTC"
+        }
+    }
+}

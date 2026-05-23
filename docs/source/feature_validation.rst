@@ -72,8 +72,8 @@ You can do this in the pipeline resource YAML file or via the Databricks UI in t
 
     resources:
         pipelines:
-            dlt_framework_samples_bronze_base_pipeline:
-            name: Lakeflow Framework Samples - Bronze - Base Pipeline (${var.logical_env})
+            lakeflow_pattern_bronze_base_samples_pipeline:
+            name: Lakeflow Framework - Pattern - Bronze Base Samples Pipeline (${var.logical_env})
             channel: CURRENT
             serverless: true
             catalog: ${var.catalog}
@@ -89,7 +89,7 @@ You can do this in the pipeline resource YAML file or via the Databricks UI in t
                 workspace.host: ${var.workspace_host}
                 pipeline.layer: ${var.layer}
                 logicalEnv: ${var.logical_env}
-                pipeline.dataFlowGroupFilter: base_samples
+                pipeline.dataFlowGroupFilter: base_bronze
                 pipeline.ignoreValidationErrors: True
 
 Validation via CI/CD

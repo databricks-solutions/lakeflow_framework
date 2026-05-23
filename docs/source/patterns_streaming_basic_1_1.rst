@@ -61,7 +61,8 @@ Feature Support
 
 Sample
 ------
-- Bundle: ``dlt_framework/src/samples/bronze_sample``
+- Bundle: ``samples/pattern-samples``
+- Sample: ``samples/pattern-samples/src/dataflows/base_bronze/``
 
 Example Data Flow
 ------------------

@@ -86,8 +86,8 @@ Considerations and Limitations
 
 Sample
 ------
-- Bundle: ``dlt_framework/src/samples/silver_sample``
-- Sample: ``dlt_framework/src/samples/silver_sample/src/dataflows/stream_static_p6``
+- Bundle: ``samples/pattern-samples``
+- Sample: ``samples/pattern-samples/src/dataflows/stream_static_samples/dataflowspec/customer_stream_static_basic_main.json``
 
 Example Data Flow
 ---------------

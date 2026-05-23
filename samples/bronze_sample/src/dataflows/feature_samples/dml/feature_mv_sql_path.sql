@@ -1,1 +1,0 @@
-SELECT * FROM {staging_schema}.customer

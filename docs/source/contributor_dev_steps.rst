@@ -42,7 +42,7 @@ Development Process
 
 3. Integration Testing  / Samples
  
-   - Where applicable, add sample pipelines to bronze or silver to show how to use the new feature
+   - Where applicable, add sample pipelines to ``feature-samples`` (for isolated feature demonstrations) or ``pattern-samples`` (for medallion architecture patterns) to show how to use the new feature
    - Deploy and run existing sample pipelines on Databricks to ensure changes are not breaking existing functionality (refer to :doc:`deploy_samples`)
 
 4. Documentation

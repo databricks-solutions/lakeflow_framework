@@ -1,0 +1,29 @@
+{
+    "dataFlowId": "customer_historical_snapshot_datetime_scd1",
+    "dataFlowGroup": "base_bronze",
+    "dataFlowType": "standard",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "database": "{bronze_schema}",
+        "table": "customer_historical_snapshot_datetime_scd1",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "configFlags": [
+            "disableOperationalMetadata"
+        ]
+    },
+    "cdcSnapshotSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "1",
+        "snapshotType": "historical",
+        "sourceType": "table",
+        "source": {
+            "table": "{staging_schema}.customer_historical_snapshot_source",
+            "versionColumn": "LOAD_TIMESTAMP",
+            "versionType": "timestamp"
+        }
+    }
+}

@@ -1,0 +1,38 @@
+{
+    "dataFlowId": "append_view_once_flow",
+    "dataFlowGroup": "feature_samples_general",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "database": "{feature_schema}",
+        "table": "tgt_append_view_once_flow",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "flowGroups": [
+        {
+            "flowGroupId": "main",
+            "flows": {
+                "f_customer_append_view_once": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "{feature_schema}.tgt_append_view_once_flow",
+                        "sourceView": "v_append_view_once_flow",
+                        "once": true
+                    },
+                    "views": {
+                        "v_append_view_once_flow": {
+                            "mode": "batch",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{feature_schema}",
+                                "table": "src_customer"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
