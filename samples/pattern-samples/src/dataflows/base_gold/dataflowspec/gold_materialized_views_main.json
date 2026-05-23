@@ -17,9 +17,9 @@
             }
         },
         "dim_customer_mv_chained": {
-            "sqlStatement": "SELECT * FROM live.dim_customer_mv WHERE STATE IS NOT NULL",
+            "sqlStatement": "SELECT * FROM live.dim_customer_mv_incremental WHERE STATE IS NOT NULL",
             "tableDetails": {
-                "comment": "Chained MV filtering non-null states from dim_customer_mv"
+                "comment": "Chained MV filtering non-null states from dim_customer_mv_incremental"
             }
         }
     }
