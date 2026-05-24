@@ -63,7 +63,7 @@
                             "sourceType": "delta",
                             "sourceDetails": {
                                 "database": "{bronze_schema}",
-                                "table": "customer",
+                                "table": "base_customer_append",
                                 "cdfEnabled": true
                             }
                         }
@@ -81,7 +81,7 @@
                             "sourceType": "delta",
                             "sourceDetails": {
                                 "database": "{bronze_schema}",
-                                "table": "customer_address",
+                                "table": "base_customer_address_append",
                                 "cdfEnabled": true
                             }
                         }

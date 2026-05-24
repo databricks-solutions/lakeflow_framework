@@ -161,11 +161,11 @@ deploy_bundle() {
     if [[ "$compute" == "0" ]]; then
         log_info "Deploying to classic-compute target"
         mkdir -p scratch/resources
-        cp resources/classic/*.yml scratch/resources/
+        find resources/classic -name "*.yml" -exec cp {} scratch/resources/ \;
     else
         log_info "Deploying to serverless-compute target"
         mkdir -p scratch/resources
-        cp resources/serverless/*.yml scratch/resources/
+        find resources/serverless -name "*.yml" -exec cp {} scratch/resources/ \;
     fi
     
     # Deploy the bundle
