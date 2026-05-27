@@ -1,0 +1,93 @@
+{
+    "welcome_message": "\nWelcome to the Lakeflow Framework pipeline bundle template.\n\nYou'll be prompted for a few details to scaffold a new pipeline bundle.\nDefaults are provided in [brackets]; press Enter to accept them.\n",
+    "properties": {
+        "project_name": {
+            "type": "string",
+            "description": "Project Name (used as the DAB bundle name and the root folder of the generated project)",
+            "default": "my_project",
+            "order": 1,
+            "pattern": "^[a-z][a-z0-9_]{2,}$",
+            "pattern_match_failure_message": "Project name must start with a lowercase letter and contain only lowercase letters, digits, and underscores (minimum 3 characters)."
+        },
+        "pipeline_name": {
+            "type": "string",
+            "description": "Pipeline Name (used in the initial pipeline resource yml filename and as the dataflow group folder under src/dataflows/)",
+            "default": "{{.project_name}}",
+            "order": 2,
+            "pattern": "^[a-z][a-z0-9_]+$",
+            "pattern_match_failure_message": "Pipeline name must start with a lowercase letter and contain only lowercase letters, digits, and underscores."
+        },
+        "layer": {
+            "type": "string",
+            "description": "Layer (medallion layer for this bundle's pipeline)",
+            "enum": ["bronze", "silver", "gold"],
+            "default": "bronze",
+            "order": 3
+        },
+        "catalog": {
+            "type": "string",
+            "description": "Catalog (target Unity Catalog catalog for this bundle's outputs - baked into the catalog DAB variable default)",
+            "default": "main",
+            "order": 4
+        },
+        "schema": {
+            "type": "string",
+            "description": "Schema (target Unity Catalog schema for this bundle's outputs - baked into the schema DAB variable default)",
+            "default": "{{.project_name}}",
+            "order": 5
+        },
+        "include_example_dataflows": {
+            "type": "string",
+            "description": "Include Example Dataflow? (recommended for new users)",
+            "enum": ["yes", "no"],
+            "default": "yes",
+            "order": 6
+        },
+        "example_target_table": {
+            "type": "string",
+            "description": "Example Target Table (name of the target table this example dataflow produces - drives dataFlowId, flowGroupId, filenames, etc.)",
+            "default": "my_target_table",
+            "order": 7,
+            "skip_prompt_if": {
+                "properties": {
+                    "include_example_dataflows": { "const": "no" }
+                }
+            }
+        },
+        "example_source_table": {
+            "type": "string",
+            "description": "Example Source Table (name of the upstream source table the example dataflow reads from)",
+            "default": "my_source_table",
+            "order": 8,
+            "skip_prompt_if": {
+                "properties": {
+                    "include_example_dataflows": { "const": "no" }
+                }
+            }
+        },
+        "source_catalog": {
+            "type": "string",
+            "description": "Source Catalog (Unity Catalog catalog where the example_source_table lives - pre-populated into dev_substitutions.json so the bundle works without manual edits)",
+            "default": "{{.catalog}}",
+            "order": 9,
+            "skip_prompt_if": {
+                "properties": {
+                    "include_example_dataflows": { "const": "no" }
+                }
+            }
+        },
+        "source_schema": {
+            "type": "string",
+            "description": "Source Schema (Unity Catalog schema where the example_source_table lives - pre-populated into dev_substitutions.json)",
+            "default": "{{.schema}}",
+            "order": 10,
+            "skip_prompt_if": {
+                "properties": {
+                    "include_example_dataflows": { "const": "no" }
+                }
+            }
+        }
+    },
+    "success_message": "\nProject '{{.project_name}}' created.\n\nNext steps:\n  cd {{.project_name}}\n  databricks bundle validate --target dev\n  databricks bundle deploy --target dev\n\nWhat's left for you to fill in (the variable-length scaffolding):\n  - src/dataflows/{{.pipeline_name}}/schemas/{{.example_target_table}}_schema.json.example\n      (replace the <FIELD NAME> / <FIELD TYPE> placeholders with your actual table columns, then remove the '.example' file suffix)\n  - src/dataflows/{{.pipeline_name}}/expectations/{{.example_target_table}}_dqe.json.example\n      (define your data quality constraints then remove the '.example' file suffix, or delete the file if not needed)\n  - src/pipeline_configs/dev_substitutions.json\n      (the SOURCE_CAT_SCHEMA token is already wired up; add more tokens here if you need them)\n  - src/pipeline_configs/prod_substitutions.json.example\n      (add prefix/suffix config and include more tokens here if you need them, then remove the '.example' file suffix)\n\nThe framework_source_path default in databricks.yml assumes the Lakeflow Framework's\n'dev' target is deployed. Override per-environment in your DAB targets if needed.\n",
+    "min_databricks_cli_version": "v0.218.0"
+}

@@ -1,37 +1,37 @@
 {
-    "dataFlowId": "<DATA FLOW ID>",
-    "dataFlowGroup": "<DATA FLOW GROUP>",
+    "dataFlowId": "{{.example_target_table}}_flow",
+    "dataFlowGroup": "{{.pipeline_name}}",
     "dataFlowType": "flow",
     "targetFormat": "delta",
     "targetDetails": {
-        "table": "<TARGET TABLE>",
+        "table": "{{.example_target_table}}",
         "tableProperties": {
             "delta.enableChangeDataFeed": "true"
         },
-        "schemaPath": "<TARGET TABLE>_schema.json"
+        "schemaPath": "{{.example_target_table}}_schema.json"
     },
-    "dataQualityExpectationsEnabled": true,
-    "quarantineMode": "<off/flag/table>",
+    "dataQualityExpectationsEnabled": false,
+    "quarantineMode": "off",
     "quarantineTargetDetails": {
         "targetFormat": "delta"
     },
     "flowGroups": [
         {
-            "flowGroupId": "<FLOW GROUP ID>",
+            "flowGroupId": "fg_{{.example_target_table}}",
             "flows": {
                 "f_target": {
                     "flowType": "append_view",
                     "flowDetails": {
-                        "targetTable": "<FLOW TARGET TABLE>",
-                        "sourceView": "<FLOW SOURCE VIEW>"
+                        "targetTable": "{{.example_target_table}}",
+                        "sourceView": "v_{{.example_source_table}}"
                     },
                     "views": {
-                        "v_<VIEW NAME>": {
+                        "v_{{.example_source_table}}": {
                             "mode": "stream",
-                            "sourceType": "<SOURCE TYPE>",
+                            "sourceType": "delta",
                             "sourceDetails": {
-                                "database": "{<CATALOG.SCHEMA substitution>}",
-                                "table": "<SOURCE TABLE>",
+                                "database": "{SOURCE_CAT_SCHEMA}",
+                                "table": "{{.example_source_table}}",
                                 "cdfEnabled": true
                             }
                         }

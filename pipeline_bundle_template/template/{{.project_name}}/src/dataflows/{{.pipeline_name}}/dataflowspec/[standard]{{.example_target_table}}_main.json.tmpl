@@ -1,0 +1,24 @@
+{
+    "dataFlowId": "{{.example_target_table}}_standard",
+    "dataFlowGroup": "{{.pipeline_name}}",
+    "dataFlowType": "standard",
+    "sourceSystem": "example",
+    "sourceType": "delta",
+    "sourceViewName": "v_{{.example_source_table}}",
+    "sourceDetails": {
+        "database": "{SOURCE_CAT_SCHEMA}",
+        "table": "{{.example_source_table}}",
+        "cdfEnabled": true
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "{{.example_target_table}}",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "{{.example_target_table}}_schema.json"
+    },
+    "dataQualityExpectationsEnabled": false,
+    "quarantineMode": "off"
+}
