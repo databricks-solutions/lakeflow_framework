@@ -1,0 +1,37 @@
+# Databricks asset bundle definition for {{.project_name}}.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: {{.project_name}}
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: The target UC catalog
+    default: {{.catalog}}
+  schema:
+    description: The target UC schema
+    default: {{.schema}}
+  framework_source_path:
+    description: The full workspace path to the lakeflow_framework src folder
+    default: /Workspace/Users/{{user_name}}/.bundle/lakeflow_framework/dev/current/files/src
+  workspace_host:
+    description: Workspace url used for API calls from the framework (usually the same as the deployment URL)
+    default: {{workspace_host}}
+  layer:
+    description: The medallion layer (bronze, silver, or gold)
+    default: {{.layer}}
+  logical_env:
+    description: Optional suffix appended to pipeline names to distinguish logical environments
+    default: ""
+
+targets:
+  # 'dev' target — development mode, default.
+  dev:
+    mode: development
+    default: true
+
+  # 'prod' target — override variables per-environment as needed.
+  prod:
+    mode: production

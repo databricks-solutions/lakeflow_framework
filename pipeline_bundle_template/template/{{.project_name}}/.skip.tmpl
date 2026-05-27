@@ -1,0 +1,4 @@
+{{ skip ".skip" -}}
+{{- if eq .include_example_dataflows "no" -}}
+{{ skip (printf "src/dataflows/%s" .pipeline_name) }}
+{{- end -}}

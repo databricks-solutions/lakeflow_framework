@@ -1,0 +1,59 @@
+# {{.project_name}}
+
+A Lakeflow Framework pipeline bundle scaffolded from the `pipeline_bundle_template` custom template.
+
+## Layout
+
+```
+{{.project_name}}/
+├── databricks.yml              # bundle config + runtime DAB variables
+├── resources/
+│   └── {{.pipeline_name}}_pipeline.yml   # SDP/DLT pipeline resource
+└── src/
+    ├── dataflows/{{.pipeline_name}}/     # DataflowSpec JSON files
+    │   ├── dataflowspec/                 # [flow] and [standard] specs
+    │   ├── schemas/                      # Spark schema definitions
+    │   └── expectations/                 # Data quality constraints
+    ├── pipeline_configs/
+    │   └── dev_substitutions.json        # token substitution map
+    ├── init/{pre,post}/                  # optional lifecycle scripts
+    ├── python/                           # user Python modules
+    └── libraries/                        # wheels / loose modules
+```
+
+## Prerequisites
+
+The Lakeflow Framework must already be deployed to your workspace at the path referenced by the
+`framework_source_path` DAB variable. By default this points at the framework's `dev` target:
+`/Workspace/Users/<you>/.bundle/lakeflow_framework/dev/current/files/src`. Override per-environment
+in your DAB targets if you need a different framework deployment.
+
+## What's left to fill in
+
+The template substituted every single-value placeholder for you, but four spots are
+variable-length lists you'll edit by hand:
+
+1. **Schema fields** — `src/dataflows/{{.pipeline_name}}/schemas/{{.example_target_table}}_schema.json` —
+   replace the `<FIELD NAME>` / `<FIELD TYPE>` entries with your actual columns.
+2. **DQE constraints** — `src/dataflows/{{.pipeline_name}}/expectations/{{.example_target_table}}_dqe.json` —
+   define your data quality `expect_or_drop` / `expect_or_fail` constraints (or delete the file).
+3. **`selectExp` columns** — `src/dataflows/{{.pipeline_name}}/dataflowspec/[standard]{{.example_target_table}}_main.json` —
+   replace the `<FIELD NAME>` entries with the actual source columns to project.
+4. **`dev_substitutions.json`** — `src/pipeline_configs/dev_substitutions.json` — the `SOURCE_CAT_SCHEMA`
+   token is already wired up to `{{.source_catalog}}.{{.source_schema}}`; add more tokens here only
+   if your dataflow JSONs reference them.
+
+## Getting started
+
+1. Install the Databricks CLI: https://docs.databricks.com/dev-tools/cli/databricks-cli.html
+2. Authenticate to your workspace: `databricks configure`
+3. Validate the bundle: `databricks bundle validate --target dev`
+4. Deploy: `databricks bundle deploy --target dev`
+5. Run the pipeline: `databricks bundle run`
+
+## Targets
+
+- `dev` (default) — development mode, deployments are scoped to your user.
+- `prod` — production mode; override variables per-environment as needed.
+
+See https://docs.databricks.com/dev-tools/bundles/index.html for the DAB reference.
