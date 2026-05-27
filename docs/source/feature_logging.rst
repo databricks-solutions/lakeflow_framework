@@ -379,12 +379,6 @@ Create ``src/local/libraries/structured_stdout_logger.py``:
 Add or update ``src/local/config/logger.json`` in the framework bundle
 (a sparse file is sufficient — only the keys you want to set are needed):
 
-**Step 2 — Enable the logger via** ``config/override/logger.json``
-
-Add or update ``src/config/override/logger.json`` in the framework bundle
-(the override directory must include the full required layout — see
-:doc:`feature_framework_configuration`):
-
 .. code-block:: json
 
    {
@@ -497,7 +491,7 @@ Common causes:
 - **Missing** ``enabled: true`` — the default config has ``enabled: false``;
   the override config must explicitly set it to ``true``.
 - **Config not found** — ``logger.json`` must live at
-  ``src/config/override/logger.json`` (framework bundle) or
+  ``src/local/config/logger.json`` (framework bundle) or
   ``pipeline_configs/logger.json`` (pipeline bundle). Confirm the file is
   present and valid JSON.
 
