@@ -318,7 +318,6 @@ class CDCSnapshotFlow:
             return self._get_available_table_versions(latest_snapshot_version)
         else:
             raise ValueError(f"Unsupported source type: {self.sourceType}")
-<<<<<<< HEAD
     
     def _list_files(self, path: str, recursive: bool = True) -> List:
         """List files in a directory, attempting dbutils.fs.ls() first.
@@ -344,8 +343,7 @@ class CDCSnapshotFlow:
             return all_files
         except Exception as e:
             self.logger.warning(
-                f"CDC Snapshot: dbutils.fs.ls() failed at '{path}' "
-                f"({type(e).__name__}: {e}). "
+                f"CDC Snapshot: dbutils.fs.ls() failed at '{path}'. "
                 f"Falling back to Spark binaryFile for file discovery."
             )
 
@@ -405,29 +403,6 @@ class CDCSnapshotFlow:
         )
 
         return files
-=======
-
-    def _list_files(self, path, recursive=True):
-        """List files in a directory, with optional recursive file lookup.
-
-        Args:
-            path: Directory path to list files from
-            recursive: If True, list files recursively. If False, list only files in the immediate directory.
-
-        Returns:
-            List of file objects from dbutils.fs.ls()
-        """
-        dbutils = pipeline_config.get_dbutils()
-        all_files = []
-
-        for f in dbutils.fs().ls(path):
-            all_files.append(f)
-
-            if recursive and f.isDir():
-                all_files.extend(self._list_files(f.path, recursive=True))
-
-        return all_files
->>>>>>> origin/main
 
     def _path_to_regex_pattern(self, path: str) -> str:
         """Convert path to normalized regex pattern with named groups.
