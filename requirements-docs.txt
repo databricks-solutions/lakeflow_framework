@@ -1,7 +1,7 @@
 myst-parser==5.0.0
 nbsphinx==0.9.8
 sphinx==9.0.4
-gitsphinx-autoapi==3.8.0
+sphinx-autoapi==3.8.0
 sphinx-markdown-builder==0.6.10
 sphinx-copybutton==0.5.2
 sphinx_rtd_theme==3.1.0
@@ -9,3 +9,4 @@ sphinx-design==0.7.0
 sphinxcontrib-spelling==8.0.2
 docutils==0.22.0
 sphinx-tabs==3.5.0
+sphinx-multiversion==0.2.4

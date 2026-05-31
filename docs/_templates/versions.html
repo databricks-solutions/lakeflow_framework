@@ -1,0 +1,23 @@
+{# Version switcher injected into the RTD sidebar by sphinx-multiversion.
+   Rendered for every page; hidden via CSS when there is only one version. #}
+{%- if current_version %}
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> </span>
+    {{ current_version.name }}
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Versions</dt>
+      {%- for item in versions %}
+        {%- if item.url %}
+          <dd><a href="{{ item.url }}">{{ item.name }}</a></dd>
+        {%- else %}
+          <dd>{{ item.name }}</dd>
+        {%- endif %}
+      {%- endfor %}
+    </dl>
+  </div>
+</div>
+{%- endif %}
