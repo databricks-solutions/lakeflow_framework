@@ -26,7 +26,7 @@ This documentation covers everything from getting started to advanced orchestrat
    Concepts <concepts> 
    Features <features>
    deploy_framework
-   deploy_samples
+   deploy_samples.md
    build_pipeline_bundle
    dataflow_spec_reference
    orchestration

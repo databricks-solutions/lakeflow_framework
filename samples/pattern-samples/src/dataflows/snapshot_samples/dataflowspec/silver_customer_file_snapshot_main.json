@@ -1,0 +1,41 @@
+{
+    "dataFlowId": "cdc_from_bronze_file_snapshot",
+    "dataFlowGroup": "snapshot_patterns",
+    "dataFlowType": "standard",
+    "sourceSystem": "test_system",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_file_snapshot_source",
+    "sourceDetails": {
+        "database": "{bronze_schema}",
+        "table": "snapshot_pattern_customer_from_file_scd1",
+        "cdfEnabled": true,
+        "selectExp": [
+            "*",
+            "_change_type as cdc_change_type",
+            "_commit_timestamp as cdc_commit_timestamp"
+        ],
+        "cdfChangeTypeOverride": ["insert", "update_postimage", "delete"]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "database": "{silver_schema}",
+        "table": "snapshot_pattern_customer_from_scd1_file_source",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "sequence_by": "LOAD_TIMESTAMP",
+        "except_column_list": [
+            "cdc_change_type",
+            "cdc_commit_timestamp"
+        ],
+        "apply_as_deletes": "cdc_change_type = 'delete'",
+        "ignore_null_updates": false
+    }
+}

@@ -24,7 +24,7 @@ There are two approaches to defining Python sources:
 Sample Bundle
 -------------
 
-Samples are available in the ``bronze_sample`` bundle in the ``src/dataflows/feature_samples`` folder.
+Samples are available in the ``feature-samples`` bundle in the ``src/dataflows/feature_samples`` folder.
 
 Configuration
 -------------
