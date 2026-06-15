@@ -16,7 +16,7 @@ Materialized Views
 
 Overview
 --------
-Materialized Views are the precomputed results of a query stored in a Table. Please refer to the above documentation for full details on Materialized Views and how they work. 
+Materialized Views are the pre-computed results of a query stored in a Table. Please refer to the above documentation for full details on Materialized Views and how they work.
 
 Key Features:
 

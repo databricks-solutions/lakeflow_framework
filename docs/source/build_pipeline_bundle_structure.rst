@@ -36,7 +36,7 @@ Some of the most common groupings strategies are shown below:
    * - Logical Grouping
      - Description
    * - Monolithic
-     - A single Pipeline Bundle containing all ata flows and Pipeline definitions. Only suitable for smaller and simpler deployments.
+     - A single Pipeline Bundle containing all data flows and Pipeline definitions. Only suitable for smaller and simpler deployments.
    * - Bronze
      - * Source System - A Pipeline per Source System or application
    * - Silver / Enterprise Models
@@ -116,7 +116,7 @@ The ``src/`` directories serve distinct purposes:
 
 It is the structure of the ``src/dataflows`` directory that is flexible and can be organised in the way that best suits your standards and ways of working. The Framework will:
 
-* Read all the Data Flow Spec files under the ``src/dataflows`` directory, regardless of the folder structure. Filtering of the Dataflows is done when defining your Pipeline and is discussed in the :doc:`build_pipeline_bundle_steps` section. 
+* Read all the Data Flow Spec files under the ``src/dataflows`` directory, regardless of the folder structure. Filtering of the data flows is done when defining your Pipeline and is discussed in the :doc:`build_pipeline_bundle_steps` section.
 * Expect that the schemas, transforms and expectations related to a Data Flow Spec are located in their respective ``schemas``, ``dml`` and ``expectations`` sub-directories within the Data Flow Spec's home directory.
 
 The most common ways to organize your ``src/dataflows`` directory are:

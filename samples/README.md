@@ -6,7 +6,7 @@ The Framework comes with extensive samples that demonstrate the use of the frame
 |--------|-------------|
 | **`feature-samples`** | Demonstrates every framework feature in isolation using a single `{namespace}_feature` schema. The simplest entry point. |
 | **`pattern-samples`** | End-to-end medallion architecture patterns (bronze → silver → gold) across multiple schemas. Includes multi-source streaming, stream-static joins, CDC from snapshot sources, and gold-layer materialized views. |
-| **`yaml_sample`** | Demonstrates that dataflow specs can be written in YAML format instead of JSON. Contains YAML equivalents of basic specs. |
+| **`yaml_sample`** | Demonstrates that data flow specs can be written in YAML format instead of JSON. Contains YAML equivalents of basic specs. |
 | **`tpch-sample`** *(under development)* | Full end-to-end reference implementation based on the TPC-H schema in the UC samples catalog — raw ingestion through to gold-layer aggregations at scale. |
 
 ## Deploying the Samples

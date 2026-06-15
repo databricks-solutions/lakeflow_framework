@@ -122,7 +122,7 @@ CDC Historical Snapshot Source Configuration
      * - **microSecondMaskLength**
        - ``integer``
        - (*optional*) WARNING: Edge Cases Only!
-         - Specify this if your ``versionType`` is ``datetime`` and your filename includes microsends, but not the full 6 digits. The number of microsecond digits to included at the end of the datetime value.
+         - Specify this if your ``versionType`` is ``datetime`` and your filename includes microseconds, but not the full 6 digits. The number of microsecond digits to include at the end of the datetime value.
          - The default value is 6.
      * - **startingVersion**
        - ``string`` or ``integer``
@@ -138,7 +138,7 @@ CDC Historical Snapshot Source Configuration
        - (*optional*) A list of select expressions to apply to the source data.
      * - **filter**
        - ``string``
-       - (*optional*) A filter expression to apply to the source data. This filter is applied to the dataframe as a WHERE clause when the source is read. The placeholder ``{version}`` can be used in this filter expression and will be substituted with the version value at run time (e.g. ``"year = '{version}'"``). Not applicable when using regex named capture groups in ``path``.
+       - (*optional*) A filter expression to apply to the source data. This filter is applied to the Dataframe as a WHERE clause when the source is read. The placeholder ``{version}`` can be used in this filter expression and will be substituted with the version value at run time (e.g. ``"year = '{version}'"``). Not applicable when using regex named capture groups in ``path``.
      * - **recursiveFileLookup**
        - ``boolean``
        - (*optional*) When set to ``true``, enables recursive directory traversal to find snapshot files. This should be used when snapshots are stored in a nested directory structure such as Hive-style partitioning (e.g., ``/data/{version}/file.parquet``). When set to ``false`` (default), only files in the immediate directory are searched. Default: ``false``.

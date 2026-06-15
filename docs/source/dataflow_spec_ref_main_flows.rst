@@ -185,9 +185,9 @@ The below sample demonstrates a flows Data Flow Spec for a Silver multi-source s
                   targetTable: staging_table_mrg_p5
                   sourceView: staging_table_apnd_p5
 
-The above dataflow spec sample contains the following core components:
+The above data flow spec sample contains the following core components:
 
-  * Dataflow metadata configuration
+  * Data flow metadata configuration
   * Target configuration
   * Data quality and quarantine settings
   * Flow group configuration
@@ -196,10 +196,10 @@ The following sections detail each of the above components.
 
 .. _dataflow-spec-flows-metadata-configuration:
 
-Dataflow Metadata Configuration
--------------------------------
+Data Flow Metadata Configuration
+--------------------------------
 
-These properties define the basic identity and type of the dataflow:
+These properties define the basic identity and type of the data flow:
 
 .. list-table::
    :header-rows: 1
@@ -261,7 +261,7 @@ The `flowGroupDetails` object contains the following properties:
      - **Description**
    * - **dataFlowID** (*optional*)
      - ``string``
-     - A unique identifier for the data flow. Only required when dataflow specs are split (see :doc:`splitting_dataflow_spec`).
+     - A unique identifier for the data flow. Only required when data flow specs are split (see :doc:`splitting_dataflow_spec`).
    * - **flowGroupId**
      - ``string``
      - A unique identifier for the flow group.

@@ -13,7 +13,7 @@ UI Integration
 
 Overview
 --------
-The framework integrates with the Databricks Pipeline Editor UI to provide a seamless experience when creating or editing Data Flow specifications. This allows for live validation and editing of a Data Flow spec while having the ability to debug natively in the Pipeline Editor.
+The framework integrates with the Databricks Pipeline Editor UI to provide a seamless experience when creating or editing Data Flow specifications. This allows for live validation and editing of a Data Flow spec while having the ability to debug directly in the Pipeline Editor.
 
 Configuration to enable Pipeline Editor UI Integration
 ------------------------------------------------------

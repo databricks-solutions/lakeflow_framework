@@ -4,7 +4,7 @@ GIT
 Branching Strategy
 ------------------
 
-The project follows the Gitflow branching model for version control. This model provides a robust framework for managing larger projects with scheduled releases.
+The project follows the GitFlow branching model for version control. This model provides a robust framework for managing larger projects with scheduled releases.
 
 Our repository maintains the following primary branches:
 

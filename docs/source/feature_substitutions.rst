@@ -19,7 +19,7 @@ Substitutions can be configured in two ways:
    Tokens can be included in your Data Flow Spec's or SQL statements, indicated by curly braces and a substitution value can be assigned to them in the substitution config file. 
    Note, tokens can be applied recursively.
 * **prefix/suffix**
-   Prefixes and suffixes can be assigned to dataflow_spec attributes. This will automatically add the prefix or suffix to value of the attribute in every spot where that attribute is present in a Data Flow Spec even if it is nested.
+   Prefixes and suffixes can be assigned to data flow spec attributes. This will automatically add the prefix or suffix to value of the attribute in every spot where that attribute is present in a Data Flow Spec even if it is nested.
 
 There are a few reserved tokens that exist by default. Below is a list of the reserved tokens.
     

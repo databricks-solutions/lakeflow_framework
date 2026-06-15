@@ -161,7 +161,7 @@ General Tips for Writing Unit Tests
 
    Test normal, boundary, and error conditions.
 
-Example: Pytest vs. Unittest
+Example: Pytest vs. unittest
 ----------------------------
 
 **Using `pytest`:**

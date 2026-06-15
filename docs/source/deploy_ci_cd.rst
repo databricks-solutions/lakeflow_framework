@@ -15,7 +15,7 @@ Prerequisites and Assumptions
 Main Steps in a CI/CD Pipeline
 ------------------------------
 1. Install Databricks CLI
-    If the CI/CD agent you are using is not already using an image which has Databricks cli installed, you can install it using curl:
+    If the CI/CD agent you are using is not already using an image which has Databricks CLI installed, you can install it using curl:
 
 .. code-block:: bash
 

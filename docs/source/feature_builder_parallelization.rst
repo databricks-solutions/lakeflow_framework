@@ -13,11 +13,11 @@ Builder Parallelization
 
 Overview
 --------
-The Lakeflow Framework supports parallel processing during both dataflow specification building and pipeline initialization phases to improve performance and reduce initialization time. 
+The Lakeflow Framework supports parallel processing during both data flow specification building and pipeline initialization phases to improve performance and reduce initialization time. 
 This feature utilizes ThreadPoolExecutor to process multiple operations concurrently, which is particularly beneficial for:
 
-- Large pipelines with many dataflow specifications
-- Complex dataflow specifications requiring validation and transformation
+- Large pipelines with many data flow specifications
+- Complex data flow specifications requiring validation and transformation
 
 The framework automatically detects the number of logical CPU cores available on the Spark driver using ``os.cpu_count()`` and sets the default max workers to ``cores - 1`` to reserve one core for system operations. This ensures optimal performance while maintaining system stability. If CPU core detection fails, the framework falls back to a default of 1 worker thread.
 
@@ -39,10 +39,10 @@ Parameters
      - Pipeline Initialization
      - Should only be used if the auto-detected default is not working. Controls the maximum number of worker threads used when:
 
-       - Reading dataflow specification files from the filesystem
-       - Validating dataflow specifications against schemas
-       - Applying dataflow specification version mappings and transformations
-       - Creating DataFlow objects from dataflow specifications
+       - Reading data flow specification files from the file system
+       - Validating data flow specifications against schemas
+       - Applying data flow specification version mappings and transformations
+       - Creating DataFlow objects from data flow specifications
        - Initializing SDP tables, views, and streaming tables
    * - ``pipeline_builder_disable_threading``
      - Boolean

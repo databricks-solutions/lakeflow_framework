@@ -13,7 +13,7 @@ Secrets Management
 
 Overview
 --------
-Databricks natively supports secrets management and the secure retrieval of credentials, connection details, host names or 
+Databricks provides native support for secrets management and the secure retrieval of credentials, connection details, host names or
 other sensitive information for use at pipeline execution time. This negates the need to include these details directly in your data flow specs, config files or code.
 
 .. important::
@@ -91,9 +91,9 @@ An secrets config file has the following structure:
 
 Referencing Secrets in Data Flow Specs
 --------------------------------------
-Secrets can be referenced as a value in any part of your data flow specs by using the folowing syntax: ``${secret.<secret_alias>}``.
+Secrets can be referenced as a value in any part of your data flow specs by using the following syntax: ``${secret.<secret_alias>}``.
 
-For example, assume we want to connect to Kafka and we need to provide a keystore password. We would first ensure that the secret is configued in the secrets config file discussed above as follows:
+For example, assume we want to connect to Kafka and we need to provide a keystore password. We would first ensure that the secret is configured in the secrets config file discussed above as follows:
 
 .. tabs::
 
@@ -116,7 +116,7 @@ For example, assume we want to connect to Kafka and we need to provide a keystor
            scope: mySecretScope
            key: KafkaSecretKey
 
-We can then reference the secret in any data flow spec as per the highligheted line in the code sample below:
+We can then reference the secret in any data flow spec as per the highlighted line in the code sample below:
 
 .. tabs::
 

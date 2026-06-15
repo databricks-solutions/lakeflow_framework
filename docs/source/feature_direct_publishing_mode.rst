@@ -13,7 +13,7 @@ Direct Publishing Mode
         - https://docs.databricks.com/aws/en/dlt/configure-pipeline
 
 .. Note::
-  Direct publishing mode should be enabled by default for all new pipelines by specifing the ``schema`` field in the pipeline resource file. Sample pipeline have been updated to have direct publishing mode enabled. To enable direct publishing mode on existing pipelines, the pipeline needs to be destroyed and redeployed with the ``target`` field updated to ``schema`` in the pipeline resource file.
+  Direct publishing mode should be enabled by default for all new pipelines by specifying the ``schema`` field in the pipeline resource file. Sample pipeline have been updated to have direct publishing mode enabled. To enable direct publishing mode on existing pipelines, the pipeline needs to be destroyed and redeployed with the ``target`` field updated to ``schema`` in the pipeline resource file.
 
 .. Warning::
   Destroying and redeploying a pipeline to enable direct publishing mode will result in the pipeline tables being dropped and recreated and therefore, will reprocess all the data on the next run of the pipeline.

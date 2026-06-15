@@ -36,10 +36,10 @@ Once you have cloned the Lakeflow Framework repository, you'll need to follow th
       ./scripts/generate_lockfiles.sh
 
    See :doc:`contributor_dev_docs` for more details on the lockfiles.
-2. **Set up VS Code extentions**
+2. **Set up VS Code extensions**
    
    Once you open the Lakeflow Framework workspace in VS Code for the first time, VS Code will prompt you to install the recommended extensions. 
-   If you missed this prompt, you can review and install the recommended extensions with the Extensions: Show Recommended Extensions command or by clicking on the extentions tab on left side of the window and selecting "Workspace Recommendations".
+   If you missed this prompt, you can review and install the recommended extensions with the Extensions: Show Recommended Extensions command or by clicking on the extensions tab on left side of the window and selecting "Workspace Recommendations".
 
 .. note::
 

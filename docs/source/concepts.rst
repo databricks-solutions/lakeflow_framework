@@ -261,7 +261,7 @@ In the Lakeflow Framework the following types of data flows can be defined in a 
 
 3. **Materialized Views**
 
-  Materialized Views are the precomputed results of a query stored in a Table. They are useful for Gold scenarios, and where complex transformations are required.
+  Materialized Views are the pre-computed results of a query stored in a Table. They are useful for Gold scenarios, and where complex transformations are required.
 
 .. important::
 
@@ -363,7 +363,7 @@ Data Flow Spec Components:
    * - :ref:`Table Migration Details (optional) <dataflow-spec-flows-table-migration-configuration>`
      - The details of the table being migrated from.
    * - :ref:`Flow Groups <dataflow-spec-flows-flow-groups-configuration>`
-     - Contains the flow groups for the dataflow.
+     - Contains the flow groups for the data flow.
 
        * A flow group can contain one or more flows.
        * flows implements the :doc:`feature_multi_source_streaming` feature of DLT.'
@@ -400,7 +400,7 @@ Some key points to note:
 
   * Staging tables are optional.
   * Staging tables can be referenced as a source or target in any of the flows defined in the flow group.
-  * In some cases for very large and complex data flows, you may want to decompose your dataflow into a smaller more manageable data flows. In this instance staging tables may in fact become target tables in smaller more manageable data flows. In these cases they can only be used as a source in downstream Pipelines. This however really depend on the design practices you choose to follow.
+  * In some cases for very large and complex data flows, you may want to decompose your data flow into smaller, more manageable data flows. In this instance staging tables may in fact become target tables in smaller, more manageable data flows. In these cases they can only be used as a source in downstream Pipelines. This, however, really depends on the design practices you choose to follow.
 
 When defining a staging table, you can specify the following:
 
@@ -457,7 +457,7 @@ Flows can be defined in one of two ways:
 Materialized Views
 -------------------
 
-Materialized Views are the precomputed results of a query stored in a Table. They are typically used for Gold scenarios, and where complex transformations are required.
+Materialized Views are the pre-computed results of a query stored in a Table. They are typically used for Gold scenarios, and where complex transformations are required.
 
 Data Flow Spec Components:
 

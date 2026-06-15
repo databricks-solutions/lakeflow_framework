@@ -28,7 +28,7 @@ Once you have created a data pipeline bundle and deployed the Lakeflow Framework
 
 5. Once the deployment is successful, you should see the data pipeline bundle in your Databricks workspace. 
    
-   To varify, you can go to your Databricks workspace and check if the bundle is present in the ``.bundle`` directory.
+   To verify, you can go to your Databricks workspace and check if the bundle is present in the ``.bundle`` directory.
    Also verify that a Spark Declarative Pipeline has been created in the Databricks workspace with the name of the pipeline being the name provided in the resources yaml file for the Spark Declarative Pipeline.
 
 .. _pipeline_bundle_ci_cd_deployment:

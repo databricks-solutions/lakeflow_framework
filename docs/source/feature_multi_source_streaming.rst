@@ -28,7 +28,7 @@ Key Features
 ------------
 - Write to a single streaming table from multiple source streams
 - Add or Remove streaming sources without requiring a full table refresh
-- Support for backfilling historical data
+- Support for historical backfill
 - Alternative to UNION operations for combining multiple sources
 - Maintain separate checkpoints for each flow
 

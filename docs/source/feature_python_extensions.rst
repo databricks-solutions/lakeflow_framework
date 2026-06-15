@@ -51,7 +51,7 @@ addresses a different concern and has a dedicated place in both bundle structure
      - **Init scripts**
      - ``src/init/pre/`` and ``src/init/post/``
      - Lightweight ``.py`` files that run at fixed points in the pipeline initialisation
-       lifecycle. ``pre/`` scripts run before SDP dataflow declarations; ``post/`` scripts
+       lifecycle. ``pre/`` scripts run before SDP data flow declarations; ``post/`` scripts
        run after. Use them for Spark configuration, event hook registration, or any
        one-time setup that must happen outside of Data Flow logic.
 
@@ -260,7 +260,7 @@ Custom code that generates DataFrames for use as data sources.
         
         return spark.createDataFrame(data)
 
-**Reference in Dataflow Spec:**
+**Reference in Data Flow Spec:**
 
 .. tabs::
 
@@ -357,7 +357,7 @@ Custom code that transforms DataFrames after they are read from a source.
             )
         )
 
-**Reference in Dataflow Spec:**
+**Reference in Data Flow Spec:**
 
 .. tabs::
 
@@ -435,7 +435,7 @@ Init scripts are Notebooks and other plain ``.py`` files executed by the framewo
 
 - **pre** (``src/init/pre/``) — runs after configs and specs are loaded, **before**
   any ``DataFlow.create_dataflow()`` / SDP declarations.
-- **post** (``src/init/post/``) — runs **after** all dataflows for the pipeline have
+- **post** (``src/init/post/``) — runs **after** all data flows for the pipeline have
   been created (the SDP graph is assembled; the pipeline update has not started yet).
 
 Execution rules

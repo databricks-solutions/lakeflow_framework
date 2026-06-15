@@ -213,7 +213,7 @@ Troubleshooting
 Dependencies Not Found
 ^^^^^^^^^^^^^^^^^^^^^^
 
-If packages aren't being installed:
+If packages are not being installed:
 
 1. Verify the ``environment`` section is correctly indented in your YAML
 2. Check that the path to ``requirements.txt`` is correct

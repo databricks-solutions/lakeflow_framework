@@ -29,7 +29,7 @@ Target Types
         - Quality enforcement
         - Incremental processing
    * - **Materialized Views**
-     - A materialized view is a view that contains precomputed records based on the query that defines the materialized view. Materialized views are commonly used for transformations and Gold Layer tables.
+     - A materialized view is a view that contains pre-computed records based on the query that defines the materialized view. Materialized views are commonly used for transformations and Gold Layer tables.
      -  - Automatic updates based on pipeline schedule/triggers
         - Guaranteed consistency with source data
         - Incremental refresh optimization
@@ -46,7 +46,7 @@ Target Types
      -  - Product documentation: https://docs.databricks.com/en/dlt/dlt-sinks
         - Limitations: https://docs.databricks.com/en/dlt/dlt-sinks#limitations
    * - **Foreach Batch Sink**
-     - Enables processing each micro-batch with custom logic similar to the Spark Structured Streaming `foreachBatch` functionality. With the ForEachBatch sink, you can transform, merge, or write streaming data to one or more targets that do not natively support streaming writes
+     - Enables processing each micro-batch with custom logic similar to the Spark Structured Streaming `foreachBatch` functionality. With the ForEachBatch sink, you can transform, merge, or write streaming data to one or more targets that do not provide native support for streaming writes
      -  - Product documentation: to be release (Private Preview)
         - Limitations: Similar to https://docs.databricks.com/en/dlt/dlt-sinks#limitations
         

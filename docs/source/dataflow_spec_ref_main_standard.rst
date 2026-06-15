@@ -98,9 +98,9 @@ The below demonstrates a standard Data Flow Spec for a Bronze ingestion use case
             - updated_timestamp
           apply_as_deletes: DELETE_FLAG = True
 
-The above dataflow spec sample contains the following core components:
+The above data flow spec sample contains the following core components:
 
-  * Dataflow metadata configuration
+  * Data flow metadata configuration
   * Source configuration
   * Target configuration
   * Data quality and quarantine settings
@@ -110,10 +110,10 @@ The following sections detail each of the above components.
 
 .. _dataflow-spec-standard-metadata-configuration:
 
-Dataflow Metadata Configuration
--------------------------------
+Data Flow Metadata Configuration
+--------------------------------
 
-These properties define the basic identity and type of the dataflow:
+These properties define the basic identity and type of the data flow:
 
 .. list-table::
    :header-rows: 1

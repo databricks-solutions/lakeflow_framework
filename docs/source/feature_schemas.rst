@@ -1,5 +1,5 @@
-Schemas
-=======
+Schema Definitions
+==================
 
 .. list-table::
    :header-rows: 0
@@ -11,7 +11,7 @@ Schemas
    * - **Databricks Docs:**
      - NA
 
-The Framework supports the defintiion of schemas in the following ways:
+The Framework supports the definition of schemas in the following ways:
 
 * Schema on Read:
     * A schema can be specified on most sources using JSON StructType format
@@ -43,7 +43,7 @@ Schema Types
 Schema File Location
 --------------------
 
-Schemas must be specified in their own dedicated files and will be locatated in a schemas folder, dependant on your chosen bundle structure as dicussed in the :doc:`build_pipeline_bundle_structure` section.
+Schema definitions must be specified in their own dedicated files and will be located in a schemas folder, dependant on your chosen bundle structure as discussed in the :doc:`build_pipeline_bundle_structure` section.
 
 Data Flow Spec Configuration
 ----------------------------
@@ -66,7 +66,7 @@ Generating the Schema Definition
 
 **PySpark:**
 
-If you have your data in Databricks, you can can read your source into a dataframe and then use the following code to generate the JSON schema format:
+If you have your data in Databricks, you can can read your source into a Dataframe and then use the following code to generate the JSON schema format:
 
 .. code-block:: python
 

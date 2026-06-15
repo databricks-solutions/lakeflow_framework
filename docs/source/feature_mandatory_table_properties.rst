@@ -11,7 +11,7 @@ Mandatory Table Properties
    * - **Databricks Docs:**
      - https://docs.databricks.com/aws/en/delta/table-properties
 
-The Mandatory Table Properties feature allows you to define a set of table properties that will be automatically applied to all tables created by the Framework. This ensures consistent table configurations across your data lakehouse.
+The Mandatory Table Properties feature allows you to define a set of table properties that will be automatically applied to all tables created by the Framework. This ensures consistent table configurations across your data Lakehouse.
 
 Configuration
 -------------

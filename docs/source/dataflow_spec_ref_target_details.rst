@@ -3,7 +3,7 @@
 Target Details Reference
 ########################
 
-The target details object specifies how and where data should be written in your dataflow. This section documents the configuration options available for different target formats.
+The target details object specifies how and where data should be written in your data flow. This section documents the configuration options available for different target formats.
 
 .. _dataflow_spec_ref_target_details_delta:
 
@@ -220,7 +220,7 @@ The `basic_sql` object contains the following properties:
 .. note::
    The SELECT statement specified via the `sqlPath` or `sqlStatement` property must:
    
-   * reference `micro_batch_view` as the source table in the FROM clause of the query that retrieves data from the sourve view.
+   * reference `micro_batch_view` as the source table in the FROM clause of the query that retrieves data from the source view.
    * be a batch query i.e. do not wrap the `micro_batch_view` in a STREAM() function.
    
 Basic example:

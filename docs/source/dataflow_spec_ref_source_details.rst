@@ -285,7 +285,7 @@ The `sourceSql` object contains the following properties:
 Python Transform Object
 -----------------------
 
-The `pythonTransform` object can be used to specify a Python transform function to be applied to the dataframe post read. It can contain the following properties:
+The `pythonTransform` object can be used to specify a Python transform function to be applied to the Dataframe post read. It can contain the following properties:
 
 .. list-table::
    :header-rows: 1

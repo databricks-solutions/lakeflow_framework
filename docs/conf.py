@@ -23,7 +23,8 @@ extensions = [
     'sphinx_design',
     'myst_parser',
     'sphinx_tabs.tabs',
-    'custom_markdown_builder'
+    'custom_markdown_builder',
+    "sphinxcontrib.spelling"
 ]
 
 autosectionlabel_prefix_document = True
