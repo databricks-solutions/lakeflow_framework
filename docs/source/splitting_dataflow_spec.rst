@@ -1,11 +1,13 @@
+:orphan:
+
 Splitting Flows Data Flow Spec into main and flow files
 -------------------------------------------------------
 A data flow spec can be broken up into a main (ending with ``_main.json|yaml``) and flow (ending with ``_flow.json|yaml``) spec file.
 
 The main spec file will contain the main pipeline configuration and the flow spec file will contain the flow configuration and are joined by having the same dataFlowId.
 
-To achieve this, the main spec file will have the structure described in the :doc:`dataflow_spec_ref_main_flows` schema without the :ref:`_flow-group-configuration` property and this will instead be moved to the flow spec file
-The flow spec file will have the structure described in the :ref:`_flow-group-configuration` schema but the ``dataFlowID`` is now required as it will serve as the link to the main spec.
+To achieve this, the main spec file will have the structure described in the :doc:`dataflow_spec_ref_main_flows` schema without the :ref:`flow-group-configuration <dataflow-spec-flows-flow-groups-configuration>` property and this will instead be moved to the flow spec file
+The flow spec file will have the structure described in the :ref:`flow-group-configuration <dataflow-spec-flows-flow-groups-configuration>` schema but the ``dataFlowID`` is now required as it will serve as the link to the main spec.
 
 Below is a sample of how a Data Flow Spec can be split into main and flow spec files:
 

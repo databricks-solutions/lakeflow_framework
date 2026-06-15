@@ -26,7 +26,7 @@ Development Process
 1. Local Development
    
    - Follow coding standards and style guides
-       - Ensure the yapf extention is installed and enabled in VS Code (refer to step 2 of :doc:`contributor_dev_env`)
+       - Ensure the yapf extension is installed and enabled in VS Code (refer to step 2 of :doc:`contributor_dev_env`)
        - Use yapf to format your python code (right click and select 'Format Document With' then select yapf)
    - Stick to solid principles and object oriented design patterns
    - Deploy updated framework to Databricks to ensure it is working as expected
@@ -35,10 +35,7 @@ Development Process
 
 2. Unit Testing
    
-   - Write unit tests per :doc:`contributor_unit_test`
-   - Test both success and failure scenarios
-   - Ensure test coverage meets requirements
-   - Run existing test suite to check for regressions
+   - Currently being redeveloped and will be added back in soon.
 
 3. Integration Testing  / Samples
  

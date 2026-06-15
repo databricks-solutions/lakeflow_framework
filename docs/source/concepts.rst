@@ -11,9 +11,9 @@ The below diagram illustrates some of the key concepts of the Framework, which a
 
 .. _concepts_dabs:
 
-Databricks Asset Bundles (DABs)
-===============================
-Databricks Asset Bundles (DABs) are a way to package and deploy Databricks assets such as source code, Spark Declarative Pipelines notebooks and libraries. 
+Declarative Automation Bundles (DABs)
+=====================================
+Declarative Automation Bundles (DABs) are a way to package and deploy Databricks assets such as source code, Spark Declarative Pipelines notebooks and libraries. 
 This concept is core to how the Lakeflow Framework has been designed and implemented.
 
 Detailed documentation on DABs can be found at: https://docs.databricks.com/en/dev-tools/bundles/index.html
@@ -256,12 +256,12 @@ In the Lakeflow Framework the following types of data flows can be defined in a 
 
 2. **Flow**
 
-  Flows data flows allow you to create simple or complex data flows, using the different components of a flow as building blocks. They implement the :doc:`feature_multi_source_streaming` feature of DLT.
+  Flows data flows allow you to create simple or complex data flows, using the different components of a flow as building blocks. They implement the :doc:`feature_multi_source_streaming` feature of SDP.
   Flows are useful for Silver and Gold scenarios, and where multiple sources and transformations are required.
 
 3. **Materialized Views**
 
-  Materialized Views are the precomputed results of a query stored in a Table. They are useful for Gold scenarios, and where complex transformations are required.
+  Materialized Views are the pre-computed results of a query stored in a Table. They are useful for Gold scenarios, and where complex transformations are required.
 
 .. important::
 
@@ -363,10 +363,10 @@ Data Flow Spec Components:
    * - :ref:`Table Migration Details (optional) <dataflow-spec-flows-table-migration-configuration>`
      - The details of the table being migrated from.
    * - :ref:`Flow Groups <dataflow-spec-flows-flow-groups-configuration>`
-     - Contains the flow groups for the dataflow.
+     - Contains the flow groups for the data flow.
 
        * A flow group can contain one or more flows.
-       * flows implements the :doc:`feature_multi_source_streaming` feature of DLT.'
+       * flows implements the :doc:`feature_multi_source_streaming` feature of SDP.
 
 
 Flow Groups Explained
@@ -400,7 +400,7 @@ Some key points to note:
 
   * Staging tables are optional.
   * Staging tables can be referenced as a source or target in any of the flows defined in the flow group.
-  * In some cases for very large and complex data flows, you may want to decompose your dataflow into a smaller more manageable data flows. In this instance staging tables may in fact become target tables in smaller more manageable data flows. In these cases they can only be used as a source in downstream Pipelines. This however really depend on the design practices you choose to follow.
+  * In some cases for very large and complex data flows, you may want to decompose your data flow into smaller, more manageable data flows. In this instance staging tables may in fact become target tables in smaller, more manageable data flows. In these cases they can only be used as a source in downstream Pipelines. This, however, really depends on the design practices you choose to follow.
 
 When defining a staging table, you can specify the following:
 
@@ -413,7 +413,7 @@ When defining a staging table, you can specify the following:
 Flows Explained
 ~~~~~~~~~~~~~~~
 
-Flows are the building blocks of a Data Flow and they implement the :doc:`feature_multi_source_streaming` feature of DLT.
+Flows are the building blocks of a Data Flow and they implement the :doc:`feature_multi_source_streaming` feature of SDP.
 
 Flows can be defined in one of two ways:
 
@@ -436,14 +436,14 @@ Flows can be defined in one of two ways:
 
        * **append_view** - Uses a source view to append data to a staging or target table.
        * **append_sql** - Uses a raw SQL statement to append data to a staging or target table.
-       * **merge** - Uses the :ref:`CDC API's <feature_cdc>` to merge data from a source view to a staging or target table.
+       * **merge** - Uses the :doc:`CDC API's <feature_cdc>` to merge data from a source view to a staging or target table.
 
    * - :ref:`Flow Details <dataflow-spec-flows-flow-configuration>`
      - Defines the source and target of the flow and any additional properties required for the flow type.
    * - :ref:`Views <dataflow-spec-flows-flow-configuration>` (optional)
      - Views are used to define the source and any additional transformations for a flow. The different types of views are documented in the following sections:
      
-       * :doc:`feature_source_target_types`
+       * :doc:`feature_source_types`
        * :ref:`dataflow-spec-flows-view-configuration`
 
 .. important::
@@ -457,7 +457,7 @@ Flows can be defined in one of two ways:
 Materialized Views
 -------------------
 
-Materialized Views are the precomputed results of a query stored in a Table. They are typically used for Gold scenarios, and where complex transformations are required.
+Materialized Views are the pre-computed results of a query stored in a Table. They are typically used for Gold scenarios, and where complex transformations are required.
 
 Data Flow Spec Components:
 
@@ -491,7 +491,7 @@ Data Flow Spec Components:
      - Specifies any additional configuration for the target table, its configuration and properties.
    * - :ref:`Data Quality Expectations (optional) <dataflow-spec-materialized-view-data-quality-configuration>`
      - Enable expectations and specify the location of the expectations file(s).
-   * - :ref:`Quarantine Details (optional) <dataflow-spec-materialized-view-quarantine-configuration>`
+   * - :doc:`Quarantine Details (optional) <dataflow_spec_ref_data_quality>`
      - Set the quarantine mode and if the mode is ``table`` the details of the quarantine table.
 
 Patterns

@@ -1,5 +1,5 @@
 Introduction to the Lakeflow Framework
-##################################
+######################################
 
 The Lakeflow Framework is a meta-data driven, data engineering framework, designed to:
 
@@ -16,7 +16,7 @@ Core Concepts
 * **Two Parts**
 
   * SDP wrapper components: close to the metal, exposes SDP API’s directly to minimise the need for changes.
-  * Dataflow Spec abstraction layer: allows users to put the SDP components together, as they needed, like Lego blocks.
+  * Data Flow Spec abstraction layer: allows users to put the SDP components together, as they needed, like Lego blocks.
 
 * **Key Design**
 

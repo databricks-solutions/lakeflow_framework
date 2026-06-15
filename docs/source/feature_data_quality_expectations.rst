@@ -1,5 +1,5 @@
 Data Quality - Expectations
-============
+===========================
 
 .. list-table::
    :header-rows: 0
@@ -67,7 +67,7 @@ Expectations Schema
 
         1. **expect**: Use the expect operator when you want to keep records that violate the expectation. Records that violate the expectation are added to the target dataset along with valid records
         2. **expect_or_drop** : Use the expect_or_drop operator when you want to drop records that violate the expectation. Records that violate the expectation are dropped from the target dataset
-        3. **expect_or_fail**: Use the expect_or_fail operator when you want to fail the dataflow if any records violate the expectation. The dataflow will fail and stop execution if any records violate the expectation
+        3. **expect_or_fail**: Use the expect_or_fail operator when you want to fail the data flow if any records violate the expectation. The data flow will fail and stop execution if any records violate the expectation
 
    * - **name**
      - ``string``

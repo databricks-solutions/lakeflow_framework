@@ -18,7 +18,7 @@ You can optionally plug in a **custom logger** via a dedicated ``logger.json`` c
 .. admonition:: Setting Precedence
   :class: warning
 
-  * Framework code and extensions should use the singleton accessor ``pipeline_config.get_logger()`` rather than creating their own loggers.
+  * Framework code and extensions should use the shared logger helper ``pipeline_config.get_logger()`` rather than creating their own loggers.
 
 Overview
 --------

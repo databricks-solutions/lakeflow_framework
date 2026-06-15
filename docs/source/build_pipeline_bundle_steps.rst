@@ -134,13 +134,14 @@ The databricks.yml needs to be adjusted to include the following configurations:
 Based on the Use Case and the standards defined in your Org, select the appropriate bundle structure. See the :doc:`build_pipeline_bundle_structure` section for guidance.
 
 4. Select your Data Flow Specification Language / Format
--------------------------------------------------------
+--------------------------------------------------------
 
 Based on the implementation and standards in your Org, you can select the appropriate specification language / format. See the :doc:`feature_spec_format` section details.
 
 Be aware that:
+
 - The default format is `JSON`.
-- The format may have alrteady been enforced globally at Framework level per you orgs standards.
+- The format may have already been enforced globally at Framework level per your org standards.
 - If enabled at Framework level, you can set the format at the Pipeline Bundle level.
 - You cannot mix and match formats in the same bundle, it's important to ensure consistency for engineers working on the same bundle.
 
@@ -149,7 +150,7 @@ Be aware that:
 
 If you haven't already done so, familiarize yourself with the :doc:`feature_substitutions` feature of the Framework.
 
-If you need to use substitutions and the substitutions you require have not been configure globally at the Framework level, you need to now setup your substitutions file. See the :doc:`substitutions` section for guidance.
+If you need to use substitutions and the substitutions you require have not been configure globally at the Framework level, you need to now setup your substitutions file. See the :doc:`feature_substitutions` section for guidance.
 
 .. note::
     This step is optional and only required if substitutions are required to deploy the same pipeline bundle to multiple environments with different resources names. This step can also be actioned later in the build process after the Data Flow Specs have been created.
@@ -182,8 +183,8 @@ Iterate over the following steps to create each individual Data Flow:
 
   If your pipeline requires Spark configuration, event hook registration, or any one-time setup that must run outside of Data Flow logic, add ``.py`` scripts to:
 
-  - ``src/init/pre/`` — run **before** SDP dataflow declarations
-  - ``src/init/post/`` — run **after** SDP dataflow declarations
+  - ``src/init/pre/`` — run **before** SDP data flow declarations
+  - ``src/init/post/`` — run **after** SDP data flow declarations
 
   Scripts are executed in sorted filename order. Files whose names begin with ``_`` are skipped. Use a numeric prefix (e.g. ``01_setup.py``) to control execution order.
 
@@ -199,6 +200,7 @@ Iterate over the following steps to create each individual Data Flow:
     If necessary, create a new folder in the ``src/dataflows`` directory based on your selected bundle strategy.
   
   b. Create Data Flow Spec file(s):
+
     * Refer to the :doc:`dataflow_spec_reference` section to build your Data Flow Spec
     * Refer to the :doc:`patterns` section for high level patterns and sample code.
     * Refer to the :doc:`deploy_samples` section on how to deploy the samples so you can reference the sample code.
@@ -208,7 +210,7 @@ Iterate over the following steps to create each individual Data Flow:
     Create your schema JSON / DDL files in the ``schema`` sub-directory of your Data Flow Spec's home folder:
       
       * You should in general always specify a schema for your source and target tables, unless you want schema evolution to happen automatically in Bronze.
-      * Schemas are optional for staging tables.
+      * Schema definitions are optional for staging tables.
       * Each schema must be defined in it's own individual file.
       * Each schema must be referenced by the appropriate object(s) in your Data Flow Spec JSON file(s).
 
@@ -280,7 +282,7 @@ To create a single Pipeline definition, follow these steps:
 
 3. **Add any required Data Flow filters:**
 
-  By default, if you don't specify any Data Flow filters, the pipleine will execute all Data Flows in you Pipeline Bundle.
+  By default, if you don't specify any Data Flow filters, the pipeline will execute all Data Flows in your Pipeline Bundle.
 
   If you are creating more than one Pipeline definition in your bundle, you may want your Pipeline(s) to only execute specific Data Flows. 
 
@@ -309,7 +311,7 @@ To create a single Pipeline definition, follow these steps:
   You can add the appropriate Data Flow filter options described above to the Pipeline definition, as show below:
 
   .. code-block:: yaml
-    :emphasize-lines: 20-23
+    :emphasize-lines: 19-22
 
       resources:
         pipelines:

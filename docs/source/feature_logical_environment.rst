@@ -21,7 +21,7 @@ Configuration
 The logical environment is configured in two places.
 
 1. **databricks.yml** Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Defined in the variables section:
 
@@ -82,7 +82,7 @@ An environment variable can be set prior to executing the ``databricks bundle de
 Databricks reference: https://docs.databricks.com/en/dev-tools/bundles/variables.html#set-a-variables-value
 
 2. Command Line Argument
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The logical environment can be directly specified via the ``databricks bundle deploy`` command. For example:
 

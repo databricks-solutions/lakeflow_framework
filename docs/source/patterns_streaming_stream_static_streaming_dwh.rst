@@ -47,7 +47,7 @@ Use when:
      - M
    * - 2
      - Append Flows
-     - Append flows load only the PK's and Sequnce By columns into a staging table.
+     - Append flows load only the PK's and Sequence By columns into a staging table.
      - M
    * - 3
      - Staging Append Only Table

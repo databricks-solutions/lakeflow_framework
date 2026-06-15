@@ -23,8 +23,11 @@ extensions = [
     'sphinx_design',
     'myst_parser',
     'sphinx_tabs.tabs',
-    'custom_markdown_builder'
+    'custom_markdown_builder',
+    "sphinxcontrib.spelling"
 ]
+
+autosectionlabel_prefix_document = True
 
 templates_path = ['source/_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

@@ -3,8 +3,8 @@ Getting Started
 
 The following section is a quick start guide on how to get started with the Lakeflow Framework as a data engineer.
 
-Pre-Requisites
---------------
+Prerequisites
+-------------
 
 1. Databricks CLI installed and configured, if you are using DABs to locally deploy the Lakeflow Framework and Pipeline Bundles.
 2. Access to a Databricks workspace.

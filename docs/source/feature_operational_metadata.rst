@@ -42,7 +42,7 @@ Configuration Schema
 
 The operational metadata configuration file must follow the schema below:
 
-.. code-block:: json
+.. code-block:: none
 
     {
         "type": "struct",
@@ -114,10 +114,10 @@ The operational metadata configuration file must follow the schema below:
 Best Practice Configuration
 ---------------------------
 
-It is recommended that you group your data into logically organized struct or map columns to avoid cluttering the table schema, as decribed by the below configuration schema:
+It is recommended that you group your data into logically organized struct or map columns to avoid cluttering the table schema, as described by the below configuration schema:
 The operational metadata configuration file must follow the schema below:
 
-.. code-block:: json
+.. code-block:: none
 
     {
         "type": "struct",
@@ -192,14 +192,14 @@ The below example illustrates the default configuration for a generic bronze and
         ]
     }
 
-Disabling Operational Metadata in a Dataflow Spec
--------------------------------------------------
-You can disable operational metadata at a dataflow spec level or at a target table level.
+Disabling Operational Metadata in a Data Flow Spec
+--------------------------------------------------
+You can disable operational metadata at a data flow spec level or at a target table level.
 
-Disabling at Dataflow Spec Level
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Disabling at Data Flow Spec Level
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use the ``features`` object to disable operational metadata at a dataflow spec level.
+Use the ``features`` object to disable operational metadata at a data flow spec level.
 
 .. tabs::
 
@@ -238,7 +238,7 @@ Use the ``configFlags`` array to disable operational metadata at a target table 
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
         
          :emphasize-lines: 24
 
