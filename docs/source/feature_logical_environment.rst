@@ -44,8 +44,8 @@ To leverage the pipeline resource YAML when deploying a Pipeline, the logical en
 
     resources:
       pipelines:
-        dlt_framework_samples_bronze_pipeline:
-          name: dlt_framework_samples_bronze_pipeline${var.logical_env}
+        lakeflow_pattern_bronze_base_samples_pipeline:
+          name: Lakeflow Framework - Pattern - Bronze Base Samples Pipeline (${var.logical_env})
           channel: CURRENT
           serverless: true
           catalog: ${var.catalog}

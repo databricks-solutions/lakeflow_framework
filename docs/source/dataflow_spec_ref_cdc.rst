@@ -254,5 +254,5 @@ File Path Patterns
 
      Arrange your ``(?P<version_...>)`` groups in the path from left to right in the same order that their values should be concatenated to match your ``datetimeFormat``. The group names themselves only need to be unique — their order in the pattern controls concatenation.
 
-  See ``samples/bronze_sample/src/dataflows/feature_samples/dataflowspec/historical_snapshot_files_datetime_recursive_and_partitioned_regex_main.json`` for a complete working example.
+  See ``samples/feature-samples/src/dataflows/feature_samples/dataflowspec/historical_snapshot_files_datetime_recursive_and_partitioned_regex_main.json`` for a complete working example.
 

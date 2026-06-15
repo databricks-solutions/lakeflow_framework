@@ -83,13 +83,13 @@ Samples
 -------
 Construct CDC stream from snapshot source in bronze:
 
-- Bundle: ``samples/bronze_sample``
-- Sample: ``samples/bronze_sample/src/dataflows/feature_samples/dataflowspec/historical_snapshot_datetime_scd1_main.json``
+- Bundle: ``samples/pattern-samples``
+- Sample: ``samples/pattern-samples/src/dataflows/base_bronze/dataflowspec/customer_historical_snapshot_datetime_scd1_main.json``
 
 Use CDC stream as input view in silver:
 
-- Bundle: ``samples/silver_sample``
-- Sample: ``samples/silver_sample/src/dataflows/feature_samples/dataflowspec/customer_snapshot_source_main.json``
+- Bundle: ``samples/pattern-samples``
+- Sample: ``samples/pattern-samples/src/dataflows/cdc_from_snapshot_sources/dataflowspec/customer_snapshot_source_main.json``
 
 Example Data Flow
 -----------------

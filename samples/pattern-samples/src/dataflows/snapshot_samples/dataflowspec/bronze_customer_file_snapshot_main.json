@@ -1,0 +1,33 @@
+{
+    "dataFlowId": "customer_snapshot_scd1_from_file",
+    "dataFlowGroup": "snapshot_patterns",
+    "dataFlowType": "standard",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "database": "{bronze_schema}",
+        "table": "snapshot_pattern_customer_from_file_scd1",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "configFlags": [
+            "disableOperationalMetadata"
+        ]
+    },
+    "cdcSnapshotSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "1",
+        "snapshotType": "historical",
+        "sourceType": "file",
+        "source": {
+            "format": "csv",
+            "path": "{sample_file_location}/snapshot_customer/customer_{version}.csv",
+            "readerOptions": {
+                "header": "true"
+            },
+            "versionType": "timestamp",
+            "datetimeFormat": "%Y_%m_%d"
+        }
+    }
+}

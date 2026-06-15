@@ -21,8 +21,7 @@ supported, as needed, without overly complicating the Framework.
 Sample Bundle
 -------------
 
-A sample is available in the ``gold_sample`` bundle in the ``src/dataflows/stream_static_samples`` folder and can be seen in the 
-``dim_customer_sql_main.json`` file.
+A sample is available in the ``pattern-samples`` bundle in the ``src/dataflows/base_gold/dataflowspec`` folder in the ``dim_customer_sql_main.json`` file.
 
 Configuration
 -------------
