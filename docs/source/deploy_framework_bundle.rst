@@ -1,7 +1,7 @@
 Deploying the Framework
 ###########################
 
-.. _local_deployment:
+.. _framework_local_deployment:
 
 Deploying From Your Local Machine
 =================================
@@ -47,7 +47,7 @@ The steps below will guide you through deploying the Lakeflow Framework to your 
    Databricks CLI will deploy the bundle to the default target workspace (usually dev by default) specified in the databricks.yml file. If you want to deploy the bundle to a different tagret, you can specify the target host using the ``-t`` option in the deploy command.
    Databricks CLI will deploy using default credentials. If you want to deploy using a different set of credentials, you can specify the profile using the ``-p`` option in the deploy command.
 
-.. _ci_cd_deployment:
+.. _framework_ci_cd_deployment:
 
 Deploying via CI/CD
 ===================
