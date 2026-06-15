@@ -35,10 +35,7 @@ Development Process
 
 2. Unit Testing
    
-   - Write unit tests per :doc:`how_to_write_unit_tests`
-   - Test both success and failure scenarios
-   - Ensure test coverage meets requirements
-   - Run existing test suite to check for regressions
+   - Currently being redeveloped and will be added back in soon.
 
 3. Integration Testing  / Samples
  

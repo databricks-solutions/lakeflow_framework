@@ -12,7 +12,7 @@ The below diagram illustrates some of the key concepts of the Framework, which a
 .. _concepts_dabs:
 
 Declarative Automation Bundles (DABs)
-===============================
+=====================================
 Declarative Automation Bundles (DABs) are a way to package and deploy Databricks assets such as source code, Spark Declarative Pipelines notebooks and libraries. 
 This concept is core to how the Lakeflow Framework has been designed and implemented.
 
