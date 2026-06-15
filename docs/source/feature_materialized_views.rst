@@ -41,8 +41,8 @@ Sample Bundle
 
 A sample is available in:
 
-    - the ``bronze_sample`` bundle in the ``src/dataflows/feature_samples`` folder in the ``materialized_views_main.json|yaml`` file
-    - the ``gold_sample`` bundle in the ``src/dataflows/base_samples`` folder in the ``materialized_views_main.json|yaml`` file
+    - the ``feature-samples`` bundle in the ``src/dataflows/feature_samples/dataflowspec`` folder in the ``materialized_views_main.json`` file
+    - the ``pattern-samples`` bundle in the ``src/dataflows/base_gold/dataflowspec`` folder in the ``gold_materialized_views_main.json`` file
 
 
 Data Flow Spec Configuration

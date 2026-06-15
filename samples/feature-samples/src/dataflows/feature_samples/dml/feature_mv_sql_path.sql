@@ -1,0 +1,1 @@
+SELECT * FROM {feature_schema}.src_customer

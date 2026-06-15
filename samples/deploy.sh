@@ -34,17 +34,13 @@ echo "  - Schema Namespace: $schema_namespace"
 echo "  - Logical Environment: $logical_env"
 echo ""
 
-# Deploy Bronze Sample
-./deploy_bronze.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
+# Deploy Feature Samples (all framework feature demonstrations, single feature schema)
+./deploy_feature_samples.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
 
-# Deploy Silver Sample
-./deploy_silver.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
+# Deploy Pattern Samples (end-to-end medallion patterns: bronze → silver → gold)
+./deploy_pattern_samples.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
 
-# Deploy Gold Sample
-./deploy_gold.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
-
-# Deploy YAML Sample
-./deploy_yaml.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
-
-# Deploy test data and orchestrator
-./deploy_orchestrator.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
+# Note: Kafka samples are deployed as part of feature-samples but require external Kafka infrastructure.
+#       Run ./deploy_feature_samples.sh separately and then trigger the kafka_samples_run_job manually.
+# Note: TPCH sample is deployed separately via ./deploy_tpch.sh
+# Note: YAML sample is deferred — use ./deploy_yaml.sh when ready

@@ -1,0 +1,42 @@
+{
+    "dataFlowId": "feature_cdc_with_quarantine_table",
+    "dataFlowGroup": "feature_samples_data_quality",
+    "dataFlowType": "standard",
+    "sourceSystem": "testSystem",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_address_feature_quarantine_table_cdc",
+    "sourceDetails": {
+        "database": "{feature_schema}",
+        "table": "src_customer_address",
+        "cdfEnabled": true,
+        "selectExp": [
+            "CUSTOMER_ID",
+            "CITY",
+            "STATE",
+            "LOAD_TIMESTAMP"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "database": "{feature_schema}",
+        "table": "tgt_cdc_with_quarantine_table",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "schemaPath": "target/customer_address_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "sequence_by": "LOAD_TIMESTAMP",
+        "scd_type": "2"
+    },
+    "dataQualityExpectationsEnabled": true,
+    "dataQualityExpectationsPath": "./customer_address_dqe.json",
+    "quarantineMode": "table",
+    "quarantineTargetDetails": {
+        "targetFormat": "delta"
+    }
+}

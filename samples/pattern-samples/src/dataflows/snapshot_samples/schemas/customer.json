@@ -1,0 +1,47 @@
+{
+    "fields": [
+        {
+            "name": "CUSTOMER_ID",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "FIRST_NAME",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "LAST_NAME",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "EMAIL",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "CITY",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "STATE",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "DELETE_FLAG",
+            "type": "boolean",
+            "nullable": true,
+            "metadata": {}
+        }
+    ],
+    "type": "struct"
+}

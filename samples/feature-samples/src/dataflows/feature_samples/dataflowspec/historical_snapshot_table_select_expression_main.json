@@ -1,0 +1,39 @@
+{
+    "dataFlowId": "feature_historical_table_snapshot_select_expression",
+    "dataFlowGroup": "feature_samples_snapshots",
+    "dataFlowType": "standard",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "database": "{feature_schema}",
+        "table": "tgt_historical_snapshot_table_select_expression",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "configFlags": [
+            "disableOperationalMetadata"
+        ]
+    },
+    "cdcSnapshotSettings": {
+        "keys": [
+            "CUSTOMER_ID"
+        ],
+        "scd_type": "2",
+        "snapshotType": "historical",
+        "sourceType": "table",
+        "source": {
+            "table": "{feature_schema}.src_customer_historical_snapshot_source",
+            "versionColumn": "LOAD_TIMESTAMP",
+            "versionType": "timestamp",
+            "selectExp": [
+                "CUSTOMER_ID",
+                "FIRST_NAME",
+                "LAST_NAME",
+                "EMAIL",
+                "LOAD_TIMESTAMP"
+            ]
+        },
+        "track_history_except_column_list": [
+            "LOAD_TIMESTAMP"
+        ]
+    }
+}
