@@ -256,7 +256,7 @@ In the Lakeflow Framework the following types of data flows can be defined in a 
 
 2. **Flow**
 
-  Flows data flows allow you to create simple or complex data flows, using the different components of a flow as building blocks. They implement the :doc:`feature_multi_source_streaming` feature of DLT.
+  Flows data flows allow you to create simple or complex data flows, using the different components of a flow as building blocks. They implement the :doc:`feature_multi_source_streaming` feature of SDP.
   Flows are useful for Silver and Gold scenarios, and where multiple sources and transformations are required.
 
 3. **Materialized Views**
@@ -366,7 +366,7 @@ Data Flow Spec Components:
      - Contains the flow groups for the data flow.
 
        * A flow group can contain one or more flows.
-       * flows implements the :doc:`feature_multi_source_streaming` feature of DLT.'
+       * flows implements the :doc:`feature_multi_source_streaming` feature of SDP.
 
 
 Flow Groups Explained
@@ -413,7 +413,7 @@ When defining a staging table, you can specify the following:
 Flows Explained
 ~~~~~~~~~~~~~~~
 
-Flows are the building blocks of a Data Flow and they implement the :doc:`feature_multi_source_streaming` feature of DLT.
+Flows are the building blocks of a Data Flow and they implement the :doc:`feature_multi_source_streaming` feature of SDP.
 
 Flows can be defined in one of two ways:
 

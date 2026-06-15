@@ -15,7 +15,7 @@ Overview
 The Lakeflow Framework provides flexible Python dependency management at two levels:
 
 1. **Framework Level**: Global dependencies required by the framework itself (``requirements.txt``)
-2. **Pipeline Bundle Level**: Bundle-specific dependencies configured via Databricks Asset Bundles
+2. **Pipeline Bundle Level**: Bundle-specific dependencies configured via Declarative Automation Bundles
 
 This separation allows the framework to maintain its core dependencies independently while enabling pipeline developers to add custom packages for their specific use cases.
 
@@ -65,7 +65,7 @@ Pipeline Bundle Dependencies
 For pipeline-specific Python dependencies, Databricks recommends using the **pipeline environment** configuration in your Databricks Asset Bundle. For detailed information, see the official Databricks documentation:
 
 - `Manage Python dependencies for pipelines <https://docs.databricks.com/aws/en/ldp/developer/external-dependencies>`_
-- `Databricks Asset Bundles - Pipeline Environment <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_
+- `Declarative Automation Bundles - Pipeline Environment <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_
 
 Configuring Pipeline Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -12,7 +12,7 @@ The Lakeflow Framework is a metadata-driven data engineering framework built for
 
 * Build robust data pipelines using a configuration-driven, Lego-block approach
 * Support batch and streaming workloads across the medallion architecture (Bronze, Silver, Gold)
-* Deploy seamlessly with Databricks Asset Bundles (DABS)—no wheel files or control tables required
+* Deploy seamlessly with Declarative Automation Bundles (DABS)—no wheel files or control tables required
 * Extend and maintain easily as your data platform evolves
 
 This documentation covers everything from getting started to advanced orchestration patterns. Explore the sections below to begin building reliable, maintainable data pipelines.
