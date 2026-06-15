@@ -192,7 +192,7 @@ File Path Patterns
        - ``(?P<version_<name>>.+)``
        - Version is spread across multiple path segments or interleaved with other text. Supports complex partitioning schemes (e.g. Hive-style ``YEAR=.../MONTH=.../DAY=...``) where the version cannot be expressed as a single placeholder.
 
-  **``{version}`` — single-segment version**
+  **{version} — single-segment version**
 
   The ``{version}`` placeholder matches one path segment or filename component. It is internally converted to a regex named capture group ``(?P<version_main>.+)``.
 
@@ -219,7 +219,7 @@ File Path Patterns
 
   Files matched: ``YEAR=2024/MONTH=01/DAY=01/customer.csv``, …
 
-  **``{fragment}`` — multi-file snapshots**
+  **{fragment} — multi-file snapshots**
 
   Use ``{fragment}`` alongside ``{version}`` when a single snapshot version is split across multiple files. All files sharing the same version are read and unioned together before CDC processing.
 

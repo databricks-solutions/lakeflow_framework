@@ -3,8 +3,8 @@ Creating a Flows Data Flow Spec Reference
 
 A standard Data Flow Spec is the most basic type of Data Flow Spec and is suited to basic use cases where you are performing 1:1 ingestion or loads. It is particularly suited to Bronze Ingestion Use Cases.
 
-Example:
---------
+Example Specification
+---------------------
 
 The below sample demonstrates a flows Data Flow Spec for a Silver multi-source streaming use case (refer to :doc:`patterns_streaming_multi_source_streaming` for more information):
 

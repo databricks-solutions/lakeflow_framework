@@ -79,7 +79,7 @@ The framework operates with two bundles, each of which carries its own ``src/`` 
      - Carries your pipeline's Data Flow Specs, pipeline config, and any
        bundle-specific libraries, pipeline logic modules, and init scripts.
 
-**``src/local/`` — framework bundle only**
+**src/local/ — framework bundle only**
 
 ``src/local/`` is the **only** place for custom code in the framework bundle
 (``framework.sourcePath``). It is a customer-owned directory that framework upgrades

@@ -73,10 +73,10 @@ The following schema details the configuration for a Materialized View Data Flow
             quarantineTargetDetails: {}
             refreshPolicy: auto
 
-Example:
---------
+Example Specification
+---------------------
 
-The below demonstrates a Materialized View Data Flow Spec:
+The below sample demonstrates a Materialized View Data Flow Spec:
 
 .. tabs::
 
