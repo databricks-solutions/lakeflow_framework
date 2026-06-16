@@ -5,6 +5,7 @@
 # from the environment for the first two.
 SPHINXOPTS    ?= -c .
 SPHINXBUILD   ?= sphinx-build
+PYTHON        ?= python3
 SOURCEDIR     = source
 BUILDDIR      = build
 IMAGEDIR      = source/images
@@ -13,7 +14,7 @@ IMAGEDIR      = source/images
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile markdown spelling
+.PHONY: help Makefile markdown spelling html-multiversion html-multiversion-preview
 
 # Add custom markdown build command
 md:
@@ -29,6 +30,14 @@ md:
 # Add explicit spelling target
 spelling:
 	@$(SPHINXBUILD) -M spelling "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+# Build versioned docs without sphinx-multiversion.
+html-multiversion:
+	@./build_versioned_docs.sh
+
+# Local preview build including all local branches.
+html-multiversion-preview:
+	@./build_versioned_docs.sh --preview
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
