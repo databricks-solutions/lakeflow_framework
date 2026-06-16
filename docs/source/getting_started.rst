@@ -3,8 +3,8 @@ Getting Started
 
 The following section is a quick start guide on how to get started with the Lakeflow Framework as a data engineer.
 
-Pre-Requisites
---------------
+Prerequisites
+-------------
 
 1. Databricks CLI installed and configured, if you are using DABs to locally deploy the Lakeflow Framework and Pipeline Bundles.
 2. Access to a Databricks workspace.
@@ -22,7 +22,7 @@ Follow the below steps to get yourself setup to learn and use the Lakeflow Frame
 Understanding the Framework
 ---------------------------
 1. :doc:`concepts`
-2. Step through and execute one of the basic samples and inspect the create_dataflow_spec
+2. Step through the ``feature-samples`` bundle — run the ``feature_samples_run_job`` and inspect the resulting tables in the ``{namespace}_feature`` schema. This is the simplest entry point as all features share a single schema.
 3. :doc:`features`
 
 Developing your first Pipeline Bundle

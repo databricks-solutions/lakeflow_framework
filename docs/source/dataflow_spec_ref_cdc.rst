@@ -12,10 +12,10 @@ The ``cdcSettings`` and ``cdcSnapshotSettings`` enable and pass configuration in
      - **Description**
    * - **cdcSettings**
      - ``object``
-     - See :ref:`cdcSettings` for more information.
+     - See :ref:`cdcSettings <dataflow_spec_ref_cdc:cdcSettings>` for more information.
    * - **cdcSnapshotSettings**
      - ``object``
-     - See :ref:`cdcSnapshotSettings` for more information.
+     - See :ref:`cdcSnapshotSettings <dataflow_spec_ref_cdc:cdcSnapshotSettings>` for more information.
 
 cdcSettings
 ~~~~~~~~~~~~~~~~~
@@ -71,7 +71,7 @@ The ``cdcSnapshotSettings`` object contains the following properties:
      - The column or combination of columns that uniquely identify a row in the source data. This is used to identify which CDC events apply to specific records in the target table.
    * - **snapshotType**
      - str
-     - The type of snapshot to process. Set to ``periodic`` for periodic snapshots or ``historical`` for historical snapshots (refer to :ref:`CDC Historical Snapshot Source Configuration` for which type to use). Note that ``historical`` snapshot types are not supported in ``flow`` data flow types.
+     - The type of snapshot to process. Set to ``periodic`` for periodic snapshots or ``historical`` for historical snapshots (refer to :ref:`CDC Historical Snapshot Source Configuration <cdc-apply-changes-from-snapshot-source>` for which type to use). Note that ``historical`` snapshot types are not supported in ``flow`` data flow types.
    * - **scd_type**
      - ``string``
      - Whether to store records as SCD type 1 or SCD type 2. Set to ``1`` for SCD type 1 or 2 for SCD type ``2``.
@@ -122,7 +122,7 @@ CDC Historical Snapshot Source Configuration
      * - **microSecondMaskLength**
        - ``integer``
        - (*optional*) WARNING: Edge Cases Only!
-         - Specify this if your ``versionType`` is ``datetime`` and your filename includes microsends, but not the full 6 digits. The number of microsecond digits to included at the end of the datetime value.
+         - Specify this if your ``versionType`` is ``datetime`` and your filename includes microseconds, but not the full 6 digits. The number of microsecond digits to include at the end of the datetime value.
          - The default value is 6.
      * - **startingVersion**
        - ``string`` or ``integer``
@@ -138,7 +138,7 @@ CDC Historical Snapshot Source Configuration
        - (*optional*) A list of select expressions to apply to the source data.
      * - **filter**
        - ``string``
-       - (*optional*) A filter expression to apply to the source data. This filter is applied to the dataframe as a WHERE clause when the source is read. The placeholder ``{version}`` can be used in this filter expression and will be substituted with the version value at run time (e.g. ``"year = '{version}'"``). Not applicable when using regex named capture groups in ``path``.
+       - (*optional*) A filter expression to apply to the source data. This filter is applied to the Dataframe as a WHERE clause when the source is read. The placeholder ``{version}`` can be used in this filter expression and will be substituted with the version value at run time (e.g. ``"year = '{version}'"``). Not applicable when using regex named capture groups in ``path``.
      * - **recursiveFileLookup**
        - ``boolean``
        - (*optional*) When set to ``true``, enables recursive directory traversal to find snapshot files. This should be used when snapshots are stored in a nested directory structure such as Hive-style partitioning (e.g., ``/data/{version}/file.parquet``). When set to ``false`` (default), only files in the immediate directory are searched. Default: ``false``.
@@ -192,7 +192,7 @@ File Path Patterns
        - ``(?P<version_<name>>.+)``
        - Version is spread across multiple path segments or interleaved with other text. Supports complex partitioning schemes (e.g. Hive-style ``YEAR=.../MONTH=.../DAY=...``) where the version cannot be expressed as a single placeholder.
 
-  **``{version}`` — single-segment version**
+  **{version} — single-segment version**
 
   The ``{version}`` placeholder matches one path segment or filename component. It is internally converted to a regex named capture group ``(?P<version_main>.+)``.
 
@@ -219,7 +219,7 @@ File Path Patterns
 
   Files matched: ``YEAR=2024/MONTH=01/DAY=01/customer.csv``, …
 
-  **``{fragment}`` — multi-file snapshots**
+  **{fragment} — multi-file snapshots**
 
   Use ``{fragment}`` alongside ``{version}`` when a single snapshot version is split across multiple files. All files sharing the same version are read and unioned together before CDC processing.
 
@@ -254,5 +254,5 @@ File Path Patterns
 
      Arrange your ``(?P<version_...>)`` groups in the path from left to right in the same order that their values should be concatenated to match your ``datetimeFormat``. The group names themselves only need to be unique — their order in the pattern controls concatenation.
 
-  See ``samples/bronze_sample/src/dataflows/feature_samples/dataflowspec/historical_snapshot_files_datetime_recursive_and_partitioned_regex_main.json`` for a complete working example.
+  See ``samples/feature-samples/src/dataflows/feature_samples/dataflowspec/historical_snapshot_files_datetime_recursive_and_partitioned_regex_main.json`` for a complete working example.
 

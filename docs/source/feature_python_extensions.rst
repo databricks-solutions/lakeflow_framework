@@ -33,6 +33,7 @@ addresses a different concern and has a dedicated place in both bundle structure
          - PyPI
          - UC Volume
          - Artifact repository e.g. Artifactory, Nexus
+
        | **OR**
        | Bundled wheel: ``src/libraries/``
      - Third-party or in-house Python packages installed on the cluster before the pipeline
@@ -50,7 +51,7 @@ addresses a different concern and has a dedicated place in both bundle structure
      - **Init scripts**
      - ``src/init/pre/`` and ``src/init/post/``
      - Lightweight ``.py`` files that run at fixed points in the pipeline initialisation
-       lifecycle. ``pre/`` scripts run before SDP dataflow declarations; ``post/`` scripts
+       lifecycle. ``pre/`` scripts run before SDP data flow declarations; ``post/`` scripts
        run after. Use them for Spark configuration, event hook registration, or any
        one-time setup that must happen outside of Data Flow logic.
 
@@ -78,7 +79,7 @@ The framework operates with two bundles, each of which carries its own ``src/`` 
      - Carries your pipeline's Data Flow Specs, pipeline config, and any
        bundle-specific libraries, pipeline logic modules, and init scripts.
 
-**``src/local/`` — framework bundle only**
+**src/local/ — framework bundle only**
 
 ``src/local/`` is the **only** place for custom code in the framework bundle
 (``framework.sourcePath``). It is a customer-owned directory that framework upgrades
@@ -259,7 +260,7 @@ Custom code that generates DataFrames for use as data sources.
         
         return spark.createDataFrame(data)
 
-**Reference in Dataflow Spec:**
+**Reference in Data Flow Spec:**
 
 .. tabs::
 
@@ -356,7 +357,7 @@ Custom code that transforms DataFrames after they are read from a source.
             )
         )
 
-**Reference in Dataflow Spec:**
+**Reference in Data Flow Spec:**
 
 .. tabs::
 
@@ -434,7 +435,7 @@ Init scripts are Notebooks and other plain ``.py`` files executed by the framewo
 
 - **pre** (``src/init/pre/``) — runs after configs and specs are loaded, **before**
   any ``DataFlow.create_dataflow()`` / SDP declarations.
-- **post** (``src/init/post/``) — runs **after** all dataflows for the pipeline have
+- **post** (``src/init/post/``) — runs **after** all data flows for the pipeline have
   been created (the SDP graph is assembled; the pipeline update has not started yet).
 
 Execution rules

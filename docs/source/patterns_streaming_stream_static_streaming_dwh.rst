@@ -47,7 +47,7 @@ Use when:
      - M
    * - 2
      - Append Flows
-     - Append flows load only the PK's and Sequnce By columns into a staging table.
+     - Append flows load only the PK's and Sequence By columns into a staging table.
      - M
    * - 3
      - Staging Append Only Table
@@ -107,8 +107,8 @@ Considerations and Limitations
 
 Sample
 ------
-- Bundle: ``dlt_framework/src/samples/silver_sample``
-- Sample: ``dlt_framework/src/samples/silver_sample/src/dataflows/stream_static_p7``
+- Bundle: ``samples/pattern-samples``
+- Sample: ``samples/pattern-samples/src/dataflows/stream_static_samples/dataflowspec/customer_stream_static_streaming_dwh_main.json``
 
 Example Data Flow
 ------------------

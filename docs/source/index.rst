@@ -6,13 +6,13 @@
 Lakeflow Framework documentation
 =================================
 
-The Lakeflow Framework is a metadata-driven data engineering framework built for Databricks. It accelerates and simplifies the deployment of Spark Declarative Pipelines (SDP) while supporting your entire software development lifecycle.
+The Lakeflow Framework is a metadata-driven data engineering framework built for Databricks. It accelerates and simplifies the deployment of Spark Declarative Pipelines (SDP) while supporting your entire software development life cycle.
 
 **Key Capabilities:**
 
 * Build robust data pipelines using a configuration-driven, Lego-block approach
 * Support batch and streaming workloads across the medallion architecture (Bronze, Silver, Gold)
-* Deploy seamlessly with Databricks Asset Bundles (DABS)—no wheel files or control tables required
+* Deploy seamlessly with Declarative Automation Bundles (DABS)—no wheel files or control tables required
 * Extend and maintain easily as your data platform evolves
 
 This documentation covers everything from getting started to advanced orchestration patterns. Explore the sections below to begin building reliable, maintainable data pipelines.
@@ -26,9 +26,8 @@ This documentation covers everything from getting started to advanced orchestrat
    Concepts <concepts> 
    Features <features>
    deploy_framework
-   deploy_samples
+   deploy_samples.md
    build_pipeline_bundle
    dataflow_spec_reference
    orchestration
    contributor
-   logical_environment

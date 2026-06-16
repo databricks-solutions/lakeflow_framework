@@ -5,6 +5,7 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+import json
 import os
 import sys
 sys.path.append(os.path.abspath("."))  # Ensure the script is discoverable
@@ -12,7 +13,7 @@ from custom_markdown_builder import CustomMarkdownTranslator
 
 project = 'Lakeflow Framework'
 copyright = '2025, Databricks'
-author = 'Erik Seefeld, Haille Woldegebriel, Amin Movahed'
+author = 'Erik Seefeld, Haille Woldegebriel'
 
 # Read version from the VERSION file at the repo root so conf.py never
 # needs a manual update when a release is cut.
@@ -34,32 +35,13 @@ extensions = [
     'myst_parser',
     'sphinx_tabs.tabs',
     'custom_markdown_builder',
-    'sphinx_multiversion',
+    "sphinxcontrib.spelling",
 ]
+
+autosectionlabel_prefix_document = True
 
 templates_path = ['_templates', 'source/_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-# -- sphinx-multiversion -----------------------------------------------------
-# Tags to build: set via the SMV_TAG_WHITELIST env var by the CI helper
-# script (docs/select_versions.py).  Falls back to matching all semver tags
-# so local builds still work without running the helper first.
-smv_tag_whitelist = os.environ.get('SMV_TAG_WHITELIST', r'^v\d+\.\d+\.\d+$')
-
-# Always build docs from main as the "dev" version.
-smv_branch_whitelist = r'^main$'
-
-# Only consider the upstream remote.
-smv_remote_whitelist = r'^origin$'
-
-# Pattern that identifies a ref as a "released" (non-prerelease) version.
-smv_released_pattern = r'^v\d+\.\d+\.\d+$'
-
-# The version shown when visitors arrive without an explicit version in the URL.
-smv_latest_version = 'main'
-
-# Rebuild all versions together rather than just the latest.
-smv_rebuild_tags = True
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -89,6 +71,37 @@ html_css_files = [
 ]
 
 html_last_updated_fmt = "%B %d, %Y"  # Example: January 30, 2025
+
+
+def _load_versions() -> list[dict[str, str]]:
+    versions_file = os.environ.get("DOCS_VERSIONS_FILE")
+    if not versions_file:
+        return [{"name": "current", "url": "../current/index.html", "is_latest": True}]
+
+    try:
+        with open(versions_file, encoding="utf-8") as f:
+            versions = json.load(f)
+    except FileNotFoundError:
+        return [{"name": "current", "url": "../current/index.html", "is_latest": True}]
+
+    # For per-version pages, switch from site-root links (e.g. "v1.2.3/") to
+    # sibling paths (e.g. "../v1.2.3/"), which work under GitHub project pages.
+    adapted = []
+    for item in versions:
+        adapted.append(
+            {
+                "name": item["name"],
+                "url": f"../{item['name']}/index.html",
+                "is_latest": item.get("is_latest", False),
+            }
+        )
+    return adapted
+
+
+html_context = {
+    "docs_current_version": os.environ.get("DOCS_CURRENT_VERSION", "current"),
+    "docs_versions": _load_versions(),
+}
 
 def setup(app):
     app.add_css_file('custom.css')

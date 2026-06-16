@@ -25,7 +25,7 @@ Source Types
      - **Description**
      - **Key Features**
    * - **Batch Files**
-     - Reads data from UC Volumes orcloud storage locations (e.g., S3, ADLS, GCS). Supports various file formats and provides options for filtering and transforming data during ingestion.
+     - Reads data from UC Volumes or cloud storage locations (e.g., S3, ADLS, GCS). Supports various file formats and provides options for filtering and transforming data during ingestion.
      -  - Flexible path-based file access
         - Reader options for different file formats
         - Optional select expressions and where clauses
@@ -55,12 +55,12 @@ Source Types
         - Schema definition support
         - Filtering and transformation support
         - Topic-based configurations
-        - Demux and fan-out support
+        - Demultiplexing and fan-out support
    * - **Python**
      - Allows using a Python function as a data source, providing flexibility for complex data transformations.
      -  - Python file-based configuration
         - Functions stored in `python_functions` subdirectory
-        - Full Python / Pyspark capabilities
+        - Full Python / PySpark capabilities
         - Detailed configuration details: :doc:`feature_python_source`
    * - **SQL**
      - Allows using SQL queries as data sources, providing flexibility for complex data transformations.
@@ -80,8 +80,5 @@ Set as an attribute when creating your Data Flow Spec, refer to the :doc:`datafl
 Detailed Source Type Configuration Details
 ------------------------------------------
 
-.. toctree::
-   :maxdepth: 1
-
-   feature_python_source
-   feature_sql_source
+* :doc:`feature_python_source`
+* :doc:`feature_sql_source`

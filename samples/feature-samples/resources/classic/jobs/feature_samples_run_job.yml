@@ -1,0 +1,81 @@
+resources:
+  jobs:
+    feature_samples_run_job:
+      name: Lakeflow Framework - Feature Samples - Run (${var.logical_env})
+      job_clusters:
+        - job_cluster_key: ${var.job_cluster_name}
+          new_cluster: ${var.job_cluster_config}
+      tasks:
+        - task_key: create_schemas_and_tables
+          job_cluster_key: ${var.job_cluster_name}
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/notebooks/create_schemas_and_tables
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+
+        - task_key: staging_load
+          job_cluster_key: ${var.job_cluster_name}
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/notebooks/staging_load
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+          depends_on:
+            - task_key: create_schemas_and_tables
+
+        # Tier 1 — parallel feature pipelines
+        - task_key: feature_samples_pipeline_general
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.feature_samples_pipeline_general.id}
+            full_refresh: true
+          depends_on:
+            - task_key: staging_load
+
+        - task_key: feature_samples_pipeline_python
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.feature_samples_pipeline_python.id}
+            full_refresh: true
+          depends_on:
+            - task_key: staging_load
+
+        - task_key: feature_samples_pipeline_snapshots
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.feature_samples_pipeline_snapshots.id}
+            full_refresh: true
+          depends_on:
+            - task_key: staging_load
+
+        - task_key: feature_samples_pipeline_data_quality
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.feature_samples_pipeline_data_quality.id}
+            full_refresh: true
+          depends_on:
+            - task_key: staging_load
+
+        - task_key: feature_samples_pipeline_table_migration
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.feature_samples_pipeline_table_migration.id}
+            full_refresh: true
+          depends_on:
+            - task_key: staging_load
+
+        - task_key: feature_samples_pipeline_libraries
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.feature_samples_pipeline_libraries.id}
+            full_refresh: true
+          depends_on:
+            - task_key: staging_load
+
+        - task_key: feature_template_samples_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.feature_template_samples_pipeline.id}
+            full_refresh: true
+          depends_on:
+            - task_key: staging_load
+
+
+      queue:
+        enabled: true

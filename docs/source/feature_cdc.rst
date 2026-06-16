@@ -30,7 +30,7 @@ There are two ways to use the AUTO CDC FROM SNAPSHOT feature:
 
 1. To process changes from a snapshot of a table/view periodically (**periodic**)
 
-   - This can be used in both ``standard`` and ``flow`` data flow types (refer to :ref:`dataflow types` for more information).
+   - This can be used in both ``standard`` and ``flow`` data flow types (refer to :doc:`dataflow_spec_ref_main_flows` for more information).
    - For this to be enabled, the ``cdcSnapshotSettings`` object must be configured with the ``snapshotType`` set to ``periodic`` and must be chained so that a source is available to ingest the snapshots.
    
    A new snapshot is ingested with each pipeline update, and the ingestion time is used as the snapshot version. When a pipeline is run in continuous mode, multiple snapshots are ingested with each pipeline update on a period determined by the trigger interval setting for the flow that contains the AUTO CDC FROM SNAPSHOT processing
@@ -38,7 +38,7 @@ There are two ways to use the AUTO CDC FROM SNAPSHOT feature:
 2. To process historical snapshot from a file or table based source which has multiple snapshots available at any given time (**historical**)
    
    - This can only be used in ``standard`` data flow types.
-   - For this to be enabled, the ``cdcSnapshotSettings`` object must be configured with the ``snapshotType`` set to ``historical`` and must not have a source configured at the root level of the Data Flow Spec, the source is instead configured at the ``cdcSnapshotSettings`` level (refer to :ref:`dataflow_spec_ref_cdc` for more information).
+   - For this to be enabled, the ``cdcSnapshotSettings`` object must be configured with the ``snapshotType`` set to ``historical`` and must not have a source configured at the root level of the Data Flow Spec, the source is instead configured at the ``cdcSnapshotSettings`` level (refer to :doc:`dataflow_spec_ref_cdc` for more information).
    - This will process all the historical snapshots available at the time of the pipeline run and any new snapshots will be ingested with each pipeline update.
 
 Configuration

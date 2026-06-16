@@ -1,0 +1,26 @@
+{
+    "dataFlowId": "base_gold_materialized_views",
+    "dataFlowGroup": "base_gold_samples",
+    "dataFlowType": "materialized_view",
+    "materializedViews": {
+        "base_dim_customer_mv": {
+            "sqlStatement": "SELECT * FROM {silver_schema}.base_customer_scd2",
+            "tableDetails": {
+                "comment": "Gold materialized view of silver customer table"
+            }
+        },
+        "base_dim_customer_mv_incremental": {
+            "sqlStatement": "SELECT c.CUSTOMER_ID, c.FIRST_NAME, c.LAST_NAME, c.EMAIL, ca.CITY, ca.STATE FROM {silver_schema}.base_customer_scd2 c INNER JOIN {silver_schema}.base_customer_address_scd2 ca ON c.CUSTOMER_ID = ca.CUSTOMER_ID",
+            "refreshPolicy": "incremental_strict",
+            "tableDetails": {
+                "configFlags": ["disableOperationalMetadata"]
+            }
+        },
+        "base_dim_customer_mv_chained": {
+            "sqlStatement": "SELECT * FROM live.base_dim_customer_mv_incremental WHERE STATE IS NOT NULL",
+            "tableDetails": {
+                "comment": "Chained MV filtering non-null states from base_dim_customer_mv_incremental"
+            }
+        }
+    }
+}

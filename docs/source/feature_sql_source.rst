@@ -1,3 +1,5 @@
+:orphan:
+
 SQL Source
 ==========
 
@@ -19,8 +21,7 @@ supported, as needed, without overly complicating the Framework.
 Sample Bundle
 -------------
 
-A sample is available in the ``gold_sample`` bundle in the ``src/dataflows/stream_static_samples`` folder and can be seen in the 
-``dim_customer_sql_main.json`` file.
+A sample is available in the ``pattern-samples`` bundle in the ``src/dataflows/base_gold/dataflowspec`` folder in the ``dim_customer_sql_main.json`` file.
 
 Configuration
 -------------
@@ -52,11 +53,11 @@ You can use CTEs, subqueries, joins, etc.
 **Substitution Variables**
 
 You can use substitution variables in your SQL query by using the ``{var}`` syntax. 
-These will be substituted per the :doc:`feature_substitutions documentation.
+These will be substituted per the :doc:`feature_substitutions` documentation.
 
 For example:
 
-.. code-block:: sql
+.. code-block:: none
 
     SELECT * FROM {bronze_schema}.my_table
 

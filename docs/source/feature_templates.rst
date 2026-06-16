@@ -11,23 +11,23 @@ Templates
 
 Overview
 --------
-The Dataflow Spec Templates feature allows data engineers to create reusable templates for dataflow specifications. This significantly reduces code duplication when multiple dataflows share similar structures but differ only in specific parameters (e.g., table names, columns, etc.).
+The Data Flow Spec Templates feature allows data engineers to create reusable templates for data flow specifications. This significantly reduces code duplication when multiple data flows share similar structures but differ only in specific parameters (e.g., table names, columns, etc.).
 
 .. important::
 
-    Templates provide a powerful mechanism for standardizing dataflow patterns across your organization while maintaining flexibility for specific implementations.
+    Templates provide a powerful mechanism for standardizing data flow patterns across your organization while maintaining flexibility for specific implementations.
 
 This feature allows development teams to:
 
 - **Reduce Code Duplication**: Write once, reuse many times
-- **Ensure Consistency**: Similar dataflows follow the same structure  
+- **Ensure Consistency**: Similar data flows follow the same structure
 - **Improve Productivity**: Quickly create multiple similar specifications
 - **Reduce Errors**: Less copy-paste reduces human error
 - **Make Patterns Explicit**: Templates make organizational patterns discoverable
 
 .. note::
 
-    Template processing happens during the initialization phase of pipeline execution as the dataflow specs are loaded. Each processed spec is validated using the standard validation process.
+    Template processing happens during the initialization phase of pipeline execution as the data flow specs are loaded. Each processed spec is validated using the standard validation process.
 
 How It Works
 ------------
@@ -35,14 +35,14 @@ How It Works
 The template system consists of three main components:
 
 1. **Template Definitions**: JSON files containing template definitions with placeholders
-2. **Template Dataflow Specifications**: A dataflow specification that references a template and provides parameter sets
-3. **Template Processing**: Framework logic that processes the template dataflow specifications and generates one dataflow spec per parameter set.
+2. **Template Data Flow Specifications**: A data flow specification that references a template and provides parameter sets
+3. **Template Processing**: Framework logic that processes the template data flow specifications and generates one data flow spec per parameter set.
 
 
 Anatomy of a Template Definition
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A template definition is a JSON file that defines a reusable dataflow pattern. It consists of three main components:
+A template definition is a JSON file that defines a reusable data flow pattern. It consists of three main components:
 
 .. tabs::
 
@@ -117,11 +117,11 @@ A template definition is a JSON file that defines a reusable dataflow pattern. I
    * - Component
      - Description
    * - **name**
-     - The unique name for the template. make this the same as the filename. This is currently a placeholder for future functiuonality.
+     - The unique name for the template. make this the same as the filename. This is currently a placeholder for future functionality.
    * - **parameters**
      - An object defining all parameters that can be used in the template. Each parameter has a ``type`` (string, list, object, integer, boolean) and ``required`` flag (defaults to true). Optional ``default`` values can be specified.
    * - **template**
-     - The dataflow specification template containing placeholders in the format ``${param.<key>}``; where ``<key>`` is the name of a parameter defined in the ``parameters`` object. This can be any valid dataflow specification structure with parameters substituted at processing time.
+     - The data flow specification template containing placeholders in the format ``${param.<key>}``; where ``<key>`` is the name of a parameter defined in the ``parameters`` object. This can be any valid data flow specification structure with parameters substituted at processing time.
 
 .. important::
 
@@ -129,13 +129,13 @@ A template definition is a JSON file that defines a reusable dataflow pattern. I
     - in JSON specs placeholders must always be wrapped in quotes: ``"${param.name}"``
 
 **File Location:**
-- Template definitions: ``<dataflow_base_path>/templates/<name>.json`
+- Template definitions: ``<dataflow_base_path>/templates/<name>.json``
 
 
-Anatomy of a Template Dataflow Specification
+Anatomy of a Template Data Flow Specification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A template dataflow specification is a simplified file that references a template and provides parameter sets for instantiation. Instead of writing full dataflow specs, data engineers create a template reference:
+A template data flow specification is a simplified file that references a template and provides parameter sets for instantiation. Instead of writing full data flow specs, data engineers create a template reference:
 
 .. tabs::
 
@@ -187,7 +187,7 @@ A template dataflow specification is a simplified file that references a templat
    * - **template**
      - The filename of the template definition to use (without the ``.json`` extension). The framework will search for this template in the configured template directories.
    * - **parameterSets**
-     - An array of parameter sets. Each object in the array represents one set of parameter values that will generate one complete dataflow specification. Each parameter set must include all required parameters defined in the template definition.
+     - An array of parameter sets. Each object in the array represents one set of parameter values that will generate one complete data flow specification. Each parameter set must include all required parameters defined in the template definition.
 
 .. important::
 
@@ -197,16 +197,16 @@ A template dataflow specification is a simplified file that references a templat
 
 **File Location:**
 
-Template dataflow specifications follow the standard dataflow specification naming convention: ``<dataflow_base_path>/dataflows/<dataflow_name>/dataflowspec/*_main.json``
+Template data flow specifications follow the standard data flow specification naming convention: ``<dataflow_base_path>/dataflows/<dataflow_name>/dataflowspec/*_main.json``
 
 **Processing Result:**
 
-A template dataflow specification with N parameter sets will generate N complete dataflow specifications at runtime, each validated independently.  
+A template data flow specification with N parameter sets will generate N complete data flow specifications at runtime, each validated independently.  
 
 Template Processing
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
-During the dataflow spec build process, the template processor will:
+During the data flow spec build process, the template processor will:
 
 1. Detect spec files containing a ``template`` key
 2. Loads the referenced template file
@@ -309,7 +309,7 @@ This example shows a template for basic file source ingestion, from a hypothetic
            targetDetails:
              table: ${param.targetTable}
 
-**Template Dataflow Specification** (``src/dataflows/bronze_erp_system/dataflowspec/bronze_erp_system_file_ingestion_main.json|yaml``):
+**Template Data Flow Specification** (``src/dataflows/bronze_erp_system/dataflowspec/bronze_erp_system_file_ingestion_main.json|yaml``):
 
 .. tabs::
 
@@ -360,7 +360,7 @@ This example shows a template for basic file source ingestion, from a hypothetic
              schemaPath: supplier_schema.json
              targetTable: supplier
 
-**Result**: This template dataflow specification generates **3 concrete dataflow specs**, one for each parameter set in the ``parameterSets`` array.
+**Result**: This template data flow specification generates **3 concrete data flow specs**, one for each parameter set in the ``parameterSets`` array.
 
 
 Parameter Types
@@ -395,13 +395,13 @@ Key Features
 ------------
 
 Python Function Path Search Priority
-^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Enhanced fallback chain for path values.
 
 The framework searches for python function path values in the following order:
 
-1. In the pipeline bundle base path of the dataflow spec file
+1. In the pipeline bundle base path of the data flow spec file
 2. Under the templates directory of the pipeline bundle
 3. Under the extensions directory of the pipeline bundle
 4. Under the framework extensions directory
@@ -445,7 +445,7 @@ Naming Conventions
 Development and Testing
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-1. **Concrete First**: Develop a concrete dataflow spec first, get it working and then turn it into a template defintion.
+1. **Concrete First**: Develop a concrete data flow spec first, get it working and then turn it into a template definition.
 1. **Validation**: Always test processed specs by running the pipeline with a small subset of data
 2. **Version Control**: Track templates in version control to maintain a history of changes
 3. **Iterative Development**: Start with a simple template and enhance it as patterns emerge

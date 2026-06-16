@@ -21,7 +21,7 @@ Configuration
 The logical environment is configured in two places.
 
 1. **databricks.yml** Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Defined in the variables section:
 
@@ -44,8 +44,8 @@ To leverage the pipeline resource YAML when deploying a Pipeline, the logical en
 
     resources:
       pipelines:
-        dlt_framework_samples_bronze_pipeline:
-          name: dlt_framework_samples_bronze_pipeline${var.logical_env}
+        lakeflow_pattern_bronze_base_samples_pipeline:
+          name: Lakeflow Framework - Pattern - Bronze Base Samples Pipeline (${var.logical_env})
           channel: CURRENT
           serverless: true
           catalog: ${var.catalog}
@@ -82,7 +82,7 @@ An environment variable can be set prior to executing the ``databricks bundle de
 Databricks reference: https://docs.databricks.com/en/dev-tools/bundles/variables.html#set-a-variables-value
 
 2. Command Line Argument
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The logical environment can be directly specified via the ``databricks bundle deploy`` command. For example:
 

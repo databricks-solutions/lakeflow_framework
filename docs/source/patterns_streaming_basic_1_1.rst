@@ -30,7 +30,7 @@ Use when:
      - M
    * - 2
      - Flow
-     - Append or Change flow to streaing target table.
+     - Append or Change flow to streaming target table.
      - M
    * - 3
      - Target Table
@@ -61,7 +61,8 @@ Feature Support
 
 Sample
 ------
-- Bundle: ``dlt_framework/src/samples/bronze_sample``
+- Bundle: ``samples/pattern-samples``
+- Sample: ``samples/pattern-samples/src/dataflows/base_bronze/``
 
 Example Data Flow
 ------------------

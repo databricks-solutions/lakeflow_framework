@@ -13,7 +13,7 @@ Secrets Management
 
 Overview
 --------
-Databricks natively supports secrets management and the secure retrieval of credentials, connection details, host names or 
+Databricks provides native support for secrets management and the secure retrieval of credentials, connection details, host names or
 other sensitive information for use at pipeline execution time. This negates the need to include these details directly in your data flow specs, config files or code.
 
 .. important::
@@ -37,7 +37,7 @@ The Framework allows you to specify the Secret Scopes and Secrets you need acces
     DO NOT CHANGE THE SECRET MANAGER IMPLEMENTATION WITHOUT TALKING TO YOUR FRAMEWORK OWNER FIRST!
 
 Configuration
-------------
+-------------
 
 | **Scope: Pipeline**
 | In a Pipeline bundle, secrets are defined in the following configuration file: ``src/pipeline_config/<deployment environment>_secrets.json|yaml``
@@ -51,7 +51,7 @@ An secrets config file has the following structure:
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
 
          {
              "<secret alias_1>": {
@@ -90,10 +90,10 @@ An secrets config file has the following structure:
      - The key of the secret in the specified Secret Scope.
 
 Referencing Secrets in Data Flow Specs
--------------------------------------
-Secrets can be referenced as a value in any part of your data flow specs by using the folowing syntax: ``${secret.<secret_alias>}``.
+--------------------------------------
+Secrets can be referenced as a value in any part of your data flow specs by using the following syntax: ``${secret.<secret_alias>}``.
 
-For example, assume we want to connect to Kafka and we need to provide a keystore password. We would first ensure that the secret is configued in the secrets config file discussed above as follows:
+For example, assume we want to connect to Kafka and we need to provide a keystore password. We would first ensure that the secret is configured in the secrets config file discussed above as follows:
 
 .. tabs::
 
@@ -116,7 +116,7 @@ For example, assume we want to connect to Kafka and we need to provide a keystor
            scope: mySecretScope
            key: KafkaSecretKey
 
-We can then reference the secret in any data flow spec as per the highligheted line in the code sample below:
+We can then reference the secret in any data flow spec as per the highlighted line in the code sample below:
 
 .. tabs::
 
@@ -181,7 +181,7 @@ We can then reference the secret in any data flow spec as per the highligheted l
          quarantineMode: 'off'
 
 Best Practices
--------------
+--------------
 1. Never store secrets in code or configuration files
 2. Use appropriate secret scopes for different environments
 3. Rotate secrets regularly
