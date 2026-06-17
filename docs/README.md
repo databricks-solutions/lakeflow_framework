@@ -20,6 +20,9 @@ This folder contains the Sphinx documentation source and build tooling for local
 - Python environment with docs dependencies installed:
   - `pip install --require-hashes --no-deps -r requirements-docs.lock`
   - or (less strict) `pip install -r requirements-docs.txt`
+- Install the Enchant C library (required by `sphinxcontrib-spelling`):
+  - macOS (Homebrew): `brew install enchant`
+  - Windows (Chocolatey): `choco install enchant`
 - Run commands from the repo root with `make -C docs ...`, or from this folder with `make ...`.
 
 ## Make Targets
@@ -107,19 +110,19 @@ Use this command order during docs development:
 make -C docs html
 ```
 
-2. Always run spelling before finalizing:
+1. Always run spelling before finalizing:
 
 ```bash
 make -C docs spelling
 ```
 
-3. If your change could affect versioned output or version switcher behavior:
+1. If your change could affect versioned output or version switcher behavior:
 
 ```bash
 make -C docs html-multiversion
 ```
 
-4. If you need to test branch previews in the version menu:
+1. If you need to test branch previews in the version menu:
 
 ```bash
 make -C docs html-multiversion-preview
@@ -164,3 +167,4 @@ The deployed root redirects to `current/index.html`.
 - If tags seem missing, verify local git tags are fetched:
   - `git fetch --tags`
 - If local browser shows folder listing, use the explicit `index.html` URLs or run a local HTTP server.
+
