@@ -1,7 +1,6 @@
 # Databricks Lakeflow Framework
 
 [![Docs](https://img.shields.io/badge/docs-live-brightgreen)](https://databricks-solutions.github.io/lakeflow_framework/)
-[![Main Build](https://github.com/databricks-solutions/lakeflow_framework/actions/workflows/main-build.yml/badge.svg?branch=main&event=push)](https://github.com/databricks-solutions/lakeflow_framework/actions/workflows/main-build.yml?query=branch%3Amain)
 [![Release](https://img.shields.io/github/v/release/databricks-solutions/lakeflow_framework)](https://github.com/databricks-solutions/lakeflow_framework/releases)
 [![License](https://img.shields.io/badge/license-Databricks%20License-blue)](https://github.com/databricks-solutions/lakeflow_framework/blob/main/LICENSE.md)
 
