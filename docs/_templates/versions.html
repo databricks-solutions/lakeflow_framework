@@ -1,24 +1,20 @@
-{# Version switcher rendered from docs/build/html/versions.json via html_context. #}
-{%- if docs_versions and docs_versions|length > 1 %}
+{%- if docs_versions %}
 <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
   <span class="rst-current-version" data-toggle="rst-current-version">
-    <span class="fa fa-book"> </span>
-    {{ docs_current_version }}
+    <span class="fa fa-book">&nbsp&nbspVersion </span>
+    {{ docs_current_version_meta.display_version }}{% if docs_current_version_meta.status == "current" %} (current){% endif %}
     <span class="fa fa-caret-down"></span>
   </span>
   <div class="rst-other-versions">
     <dl>
-      <dt>Versions</dt>
-    </dl>
-    <ul>
       {%- for item in docs_versions %}
-        {%- if item.name == docs_current_version %}
-          <li>{{ item.name }}</li>
-        {%- else %}
-          <li><a href="{{ item.url }}">{{ item.name }}</a></li>
-        {%- endif %}
+      <dd>
+        <a href="{{ item.url }}">
+          {{ item.display_version }}{% if item.status == "current" %} (current){% endif %}
+        </a>
+      </dd>
       {%- endfor %}
-    </ul>
+    </dl>
   </div>
 </div>
 {%- endif %}

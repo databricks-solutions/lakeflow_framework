@@ -44,7 +44,7 @@ jobs:
 
       - name: Build versioned HTML
         run: |
-          bash docs/build_versioned_docs.sh
+          bash docs/scripts/build_versioned_docs.sh
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

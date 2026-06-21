@@ -32,10 +32,33 @@
     max-width: 1000px; 
 }
 
-.last-updated {
-    font-style: italic;
-    color: #888;
+.docs-current-badge {
+    display: inline-block;
+    margin-left: 0.35em;
+    padding: 0.12em 0.5em;
+    border: 1px solid #e1e4e5;
+    border-radius: 3px;
+    background-color: #f3f6f6;
+    color: #404040;
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 1.15;
+    text-transform: none;
+    vertical-align: baseline;
+}
+
+.docs-breadcrumb-version-meta {
     font-size: 0.9em;
+    color: #6f6f6f;
+}
+
+.docs-breadcrumb-version-meta strong {
+    color: inherit;
+    font-weight: 600;
+}
+
+.docs-breadcrumb-version-meta .docs-current-badge {
+    margin: 0 0.45em 0 0.25em;
 }
 
 /* markdown styles for raw html */
@@ -127,4 +150,14 @@
 
 .sphinx-tabs-panel .highlight pre {
     padding-bottom: 12px;
+}
+
+/* Keep RTD footer versions stacked one per line. */
+.rst-versions .rst-other-versions dd {
+    float: none;
+    width: 100%;
+}
+
+.rst-versions .rst-other-versions dd a {
+    display: block;
 }

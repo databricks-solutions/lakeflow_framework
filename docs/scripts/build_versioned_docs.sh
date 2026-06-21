@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 cd "${REPO_ROOT}"
-python3 docs/build_versioned_docs.py "$@"
+python3 docs/scripts/build_versioned_docs.py "$@"

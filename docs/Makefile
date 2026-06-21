@@ -33,11 +33,11 @@ spelling:
 
 # Build versioned docs without sphinx-multiversion.
 html-multiversion:
-	@./build_versioned_docs.sh
+	@./scripts/build_versioned_docs.sh
 
 # Local preview build including all local branches.
 html-multiversion-preview:
-	@./build_versioned_docs.sh --preview
+	@./scripts/build_versioned_docs.sh --preview
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

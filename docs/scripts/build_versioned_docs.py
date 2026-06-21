@@ -3,7 +3,7 @@
 
 Build strategy:
 - Always build `main` as the default development docs, published as `current`.
-- Build selected release tags from docs/select_versions.py.
+- Build selected release tags from docs/scripts/select_versions.py.
 - Write per-version output under docs/build/html/<version>/.
 - Generate docs/build/html/versions.json for the sidebar switcher.
 """
@@ -33,7 +33,7 @@ def _repo_root(docs_dir: Path) -> Path:
 
 
 def _selected_tags(repo_root: Path) -> list[str]:
-    output = _run_capture([sys.executable, "docs/select_versions.py"], cwd=repo_root)
+    output = _run_capture([sys.executable, "docs/scripts/select_versions.py"], cwd=repo_root)
     return json.loads(output) if output else []
 
 
@@ -53,6 +53,21 @@ def _safe_remove(path: Path) -> None:
 
 def _normalize_name(ref: str) -> str:
     return ref.replace("/", "-")
+
+
+def _release_date_for_ref(repo_root: Path, ref: str) -> str:
+    # ISO-style date (YYYY-MM-DD) for deterministic display in docs headers.
+    return _run_capture(["git", "log", "-1", "--format=%cs", ref], cwd=repo_root)
+
+
+def _version_for_ref(repo_root: Path, ref: str, fallback: str) -> str:
+    # Resolve display version from the VERSION file in the selected ref.
+    try:
+        raw = _run_capture(["git", "show", f"{ref}:VERSION"], cwd=repo_root)
+        value = raw.splitlines()[0].strip().lstrip("v")
+        return value or fallback
+    except Exception:
+        return fallback
 
 
 def _build_ref(
@@ -94,7 +109,7 @@ def main() -> None:
     parser.add_argument("--preview", action="store_true", help="Include local branches in build.")
     args = parser.parse_args()
 
-    docs_dir = Path(__file__).resolve().parent
+    docs_dir = Path(__file__).resolve().parent.parent
     repo_root = _repo_root(docs_dir)
     build_root = docs_dir / "build"
     output_root = build_root / "html"
@@ -120,7 +135,31 @@ def main() -> None:
         seen.add(item["name"])
         deduped.append(item)
 
-    links = [{"name": item["name"], "url": f"{item['name']}/index.html", "is_latest": item["name"] == "current"} for item in deduped]
+    links = []
+    for item in deduped:
+        is_current = item["name"] == "current"
+        display_version = _version_for_ref(repo_root, item["ref"], item["name"].lstrip("v"))
+        links.append(
+            {
+                "name": item["name"],
+                "display_version": display_version,
+                "url": f"{item['name']}/index.html",
+                "is_latest": is_current,
+                "status": "current" if is_current else "release",
+                "release_date": _release_date_for_ref(repo_root, item["ref"]),
+            }
+        )
+
+    # If current resolves to the same semantic version as the newest tag,
+    # keep only the current entry to avoid duplicate selector items.
+    current_version = next((item["display_version"] for item in links if item["name"] == "current"), None)
+    if current_version:
+        links = [
+            item
+            for item in links
+            if item["name"] == "current" or item["display_version"] != current_version
+        ]
+
     (output_root / "versions.json").write_text(json.dumps(links, indent=2) + "\n", encoding="utf-8")
 
     for item in deduped:

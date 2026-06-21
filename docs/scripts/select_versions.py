@@ -13,8 +13,8 @@ other scripts. A regex mode is still provided for compatibility.
 
 Usage
 -----
-    python docs/select_versions.py
-    python docs/select_versions.py --format regex
+    python docs/scripts/select_versions.py
+    python docs/scripts/select_versions.py --format regex
 """
 from __future__ import annotations
 
