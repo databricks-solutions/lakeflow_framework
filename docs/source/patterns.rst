@@ -6,7 +6,25 @@ Data Flow and Pipeline Patterns
 Patterns Overview 
 =================
 
-Below we summarize the core patterns that can be used to design and build out your data flows and pipelines.
+Below we summarize a set of core reference patterns used to design and build out data flows and pipelines. These are not the only patterns supported by the framework.
+
+With the exception of the Basic 1:1 pattern, the examples on this page are primarily aimed at more complex streaming requirements (for example, multi-source joins, CDC-driven updates, and mixed stream/static topologies).
+
+For the underlying Lakeflow Spark Declarative Pipelines concepts (datasets, flows, and pipeline semantics), refer to the Databricks documentation: `What is Lakeflow Spark Declarative Pipelines - Key concepts <https://docs.databricks.com/aws/en/ldp/concepts/#key-concepts>`_.
+
+For Gold-layer workloads, Materialized Views should generally be the first choice for dimensional modelling, batch processing, and aggregation-centric serving tables. Prefer streaming-first Gold patterns when lower-latency or less-aggregated use cases are required.
+
+Choosing patterns by operating model
+------------------------------------
+
+These patterns can be applied across centralized platform teams, domain-aligned ownership models (including data mesh/data products), and hybrid approaches.
+
+When selecting a pattern, start with:
+
+* Your ownership model (centralized, domain-aligned, or hybrid)
+* The target modelling approach (medallion, dimensional, Data Vault, enterprise canonical/3NF, or other enterprise models)
+* Source characteristics (streaming, static, CDC, and key alignment)
+* Latency and change-propagation requirements for downstream consumers
 
 .. important::
 
@@ -28,6 +46,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        Ingestion and basic 1:1 loads.
 
        |
+
        **Usage Scenario:**
 
        * You are ingesting data or performing one-to-one loads.
@@ -42,6 +61,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        Multi-source streaming and basic transformations.
        
        |
+
        **Usage Scenario:**
 
        * You need to stream multiple tables in a single target table via a basic transform.
@@ -67,6 +87,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        When you have a streaming table that you need to join to one or many additional static tables to derive your desired target data set.
        
        |
+
        **Usage Scenario:**
 
        * You have a single streaming table driving the data flow and want to join to one or more other tables.
@@ -94,6 +115,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        When you have a streaming table that you need to join to one or many additional static tables in order to derive your desired target data set, but you also want updates to the static tables to be reflected as they occur.
        
        |
+
        **Usage Scenario:**
 
        * You want to join multiple streaming tables.
@@ -120,6 +142,7 @@ Below we summarize the core patterns that can be used to design and build out yo
        Constructing a CDC stream from a snapshot source to be used in multi-source streaming or stream-static patterns.
        
        |
+
        **Usage Scenario:**
 
        * You need to stream multiple sources into a single target table but one or more of the sources are snapshot based.

@@ -24,7 +24,7 @@ There are two options for table migration, these are explained in detail below:
 
 2. **Migration without auto starting version management**
 
-   In this mode, the table will be copied into the target table, but any starting versions for the sources of the target table need to be explicitly set in the dataflow specification, within the reader options of the corresponding views.
+   In this mode, the table will be copied into the target table, but any starting versions for the sources of the target table need to be explicitly set in the data flow specification, within the reader options of the corresponding views.
 
 Configuration
 -------------
@@ -95,7 +95,7 @@ Migration with Auto Starting Versions
 When migrating a table with auto starting version management, you need to migrate in a specific way:
 
 1. Ensure the ``table_migration_state_volume_path`` is configured in your ``global.json`` file and the volume is accessible.
-2. Create your pipeline bundle and dataflow specs with the table migration options appropriately set.
+2. Create your pipeline bundle and data flow specs with the table migration options appropriately set.
 3. Deploy your pipeline bundle but ensure that you do not start the pipeline.
 4. Allow any jobs / pipeline currently populating your target table and it's source to complete and then pause the jobs / pipelines populating both the target table and it's sources.
 5. Execute your new pipeline manually and once complete, ensure:
@@ -113,7 +113,7 @@ The table migration feature operates through a state management system that ensu
 
 **1. Migration Manager Initialization**
 
-When a dataflow specification includes table migration details, the framework initializes a ``TableMigrationManager`` that:
+When a data flow specification includes table migration details, the framework initializes a ``TableMigrationManager`` that:
 
 * Validates the target format is Delta (table migration is only supported for Delta targets)
 * Stores migration configuration including source table details and catalog type (HMS or UC)
@@ -162,7 +162,7 @@ After the migration completes, for ongoing pipeline execution:
 The migration system integrates seamlessly with the standard pipeline execution:
 
 * The migration flow executes once only
-* Starting versions are applied directly to the dataflow specification during initialization
+* Starting versions are applied directly to the data flow specification during initialization
 * The migration state is persisted in volume-based CSV files with proper partitioning
 * The checkpoint state files are automatically maintained and updated as source tables advance
 
@@ -173,7 +173,7 @@ Migration is complete once:
 * The table to be migrated has been successfully copied to the target table
 * All sources are "ready" and allowed to flow into the target table again. This can be confirmed by checking the checkpoint state files in the volume storage.
 
-If migration is complete, you can either completely remove the ``tableMigrationDetails`` from the dataflow specification, or you can set its enabled flag to false. Once the dataflow spec has been updated and redeployed, all migration artifacts (views, checkpoint state files, and run once flow) will be removed and you will be left with a clean pipeline.
+If migration is complete, you can either completely remove the ``tableMigrationDetails`` from the data flow specification, or you can set its enabled flag to false. Once the data flow spec has been updated and redeployed, all migration artifacts (views, checkpoint state files, and run once flow) will be removed and you will be left with a clean pipeline.
 
 **Technical Implementation Details**
 
@@ -181,7 +181,7 @@ If migration is complete, you can either completely remove the ``tableMigrationD
 * **Partitioned Storage**: Files are partitioned by ``pipelineId`` and ``tableName`` for efficient access and organization  
 * **Dual Storage Paths**: Separate paths for initial versions (baseline capture) and tracking (ongoing state management)
 * **Schema Enforcement**: Explicit schema definitions ensure data consistency across storage operations
-* **Direct Specification Modification**: Starting versions are applied directly to the dataflow specification rather than during runtime
+* **Direct Specification Modification**: Starting versions are applied directly to the data flow specification rather than during runtime
 * **Automatic State Management**: The system automatically handles reading, writing, and updating of checkpoint state files
 
 **Storage Structure**
@@ -218,6 +218,6 @@ Migration without Auto Starting Versions
 
 The process will vary here depending on your migration scenario. It is important that:
 
-* The starting versions are specified in the dataflow specification, prior to publishing your pipeline bundle and executing the pipeline.
+* The starting versions are specified in the data flow specification, prior to publishing your pipeline bundle and executing the pipeline.
 * The jobs populating the target table and it's sources are paused, for the duration of the migration.
 * You ensure that you get the correct source versions matching the version of the target table, at the time of migration.

@@ -72,8 +72,8 @@ You can do this in the pipeline resource YAML file or via the Databricks UI in t
 
     resources:
         pipelines:
-            dlt_framework_samples_bronze_base_pipeline:
-            name: Lakeflow Framework Samples - Bronze - Base Pipeline (${var.logical_env})
+            lakeflow_pattern_bronze_base_samples_pipeline:
+            name: Lakeflow Framework - Pattern - Bronze Base Samples Pipeline (${var.logical_env})
             channel: CURRENT
             serverless: true
             catalog: ${var.catalog}
@@ -89,13 +89,13 @@ You can do this in the pipeline resource YAML file or via the Databricks UI in t
                 workspace.host: ${var.workspace_host}
                 pipeline.layer: ${var.layer}
                 logicalEnv: ${var.logical_env}
-                pipeline.dataFlowGroupFilter: base_samples
+                pipeline.dataFlowGroupFilter: base_bronze
                 pipeline.ignoreValidationErrors: True
 
 Validation via CI/CD
 --------------------
 
-You can validate Data Flow Specification ``*_main.json`` files in CI without running a Spark Declarative Pipeline. The framework repository includes a ``scripts/validate_dataflows.py`` script: run it from a checkout of Lakeflow Framework repo so it can load JSON Schemas (under ``src/lakeflow_framework/schemas/``) and optional dataflow spec version mappings, then point it at a directory or single ``*_main.json`` in your pipeline bundle or monorepo.
+You can validate Data Flow Specification ``*_main.json`` files in CI without running a Spark Declarative Pipeline. The framework repository includes a ``scripts/validate_dataflows.py`` script: run it from a checkout of Lakeflow Framework repo so it can load JSON Schemas (under ``src/lakeflow_framework/schemas/``) and optional data flow spec version mappings, then point it at a directory or single ``*_main.json`` in your pipeline bundle or monorepo.
 
 Validating in GitHub Actions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,7 +104,7 @@ If you are using GitHub Actions for your CI/CD pipelines, you can use the **comp
 
 **Requirements**
 
-* Check out **your** repository (the pipeline bundle or project that contains the dataflow specs) before running the action, so the ``path`` input resolves under ``github.workspace``.
+* Check out **your** repository (the pipeline bundle or project that contains the data flow specs) before running the action, so the ``path`` input resolves under ``github.workspace``.
 * The action installs Python and ``jsonschema``, then runs the validator with your chosen options.
 
 **Inputs**
@@ -118,7 +118,7 @@ If you are using GitHub Actions for your CI/CD pipelines, you can use the **comp
    * - ``path``
      - Directory or single ``*_main.json`` file to validate, relative to the workflow workspace. Default: ``.``
    * - ``no-mapping``
-     - If ``true``, skip dataflow spec version mapping (strict validation only). Default: ``false``
+     - If ``true``, skip data flow spec version mapping (strict validation only). Default: ``false``
    * - ``verbose``
      - If ``true``, enables verbose script output (``-v``). Default: ``false``
 

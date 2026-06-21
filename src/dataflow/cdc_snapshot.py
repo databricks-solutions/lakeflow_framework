@@ -343,8 +343,7 @@ class CDCSnapshotFlow:
             return all_files
         except Exception as e:
             self.logger.warning(
-                f"CDC Snapshot: dbutils.fs.ls() failed at '{path}' "
-                f"({type(e).__name__}: {e}). "
+                f"CDC Snapshot: dbutils.fs.ls() failed at '{path}'. "
                 f"Falling back to Spark binaryFile for file discovery."
             )
 

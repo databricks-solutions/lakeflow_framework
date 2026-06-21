@@ -1,5 +1,5 @@
 Materialized Views
-================
+==================
 
 .. list-table::
    :header-rows: 0
@@ -16,7 +16,7 @@ Materialized Views
 
 Overview
 --------
-Materialized Views are the precomputed results of a query stored in a Table. Please refer to the above documentation for full details on Materialized Views and how they work. 
+Materialized Views are the pre-computed results of a query stored in a Table. Please refer to the above documentation for full details on Materialized Views and how they work.
 
 Key Features:
 
@@ -41,12 +41,12 @@ Sample Bundle
 
 A sample is available in:
 
-    - the ``bronze_sample`` bundle in the ``src/dataflows/feature_samples`` folder in the ``materialized_views_main.json|yaml`` file
-    - the ``gold_sample`` bundle in the ``src/dataflows/base_samples`` folder in the ``materialized_views_main.json|yaml`` file
+    - the ``feature-samples`` bundle in the ``src/dataflows/feature_samples/dataflowspec`` folder in the ``materialized_views_main.json`` file
+    - the ``pattern-samples`` bundle in the ``src/dataflows/base_gold/dataflowspec`` folder in the ``gold_materialized_views_main.json`` file
 
 
 Data Flow Spec Configuration
----------------------------
+----------------------------
 
 Materialized Views are must be configured in the Materialized Views Data Flow Spec Type. This Data Flow Specification is defined in the :doc:`dataflow_spec_ref_main_materialized_views` documentation.
 
@@ -227,7 +227,7 @@ Materialized Views support several additional configuration options:
   - ``incremental_strict`` disallows non-deterministic functions (e.g. ``current_timestamp()``); use ``disableOperationalMetadata`` in ``configFlags`` when needed
 
 Example Configuration
--------------------
+---------------------
 
 A complete example of a materialized view configuration:
 

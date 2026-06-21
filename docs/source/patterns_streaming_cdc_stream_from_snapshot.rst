@@ -74,25 +74,25 @@ Feature Support
        - SCD2 staging tables
 
 Considerations and Limitations
----------------------------
+------------------------------
 
 .. important::
-   - In historical mode, if there are multiple snapshots processed in the first run, reading stream from the CDF of the staging table will only return the lastest snapshot's records as inserts. To get all the changes from all historical snapshots, set startingVersionFromDLTSetup to true when reading the CDF of the staging table, see :doc:`dataflow_spec_ref_source_details`.
+   - In historical mode, if there are multiple snapshots processed in the first run, reading stream from the CDF of the staging table will only return the latest snapshot's records as inserts. To get all the changes from all historical snapshots, set startingVersionFromDLTSetup to true when reading the CDF of the staging table, see :doc:`dataflow_spec_ref_source_details`.
 
 Samples
 -------
 Construct CDC stream from snapshot source in bronze:
 
-- Bundle: ``samples/bronze_sample``
-- Sample: ``samples/bronze_sample/src/dataflows/feature_samples/dataflowspec/historical_snapshot_datetime_scd1_main.json``
+- Bundle: ``samples/pattern-samples``
+- Sample: ``samples/pattern-samples/src/dataflows/base_bronze/dataflowspec/customer_historical_snapshot_datetime_scd1_main.json``
 
 Use CDC stream as input view in silver:
 
-- Bundle: ``samples/silver_sample``
-- Sample: ``samples/silver_sample/src/dataflows/feature_samples/dataflowspec/customer_snapshot_source_main.json``
+- Bundle: ``samples/pattern-samples``
+- Sample: ``samples/pattern-samples/src/dataflows/cdc_from_snapshot_sources/dataflowspec/customer_snapshot_source_main.json``
 
 Example Data Flow
----------------
+-----------------
 
 The sample demonstrates converting a snapshot source into a CDC stream:
 

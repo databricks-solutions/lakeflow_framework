@@ -1,5 +1,5 @@
 Liquid Clustering
-================
+=================
 
 .. list-table::
    :header-rows: 0

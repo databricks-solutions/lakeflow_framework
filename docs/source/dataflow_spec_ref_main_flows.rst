@@ -3,8 +3,8 @@ Creating a Flows Data Flow Spec Reference
 
 A standard Data Flow Spec is the most basic type of Data Flow Spec and is suited to basic use cases where you are performing 1:1 ingestion or loads. It is particularly suited to Bronze Ingestion Use Cases.
 
-Example:
---------
+Example Specification
+---------------------
 
 The below sample demonstrates a flows Data Flow Spec for a Silver multi-source streaming use case (refer to :doc:`patterns_streaming_multi_source_streaming` for more information):
 
@@ -185,9 +185,9 @@ The below sample demonstrates a flows Data Flow Spec for a Silver multi-source s
                   targetTable: staging_table_mrg_p5
                   sourceView: staging_table_apnd_p5
 
-The above dataflow spec sample contains the following core components:
+The above data flow spec sample contains the following core components:
 
-  * Dataflow metadata configuration
+  * Data flow metadata configuration
   * Target configuration
   * Data quality and quarantine settings
   * Flow group configuration
@@ -196,10 +196,10 @@ The following sections detail each of the above components.
 
 .. _dataflow-spec-flows-metadata-configuration:
 
-Dataflow Metadata Configuration
--------------------------------
+Data Flow Metadata Configuration
+--------------------------------
 
-These properties define the basic identity and type of the dataflow:
+These properties define the basic identity and type of the data flow:
 
 .. list-table::
    :header-rows: 1
@@ -261,7 +261,7 @@ The `flowGroupDetails` object contains the following properties:
      - **Description**
    * - **dataFlowID** (*optional*)
      - ``string``
-     - A unique identifier for the data flow. Only required when dataflow specs are split (see :doc:`splitting_dataflow_spec`).
+     - A unique identifier for the data flow. Only required when data flow specs are split (see :doc:`splitting_dataflow_spec`).
    * - **flowGroupId**
      - ``string``
      - A unique identifier for the flow group.
@@ -270,7 +270,7 @@ The `flowGroupDetails` object contains the following properties:
      - An object containing named objects representing staging tables in the flow group. The key for each nested object in this object will become the table names for the staging tables.
    * - **flows**
      - ``array``
-     - An array of flows in the flow group. Items: :ref:`flow-configuration`
+     - An array of flows in the flow group. Items: :ref:`flow-configuration <dataflow-spec-flows-flow-configuration>`
 
 
 .. _dataflow-spec-flows-staging-table-configuration:
@@ -329,7 +329,7 @@ A `flow` object contains the following properties:
    * - **flowDetails**
      - ``object``
      - Details about the flow, required based on `flowType`.  
-       Properties vary based on `flowType`. See :ref:`Flow Details<Flow Details>`.
+       Properties vary based on `flowType`. See :ref:`Flow Details <dataflow-spec-flows-flow-details>`.
    * - **views** (*optional*)
      - ``object``
      - An object containing views used in the flow. The key for each nested object in this object will become the view names.

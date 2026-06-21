@@ -13,15 +13,15 @@ Versioning - DataFlow Specs
 
 Overview
 --------
-The Lakeflow Framework supports dataflow specification versioning to enable backwards compatibility and gradual migration of dataflow specifications. 
-This feature allows different mapping versions to be applied to transform the structure and content of dataflow specifications during processing. This is particularly useful for:
+The Lakeflow Framework supports data flow specification versioning to enable backwards compatibility and gradual migration of data flow specifications. 
+This feature allows different mapping versions to be applied to transform the structure and content of data flow specifications during processing. This is particularly useful for:
 
-- Maintaining backwards compatibility when dataflow specification schemas evolve
-- Gradually migrating existing dataflow specifications to new formats
+- Maintaining backwards compatibility when data flow specification schemas evolve
+- Gradually migrating existing data flow specifications to new formats
 - Testing new specification formats without breaking existing workflows
-- Restructuring dataflow specifications to accommodate schema changes
+- Restructuring data flow specifications to accommodate schema changes
 
-The versioning system applies transformation mappings that can rename fields, move content to different locations, and remove obsolete fields in the dataflow specifications, allowing older specification formats to work with newer framework versions.
+The versioning system applies transformation mappings that can rename fields, move content to different locations, and remove obsolete fields in the data flow specifications, allowing older specification formats to work with newer framework versions.
 
 
 Mapping File Structure
@@ -31,8 +31,8 @@ DataFlow specification mappings are stored in version-specific directories under
 
 Each mapping file contains transformation rules organized by:
 
-- **global**: Mappings applied to all dataflow specification types
-- **[dataflow_type]**: Mappings applied only to specific dataflow types (e.g., "standard", "flow", "materialized_view")
+- **global**: Mappings applied to all data flow specification types
+- **[dataflow_type]**: Mappings applied only to specific data flow types (e.g., "standard", "flow", "materialized_view")
 
 The mapping file supports three types of transformations:
 
@@ -134,7 +134,7 @@ A comprehensive mapping file combining all operation types:
 
 Configure Global DataFlow Version
 ----------------------------------
-To set a global dataflow specification version that applies to all specifications in a pipeline, configure the ``dataflow_spec_version`` parameter in your pipeline configuration.
+To set a global data flow specification version that applies to all specifications in a pipeline, configure the ``dataflow_spec_version`` parameter in your pipeline configuration.
 
 This can be set in your pipeline substitutions file:
 
@@ -154,12 +154,12 @@ This can be set in your pipeline substitutions file:
 
          dataflow_spec_version: 0.1.0
 
-When a global version is set, all dataflow specifications in the pipeline will use this mapping version unless overridden at the individual specification level.
+When a global version is set, all data flow specifications in the pipeline will use this mapping version unless overridden at the individual specification level.
 
 
 Configure Individual DataFlow Specification Version
 ----------------------------------------------------
-Individual dataflow specifications can override the global version by setting the ``dataFlowVersion`` field in their specification file:
+Individual data flow specifications can override the global version by setting the ``dataFlowVersion`` field in their specification file:
 
 .. tabs::
 
@@ -195,10 +195,10 @@ Individual dataflow specifications can override the global version by setting th
            targetDetails:
              table: customers
 
-The individual specification version takes precedence over the global version for that specific dataflow.
+The individual specification version takes precedence over the global version for that specific data flow.
 
 .. note::
-   If neither global nor individual dataflow version is specified, no mappings will be applied and the specifications will be processed with their original structure.
+   If neither global nor individual data flow version is specified, no mappings will be applied and the specifications will be processed with their original structure.
 
 
 Transformation Order
@@ -215,11 +215,11 @@ The framework applies transformations in a specific order to ensure consistent r
 Best Practices
 --------------
 1. **Default Behavior**
-   - Only use dataflow versioning when backwards compatibility is required
+   - Only use data flow versioning when backwards compatibility is required
    - New specifications should use the current schema format without versioning
 
 2. **Version Consistency**
-   - Use consistent version numbers across related dataflow specifications
+   - Use consistent version numbers across related data flow specifications
 
 3. **Migration Strategy**
    - Start with global version configuration for bulk migrations
@@ -266,7 +266,7 @@ Enable debug logging to see transformation application details:
 .. code-block:: python
 
     # Framework logs will show:
-    # "Global Dataflow Spec Mapping Version: [version]"
-    # "Retrieved Dataflow Spec Specific Mapping Version: [version]. Dataflow Spec ID: [id]"
+    # "Global Data Flow Spec Mapping Version: [version]"
+    # "Retrieved Data Flow Spec Specific Mapping Version: [version]. Data Flow Spec ID: [id]"
     # "Mapping applied to spec: [spec_path]" 
     # "New spec: [spec_data]" 

@@ -1,7 +1,7 @@
 Deploying a Pipeline Bundle
-##########################
+###########################
 
-.. _local_deployment:
+.. _pipeline_bundle_local_deployment:
 
 Deploying From Your Local Machine
 =================================
@@ -15,21 +15,23 @@ Once you have created a data pipeline bundle and deployed the Lakeflow Framework
    .. code-block:: console
 
       databricks bundle validate
+
    This command will run a series of checks to ensure the bundle is correctly set up and ready for deployment.
 4. Run the following command to deploy the data pipeline bundle to your Databricks workspace:
    
    .. code-block:: console
    
       databricks bundle deploy --var="pipeline_framework_path=/Workspace/Users/<your_databricks_user_id>/.bundle/<framework_bundle_name>/<environment>/current/files/src"
+
    The owner is your databricks user id.
 
 
 5. Once the deployment is successful, you should see the data pipeline bundle in your Databricks workspace. 
    
-   To varify, you can go to your Databricks workspace and check if the bundle is present in the ``.bundle`` directory.
+   To verify, you can go to your Databricks workspace and check if the bundle is present in the ``.bundle`` directory.
    Also verify that a Spark Declarative Pipeline has been created in the Databricks workspace with the name of the pipeline being the name provided in the resources yaml file for the Spark Declarative Pipeline.
 
-.. _ci_cd_deployment:
+.. _pipeline_bundle_ci_cd_deployment:
 
 Deploying via CI/CD
 ===================

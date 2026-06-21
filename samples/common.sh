@@ -161,11 +161,11 @@ deploy_bundle() {
     if [[ "$compute" == "0" ]]; then
         log_info "Deploying to classic-compute target"
         mkdir -p scratch/resources
-        cp resources/classic/*.yml scratch/resources/
+        find resources/classic -name "*.yml" -exec cp {} scratch/resources/ \;
     else
         log_info "Deploying to serverless-compute target"
         mkdir -p scratch/resources
-        cp resources/serverless/*.yml scratch/resources/
+        find resources/serverless -name "*.yml" -exec cp {} scratch/resources/ \;
     fi
     
     # Deploy the bundle
@@ -257,9 +257,13 @@ update_substitutions_file() {
         
         # Update dpm_schema (if present)
         perl -i -pe "s|dpm_schema:.*|dpm_schema: $catalog.${schema_namespace}_dpm${logical_env}|" "$substitutions_file"
-        
-        # Update sample_file_location
-        perl -i -pe "s|sample_file_location:.*|sample_file_location: /Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume|" "$substitutions_file"
+
+        # Update feature_schema (if present — feature-samples bundle)
+        perl -i -pe "s|feature_schema:.*|feature_schema: $catalog.${schema_namespace}_feature${logical_env}|" "$substitutions_file"
+
+        # Update sample_file_location — handles both _staging and _feature volume paths
+        perl -i -pe "s|sample_file_location:.*staging.*|sample_file_location: /Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume|" "$substitutions_file"
+        perl -i -pe "s|sample_file_location:.*feature.*|sample_file_location: /Volumes/$catalog/${schema_namespace}_feature${logical_env}/stg_volume|" "$substitutions_file"
     else
         # JSON format: "key": "value"
         log_info "Detected JSON format"
@@ -276,11 +280,15 @@ update_substitutions_file() {
         # Update gold_schema
         perl -i -pe "s|\"gold_schema\": \"[^\"]*\"|\"gold_schema\": \"$catalog.${schema_namespace}_gold${logical_env}\"|" "$substitutions_file"
         
-        # Update dpm_schema
+        # Update dpm_schema (if present)
         perl -i -pe "s|\"dpm_schema\": \"[^\"]*\"|\"dpm_schema\": \"$catalog.${schema_namespace}_dpm${logical_env}\"|" "$substitutions_file"
-        
-        # Update sample_file_location
-        perl -i -pe "s|\"sample_file_location\": \"[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume\"|" "$substitutions_file"
+
+        # Update feature_schema (if present — feature-samples bundle)
+        perl -i -pe "s|\"feature_schema\": \"[^\"]*\"|\"feature_schema\": \"$catalog.${schema_namespace}_feature${logical_env}\"|" "$substitutions_file"
+
+        # Update sample_file_location — handles both _staging and _feature volume paths
+        perl -i -pe "s|\"sample_file_location\": \"[^/]*/[^/]*/[^_]*_staging[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume\"|" "$substitutions_file"
+        perl -i -pe "s|\"sample_file_location\": \"[^/]*/[^/]*/[^_]*_feature[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_feature${logical_env}/stg_volume\"|" "$substitutions_file"
     fi
     
     log_success "Successfully updated substitutions file"

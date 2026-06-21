@@ -3,6 +3,7 @@ name: Deploy Lakeflow Framework Documentation to GitHub Pages
 on:
   push:
     branches: ["main"]
+    tags: ["v*.*.*"]
 
 permissions:
   contents: read
@@ -20,8 +21,11 @@ jobs:
       group: databricks-solutions-protected-runner-group
       labels: linux-ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout (full history + tags)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -38,10 +42,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install --require-hashes --no-deps -r requirements-docs.lock
 
-      - name: Build HTML
+      - name: Build versioned HTML
         run: |
-          cd docs
-          make html
+          bash docs/scripts/build_versioned_docs.sh
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

@@ -1,4 +1,4 @@
-Auto Complete / Intellisense
+Auto Complete / IntelliSense
 =============================
 
 .. list-table::
@@ -19,20 +19,20 @@ The framework uses JSON Schema-based IntelliSense when creating or editing Data 
 - Validation (checking for errors based on the schema)
 - Quick Fixes (where applicable)
 
-Autocompletion Example
-~~~~~~~~~~~~~~~~~~~~~~
+Autocomplete Example
+~~~~~~~~~~~~~~~~~~~~
 *Suggesting keys*
 
 .. image:: images/screenshot_intellisense_keys.png
-   :alt: Intellisense Keys
+   :alt: IntelliSense Keys
 
 *Suggesting values*
 
 .. image:: images/screenshot_intellisense_values.png
-   :alt: Intellisense Values
+   :alt: IntelliSense Values
 
 Validation Example
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 *Schema Validation*
 
@@ -46,8 +46,8 @@ Validation Example
 
 Configuration for VS Code
 -------------------------
-To enable Auto Complete / Intellisense in VS Code, you need to add the JSON schemas to your workspace or user ``settings.json`` file. 
-Detailsed instructions are available in the `VS Code - JSON schema and Settings <https://code.visualstudio.com/docs/languages/json#_json-schemas-and-settings>`_ documentation.
+To enable Auto Complete / IntelliSense in VS Code, you need to add the JSON schemas to your workspace or user ``settings.json`` file. 
+Detailed instructions are available in the `VS Code - JSON schema and Settings <https://code.visualstudio.com/docs/languages/json#_json-schemas-and-settings>`_ documentation.
 
 To open the ``settings.json`` file, you can use the command palette (Ctrl+Shift+P or Cmd+Shift+P on Mac) and search for "JSON Schema".
 

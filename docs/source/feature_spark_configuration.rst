@@ -1,5 +1,5 @@
 Spark Configuration
-==================
+===================
 
 .. list-table::
    :header-rows: 0
@@ -31,7 +31,7 @@ The Spark configuration section must follow this schema:
 
    .. tab:: JSON
 
-      .. code-block:: json
+      .. code-block:: none
 
          {
              "spark_config": {
@@ -59,7 +59,7 @@ The Spark configuration section must follow this schema:
      - The value to set for the configuration property. Can be string, number, or boolean depending on the property.
 
 Common Configuration Properties
------------------------------
+-------------------------------
 
 Here are some commonly used Spark configuration properties:
 
@@ -83,7 +83,7 @@ Here are some commonly used Spark configuration properties:
      - 300
 
 Example Configuration
--------------------
+---------------------
 
 Below is an example of a typical Spark configuration in the `global.json|yaml` file:
 
@@ -124,10 +124,10 @@ Below is an example of a typical Spark configuration in the `global.json|yaml` f
     Some Spark configurations may be overridden by Databricks cluster configurations or job-specific settings. Refer to the Databricks documentation for the configuration precedence rules.
 
 Advanced Usage
--------------
+--------------
 
 Dynamic Configuration
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 For certain use cases, you may want to set different Spark configurations based on the environment or workload. This can be achieved using environment variables or the substitutions feature of the framework.
 
@@ -155,7 +155,7 @@ Example with environment-specific configurations:
            spark.sql.adaptive.enabled: ${ADAPTIVE_EXECUTION_ENABLED}
 
 Performance Tuning
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 When tuning Spark configurations for performance:
 

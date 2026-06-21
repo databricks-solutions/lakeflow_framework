@@ -1,5 +1,5 @@
 Creating a Materialized View Data Flow Spec Reference
-####################################################
+#####################################################
 
 A Materialized View Data Flow Spec is designed for creating and maintaining materialized views that aggregate or transform data from source tables.
 
@@ -73,10 +73,10 @@ The following schema details the configuration for a Materialized View Data Flow
             quarantineTargetDetails: {}
             refreshPolicy: auto
 
-Example:
---------
+Example Specification
+---------------------
 
-The below demonstrates a Materialized View Data Flow Spec:
+The below sample demonstrates a Materialized View Data Flow Spec:
 
 .. tabs::
 
@@ -177,9 +177,9 @@ The below demonstrates a Materialized View Data Flow Spec:
               configFlags:
                 - disableOperationalMetadata
 
-The above dataflow spec sample contains the following core components:
+The above data flow spec sample contains the following core components:
 
-  * Dataflow metadata configuration
+  * Data flow metadata configuration
   * Source configuration
   * Table configuration
   * Data quality and quarantine settings
@@ -188,10 +188,10 @@ The following sections detail each of the above components.
 
 .. _dataflow-spec-materialized-view-metadata-configuration:
 
-Dataflow Metadata Configuration
--------------------------------
+Data Flow Metadata Configuration
+--------------------------------
 
-These properties define the basic identity and type of the dataflow:
+These properties define the basic identity and type of the data flow:
 
 .. list-table::
    :header-rows: 1
@@ -208,7 +208,7 @@ These properties define the basic identity and type of the dataflow:
      - The group to which the data flow belongs, can be the same as `dataFlowId` if there is no group.
    * - **dataFlowType**
      - ``string``
-     - The type of data flow. Must be `materialized_view` for materialized view dataflows.
+     - The type of data flow. Must be `materialized_view` for materialized view data flows.
 
 .. _dataflow-spec-materialized-view-source-configuration:
 

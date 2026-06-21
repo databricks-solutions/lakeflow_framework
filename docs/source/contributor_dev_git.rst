@@ -4,7 +4,7 @@ GIT
 Branching Strategy
 ------------------
 
-The project follows the Gitflow branching model for version control. This model provides a robust framework for managing larger projects with scheduled releases.
+The project follows the GitFlow branching model for version control. This model provides a robust framework for managing larger projects with scheduled releases.
 
 Our repository maintains the following primary branches:
 
@@ -15,7 +15,7 @@ Our repository maintains the following primary branches:
 * ``fix`` - Short-lived branches for bug fixes
 
 Feature Branch Guidelines
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Create feature branches from ``develop``
 * Branch naming: ``feature/descriptive-name`` (e.g. ``feature/add-cdc-support``)
@@ -24,7 +24,7 @@ Feature Branch Guidelines
 * Submit pull request to merge back into ``develop`` when complete
 
 Fix Branch Guidelines
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 * Create fix branches from ``develop`` for non-critical bugs
 * Branch naming: ``fix/issue-description`` (e.g. ``fix/logging-format``)
@@ -33,7 +33,7 @@ Fix Branch Guidelines
 * Submit pull request to merge back into ``develop`` when complete
 
 Release Strategy
----------------
+----------------
 
 The project follows a structured release process aligned with the GitFlow branching model:
 
