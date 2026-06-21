@@ -1,0 +1,21 @@
+{
+    "expect": [
+        {
+            "name": "customer_id_positive",
+            "constraint": "CUSTOMER_ID > 0",
+            "tag": "Validity"
+        }
+    ],
+    "expect_or_drop": [
+        {
+            "name": "customer_id_not_null",
+            "constraint": "CUSTOMER_ID IS NOT NULL",
+            "tag": "Validity"
+        },
+        {
+            "name": "load_timestamp_valid",
+            "constraint": "LOAD_TIMESTAMP IS NOT NULL",
+            "tag": "Completeness"
+        }
+    ]
+}

@@ -1,0 +1,63 @@
+resources:
+  jobs:
+    nodester_samples_run_job:
+      name: Lakeflow Framework - Nodester Samples - Run (${var.logical_env})
+      tasks:
+        # Base samples — individual pipelines
+        - task_key: nodester_customer_simple
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_customer_simple.id}
+            full_refresh: true
+
+        - task_key: nodester_customer_cloudfiles
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_customer_cloudfiles.id}
+            full_refresh: true
+
+        - task_key: nodester_customer_transform
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_customer_transform.id}
+            full_refresh: true
+
+        - task_key: nodester_customer_multi_target
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_customer_multi_target.id}
+            full_refresh: true
+
+        # Note: nodester_base_pipeline (combined) is excluded because individual
+        # base sample specs share view names which causes SDP "Cannot redefine" errors
+        # when loaded into a single pipeline. The individual pipelines above cover all base samples.
+
+        # Feature samples — all run in parallel
+        - task_key: nodester_feature_general
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_feature_general_pipeline.id}
+            full_refresh: true
+
+        - task_key: nodester_feature_python
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_feature_python_pipeline.id}
+            full_refresh: true
+
+        - task_key: nodester_feature_data_quality
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_feature_data_quality_pipeline.id}
+            full_refresh: true
+
+        - task_key: nodester_feature_snapshots
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_feature_snapshots_pipeline.id}
+            full_refresh: true
+
+        - task_key: nodester_feature_table_migration
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_feature_table_migration_pipeline.id}
+            full_refresh: true
+
+        - task_key: nodester_feature_materialized_views
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodester_feature_materialized_views_pipeline.id}
+            full_refresh: true
+
+      queue:
+        enabled: true

@@ -145,6 +145,31 @@ for ((i=1; i<=num_runs; i++)); do
 done
 
 cd "$SCRIPT_DIR" || exit 1
+
+# Step 4: Execute nodester samples run job (reads from staging/bronze created by pattern run 1)
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Executing Nodester Samples Run Job"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+nodester_schema="${schema_namespace}_silver${logical_env}"
+setup_bundle_env "Nodester Samples Test Run" "$nodester_schema"
+
+cd "$SCRIPT_DIR/nodester_sample" || {
+    log_error "Failed to change directory to nodester_sample"
+    exit 1
+}
+
+log_info "Running nodester_samples_run_job..."
+if databricks bundle run nodester_samples_run_job -t dev --profile "$profile" 2>&1; then
+    log_success "Nodester samples run completed successfully"
+else
+    log_error "Nodester samples run failed"
+    exit 1
+fi
+
+cd "$SCRIPT_DIR" || exit 1
 unset MSYS_NO_PATHCONV
 
 echo ""

@@ -17,3 +17,4 @@ A Data Flow Spec is a JSON file that defines the structure of a single data flow
    dataflow_spec_ref_main_standard
    dataflow_spec_ref_main_flows
    dataflow_spec_ref_main_materialized_views
+   dataflow_spec_ref_main_nodester

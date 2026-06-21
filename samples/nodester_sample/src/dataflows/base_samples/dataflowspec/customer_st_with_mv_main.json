@@ -1,0 +1,44 @@
+{
+    "data_flow_id": "nodester_customer_st_with_mv",
+    "data_flow_group": "nodester_base_samples",
+    "data_flow_type": "nodester",
+    "nodes": [
+        {
+            "name": "v_source_customer_st_mv",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "database": "{staging_schema}",
+                "table": "customer",
+                "cdf_enabled": true,
+                "mode": "stream"
+            }
+        },
+        {
+            "name": "target_customer_streaming",
+            "node_type": "target",
+            "config": {
+                "table": "customer_st_with_mv_node",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cluster_by_auto": true,
+                "input": [
+                    {
+                        "view": "v_source_customer_st_mv",
+                        "flow": "f_source_customer_st_mv"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "target_customer_summary",
+            "node_type": "target",
+            "config": {
+                "table": "customer_summary_mv_node",
+                "table_type": "mv",
+                "sql_statement": "SELECT count(*) as customer_count, count(CASE WHEN DELETE_FLAG IS NULL OR DELETE_FLAG = false THEN 1 END) as active_customer_count, max(LOAD_TIMESTAMP) as latest_load_timestamp FROM live.customer_st_with_mv_node"
+            }
+        }
+    ]
+}

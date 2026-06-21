@@ -1,0 +1,68 @@
+{
+    "data_flow_id": "table_migration_scd2",
+    "data_flow_group": "nodester_feature_samples_table_migration",
+    "data_flow_type": "nodester",
+    "nodes": [
+        {
+            "name": "v_feature_tm_customer_scd2",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "customer",
+                "cdf_enabled": true,
+                "select_exp": [
+                    "CUSTOMER_ID",
+                    "FIRST_NAME",
+                    "LAST_NAME",
+                    "EMAIL",
+                    "LOAD_TIMESTAMP"
+                ]
+            }
+        },
+        {
+            "name": "target_feature_migrated_table_scd2",
+            "node_type": "target",
+            "config": {
+                "table": "feature_migrated_table_scd2",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "false"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "except_column_list": [],
+                    "ignore_null_updates": true,
+                    "apply_as_deletes": ""
+                },
+                "table_migration_details": {
+                    "catalog_type": "uc",
+                    "enabled": true,
+                    "auto_starting_versions_enabled": true,
+                    "source_details": {
+                        "database": "{bronze_schema}",
+                        "table": "table_to_migrate_scd2",
+                        "select_exp": [
+                            "CUSTOMER_ID",
+                            "FIRST_NAME",
+                            "LAST_NAME",
+                            "EMAIL",
+                            "EFFECTIVE_FROM AS __START_AT",
+                            "EFFECTIVE_TO AS __END_AT"
+                        ]
+                    }
+                },
+                "input": [
+                    {
+                        "view": "v_feature_tm_customer_scd2",
+                        "flow": "f_feature_tm_customer_scd2"
+                    }
+                ]
+            }
+        }
+    ]
+}

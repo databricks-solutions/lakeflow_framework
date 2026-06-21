@@ -4,7 +4,7 @@
     "properties": {
         "dataFlowId": {"type": "string"},
         "dataFlowGroup": {"type": "string"},
-        "dataFlowType": {"type": "string", "enum": ["flow", "standard", "materialized_view"]},
+        "dataFlowType": {"type": "string", "enum": ["flow", "standard", "materialized_view", "nodester"]},
         "dataFlowVersion": {"type": "string"},
         "tags": {"type": "object", "additionalProperties": true},
         "features": {
@@ -33,7 +33,15 @@
                     "dataFlowType": { "const": "materialized_view" }
                 }
             },
-            "then": { "$ref": "./spec_materialized_views.json#/$defs/materializedViewsSpec" }
+            "then": { "$ref": "./spec_materialized_views.json#/$defs/materializedViewsSpec" },
+            "else": {
+                "if": {
+                    "properties": {
+                        "dataFlowType": { "const": "nodester" }
+                    }
+                },
+                "then": { "$ref": "./spec_nodester.json#/$defs/nodesterSpec" }
+            }
         }
     },
     "required": ["dataFlowId", "dataFlowGroup", "dataFlowType"]

@@ -1,0 +1,35 @@
+{
+    "data_flow_id": "sink_delta_uc_table",
+    "data_flow_group": "nodester_feature_samples_general_DISABLED",
+    "data_flow_type": "nodester",
+    "nodes": [
+        {
+            "name": "v_customer_delta_sink_uc_table",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "customer",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_sink_delta_uc_table",
+            "node_type": "target",
+            "config": {
+                "name": "sink_delta_uc_table",
+                "sink_options": {
+                    "table_name": "{bronze_schema}.feature_sink_delta_uc_table"
+                },
+                "input": [
+                    {
+                        "view": "v_customer_delta_sink_uc_table",
+                        "flow": "f_customer_delta_sink_uc_table"
+                    }
+                ]
+            },
+            "target_type": "delta_sink"
+        }
+    ]
+}

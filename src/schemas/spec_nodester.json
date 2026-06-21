@@ -1,0 +1,504 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://dlt-framework/schemas/spec_nodester.json",
+    "title": "Nodester Dataflow Specification",
+    "description": "Dataflow specification using a node-based architecture. Converts node graphs into Lakeflow Framework's flow-based format. All target-specific settings (CDC, data quality, quarantine) are specified on target nodes directly.",
+    "$defs": {
+        "nodesterSpec": {
+            "type": "object",
+            "properties": {
+                "dataFlowId": {
+                    "type": "string"
+                },
+                "dataFlowGroup": {
+                    "type": "string"
+                },
+                "dataFlowType": {
+                    "const": "nodester"
+                },
+                "dataFlowVersion": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "features": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "nodes": {
+                    "type": "array",
+                    "description": "Array of nodes representing sources, transformations, and targets in a pipeline graph",
+                    "items": {
+                        "$ref": "#/$defs/node"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "dataFlowId",
+                "dataFlowGroup",
+                "dataFlowType",
+                "nodes"
+            ],
+            "additionalProperties": false
+        },
+        "node": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Unique name for the node within the pipeline"
+                },
+                "node_type": {
+                    "type": "string",
+                    "enum": [
+                        "source",
+                        "transformation",
+                        "target"
+                    ],
+                    "description": "Type of node: source (data input), transformation (processing), or target (data output)"
+                },
+                "source_type": {
+                    "type": "string",
+                    "enum": [
+                        "batchFiles",
+                        "cloudFiles",
+                        "delta",
+                        "deltaJoin",
+                        "kafka",
+                        "python",
+                        "sql"
+                    ],
+                    "description": "Type of data source (required for source nodes)"
+                },
+                "transformation_type": {
+                    "type": "string",
+                    "enum": [
+                        "sql",
+                        "python",
+                        "passthrough"
+                    ],
+                    "description": "Type of transformation to apply (required for transformation nodes)"
+                },
+                "output_view_name": {
+                    "type": "string",
+                    "description": "Optional name for the output view. If omitted, defaults to the node name. Applicable to source and transformation nodes."
+                },
+                "target_type": {
+                    "type": "string",
+                    "enum": [
+                        "delta",
+                        "delta_sink",
+                        "foreach_batch_sink",
+                        "custom_python_sink"
+                    ],
+                    "default": "delta",
+                    "description": "Target format type (required for target nodes). Default: delta"
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether this node is enabled in the pipeline"
+                },
+                "config": {
+                    "type": "object",
+                    "description": "Node-specific configuration"
+                }
+            },
+            "required": [
+                "name",
+                "node_type"
+            ],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "node_type": {
+                                "const": "source"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "source_type"
+                        ],
+                        "properties": {
+                            "config": {
+                                "$ref": "#/$defs/source_node_config"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "node_type": {
+                                "const": "transformation"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "transformation_type"
+                        ],
+                        "properties": {
+                            "config": {
+                                "$ref": "#/$defs/transformation_node_config"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "node_type": {
+                                "const": "target"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "config": {
+                                "$ref": "#/$defs/target_node_config"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "source_node_config": {
+            "type": "object",
+            "description": "Configuration for source nodes. The sourceType field has moved to the node level.",
+            "properties": {
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "stream",
+                        "batch"
+                    ],
+                    "default": "stream",
+                    "description": "Processing mode for the source"
+                },
+                "database": {
+                    "type": "string"
+                },
+                "table": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "cdf_enabled": {
+                    "type": "boolean"
+                },
+                "schema_path": {
+                    "type": "string"
+                },
+                "select_exp": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "where_clause": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "reader_options": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "function_path": {
+                    "type": "string",
+                    "description": "Path to Python source function file"
+                },
+                "python_module": {
+                    "type": "string",
+                    "description": "Python module path for source function"
+                },
+                "tokens": {
+                    "type": "object",
+                    "description": "Token dictionary passed to Python sources"
+                },
+                "sql_path": {
+                    "type": "string",
+                    "description": "Path to SQL file for SQL sources"
+                },
+                "sql_statement": {
+                    "type": "string",
+                    "description": "Inline SQL statement for SQL sources"
+                },
+                "starting_version_from_dlt_setup": {
+                    "type": "boolean"
+                },
+                "cdf_change_type_override": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "additionalProperties": true
+        },
+        "transformation_node_config": {
+            "type": "object",
+            "description": "Configuration for transformation nodes. The transformationType and outputViewName fields have moved to the node level.",
+            "properties": {
+                "sql_path": {
+                    "type": "string"
+                },
+                "sql_statement": {
+                    "type": "string"
+                },
+                "function_path": {
+                    "type": "string"
+                },
+                "python_module": {
+                    "type": "string"
+                },
+                "tokens": {
+                    "type": "object"
+                }
+            },
+            "additionalProperties": true
+        },
+        "target_node_config": {
+            "type": "object",
+            "description": "Configuration for target nodes. All target-specific settings including CDC, data quality, quarantine, table migration, and sink config are specified here.",
+            "properties": {
+                "input": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "description": "Upstream source/transformation node name. The SDP flow name is auto-generated."
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "view": {
+                                        "type": "string",
+                                        "description": "Upstream source or transformation node name feeding this target"
+                                    },
+                                    "flow": {
+                                        "type": "string",
+                                        "description": "Explicit SDP flow name. Pin this to keep flow names stable across changes (renaming a flow forces a full refresh in SDP)."
+                                    }
+                                },
+                                "required": [
+                                    "view"
+                                ],
+                                "additionalProperties": false
+                            }
+                        ]
+                    },
+                    "description": "Inputs feeding this target. Each item is either an upstream node name (string, flow name auto-generated) or an object {view, flow} that pins the SDP flow name."
+                },
+                "table": {
+                    "type": "string",
+                    "description": "Target table name (for delta targets)"
+                },
+                "database": {
+                    "type": "string",
+                    "description": "Target database/schema name"
+                },
+                "table_type": {
+                    "type": "string",
+                    "enum": [
+                        "st",
+                        "mv"
+                    ],
+                    "default": "st",
+                    "description": "Table type: st (streaming table) or mv (materialized view). Default: st"
+                },
+                "schema_path": {
+                    "type": "string",
+                    "pattern": "\\.(json|ddl)$"
+                },
+                "table_properties": {
+                    "type": "object"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "partition_columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "cluster_by_columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "cluster_by_auto": {
+                    "type": "boolean"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "spark_conf": {
+                    "type": "object"
+                },
+                "row_filter": {
+                    "type": "string"
+                },
+                "config_flags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Configuration flags, e.g. ['disableOperationalMetadata']"
+                },
+                "once": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Execute flow to this target only once (batch mode)"
+                },
+                "cdc_settings": {
+                    "$ref": "./definitions_main.json#/definitions/cdcSettings"
+                },
+                "cdc_apply_changes": {
+                    "$ref": "./definitions_main.json#/definitions/cdcSettings"
+                },
+                "cdc_snapshot_settings": {
+                    "$ref": "./definitions_main.json#/definitions/cdcSnapshotSettings"
+                },
+                "data_quality_expectations_enabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable data quality expectations for this target"
+                },
+                "data_quality_expectations_path": {
+                    "type": "string",
+                    "description": "Path to the data quality expectations file"
+                },
+                "quarantine_mode": {
+                    "type": "string",
+                    "enum": [
+                        "off",
+                        "flag",
+                        "table"
+                    ],
+                    "default": "off",
+                    "description": "Quarantine mode for this target"
+                },
+                "quarantine_target_details": {
+                    "$ref": "./definitions_main.json#/definitions/quarantineTargetDetails",
+                    "description": "Quarantine target configuration when quarantineMode is 'table'"
+                },
+                "table_migration_details": {
+                    "type": "object",
+                    "description": "Table migration configuration",
+                    "properties": {
+                        "catalog_type": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "auto_starting_versions_enabled": {
+                            "type": "boolean"
+                        },
+                        "source_details": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Sink name (for sink target formats)"
+                },
+                "sink_type": {
+                    "type": "string",
+                    "description": "Sink sub-type: basic_sql, python_function"
+                },
+                "sink_config": {
+                    "type": "object",
+                    "description": "Sink-specific configuration (sqlPath, functionPath, tokens, etc.)"
+                },
+                "sink_options": {
+                    "type": "object",
+                    "description": "Delta sink options (path, tableName)"
+                },
+                "sql_path": {
+                    "type": "string",
+                    "description": "SQL file path (for materialized view targets)"
+                },
+                "sql_statement": {
+                    "type": "string",
+                    "description": "Inline SQL statement (for materialized view targets)"
+                },
+                "refresh_policy": {
+                    "type": "string",
+                    "description": "Materialized view refresh policy"
+                },
+                "table_details": {
+                    "type": "object",
+                    "description": "Additional table details (for materialized view targets)",
+                    "properties": {
+                        "private": {
+                            "type": "boolean"
+                        },
+                        "comment": {
+                            "type": "string"
+                        },
+                        "spark_conf": {
+                            "type": "object"
+                        },
+                        "config_flags": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "data_quality_expectations_enabled": {
+                                "const": true
+                            }
+                        },
+                        "required": [
+                            "data_quality_expectations_enabled"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "data_quality_expectations_path"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "quarantine_mode": {
+                                "const": "table"
+                            }
+                        },
+                        "required": [
+                            "quarantine_mode"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "quarantine_target_details"
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "data_flow_id": "for_each_batch_basic_sql",
+    "data_flow_group": "nodester_feature_samples_general",
+    "data_flow_type": "nodester",
+    "nodes": [
+        {
+            "name": "v_customer_purchase_basic_sql",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "customer_purchase",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_for_each_batch_basic_sql",
+            "node_type": "target",
+            "config": {
+                "name": "for_each_batch_basic_sql",
+                "sink_type": "basic_sql",
+                "sink_config": {
+                    "database": "{staging_schema}",
+                    "table": "feature_foreach_batch_single_basic_sql",
+                    "sql_path": "./customer_purchase_transformed.sql",
+                    "table_properties": {
+                        "delta.enableChangeDataFeed": "true"
+                    }
+                },
+                "input": [
+                    {
+                        "view": "v_customer_purchase_basic_sql",
+                        "flow": "f_customer_purchase_basic_sql"
+                    }
+                ]
+            },
+            "target_type": "foreach_batch_sink"
+        }
+    ]
+}

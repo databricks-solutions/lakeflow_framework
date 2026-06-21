@@ -1,0 +1,35 @@
+{
+    "data_flow_id": "nodester_customer_simple",
+    "data_flow_group": "nodester_base_samples",
+    "data_flow_type": "nodester",
+    "nodes": [
+        {
+            "name": "v_source_customer",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "database": "{staging_schema}",
+                "table": "customer",
+                "cdf_enabled": true,
+                "mode": "stream"
+            }
+        },
+        {
+            "name": "target_customer",
+            "node_type": "target",
+            "config": {
+                "table": "customer_silver_node",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cluster_by_auto": true,
+                "input": [
+                    {
+                        "flow": "f_customer_silver_ingest",
+                        "view": "v_source_customer"
+                    }
+                ]
+            }
+        }
+    ]
+}

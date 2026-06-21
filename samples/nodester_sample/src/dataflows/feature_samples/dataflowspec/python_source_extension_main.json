@@ -1,0 +1,36 @@
+{
+    "data_flow_id": "feature_python_extension_source",
+    "data_flow_group": "nodester_feature_samples_python",
+    "data_flow_type": "nodester",
+    "nodes": [
+        {
+            "name": "v_feature_python_extension_source",
+            "node_type": "source",
+            "source_type": "python",
+            "config": {
+                "mode": "stream",
+                "python_module": "sources.get_customer_cdf",
+                "tokens": {
+                    "sourceTable": "{staging_schema}.customer"
+                }
+            }
+        },
+        {
+            "name": "target_feature_python_extension_source",
+            "node_type": "target",
+            "config": {
+                "table": "feature_python_extension_source",
+                "schema_path": "target/feature_python_function_source_schema.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "input": [
+                    {
+                        "view": "v_feature_python_extension_source",
+                        "flow": "f_feature_python_extension_source"
+                    }
+                ]
+            }
+        }
+    ]
+}

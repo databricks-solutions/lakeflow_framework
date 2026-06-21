@@ -1,0 +1,41 @@
+{
+    "data_flow_id": "feature_historical_files_snapshot_datetime",
+    "data_flow_group": "nodester_feature_samples_snapshots",
+    "data_flow_type": "nodester",
+    "nodes": [
+        {
+            "name": "target_feature_historical_snapshot_files_datetime",
+            "node_type": "target",
+            "config": {
+                "table": "feature_historical_snapshot_files_datetime",
+                "schema_path": "target/customer_schema.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "config_flags": [
+                    "disableOperationalMetadata"
+                ],
+                "cdc_snapshot_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "snapshot_type": "historical",
+                    "source_type": "file",
+                    "source": {
+                        "format": "csv",
+                        "path": "{sample_file_location}/snapshot_customer/customer_{version}.csv",
+                        "reader_options": {
+                            "header": "true"
+                        },
+                        "version_type": "timestamp",
+                        "datetime_format": "%Y_%m_%d"
+                    },
+                    "track_history_except_column_list": [
+                        "LOAD_TIMESTAMP"
+                    ]
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "data_flow_id": "version_mapping",
+    "data_flow_group": "nodester_feature_samples_general",
+    "data_flow_type": "nodester",
+    "data_flow_version": "0.1.0",
+    "nodes": [
+        {
+            "name": "v_version_mapping_standard",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "customer",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_v_version_mapping_standard",
+            "node_type": "target",
+            "config": {
+                "table": "v_version_mapping_standard",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_apply_changes": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "where": "",
+                    "ignore_null_updates": false,
+                    "scd_type": "1"
+                },
+                "input": [
+                    {
+                        "view": "v_version_mapping_standard",
+                        "flow": "f_version_mapping_standard"
+                    }
+                ]
+            }
+        }
+    ]
+}
