@@ -18,8 +18,6 @@ We need stable, versioned Sphinx documentation published to GitHub Pages with:
 An earlier `sphinx-multiversion` approach proved brittle in this repository environment.  
 This branch moved to a script-driven build pipeline and then iterated on selector placement and styling.
 
-Existing prior ADR numbering already covers package/runtime architecture decisions. This ADR is limited to documentation build/deploy and docs UI scope.
-
 ## Decision
 
 ### 1) Use script-driven versioned docs builds (no `sphinx-multiversion`)

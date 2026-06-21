@@ -55,6 +55,7 @@ intersphinx_mapping = {
 }
 
 html_theme = "sphinx_rtd_theme"
+html_baseurl = "https://databricks-solutions.github.io/lakeflow_framework/"
 
 # Inject the version switcher into the sidebar.
 html_sidebars = {
@@ -174,6 +175,5 @@ html_context = {
 
 def setup(app):
     app.set_translator("markdown", CustomMarkdownTranslator)
-    app.add_css_file('custom.css')
     app.add_css_file('custom.css')
     #app.add_builder(MarkdownBuilder)

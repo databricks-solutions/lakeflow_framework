@@ -18,6 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+DOCS_BASEURL = "https://databricks-solutions.github.io/lakeflow_framework/"
+
 
 def _run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
     subprocess.run(command, cwd=cwd, env=env, check=True)
@@ -187,6 +189,35 @@ def main() -> None:
 </html>
 """
     (output_root / "index.html").write_text(index_html, encoding="utf-8")
+
+    # Basic crawl artifacts for search engines.
+    sitemap_entries: list[tuple[str, str]] = [("", _release_date_for_ref(repo_root, "main"))]
+    for item in links:
+        sitemap_entries.append((f"{item['name']}/index.html", item.get("release_date", "")))
+
+    sitemap_xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for rel_path, lastmod in sitemap_entries:
+        url = DOCS_BASEURL.rstrip("/") + "/" + rel_path
+        sitemap_xml.append("  <url>")
+        sitemap_xml.append(f"    <loc>{url}</loc>")
+        if lastmod:
+            sitemap_xml.append(f"    <lastmod>{lastmod}</lastmod>")
+        sitemap_xml.append("  </url>")
+    sitemap_xml.append("</urlset>")
+    (output_root / "sitemap.xml").write_text("\n".join(sitemap_xml) + "\n", encoding="utf-8")
+
+    robots_txt = "\n".join(
+        [
+            "User-agent: *",
+            "Allow: /",
+            f"Sitemap: {DOCS_BASEURL.rstrip('/')}/sitemap.xml",
+            "",
+        ]
+    )
+    (output_root / "robots.txt").write_text(robots_txt, encoding="utf-8")
 
     _safe_remove(worktrees_root)
     _run(["git", "worktree", "prune"], cwd=repo_root)

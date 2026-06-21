@@ -3,6 +3,8 @@ Getting Started
 
 The following section is a quick start guide on how to get started with the Lakeflow Framework as a data engineer.
 
+If you are evaluating fit first, start with :doc:`what_is_lakeflow_framework`.
+
 Prerequisites
 -------------
 
@@ -21,6 +23,9 @@ Follow the below steps to get yourself setup to learn and use the Lakeflow Frame
 
 Understanding the Framework
 ---------------------------
+
+The framework supports both centralized and domain-oriented delivery models; use :doc:`concepts` for operating model guidance and :doc:`patterns` to select the right implementation pattern for your modelling approach.
+
 1. :doc:`concepts`
 2. Step through the ``feature-samples`` bundle — run the ``feature_samples_run_job`` and inspect the resulting tables in the ``{namespace}_feature`` schema. This is the simplest entry point as all features share a single schema.
 3. :doc:`features`

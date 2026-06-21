@@ -6,7 +6,25 @@ Data Flow and Pipeline Patterns
 Patterns Overview 
 =================
 
-Below we summarize the core patterns that can be used to design and build out your data flows and pipelines.
+Below we summarize a set of core reference patterns used to design and build out data flows and pipelines. These are not the only patterns supported by the framework.
+
+With the exception of the Basic 1:1 pattern, the examples on this page are primarily aimed at more complex streaming requirements (for example, multi-source joins, CDC-driven updates, and mixed stream/static topologies).
+
+For the underlying Lakeflow Spark Declarative Pipelines concepts (datasets, flows, and pipeline semantics), refer to the Databricks documentation: `What is Lakeflow Spark Declarative Pipelines - Key concepts <https://docs.databricks.com/aws/en/ldp/concepts/#key-concepts>`_.
+
+For Gold-layer workloads, Materialized Views should generally be the first choice for dimensional modelling, batch processing, and aggregation-centric serving tables. Prefer streaming-first Gold patterns when lower-latency or less-aggregated use cases are required.
+
+Choosing patterns by operating model
+------------------------------------
+
+These patterns can be applied across centralized platform teams, domain-aligned ownership models (including data mesh/data products), and hybrid approaches.
+
+When selecting a pattern, start with:
+
+* Your ownership model (centralized, domain-aligned, or hybrid)
+* The target modelling approach (medallion, dimensional, Data Vault, enterprise canonical/3NF, or other enterprise models)
+* Source characteristics (streaming, static, CDC, and key alignment)
+* Latency and change-propagation requirements for downstream consumers
 
 .. important::
 

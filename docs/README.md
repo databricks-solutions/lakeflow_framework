@@ -160,6 +160,11 @@ On push to `main` or release tags:
 5. Deploy with GitHub Pages actions.
 
 The deployed root redirects to `current/index.html`.
+Build output also includes:
+
+- `sitemap.xml` for search-engine discovery.
+- `robots.txt` referencing the sitemap.
+- Canonical URL metadata on pages, based on `html_baseurl` in `docs/conf.py`.
 
 ## Notes and Troubleshooting
 
