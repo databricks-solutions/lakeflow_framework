@@ -25,11 +25,11 @@ echo ""
 cd ..
 
 ##########
-# Destroy Nodester Samples
-echo "Destroying Nodester Sample Bundle"
+# Destroy Nodespec Samples
+echo "Destroying Nodespec Sample Bundle"
 export BUNDLE_VAR_schema="${schema_namespace}_silver${logical_env}"
 echo "BUNDLE_VAR_schema: $BUNDLE_VAR_schema"
-cd nodester_sample
+cd nodespec_sample
 databricks bundle destroy -t dev --profile "$profile" --auto-approve
 echo ""
 cd ..

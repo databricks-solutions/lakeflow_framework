@@ -3,7 +3,7 @@ from .base import BaseSpecTransformer
 from .standard import StandardSpecTransformer
 from .flow import FlowSpecTransformer
 from .materialized_views import MaterializedViewSpecTransformer
-from .nodester import NodesterSpecTransformer
+from .nodespec import NodespecSpecTransformer
 
 
 class SpecTransformerFactory:
@@ -13,7 +13,7 @@ class SpecTransformerFactory:
         "standard": StandardSpecTransformer,
         "flow": FlowSpecTransformer,
         "materialized_view": MaterializedViewSpecTransformer,
-        "nodester": NodesterSpecTransformer
+        "nodespec": NodespecSpecTransformer
     }
     
     @classmethod

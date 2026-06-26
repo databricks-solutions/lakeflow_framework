@@ -10,7 +10,7 @@ class BaseSpecTransformer(ABC):
 
     # When True, transform() inspects the produced flow spec and warns on
     # source definitions that embed SQL/Python transformation logic. Spec
-    # types that can already detect this on their own input (e.g. nodester,
+    # types that can already detect this on their own input (e.g. nodespec,
     # which distinguishes source nodes from transformation nodes) set this to
     # False and emit the warning themselves.
     WARN_INLINE_SOURCE_TRANSFORMATIONS_FROM_OUTPUT = True

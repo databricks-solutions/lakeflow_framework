@@ -1,0 +1,143 @@
+{
+    "data_flow_id": "nodespec_customer_transform",
+    "data_flow_group": "nodespec_base_samples",
+    "data_flow_type": "nodespec",
+    "tags": {
+        "layer": "silver",
+        "source_project": "nodespec"
+    },
+    "nodes": [
+        {
+            "name": "v_source_customer",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "database": "{staging_schema}",
+                "table": "customer",
+                "cdf_enabled": true,
+                "mode": "stream"
+            }
+        },
+        {
+            "name": "v_source_customer_address",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "database": "{staging_schema}",
+                "table": "customer_address",
+                "cdf_enabled": true,
+                "mode": "stream"
+            }
+        },
+        {
+            "name": "staging_append_customer",
+            "node_type": "target",
+            "config": {
+                "table": "customer_transform_append_node",
+                "cluster_by_auto": true,
+                "input": [
+                    {
+                        "flow": "f_append_customer",
+                        "view": "v_source_customer"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "staging_append_address",
+            "node_type": "target",
+            "config": {
+                "table": "customer_transform_append_node",
+                "cluster_by_auto": true,
+                "input": [
+                    {
+                        "flow": "f_append_address",
+                        "view": "v_source_customer_address"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "v_source_append_cdf",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "table": "customer_transform_append_node",
+                "cdf_enabled": true,
+                "mode": "stream"
+            }
+        },
+        {
+            "name": "staging_merge",
+            "node_type": "target",
+            "config": {
+                "table": "customer_transform_merge_node",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cluster_by_auto": true,
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "ignore_null_updates": true,
+                    "scd_type": "2"
+                },
+                "input": [
+                    {
+                        "flow": "f_merge_append_cdf",
+                        "view": "v_source_append_cdf"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "v_source_merge_cdf",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "table": "customer_transform_merge_node",
+                "cdf_enabled": true,
+                "mode": "stream"
+            }
+        },
+        {
+            "name": "v_transform_final",
+            "node_type": "transformation",
+            "transformation_type": "sql",
+            "output_view_name": "v_final_transform",
+            "config": {
+                "sql_statement": "SELECT CUSTOMER_ID, EMAIL, CITY, STATE, LOAD_TIMESTAMP FROM STREAM(live.v_source_merge_cdf)"
+            }
+        },
+        {
+            "name": "target_customer_enriched",
+            "node_type": "target",
+            "config": {
+                "table": "customer_enriched_node",
+                "schema_path": "customer_enriched_schema.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cluster_by_columns": [
+                    "CUSTOMER_ID"
+                ],
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "ignore_null_updates": true
+                },
+                "input": [
+                    {
+                        "flow": "f_enrich_final",
+                        "view": "v_transform_final"
+                    }
+                ]
+            }
+        }
+    ]
+}

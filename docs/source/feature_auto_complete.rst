@@ -20,10 +20,10 @@ The framework uses JSON Schema-based IntelliSense when creating or editing Data 
 - Quick Fixes (where applicable)
 
 The ``*_main.json`` mapping below covers **all** Data Flow Spec types — standard,
-flow, materialized view, and :doc:`nodester <dataflow_spec_ref_main_nodester>`.
+flow, materialized view, and :doc:`nodespec <dataflow_spec_ref_main_nodespec>`.
 ``main.json`` inspects the ``data_flow_type`` / ``dataFlowType`` field and routes
 to the matching schema automatically, so a single mapping enables IntelliSense
-for every spec type. Nodester specs are authored in ``snake_case`` and the schema
+for every spec type. Nodespec specs are authored in ``snake_case`` and the schema
 validates them as written.
 
 Autocompletion Example

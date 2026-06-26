@@ -1,0 +1,47 @@
+{
+    "data_flow_id": "feature_quarantine_table",
+    "data_flow_group": "nodespec_feature_samples_data_quality",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_customer_address_feature_quarantine_table",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "customer_address",
+                "cdf_enabled": true,
+                "select_exp": [
+                    "CUSTOMER_ID",
+                    "CITY",
+                    "STATE",
+                    "LOAD_TIMESTAMP"
+                ]
+            }
+        },
+        {
+            "name": "target_feature_quarantine_table",
+            "node_type": "target",
+            "config": {
+                "table": "feature_quarantine_table",
+                "schema_path": "target/customer_address_schema.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "data_quality_expectations_enabled": true,
+                "data_quality_expectations_path": "./customer_address_dqe.json",
+                "quarantine_mode": "table",
+                "quarantine_target_details": {
+                    "target_format": "delta"
+                },
+                "input": [
+                    {
+                        "view": "v_customer_address_feature_quarantine_table",
+                        "flow": "f_customer_address_feature_quarantine_table"
+                    }
+                ]
+            }
+        }
+    ]
+}

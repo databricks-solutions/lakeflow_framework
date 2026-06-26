@@ -1,0 +1,35 @@
+{
+    "data_flow_id": "append_sql_flow",
+    "data_flow_group": "nodespec_feature_samples_general",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_sql_f_customer_address_append_sql",
+            "node_type": "source",
+            "source_type": "sql",
+            "config": {
+                "sql_statement": "SELECT * FROM STREAM({staging_schema}.customer_address)"
+            }
+        },
+        {
+            "name": "target_append_sql_flow",
+            "node_type": "target",
+            "config": {
+                "table": "append_sql_flow",
+                "schema_path": "target/customer_address_schema.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "data_quality_expectations_enabled": true,
+                "data_quality_expectations_path": "./customer_address_dqe.json",
+                "quarantine_mode": "flag",
+                "input": [
+                    {
+                        "view": "v_sql_f_customer_address_append_sql",
+                        "flow": "f_sql_f_customer_address_append_sql"
+                    }
+                ]
+            }
+        }
+    ]
+}

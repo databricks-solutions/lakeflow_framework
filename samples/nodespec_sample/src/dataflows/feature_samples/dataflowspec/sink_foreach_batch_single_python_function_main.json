@@ -1,0 +1,41 @@
+{
+    "data_flow_id": "for_each_batch_python_function",
+    "data_flow_group": "nodespec_feature_samples_general",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_customer_purchase_python_function",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "customer_purchase",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_for_each_batch_python_function",
+            "node_type": "target",
+            "config": {
+                "name": "for_each_batch_python_function",
+                "sink_type": "python_function",
+                "sink_config": {
+                    "function_path": "./feature_foreach_batch_python.py",
+                    "tokens": {
+                        "staging_schema": "{staging_schema}",
+                        "bronze_schema": "{bronze_schema}",
+                        "staging_volume": "{staging_volume}"
+                    }
+                },
+                "input": [
+                    {
+                        "view": "v_customer_purchase_python_function",
+                        "flow": "f_customer_purchase_python_function"
+                    }
+                ]
+            },
+            "target_type": "foreach_batch_sink"
+        }
+    ]
+}

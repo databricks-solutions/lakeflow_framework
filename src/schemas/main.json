@@ -1,10 +1,10 @@
 {
     "title": "Main DataFlowSpec",
     "if": {
-        "properties": { "data_flow_type": { "const": "nodester" } },
+        "properties": { "data_flow_type": { "const": "nodespec" } },
         "required": ["data_flow_type"]
     },
-    "then": { "$ref": "./spec_nodester.json#/$defs/nodesterSpec" },
+    "then": { "$ref": "./spec_nodespec.json#/$defs/nodespecSpec" },
     "else": {
         "type": "object",
         "properties": {

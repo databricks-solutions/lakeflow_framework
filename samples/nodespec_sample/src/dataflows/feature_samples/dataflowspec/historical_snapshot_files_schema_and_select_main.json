@@ -1,0 +1,48 @@
+{
+    "data_flow_id": "feature_historical_files_snapshot_schema_and_select",
+    "data_flow_group": "nodespec_feature_samples_snapshots",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_feature_historical_snapshot_files_schema_and_select",
+            "node_type": "target",
+            "config": {
+                "table": "feature_historical_snapshot_files_schema_and_select",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "config_flags": [
+                    "disableOperationalMetadata"
+                ],
+                "cdc_snapshot_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "snapshot_type": "historical",
+                    "source_type": "file",
+                    "source": {
+                        "format": "csv",
+                        "path": "{sample_file_location}/snapshot_customer/customer_{version}.csv",
+                        "reader_options": {
+                            "header": "true"
+                        },
+                        "version_type": "timestamp",
+                        "datetime_format": "%Y_%m_%d",
+                        "schema_path": "source/feature_historic_snapshot_customer_schema.json",
+                        "select_exp": [
+                            "CUSTOMER_ID",
+                            "FIRST_NAME",
+                            "LAST_NAME",
+                            "EMAIL",
+                            "LOAD_TIMESTAMP"
+                        ]
+                    },
+                    "track_history_except_column_list": [
+                        "LOAD_TIMESTAMP"
+                    ]
+                }
+            }
+        }
+    ]
+}

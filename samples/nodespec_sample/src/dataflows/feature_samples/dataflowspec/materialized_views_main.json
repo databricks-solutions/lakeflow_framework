@@ -1,0 +1,98 @@
+{
+    "data_flow_id": "feature_materialized_views",
+    "data_flow_group": "nodespec_feature_samples_materialized_views",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_feature_mv_source_view",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "database": "{staging_schema}",
+                "table": "customer",
+                "mode": "batch"
+            }
+        },
+        {
+            "name": "target_feature_mv_source_view",
+            "node_type": "target",
+            "config": {
+                "table": "feature_mv_source_view",
+                "table_type": "mv",
+                "input": [
+                    {
+                        "flow": "f_mv_source_view_load",
+                        "view": "v_feature_mv_source_view"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "target_feature_mv_sql_path",
+            "node_type": "target",
+            "config": {
+                "table": "feature_mv_sql_path",
+                "table_type": "mv",
+                "sql_path": "./feature_mv_sql_path.sql"
+            }
+        },
+        {
+            "name": "target_feature_mv_sql_statement",
+            "node_type": "target",
+            "config": {
+                "table": "feature_mv_sql_statement",
+                "table_type": "mv",
+                "sql_statement": "SELECT * FROM {staging_schema}.customer",
+                "table_details": {
+                    "private": true
+                }
+            }
+        },
+        {
+            "name": "target_feature_mv_with_quarantine",
+            "node_type": "target",
+            "config": {
+                "table": "feature_mv_with_quarantine",
+                "table_type": "mv",
+                "sql_statement": "SELECT * FROM {staging_schema}.customer_address",
+                "data_quality_expectations_enabled": true,
+                "data_quality_expectations_path": "./customer_address_dqe.json",
+                "quarantine_mode": "table",
+                "quarantine_target_details": {
+                    "target_format": "delta",
+                    "cluster_by_auto": true
+                }
+            }
+        },
+        {
+            "name": "target_feature_mv_chain_mvs",
+            "node_type": "target",
+            "config": {
+                "table": "feature_mv_chain_mvs",
+                "table_type": "mv",
+                "sql_statement": "SELECT * FROM live.feature_mv_sql_statement",
+                "table_details": {
+                    "comment": "Test Config",
+                    "spark_conf": {
+                        "spark.sql.session.timeZone": "Australia/Sydney"
+                    }
+                }
+            }
+        },
+        {
+            "name": "target_feature_mv_with_refresh_policy",
+            "node_type": "target",
+            "config": {
+                "table": "feature_mv_with_refresh_policy",
+                "table_type": "mv",
+                "sql_statement": "SELECT * FROM {staging_schema}.customer",
+                "refresh_policy": "incremental_strict",
+                "table_details": {
+                    "config_flags": [
+                        "disableOperationalMetadata"
+                    ]
+                }
+            }
+        }
+    ]
+}

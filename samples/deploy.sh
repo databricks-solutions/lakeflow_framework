@@ -40,8 +40,8 @@ echo ""
 # Deploy Pattern Samples (end-to-end medallion patterns: bronze → silver → gold)
 ./deploy_pattern_samples.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
 
-# Deploy Nodester Samples (node-based dataflow spec)
-./deploy_nodester.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
+# Deploy Nodespec Samples (node-based dataflow spec)
+./deploy_nodespec.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"
 
 # Note: Kafka samples are deployed as part of feature-samples but require external Kafka infrastructure.
 #       Run ./deploy_feature_samples.sh separately and then trigger the kafka_samples_run_job manually.
