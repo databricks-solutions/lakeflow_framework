@@ -446,7 +446,19 @@ class DataflowSpecBuilder:
                 nodester_schema_path = os.path.join(self.framework_path, "schemas", "spec_nodester.json")
                 if os.path.exists(nodester_schema_path):
                     nodester_validator = utility.JSONValidator(nodester_schema_path)
-                    errors = nodester_validator.validate(json_data)
+                    # Nodester field names are snake_case. The metadata keys were
+                    # normalised to camelCase at read time for uniform downstream
+                    # processing, so present them as snake_case for validation.
+                    camel_to_snake = {
+                        self.Keys.DATA_FLOW_ID: "data_flow_id",
+                        self.Keys.DATA_FLOW_GROUP: "data_flow_group",
+                        self.Keys.DATA_FLOW_TYPE: "data_flow_type",
+                        self.Keys.DATA_FLOW_VERSION: "data_flow_version",
+                    }
+                    validation_data = {
+                        camel_to_snake.get(k, k): v for k, v in json_data.items()
+                    }
+                    errors = nodester_validator.validate(validation_data)
                 else:
                     errors = []
             elif file_type == "main":

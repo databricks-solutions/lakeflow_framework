@@ -116,6 +116,17 @@ view it reads; the target lists the transformation in its ``input``:
        ]
    }
 
+Editor autocomplete and validation
+==================================
+
+Nodester specs have a JSON Schema (``src/schemas/spec_nodester.json``), so editors
+can offer key/value autocomplete and inline validation while you author them. The
+schema is wired through ``main.json``, which routes any ``*_main.json`` file to
+the correct spec schema based on its ``data_flow_type``. Add the ``json.schemas``
+mapping described in :doc:`feature_auto_complete` — the same ``*_main.json``
+mapping enables IntelliSense for nodester (no nodester-specific configuration is
+required).
+
 .. _dataflow-spec-nodester-metadata-configuration:
 
 Dataflow metadata configuration
@@ -254,7 +265,7 @@ Transformation node configuration
      - **Description**
    * - **transformation_type**
      - ``string``
-     - ``sql``, ``python``, or ``passthrough``.
+     - ``sql`` or ``python``.
    * - **sql_path** / **sql_statement**
      - ``string``
      - For ``sql`` transforms. The SQL names the view(s) it reads, e.g.
@@ -343,6 +354,83 @@ simple. Use the object form of ``input`` to set a flow name explicitly:
 Defining the flow name keeps it stable across edits. This matters because
 renaming a flow forces a full refresh in SDP, so a defined name avoids triggering
 one. The string and object forms can be mixed in the same list.
+
+Snapshot CDC targets
+-------------------
+
+A target's ``cdc_snapshot_settings`` configures snapshot-based CDC. There are two
+modes, set via ``snapshot_type``:
+
+- **historical** — the snapshot source is built **inside** the settings via
+  ``source_type`` (``file`` or ``table``) and a ``source`` object. No source node
+  is required; the framework reads the files/table directly.
+- **periodic** — the target reads from an upstream **source node** chained via
+  ``input``; ``source_type`` / ``source`` are not used.
+
+For historical snapshots the ``source`` object fields depend on ``source_type``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: auto
+
+   * - **Field**
+     - **source_type**
+     - **Description**
+   * - **path**
+     - ``file``
+     - Snapshot file path/pattern; may contain a ``{version}`` token.
+   * - **format**
+     - ``file``
+     - File format, e.g. ``csv``, ``parquet``, ``json``.
+   * - **reader_options**
+     - ``file``
+     - Options passed to the file reader, e.g. ``{"header": "true"}``.
+   * - **datetime_format**
+     - ``file``
+     - Format used to parse the ``{version}`` token for timestamp versioning.
+   * - **schema_path**
+     - ``file``
+     - Schema file applied when reading the snapshot files.
+   * - **recursiveFileLookup**
+     - ``file``
+     - Recurse into subdirectories when discovering snapshot files.
+   * - **table**
+     - ``table``
+     - Source table, e.g. ``{schema}.snapshot_source``.
+   * - **version_column**
+     - ``table``
+     - Column carrying the snapshot version.
+   * - **version_type**
+     - both
+     - How versions are interpreted, e.g. ``timestamp`` or ``integer``.
+   * - **select_exp**
+     - both
+     - Select expressions applied to the snapshot source.
+
+Example — historical file snapshot:
+
+.. code-block:: json
+
+   {
+       "name": "target_customer_snapshot",
+       "node_type": "target",
+       "config": {
+           "table": "customer_snapshot",
+           "cdc_snapshot_settings": {
+               "keys": ["CUSTOMER_ID"],
+               "scd_type": "2",
+               "snapshot_type": "historical",
+               "source_type": "file",
+               "source": {
+                   "format": "csv",
+                   "path": "{sample_file_location}/snapshot_customer/customer_{version}.csv",
+                   "reader_options": { "header": "true" },
+                   "version_type": "timestamp",
+                   "datetime_format": "%Y_%m_%d"
+               }
+           }
+       }
+   }
 
 .. _dataflow-spec-nodester-mv:
 

@@ -683,9 +683,6 @@ class NodesterSpecTransformer(BaseSpecTransformer):
         transform_type = node.get("transformation_type", "sql")
         config = node.get("config", {})
 
-        if transform_type == "passthrough":
-            return {"mode": Mode.STREAM, "sourceType": "delta", "sourceDetails": {}}
-
         if transform_type == "python":
             # A python transformation is its own view: it reads its upstream view
             # and applies apply_transform(df) via the framework's pythonTransform.

@@ -2,8 +2,14 @@
 """
 Migrate Lakeflow Framework dataflow specs to Nodester format.
 
-Converts standard, flow, and materialized_view specs into the
-node-based Nodester specification format.
+Converts standard, flow, and materialized_view specs into the node-based
+Nodester specification format.
+
+Nodester specs are snake_case throughout, so this script converts the
+camelCase field names used by the standard/flow/materialized_view formats
+(e.g. ``cdfEnabled`` -> ``cdf_enabled``, ``tableProperties`` ->
+``table_properties``) while leaving opaque value maps (table properties,
+reader options, spark conf, tokens) untouched.
 
 Usage:
     python migrate_to_nodester.py <input_spec> [--output <path>]
@@ -23,9 +29,160 @@ import sys
 from typing import Dict, List, Optional, Any, Tuple
 
 
+# ─── camelCase -> snake_case key maps ────────────────────────────────────────
+# Only structural keys are renamed. Values of opaque maps (table properties,
+# reader options, spark conf, tokens) are copied verbatim — never recursed into.
+
+_SOURCE_DETAIL_MAP = {
+    "cdfEnabled": "cdf_enabled",
+    "tablePath": "table_path",
+    "readerOptions": "reader_options",
+    "functionPath": "function_path",
+    "pythonModule": "python_module",
+    "sqlPath": "sql_path",
+    "sqlStatement": "sql_statement",
+    "selectExp": "select_exp",
+    "whereClause": "where_clause",
+    "schemaPath": "schema_path",
+    "startingVersionFromDLTSetup": "starting_version_from_dlt_setup",
+    "cdfChangeTypeOverride": "cdf_change_type_override",
+    "pythonTransform": "python_transform",
+}
+
+_TARGET_DETAIL_MAP = {
+    "schemaPath": "schema_path",
+    "tableProperties": "table_properties",
+    "partitionColumns": "partition_columns",
+    "clusterByColumns": "cluster_by_columns",
+    "clusterByAuto": "cluster_by_auto",
+    "sparkConf": "spark_conf",
+    "rowFilter": "row_filter",
+    "configFlags": "config_flags",
+}
+
+# Snapshot settings carry camelCase keys at both the top level and inside the
+# nested `source` object. `recursiveFileLookup` is intentionally left camelCase
+# (the framework reads it as-is).
+_SNAPSHOT_MAP = {
+    "snapshotType": "snapshot_type",
+    "sourceType": "source_type",
+    "versionType": "version_type",
+    "versionColumn": "version_column",
+    "startingVersion": "starting_version",
+    "datetimeFormat": "datetime_format",
+    "readerOptions": "reader_options",
+    "schemaPath": "schema_path",
+    "selectExp": "select_exp",
+    "deduplicateMode": "deduplicate_mode",
+}
+
+_QUARANTINE_MAP = {
+    "targetFormat": "target_format",
+    "clusterByAuto": "cluster_by_auto",
+    "clusterByColumns": "cluster_by_columns",
+    "partitionColumns": "partition_columns",
+}
+
+_TABLE_MIGRATION_MAP = {
+    "catalogType": "catalog_type",
+    "autoStartingVersionsEnabled": "auto_starting_versions_enabled",
+    "sourceDetails": "source_details",
+    "tableName": "table_name",
+}
+
+_PYTHON_TRANSFORM_MAP = {
+    "functionPath": "function_path",
+    "pythonModule": "python_module",
+    "module": "module",
+}
+
+
+def _rename(d: Dict, mapping: Dict[str, str]) -> Dict:
+    """Return a new dict with top-level keys renamed per mapping; values as-is."""
+    if not isinstance(d, dict):
+        return d
+    return {mapping.get(k, k): v for k, v in d.items()}
+
+
+def _convert_source_details(details: Dict) -> Dict:
+    """camelCase -> snake_case for a source/view sourceDetails block."""
+    out = _rename(details, _SOURCE_DETAIL_MAP)
+    if isinstance(out.get("python_transform"), dict):
+        out["python_transform"] = _rename(out["python_transform"], _PYTHON_TRANSFORM_MAP)
+    return out
+
+
+def _convert_snapshot(cs: Dict) -> Dict:
+    """camelCase -> snake_case for cdcSnapshotSettings, including nested source."""
+    out = _rename(cs, _SNAPSHOT_MAP)
+    if isinstance(out.get("source"), dict):
+        out["source"] = _rename(out["source"], _SNAPSHOT_MAP)
+    return out
+
+
+def _get(src: Dict, camel: str, snake: str):
+    """Read a value that may be present under either camelCase or snake_case."""
+    if camel in src:
+        return src[camel]
+    return src.get(snake)
+
+
+def _add_target_settings(config: Dict, src: Dict) -> None:
+    """Copy CDC / DQ / quarantine / table-migration settings onto a target config.
+
+    `src` is the spec (standard), a staging-table config (flow), or an MV config.
+    Reads either casing; writes snake_case.
+    """
+    cdc = _get(src, "cdcSettings", "cdc_settings")
+    if cdc:
+        config["cdc_settings"] = cdc
+    cdc_apply = _get(src, "cdcApplyChanges", "cdc_apply_changes")
+    if cdc_apply:
+        config["cdc_apply_changes"] = cdc_apply
+    snapshot = _get(src, "cdcSnapshotSettings", "cdc_snapshot_settings")
+    if snapshot:
+        config["cdc_snapshot_settings"] = _convert_snapshot(snapshot)
+
+    dq_enabled = _get(src, "dataQualityExpectationsEnabled", "data_quality_expectations_enabled")
+    if dq_enabled:
+        config["data_quality_expectations_enabled"] = dq_enabled
+    dq_path = _get(src, "dataQualityExpectationsPath", "data_quality_expectations_path")
+    if dq_path:
+        config["data_quality_expectations_path"] = dq_path
+
+    quarantine_mode = _get(src, "quarantineMode", "quarantine_mode")
+    if quarantine_mode:
+        config["quarantine_mode"] = quarantine_mode
+    quarantine_details = _get(src, "quarantineTargetDetails", "quarantine_target_details")
+    if quarantine_details:
+        config["quarantine_target_details"] = _rename(quarantine_details, _QUARANTINE_MAP)
+
+    table_migration = _get(src, "tableMigrationDetails", "table_migration_details")
+    if table_migration:
+        config["table_migration_details"] = _rename(table_migration, _TABLE_MIGRATION_MAP)
+
+
+def _result_envelope(spec: Dict, nodes: List[Dict]) -> Dict:
+    """Build the top-level nodester spec (snake_case metadata)."""
+    result = {
+        "data_flow_id": spec.get("dataFlowId") or spec.get("data_flow_id"),
+        "data_flow_group": spec.get("dataFlowGroup") or spec.get("data_flow_group"),
+        "data_flow_type": "nodester",
+        "nodes": nodes,
+    }
+    version = _get(spec, "dataFlowVersion", "data_flow_version")
+    if version:
+        result["data_flow_version"] = version
+    if spec.get("tags"):
+        result["tags"] = spec["tags"]
+    if spec.get("features"):
+        result["features"] = spec["features"]
+    return result
+
+
 def migrate_spec(spec: Dict) -> Dict:
     """Convert a dataflow spec to nodester format based on its dataFlowType."""
-    spec_type = spec.get("dataFlowType", "standard").lower()
+    spec_type = (spec.get("dataFlowType") or spec.get("data_flow_type") or "standard").lower()
 
     if spec_type == "standard":
         return _migrate_standard(spec)
@@ -33,6 +190,8 @@ def migrate_spec(spec: Dict) -> Dict:
         return _migrate_flow(spec)
     elif spec_type == "materialized_view":
         return _migrate_materialized_view(spec)
+    elif spec_type == "nodester":
+        return spec  # already nodester
     else:
         print(f"  Warning: Unknown dataFlowType '{spec_type}', treating as standard")
         return _migrate_standard(spec)
@@ -42,127 +201,55 @@ def migrate_spec(spec: Dict) -> Dict:
 
 def _migrate_standard(spec: Dict) -> Dict:
     """Convert a standard spec to nodester."""
-    nodes = []
+    source_id = spec.get("sourceViewName") or "v_source"
+    source_node = _build_source_node(source_id, spec.get("sourceType", "delta"),
+                                      spec.get("sourceDetails", {}), spec.get("mode", "stream"))
 
-    # Build source node
-    source_id = spec.get("sourceViewName", "source").replace("v_", "", 1)
-    if not source_id:
-        source_id = "source"
-    source_node = _build_source_node_from_standard(source_id, spec)
-    nodes.append(source_node)
-
-    # Build target node
-    target_config, target_type = _build_target_config_from_standard(spec)
-    target_id = f"target_{target_config.get('table', target_config.get('name', 'output'))}"
+    target_config, target_type = _build_spec_target(spec)
     target_config["input"] = [source_id]
-    target_node: Dict[str, Any] = {
-        "name": target_id,
-        "node_type": "target",
-    }
+    target_name = target_config.get("table") or target_config.get("name") or "output"
+    target_node: Dict[str, Any] = {"name": f"target_{target_name}", "node_type": "target"}
     if target_type != "delta":
         target_node["target_type"] = target_type
     target_node["config"] = target_config
-    nodes.append(target_node)
 
-    # Build nodester spec
-    result = {
-        "data_flow_id": spec.get("dataFlowId"),
-        "data_flow_group": spec.get("dataFlowGroup"),
-        "data_flow_type": "nodester",
-        "nodes": nodes
-    }
-
-    if spec.get("dataFlowVersion"):
-        result["data_flow_version"] = spec["data_flow_version"]
-    if spec.get("tags"):
-        result["tags"] = spec["tags"]
-    if spec.get("features"):
-        result["features"] = spec["features"]
-
-    return result
+    return _result_envelope(spec, [source_node, target_node])
 
 
-def _build_source_node_from_standard(source_id: str, spec: Dict) -> Dict:
-    """Build a source node from a standard spec's source fields."""
-    source_type = spec.get("sourceType", "delta")
-    source_details = spec.get("sourceDetails", {})
-    mode = spec.get("mode", "stream")
-
+def _build_source_node(name: str, source_type: str, source_details: Dict, mode: str) -> Dict:
+    """Build a nodester source node (snake_case) from camelCase source details."""
     config: Dict[str, Any] = {}
-
     if mode:
         config["mode"] = mode
+    config.update(_convert_source_details(source_details))
 
-    # Copy source details based on type
-    if source_type == "delta":
-        for key in ["database", "table", "cdfEnabled", "tablePath"]:
-            if key in source_details:
-                config[key] = source_details[key]
-    elif source_type in ("cloudFiles", "batchFiles"):
-        for key in ["path", "readerOptions"]:
-            if key in source_details:
-                config[key] = source_details[key]
-    elif source_type == "python":
-        for key in ["functionPath", "pythonModule", "tokens"]:
-            if key in source_details:
-                config[key] = source_details[key]
-    elif source_type == "sql":
-        for key in ["sqlPath", "sqlStatement"]:
-            if key in source_details:
-                config[key] = source_details[key]
-    elif source_type == "kafka":
-        if "readerOptions" in source_details:
-            config["reader_options"] = source_details["readerOptions"]
-
-    # Common optional source properties
-    for key in ["selectExp", "whereClause", "schemaPath"]:
-        if key in source_details:
-            config[key] = source_details[key]
-
-    node: Dict[str, Any] = {"name": source_id, "node_type": "source", "source_type": source_type}
+    node: Dict[str, Any] = {"name": name, "node_type": "source", "source_type": source_type}
     if config:
         node["config"] = config
     return node
 
 
-def _build_target_config_from_standard(spec: Dict) -> Tuple[Dict, str]:
-    """Build target node config from standard spec's target and spec-level settings.
-
-    Returns (config_dict, target_type_string).
-    """
+def _build_spec_target(spec: Dict) -> Tuple[Dict, str]:
+    """Build the spec-level target config (delta or sink). Returns (config, target_type)."""
     target_details = spec.get("targetDetails", {})
     target_format = spec.get("targetFormat", "delta")
 
-    config: Dict[str, Any] = {}
-
     if target_format != "delta":
-        # For sinks, copy all target details directly
-        for key, val in target_details.items():
-            config[key] = val
+        # Sink target: map the known sink fields to snake_case.
+        config = {}
+        if "name" in target_details:
+            config["name"] = target_details["name"]
+        if "type" in target_details:
+            config["sink_type"] = target_details["type"]
+        if "config" in target_details:
+            config["sink_config"] = target_details["config"]
+        sink_options = _get(target_details, "sinkOptions", "sink_options")
+        if sink_options is not None:
+            config["sink_options"] = sink_options
     else:
-        # Delta target
-        for key in ["table", "database", "schemaPath", "tableProperties", "path",
-                     "partitionColumns", "clusterByColumns", "clusterByAuto",
-                     "comment", "sparkConf", "rowFilter", "configFlags"]:
-            if key in target_details:
-                config[key] = target_details[key]
+        config = _rename(target_details, _TARGET_DETAIL_MAP)
 
-    # Move spec-level settings to target config
-    for key in ["cdc_settings", "cdc_apply_changes", "cdc_snapshot_settings"]:
-        if spec.get(key):
-            config[key] = spec[key]
-
-    if spec.get("dataQualityExpectationsEnabled"):
-        config["data_quality_expectations_enabled"] = spec["data_quality_expectations_enabled"]
-    if spec.get("dataQualityExpectationsPath"):
-        config["data_quality_expectations_path"] = spec["data_quality_expectations_path"]
-    if spec.get("quarantineMode"):
-        config["quarantine_mode"] = spec["quarantine_mode"]
-    if spec.get("quarantineTargetDetails"):
-        config["quarantine_target_details"] = spec["quarantine_target_details"]
-    if spec.get("tableMigrationDetails"):
-        config["table_migration_details"] = spec["table_migration_details"]
-
+    _add_target_settings(config, spec)
     return config, target_format
 
 
@@ -170,217 +257,140 @@ def _build_target_config_from_standard(spec: Dict) -> Tuple[Dict, str]:
 
 def _migrate_flow(spec: Dict) -> Dict:
     """Convert a flow spec to nodester."""
-    nodes = []
-    node_ids = set()
+    nodes: List[Dict] = []
+    node_ids: set = set()
 
     flow_groups = spec.get("flowGroups", [])
 
-    # Collect all staging table names (these become target nodes)
     staging_table_names = set()
     for fg in flow_groups:
-        for name in fg.get("stagingTables", {}).keys():
-            staging_table_names.add(name)
+        staging_table_names.update(fg.get("stagingTables", {}).keys())
 
-    # Process each flow group
+    def find_target_node(target_name: str) -> Optional[Dict]:
+        for n in nodes:
+            if n["name"] == f"target_{target_name}":
+                return n
+        return None
+
     for fg in flow_groups:
         staging_tables = fg.get("stagingTables", {})
         flows = fg.get("flows", {})
 
-        # Create target nodes for staging tables
+        # Staging tables -> target nodes (inputs filled while processing flows).
         for stg_name, stg_config in staging_tables.items():
             target_id = f"target_{stg_name}"
             if target_id in node_ids:
                 continue
             node_ids.add(target_id)
+            config = _build_target_config_from_staging(stg_name, stg_config)
+            config["input"] = []
+            nodes.append({"name": target_id, "node_type": "target", "config": config})
 
-            target_config = _build_target_config_from_staging(stg_name, stg_config)
-            target_config["input"] = []  # placeholder, filled when processing flows
-            nodes.append({
-                "name": target_id,
-                "node_type": "target",
-                "config": target_config,
-            })
-
-        # Process flows
         for flow_name, flow_config in flows.items():
             flow_type = flow_config.get("flowType")
             flow_details = flow_config.get("flowDetails", {})
             target_table = flow_details.get("targetTable")
             views = flow_config.get("views", {})
 
-            # Create source/transform nodes from views
             source_node_id = None
+
+            # Views -> source nodes.
             for view_name, view_config in views.items():
-                if view_name in node_ids:
-                    continue
-                node_ids.add(view_name)
-
-                view_source_details = view_config.get("sourceDetails", {})
-                view_source_type = view_config.get("sourceType", "delta")
-                view_mode = view_config.get("mode", "stream")
-
-                # Check if this view reads from a staging table (internal source)
-                view_db = view_source_details.get("database", "")
-                view_table = view_source_details.get("table", "")
-                is_internal = (
-                    view_db == "live" and view_table in staging_table_names
-                )
-
-                # Build source node config
-                src_config: Dict[str, Any] = {}
-                if view_mode:
-                    src_config["mode"] = view_mode
-
-                # Copy source details
-                for key, val in view_source_details.items():
-                    src_config[key] = val
-
-                src_node: Dict[str, Any] = {
-                    "name": view_name,
-                    "node_type": "source",
-                    "source_type": view_source_type,
-                }
-                if src_config:
-                    src_node["config"] = src_config
-                nodes.append(src_node)
+                if view_name not in node_ids:
+                    node_ids.add(view_name)
+                    nodes.append(_build_source_node(
+                        view_name,
+                        view_config.get("sourceType", "delta"),
+                        view_config.get("sourceDetails", {}),
+                        view_config.get("mode", "stream"),
+                    ))
                 source_node_id = view_name
 
-            # Handle append_sql flows (SQL is in flowDetails, not views)
+            # append_sql flows carry SQL directly in flowDetails (no view).
             if flow_type == "append_sql":
-                sql_source_id = f"sql_{flow_name}"
+                sql_source_id = f"v_sql_{flow_name}"
                 if sql_source_id not in node_ids:
                     node_ids.add(sql_source_id)
                     sql_config: Dict[str, Any] = {}
                     if flow_details.get("sqlStatement"):
-                        sql_config["sql_statement"] = flow_details["sql_statement"]
+                        sql_config["sql_statement"] = flow_details["sqlStatement"]
                     elif flow_details.get("sqlPath"):
-                        sql_config["sql_path"] = flow_details["sql_path"]
-                    sql_node: Dict[str, Any] = {
-                        "name": sql_source_id,
-                        "node_type": "source",
-                        "source_type": "sql",
-                    }
+                        sql_config["sql_path"] = flow_details["sqlPath"]
+                    node: Dict[str, Any] = {"name": sql_source_id, "node_type": "source", "source_type": "sql"}
                     if sql_config:
-                        sql_node["config"] = sql_config
-                    nodes.append(sql_node)
-                    source_node_id = sql_source_id
+                        node["config"] = sql_config
+                    nodes.append(node)
+                source_node_id = sql_source_id
 
-            # If no views and not append_sql, use the sourceView reference
+            # Fall back to an explicit sourceView reference. When that reference
+            # is a staging table (a table produced by another target in this
+            # spec), nodester models it as an explicit "internal" source node
+            # that reads the staging table; the transformer auto-detects it.
             if not source_node_id and flow_details.get("sourceView"):
-                source_node_id = flow_details["source_view"]
-
-            # Connect flow to target
-            if target_table and source_node_id:
-                # Find the target node
-                target_node_id = f"target_{target_table}"
-                target_found = False
-                for node in nodes:
-                    if node["name"] == target_node_id:
-                        if source_node_id not in node.get("inputs", []):
-                            node.setdefault("config", {}).setdefault("input", []).append(source_node_id)
-                        target_found = True
-                        break
-
-                if not target_found:
-                    # This is the main target
-                    if target_node_id not in node_ids:
-                        node_ids.add(target_node_id)
-                        main_target_config = _build_target_config_from_spec_level(spec)
-                        # Add once flag if present
-                        if flow_details.get("once"):
-                            main_target_config["once"] = True
-                        main_target_config["input"] = [source_node_id]
+                source_view = flow_details["sourceView"]
+                staging_key = source_view.split(".")[-1]
+                if staging_key in staging_table_names:
+                    internal_id = source_view if source_view.startswith("v_") else f"v_{staging_key}"
+                    if internal_id not in node_ids:
+                        node_ids.add(internal_id)
                         nodes.append({
-                            "name": target_node_id,
-                            "node_type": "target",
-                            "config": main_target_config
+                            "name": internal_id,
+                            "node_type": "source",
+                            "source_type": "delta",
+                            "config": {"mode": "stream", "table": staging_key},
                         })
-                    else:
-                        # Find existing and add input
-                        for node in nodes:
-                            if node["name"] == target_node_id:
-                                node.setdefault("config", {}).setdefault("input", []).append(source_node_id)
-                                break
+                    source_node_id = internal_id
+                else:
+                    source_node_id = source_view
 
-    # Clean up empty inputSources
+            if not (target_table and source_node_id):
+                continue
+
+            # Strip any schema qualifier from the target table name when matching.
+            target_key = target_table.split(".")[-1]
+            target_node = find_target_node(target_key)
+            if target_node is not None:
+                target_node["config"].setdefault("input", []).append(source_node_id)
+            else:
+                # Main (spec-level) target (delta or sink).
+                target_id = f"target_{target_key}"
+                if target_id not in node_ids:
+                    node_ids.add(target_id)
+                    main_config, target_type = _build_spec_target(spec)
+                    if flow_details.get("once"):
+                        main_config["once"] = True
+                    main_config["input"] = [source_node_id]
+                    main_node: Dict[str, Any] = {"name": target_id, "node_type": "target"}
+                    if target_type != "delta":
+                        main_node["target_type"] = target_type
+                    main_node["config"] = main_config
+                    nodes.append(main_node)
+
+    # Drop placeholder empty input lists.
     for node in nodes:
         config = node.get("config", {})
         if config.get("input") == []:
             del config["input"]
 
-    result = {
-        "data_flow_id": spec.get("dataFlowId"),
-        "data_flow_group": spec.get("dataFlowGroup"),
-        "data_flow_type": "nodester",
-        "nodes": nodes
-    }
-
-    if spec.get("dataFlowVersion"):
-        result["data_flow_version"] = spec["data_flow_version"]
-    if spec.get("tags"):
-        result["tags"] = spec["tags"]
-    if spec.get("features"):
-        result["features"] = spec["features"]
-
-    return result
+    return _result_envelope(spec, nodes)
 
 
 def _build_target_config_from_staging(table_name: str, stg_config: Dict) -> Dict:
-    """Build target config from staging table definition."""
+    """Build a target config from a flow staging-table definition."""
     config: Dict[str, Any] = {"table": table_name}
-
-    for key in ["tableProperties", "schemaPath", "clusterByColumns",
-                 "clusterByAuto", "partitionColumns", "database", "configFlags"]:
-        if key in stg_config:
-            config[key] = stg_config[key]
-
-    # CDC settings
-    for key in ["cdc_settings", "cdc_apply_changes", "cdc_snapshot_settings"]:
-        if key in stg_config:
-            config[key] = stg_config[key]
-
-    # DQ settings
-    if stg_config.get("dataQualityExpectationsEnabled"):
-        config["data_quality_expectations_enabled"] = stg_config["data_quality_expectations_enabled"]
-    if stg_config.get("dataQualityExpectationsPath"):
-        config["data_quality_expectations_path"] = stg_config["data_quality_expectations_path"]
-
-    # Quarantine
-    if stg_config.get("quarantineMode"):
-        config["quarantine_mode"] = stg_config["quarantine_mode"]
-    if stg_config.get("quarantineTargetDetails"):
-        config["quarantine_target_details"] = stg_config["quarantine_target_details"]
-
-    return config
-
-
-def _build_target_config_from_spec_level(spec: Dict) -> Dict:
-    """Build main target config from spec-level target details and settings."""
-    target_details = spec.get("targetDetails", {})
-    config: Dict[str, Any] = {}
-
-    for key in ["table", "database", "schema_path", "table_properties", "path",
-                 "partition_columns", "cluster_by_columns", "cluster_by_auto",
-                 "comment", "spark_conf", "row_filter", "config_flags"]:
-        if key in target_details:
-            config[key] = target_details[key]
-
-    # Spec-level settings → target config
-    for key in ["cdc_settings", "cdc_apply_changes", "cdc_snapshot_settings"]:
-        if spec.get(key):
-            config[key] = spec[key]
-
-    if spec.get("dataQualityExpectationsEnabled"):
-        config["data_quality_expectations_enabled"] = spec["data_quality_expectations_enabled"]
-    if spec.get("dataQualityExpectationsPath"):
-        config["data_quality_expectations_path"] = spec["data_quality_expectations_path"]
-    if spec.get("quarantineMode"):
-        config["quarantine_mode"] = spec["quarantine_mode"]
-    if spec.get("quarantineTargetDetails"):
-        config["quarantine_target_details"] = spec["quarantine_target_details"]
-    if spec.get("tableMigrationDetails"):
-        config["table_migration_details"] = spec["table_migration_details"]
-
+    config.update(_rename(
+        {k: v for k, v in stg_config.items() if k != "type"},
+        _TARGET_DETAIL_MAP,
+    ))
+    # Drop settings handled separately so they get correct snake_case + conversion.
+    for k in ("cdcSettings", "cdc_settings", "cdcApplyChanges", "cdc_apply_changes",
+              "cdcSnapshotSettings", "cdc_snapshot_settings",
+              "dataQualityExpectationsEnabled", "data_quality_expectations_enabled",
+              "dataQualityExpectationsPath", "data_quality_expectations_path",
+              "quarantineMode", "quarantine_mode",
+              "quarantineTargetDetails", "quarantine_target_details"):
+        config.pop(k, None)
+    _add_target_settings(config, stg_config)
     return config
 
 
@@ -389,73 +399,41 @@ def _build_target_config_from_spec_level(spec: Dict) -> Dict:
 def _migrate_materialized_view(spec: Dict) -> Dict:
     """Convert a materialized_view spec to nodester."""
     materialized_views = spec.get("materializedViews", {})
-    nodes = []
+    nodes: List[Dict] = []
 
     for mv_name, mv_config in materialized_views.items():
-        target_config: Dict[str, Any] = {
-            "table": mv_name,
-            "table_type": "mv"
-        }
+        target_config: Dict[str, Any] = {"table": mv_name, "table_type": "mv"}
 
-        # Copy MV properties
-        for key in ["sql_path", "sql_statement", "refresh_policy"]:
-            if key in mv_config:
-                target_config[key] = mv_config[key]
+        for camel, snake in (("sqlPath", "sql_path"), ("sqlStatement", "sql_statement"),
+                             ("refreshPolicy", "refresh_policy")):
+            val = _get(mv_config, camel, snake)
+            if val is not None:
+                target_config[snake] = val
 
-        # Copy table details
-        if mv_config.get("tableDetails"):
-            target_config["table_details"] = mv_config["table_details"]
+        table_details = _get(mv_config, "tableDetails", "table_details")
+        if table_details:
+            target_config["table_details"] = _rename(table_details, _TARGET_DETAIL_MAP)
 
-        # Copy DQ settings
-        if mv_config.get("dataQualityExpectationsEnabled"):
-            target_config["data_quality_expectations_enabled"] = mv_config["data_quality_expectations_enabled"]
-        if mv_config.get("dataQualityExpectationsPath"):
-            target_config["data_quality_expectations_path"] = mv_config["data_quality_expectations_path"]
-        if mv_config.get("quarantineMode"):
-            target_config["quarantine_mode"] = mv_config["quarantine_mode"]
-        if mv_config.get("quarantineTargetDetails"):
-            target_config["quarantine_target_details"] = mv_config["quarantine_target_details"]
+        _add_target_settings(target_config, mv_config)
 
-        # Handle source view: MV source views are no longer inlined on the
-        # target. Emit a source node and chain it into the MV via `input`.
-        source_view = mv_config.get("source_view")
-        input_sources = []
-        if source_view:
-            source_id = source_view.get("sourceViewName", f"source_{mv_name}")
-            # Create a source node for the view
-            src_config: Dict[str, Any] = {"mode": "stream"}
-            for key, val in source_view.get("sourceDetails", {}).items():
-                src_config[key] = val
-            nodes.append({
-                "name": source_id,
-                "node_type": "source",
-                "source_type": source_view.get("sourceType", "delta"),
-                "config": src_config
-            })
-            input_sources = [source_id]
+        # MV source views are no longer inlined on the target: emit a source node
+        # and chain it into the MV via `input`.
+        source_view = _get(mv_config, "sourceView", "source_view")
+        if isinstance(source_view, dict) and source_view:
+            source_id = (source_view.get("sourceViewName")
+                         or source_view.get("source_view_name")
+                         or f"v_source_{mv_name}")
+            nodes.append(_build_source_node(
+                source_id,
+                source_view.get("sourceType") or source_view.get("source_type", "delta"),
+                source_view.get("sourceDetails") or source_view.get("source_details", {}),
+                "batch",
+            ))
+            target_config["input"] = [source_id]
 
-        target_node: Dict[str, Any] = {
-            "name": f"target_{mv_name}",
-            "node_type": "target",
-            "config": target_config
-        }
-        if input_sources:
-            target_config["input"] = input_sources
-        nodes.append(target_node)
+        nodes.append({"name": f"target_{mv_name}", "node_type": "target", "config": target_config})
 
-    result = {
-        "data_flow_id": spec.get("dataFlowId"),
-        "data_flow_group": spec.get("dataFlowGroup"),
-        "data_flow_type": "nodester",
-        "nodes": nodes
-    }
-
-    if spec.get("tags"):
-        result["tags"] = spec["tags"]
-    if spec.get("features"):
-        result["features"] = spec["features"]
-
-    return result
+    return _result_envelope(spec, nodes)
 
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
@@ -503,14 +481,11 @@ def main():
         output_dir = args.output_dir or args.input
         os.makedirs(output_dir, exist_ok=True)
 
-        pattern = "*_main.json"
         count = 0
         for root, dirs, files in os.walk(args.input):
             for fname in sorted(files):
-                if fname.endswith("_main.json") or fname.endswith(".json"):
+                if fname.endswith("_main.json"):
                     input_path = os.path.join(root, fname)
-
-                    # Compute relative path for output
                     rel = os.path.relpath(input_path, args.input)
                     output_path = os.path.join(output_dir, rel)
                     os.makedirs(os.path.dirname(output_path), exist_ok=True)

@@ -6,17 +6,18 @@
     "$defs": {
         "nodesterSpec": {
             "type": "object",
+            "description": "Nodester specs use snake_case field names throughout.",
             "properties": {
-                "dataFlowId": {
+                "data_flow_id": {
                     "type": "string"
                 },
-                "dataFlowGroup": {
+                "data_flow_group": {
                     "type": "string"
                 },
-                "dataFlowType": {
+                "data_flow_type": {
                     "const": "nodester"
                 },
-                "dataFlowVersion": {
+                "data_flow_version": {
                     "type": "string"
                 },
                 "tags": {
@@ -37,9 +38,9 @@
                 }
             },
             "required": [
-                "dataFlowId",
-                "dataFlowGroup",
-                "dataFlowType",
+                "data_flow_id",
+                "data_flow_group",
+                "data_flow_type",
                 "nodes"
             ],
             "additionalProperties": false
@@ -77,8 +78,7 @@
                     "type": "string",
                     "enum": [
                         "sql",
-                        "python",
-                        "passthrough"
+                        "python"
                     ],
                     "description": "Type of transformation to apply (required for transformation nodes)"
                 },
@@ -92,7 +92,8 @@
                         "delta",
                         "delta_sink",
                         "foreach_batch_sink",
-                        "custom_python_sink"
+                        "custom_python_sink",
+                        "kafka_sink"
                     ],
                     "default": "delta",
                     "description": "Target format type (required for target nodes). Default: delta"
@@ -369,7 +370,7 @@
                     "$ref": "./definitions_main.json#/definitions/cdcSettings"
                 },
                 "cdc_snapshot_settings": {
-                    "$ref": "./definitions_main.json#/definitions/cdcSnapshotSettings"
+                    "$ref": "#/$defs/snapshotCdcConfig"
                 },
                 "data_quality_expectations_enabled": {
                     "type": "boolean",
@@ -391,8 +392,8 @@
                     "description": "Quarantine mode for this target"
                 },
                 "quarantine_target_details": {
-                    "$ref": "./definitions_main.json#/definitions/quarantineTargetDetails",
-                    "description": "Quarantine target configuration when quarantineMode is 'table'"
+                    "$ref": "#/$defs/quarantineTargetDetails",
+                    "description": "Quarantine target configuration when quarantine_mode is 'table'"
                 },
                 "table_migration_details": {
                     "type": "object",
@@ -499,6 +500,123 @@
                     }
                 }
             ]
+        },
+        "snapshotCdcConfig": {
+            "type": "object",
+            "description": "Snapshot CDC configuration for a target (snake_case). The framework normalises these keys to the backend's camelCase at build time.",
+            "properties": {
+                "keys": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "scd_type": {
+                    "type": ["string", "integer"]
+                },
+                "snapshot_type": {
+                    "type": "string",
+                    "enum": ["historical", "periodic"],
+                    "description": "Historical snapshots read files/tables directly and need no source node; periodic snapshots read from a source."
+                },
+                "source_type": {
+                    "type": "string",
+                    "enum": ["file", "table"],
+                    "description": "Historical snapshot source kind: 'file' (read snapshot files) or 'table' (read a versioned table). Not used for periodic snapshots."
+                },
+                "source": {
+                    "type": "object",
+                    "description": "Historical snapshot source specification — the source is built here (not via a source node). Fields depend on source_type. Periodic snapshots omit this and read from an upstream source node.",
+                    "properties": {
+                        "table": {
+                            "type": "string",
+                            "description": "Source table (source_type 'table'), e.g. '{schema}.snapshot_source'."
+                        },
+                        "path": {
+                            "type": "string",
+                            "description": "Snapshot file path/pattern (source_type 'file'); may contain a {version} token."
+                        },
+                        "format": {
+                            "type": "string",
+                            "description": "File format for file sources (e.g. 'csv', 'parquet', 'json')."
+                        },
+                        "reader_options": {
+                            "type": "object",
+                            "additionalProperties": true,
+                            "description": "Reader options passed to the file reader (e.g. {\"header\": \"true\"})."
+                        },
+                        "schema_path": {
+                            "type": "string",
+                            "description": "Path to a schema file applied when reading file sources."
+                        },
+                        "select_exp": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "description": "Select expressions applied to the snapshot source."
+                        },
+                        "version_type": {
+                            "type": "string",
+                            "description": "How snapshot versions are interpreted (e.g. 'timestamp', 'integer')."
+                        },
+                        "version_column": {
+                            "type": "string",
+                            "description": "Column carrying the snapshot version (source_type 'table')."
+                        },
+                        "datetime_format": {
+                            "type": "string",
+                            "description": "Datetime format used to parse the {version} token for timestamp-versioned file sources (e.g. '%Y_%m_%d')."
+                        },
+                        "deduplicate_mode": {
+                            "type": "string",
+                            "description": "Deduplication mode applied to snapshot rows."
+                        },
+                        "recursiveFileLookup": {
+                            "type": ["boolean", "string"],
+                            "description": "Recurse into subdirectories when discovering snapshot files."
+                        }
+                    },
+                    "additionalProperties": true
+                },
+                "track_history_column_list": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "track_history_except_column_list": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                }
+            },
+            "required": ["keys", "scd_type", "snapshot_type"],
+            "additionalProperties": true
+        },
+        "quarantineTargetDetails": {
+            "type": "object",
+            "description": "Quarantine target configuration (snake_case).",
+            "properties": {
+                "target_format": {
+                    "type": "string"
+                },
+                "table": {
+                    "type": "string"
+                },
+                "database": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "cluster_by_auto": {
+                    "type": "boolean"
+                },
+                "cluster_by_columns": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "partition_columns": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                }
+            },
+            "required": ["target_format"],
+            "additionalProperties": true
         }
     }
 }
