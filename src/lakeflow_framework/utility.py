@@ -4,6 +4,7 @@ import inspect
 from functools import reduce
 import logging
 import os
+import threading
 from typing import Callable, Dict, List
 
 import json
@@ -14,7 +15,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType
 
-from lakeflow_framework.constants import (
+from constants import (
     SupportedSpecFormat,
     PipelineBundleSuffixesJson,
     PipelineBundleSuffixesYaml,
@@ -80,12 +81,18 @@ class JSONValidator:
     Attributes:
         schema (dict): The JSON schema loaded from a file.
         base_uri (str): The base URI for resolving schema references.
-        resolver (RefResolver): The JSON schema resolver.
-        validator (Draft7Validator): The JSON schema validator.
 
     Methods:
         validate(json_data: Dict) -> List:
             Validates the provided JSON data against the loaded schema and returns a list of validation errors.
+
+    Thread safety:
+        A ``Draft7Validator`` and ``RefResolver`` are created once per OS thread (via
+        ``threading.local``) and reused on that thread. Different threads never share a
+        resolver, so ``RefResolver`` internal state is not mutated concurrently. The root
+        schema dict is loaded once in ``__init__``; referenced schema files (e.g.
+        ``definitions_main.json``) are read from disk at most once per thread and then
+        cached on that resolver's ``_remote_cache``.
     """
 
     def __init__(self, schema_path: str):
@@ -95,14 +102,21 @@ class JSONValidator:
         except Exception as e:
             raise ValueError(f"JSON Schema not found: {schema_path}") from e
 
-        # Resolve references
         self.base_uri = "file://" + os.path.abspath(os.path.dirname(schema_path)) + "/"
-        self.resolver = js.RefResolver(base_uri=self.base_uri, referrer=self.schema)
-        self.validator = js.Draft7Validator(self.schema, resolver=self.resolver)
+        self._thread_local = threading.local()
+
+    def _thread_validator(self) -> js.Draft7Validator:
+        """Return a validator for the current thread, creating it on first use."""
+        validator = getattr(self._thread_local, "validator", None)
+        if validator is None:
+            resolver = js.RefResolver(base_uri=self.base_uri, referrer=self.schema)
+            validator = js.Draft7Validator(self.schema, resolver=resolver)
+            self._thread_local.validator = validator
+        return validator
 
     def validate(self, json_data: Dict) -> List:
         """Validate the provided JSON data against the loaded schema and returns a list of validation errors."""
-        return list(self.validator.iter_errors(json_data))
+        return list(self._thread_validator().iter_errors(json_data))
 
 
 def add_struct_field(struct: StructType, column: Dict):
@@ -533,3 +547,4 @@ def deep_merge(base: Dict, overlay: Dict) -> Dict:
         else:
             result[key] = val
     return result
+    
