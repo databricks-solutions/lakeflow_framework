@@ -15,7 +15,7 @@ Why teams use it
 Core outcomes
 -------------
 
-* Build and deploy reliable Databricks Lakeflow Spark Declarative Pipelines
+* Build and deploy reliable Databricks Lakeflow Spark Declarative (SDP) Pipelines
 * Support Bronze/Silver/Gold medallion workloads
 * Support centralized and domain-oriented operating models, including data mesh and data product approaches
 * Accommodate multiple modelling paradigms (modeling paradigms), including dimensional, Data Vault, and enterprise canonical models

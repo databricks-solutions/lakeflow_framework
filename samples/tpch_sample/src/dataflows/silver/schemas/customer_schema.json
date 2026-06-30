@@ -1,29 +1,11 @@
 {
     "type": "struct",
     "fields": [
-        {
-            "name": "c_custkey",
-            "type": "long",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "c_name",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "c_mktsegment",
-            "type": "string",
-            "nullable": true,
-            "metadata": {}
-        },
-        {
-            "name": "load_timestamp",
-            "type": "timestamp",
-            "nullable": false,
-            "metadata": {}
-        }
+        { "name": "customer_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "customer_name", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "market_segment", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "account_balance", "type": "decimal(18,2)", "nullable": false, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} },
+        { "name": "effective_date", "type": "timestamp", "nullable": false, "metadata": {} }
     ]
 }

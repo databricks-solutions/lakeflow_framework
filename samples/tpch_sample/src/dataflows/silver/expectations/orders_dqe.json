@@ -1,0 +1,14 @@
+{
+    "expect_or_drop": [
+        {
+            "name": "order_key not null",
+            "constraint": "order_key IS NOT NULL",
+            "tag": "Validity"
+        },
+        {
+            "name": "total_price non-negative",
+            "constraint": "total_price >= 0",
+            "tag": "Accuracy"
+        }
+    ]
+}

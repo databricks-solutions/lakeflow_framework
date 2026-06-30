@@ -1,23 +1,8 @@
 {
     "type": "struct",
     "fields": [
-        {
-            "name": "s_suppkey",
-            "type": "long",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "s_phone",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "load_timestamp",
-            "type": "timestamp",
-            "nullable": false,
-            "metadata": {}
-        }
+        { "name": "supplier_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "phone", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} }
     ]
 }

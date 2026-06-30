@@ -1,29 +1,11 @@
 {
     "type": "struct",
     "fields": [
-        {
-            "name": "s_suppkey",
-            "type": "long",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "s_name",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "s_acctbal",
-            "type": "decimal(18,2)",
-            "nullable": true,
-            "metadata": {}
-        },
-        {
-            "name": "load_timestamp",
-            "type": "timestamp",
-            "nullable": false,
-            "metadata": {}
-        }
+        { "name": "supplier_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "supplier_name", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "account_balance", "type": "decimal(18,2)", "nullable": false, "metadata": {} },
+        { "name": "comment", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} },
+        { "name": "effective_date", "type": "timestamp", "nullable": false, "metadata": {} }
     ]
 }

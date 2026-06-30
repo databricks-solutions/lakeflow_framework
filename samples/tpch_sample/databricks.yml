@@ -1,37 +1,49 @@
-# This is a Databricks asset bundle definition for bronze_sample.
-# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+# Databricks Asset Bundle — TPC-H Sample
+# End-to-end medallion architecture demo over samples.tpch.
+# Single-catalog UC model: every layer lives in one catalog, separated by schema
+# (tpch_sample_<layer>[_<source>]{logical_env}). Mirrors the feature-samples wiring.
 bundle:
-  name: tpch_sample
+  name: tpch_samples
 
 include:
   - scratch/resources/*.yml
 
 variables:
   catalog:
-    description: The target UC catalog
+    description: The target UC catalog (single catalog for all layers)
+    default: "main"
   framework_source_path:
-    description: The full workspace path to the framwework src folder
+    description: The full workspace path to the framework src folder
   schema_namespace:
-    description: The prefix for all schemas which will end with one of (_bronze, _silver, _gold, or _dpm)
-    default: "lakeflow_samples" 
+    description: The namespace prefix used to derive schema names
+    default: "tpch_sample"
+  bronze_schema:
+    description: Default schema for the bronze pipeline (publishing mode); every flow overrides via targetDetails.database
+    default: "tpch_sample_bronze_reference_data"
+  silver_schema:
+    description: The conformed silver schema
+    default: "tpch_sample_silver"
+  gold_schema:
+    description: The dimensional gold schema
+    default: "tpch_sample_gold"
   workspace_host:
-    description: workspace url used for API calls from Framework (usually same as deployment URL) e.g. https://e2-demo-field-eng.cloud.databricks.com/
-  layer:
-    description: The target layer
-    default: bronze
+    description: Workspace URL used for API calls from Framework
   logical_env:
-    description: The logical environment
+    description: The logical environment suffix (should start with '_')
     default: ""
   pipeline_cluster_config:
-    description: Basic cluster config, add node types as necessary
+    description: Basic cluster config for classic pipelines
     default:
       label: default
       autoscale:
         min_workers: 1
         max_workers: 5
         mode: ENHANCED
+  job_cluster_name:
+    description: The name of the job cluster (classic compute)
+    default: "tpch_samples_job_cluster"
   job_cluster_config:
-    description: Complete cluster configuration for compute clusters
+    description: Complete cluster configuration for classic job clusters
     default:
       spark_version: "16.4.x-scala2.12"
       node_type_id: "i3.xlarge"
@@ -39,10 +51,8 @@ variables:
       autoscale:
         min_workers: 1
         max_workers: 5
-        mode: ENHANCED
 
 targets:
-  # The 'dev' target, for development purposes. This target is the default.
   dev:
     mode: development
     default: true
