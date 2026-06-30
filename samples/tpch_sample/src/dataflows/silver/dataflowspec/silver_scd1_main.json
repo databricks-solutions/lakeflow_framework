@@ -1,0 +1,38 @@
+{
+    "template": "silver_scd1_template",
+    "parameterSets": [
+        {
+            "dataFlowId": "region",
+            "sourceDatabase": "{bronze_reference_data_schema}",
+            "sourceTable": "region",
+            "sourceViewName": "v_region",
+            "selectExp": [
+                "r_regionkey as region_key",
+                "r_name as region_name",
+                "load_timestamp"
+            ],
+            "targetTable": "region",
+            "schemaPath": "region_schema.json",
+            "keys": ["region_key"],
+            "sequenceBy": "load_timestamp",
+            "exceptColumnList": ["load_timestamp"]
+        },
+        {
+            "dataFlowId": "nation",
+            "sourceDatabase": "{bronze_reference_data_schema}",
+            "sourceTable": "nation",
+            "sourceViewName": "v_nation",
+            "selectExp": [
+                "n_nationkey as nation_key",
+                "n_name as nation_name",
+                "n_regionkey as region_key",
+                "load_timestamp"
+            ],
+            "targetTable": "nation",
+            "schemaPath": "nation_schema.json",
+            "keys": ["nation_key"],
+            "sequenceBy": "load_timestamp",
+            "exceptColumnList": ["load_timestamp"]
+        }
+    ]
+}

@@ -1,0 +1,57 @@
+{
+    "dataFlowId": "fct_order_lines",
+    "dataFlowGroup": "tpch_gold",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "fct_order_lines",
+        "schemaPath": "./fct_order_lines_schema.json",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true",
+            "delta.enableRowTracking": "true"
+        }
+    },
+    "cdcSettings": {
+        "keys": [
+            "order_key",
+            "line_number"
+        ],
+        "scd_type": "1",
+        "sequence_by": "load_timestamp",
+        "except_column_list": ["load_timestamp"],
+        "ignore_null_updates": false
+    },
+    "dataQualityExpectationsEnabled": false,
+    "flowGroups": [
+        {
+            "flowGroupId": "fct_order_lines",
+            "flows": {
+                "f_order_lines": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "fct_order_lines",
+                        "sourceView": "v_order_lines_tfm"
+                    },
+                    "views": {
+                        "v_lineitem_cdf_feed": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{silver_schema}",
+                                "table": "lineitem",
+                                "cdfEnabled": true
+                            }
+                        },
+                        "v_order_lines_tfm": {
+                            "mode": "stream",
+                            "sourceType": "sql",
+                            "sourceDetails": {
+                                "sqlPath": "fct_order_lines.sql"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

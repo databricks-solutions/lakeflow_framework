@@ -316,6 +316,58 @@ restore_substitutions_file() {
     fi
 }
 
+# Function to update substitutions for the TPC-H sample (single-catalog model).
+# The tpch sample keeps every medallion layer in ONE catalog, separated by schema
+# (tpch_sample_<layer>[_<source>]{logical_env}). The schema tokens carry both the catalog
+# prefix ("main.") and the namespace prefix ("tpch_sample") plus the {logical_env}
+# placeholder, which the framework resolves at runtime from the pipeline's logicalEnv config.
+# Only the catalog and/or namespace prefixes are rewritten when non-default values are supplied.
+update_tpch_substitutions_file() {
+    local substitutions_file="$1"
+    local default_namespace="tpch_sample"
+    local default_catalog="$DEFAULT_CATALOG"
+
+    # Both at defaults — values already baked into the file; nothing to rewrite.
+    if [[ "$catalog" == "$default_catalog" && "$schema_namespace" == "$default_namespace" ]]; then
+        return 0
+    fi
+
+    log_info "Updating tpch substitutions file: $substitutions_file"
+    log_info "Using catalog: $catalog (default: $default_catalog), schema namespace: $schema_namespace (default: $default_namespace)"
+
+    if [[ ! -f "$substitutions_file" ]]; then
+        log_error "Substitutions file not found: $substitutions_file"
+        return 1
+    fi
+
+    # Preserve the original master via .backup (same convention as update_substitutions_file)
+    if [[ -f "${substitutions_file}.backup" ]]; then
+        log_warning "Existing backup found from previous run, restoring original before proceeding"
+        cp "${substitutions_file}.backup" "$substitutions_file"
+    else
+        cp "$substitutions_file" "${substitutions_file}.backup"
+        log_info "Created backup: ${substitutions_file}.backup"
+    fi
+
+    # Rewrite the catalog prefix: the leading "main." in schema tokens and the /Volumes/main/ path.
+    if [[ "$catalog" != "$default_catalog" ]]; then
+        perl -i -pe "s|\"${default_catalog}\.|\"${catalog}.|g" "$substitutions_file"
+        perl -i -pe "s|/Volumes/${default_catalog}/|/Volumes/${catalog}/|g" "$substitutions_file"
+    fi
+
+    # Rewrite the namespace prefix across all schema tokens and the volume path.
+    if [[ "$schema_namespace" != "$default_namespace" ]]; then
+        perl -i -pe "s|${default_namespace}|${schema_namespace}|g" "$substitutions_file"
+    fi
+
+    log_success "Successfully updated tpch substitutions file"
+    export SUBSTITUTIONS_FILE_MODIFIED=true
+
+    log_info "Updated substitutions file content:"
+    cat "$substitutions_file"
+    echo ""
+}
+
 # Function to update pipeline bundle global.json|yaml with table_migration_state_volume_path (same catalog/schema rules as substitutions)
 update_pipeline_global_config_file() {
     local global_config_file="$1"

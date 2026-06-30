@@ -1,65 +1,15 @@
 {
     "type": "struct",
     "fields": [
-        {
-            "name": "p_partkey",
-            "type": "long",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "p_name",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "p_mfgr",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "p_brand",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "p_type",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "p_size",
-            "type": "integer",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "p_container",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "p_retailprice",
-            "type": "decimal(18,2)",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "p_comment",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "load_timestamp",
-            "type": "timestamp",
-            "nullable": false,
-            "metadata": {}
-        }
+        { "name": "part_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "part_name", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "manufacturer", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "brand", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "part_type", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "size", "type": "integer", "nullable": false, "metadata": {} },
+        { "name": "container", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "retail_price", "type": "decimal(18,2)", "nullable": false, "metadata": {} },
+        { "name": "comment", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} }
     ]
 }
