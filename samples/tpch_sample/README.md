@@ -134,7 +134,7 @@ can `CREATE SCHEMA` in (full list in §4).
 
 ```bash
 cd samples
-./deploy_and_test_tpch.sh \
+./deploy_tpch_and_test.sh \
   -u <you@company.com> -h https://<workspace-host> -p DEFAULT \
   -c 1 -l _dev --catalog main --schema_namespace tpch_sample --runs 3
 ```
@@ -228,16 +228,16 @@ Jobs are prefixed with the bundle target and your username, e.g.
 
 ### One-shot deploy + run everything
 
-`deploy_and_test_tpch.sh` deploys and then runs the jobs end to end:
+`deploy_tpch_and_test.sh` deploys and then runs the jobs end to end:
 
 ```bash
 cd samples
 # Deploy + setup + run 1/2/3:
-./deploy_and_test_tpch.sh -u <you@company.com> -h https://<host> -p DEFAULT -c 1 -l _dev \
+./deploy_tpch_and_test.sh -u <you@company.com> -h https://<host> -p DEFAULT -c 1 -l _dev \
   --catalog main --schema_namespace tpch_sample --runs 3
 
 # Re-run on existing staging (skip the slow setup job):
-./deploy_and_test_tpch.sh -u <you@company.com> -h https://<host> -p DEFAULT -c 1 -l _dev \
+./deploy_tpch_and_test.sh -u <you@company.com> -h https://<host> -p DEFAULT -c 1 -l _dev \
   --catalog main --schema_namespace tpch_sample --runs 3 --skip-setup
 ```
 

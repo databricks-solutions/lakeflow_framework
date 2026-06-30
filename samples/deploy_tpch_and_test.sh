@@ -10,7 +10,7 @@
 #   0 - Setup and Initialise Staging  ->  1 - Run 1 (full refresh)  ->  2 - Run 2  ->  3 - Run 3
 #
 # Usage:
-#   ./deploy_and_test_tpch.sh -u <user> -h <host> -p <profile> -c <0|1> -l <_env> \
+#   ./deploy_tpch_and_test.sh -u <user> -h <host> -p <profile> -c <0|1> -l <_env> \
 #       --catalog <catalog> --schema_namespace <ns> [--runs 0..3] [--skip-setup]
 ##########
 
