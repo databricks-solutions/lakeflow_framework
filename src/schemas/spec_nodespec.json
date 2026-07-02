@@ -366,9 +366,6 @@
                 "cdc_settings": {
                     "$ref": "./definitions_main.json#/definitions/cdcSettings"
                 },
-                "cdc_apply_changes": {
-                    "$ref": "./definitions_main.json#/definitions/cdcSettings"
-                },
                 "cdc_snapshot_settings": {
                     "$ref": "#/$defs/snapshotCdcConfig"
                 },

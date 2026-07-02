@@ -46,7 +46,7 @@ _KEYS = {
 # Keys a target config handles specially, so they are NOT copied into details.
 _HANDLED = {
     "input", "table", "table_type", "enabled", "once", "name",
-    "cdc_settings", "cdc_apply_changes", "cdc_snapshot_settings",
+    "cdc_settings", "cdc_snapshot_settings",
     "data_quality_expectations_enabled", "data_quality_expectations_path",
     "quarantine_mode", "quarantine_target_details", "table_migration_details",
     "sink_type", "sink_config", "sink_options", "table_details", "source_view",
@@ -164,9 +164,8 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     def _settings(self, dst: Dict, cfg: Dict, *, cdc=False, migration=False, dq_default=False) -> None:
         """Copy CDC / data-quality / quarantine / table-migration settings onto `dst`."""
         if cdc:
-            c = cfg.get("cdc_settings") or cfg.get("cdc_apply_changes")
-            if c:
-                dst["cdcSettings"] = c
+            if cfg.get("cdc_settings"):
+                dst["cdcSettings"] = cfg["cdc_settings"]
             if cfg.get("cdc_snapshot_settings"):
                 dst["cdcSnapshotSettings"] = _deep_camel(cfg["cdc_snapshot_settings"])
         if dq_default:
@@ -212,7 +211,7 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     def _streaming_spec(self, spec_data: Dict, spec_target: Dict, others: List[Dict]) -> Dict:
         cfg = spec_target.get("config", {})
         fmt = spec_target.get("target_type", "delta")
-        has_cdc = bool(cfg.get("cdc_settings") or cfg.get("cdc_apply_changes") or cfg.get("cdc_snapshot_settings"))
+        has_cdc = bool(cfg.get("cdc_settings") or cfg.get("cdc_snapshot_settings"))
 
         spec = self._base(spec_data)
         spec["targetFormat"] = fmt
@@ -279,7 +278,7 @@ class NodespecSpecTransformer(BaseSpecTransformer):
                 self.logger.warning(f"Target '{name}' has no inputs, skipping")
             return counter
 
-        merge = bool(cfg.get("cdc_settings") or cfg.get("cdc_apply_changes") or (has_cdc and target is spec_target))
+        merge = bool(cfg.get("cdc_settings") or (has_cdc and target is spec_target))
         for flow_name, view in inputs:
             node = self.lookup.get(view, {})
             sql_source = node.get("node_type", "").lower() == self.SOURCE and node.get("source_type") == "sql"

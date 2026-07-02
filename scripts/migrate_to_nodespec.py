@@ -133,12 +133,12 @@ def _add_target_settings(config: Dict, src: Dict) -> None:
     `src` is the spec (standard), a staging-table config (flow), or an MV config.
     Reads either casing; writes snake_case.
     """
-    cdc = _get(src, "cdcSettings", "cdc_settings")
+    # nodespec has a single CDC field (cdc_settings). Legacy cdcApplyChanges is
+    # the same thing, so migrate either source key into cdc_settings.
+    cdc = (_get(src, "cdcSettings", "cdc_settings")
+           or _get(src, "cdcApplyChanges", "cdc_apply_changes"))
     if cdc:
         config["cdc_settings"] = cdc
-    cdc_apply = _get(src, "cdcApplyChanges", "cdc_apply_changes")
-    if cdc_apply:
-        config["cdc_apply_changes"] = cdc_apply
     snapshot = _get(src, "cdcSnapshotSettings", "cdc_snapshot_settings")
     if snapshot:
         config["cdc_snapshot_settings"] = _convert_snapshot(snapshot)

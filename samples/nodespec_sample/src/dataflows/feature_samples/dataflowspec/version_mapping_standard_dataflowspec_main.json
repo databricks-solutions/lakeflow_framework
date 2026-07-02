@@ -23,7 +23,7 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "cdc_apply_changes": {
+                "cdc_settings": {
                     "keys": [
                         "CUSTOMER_ID"
                     ],
