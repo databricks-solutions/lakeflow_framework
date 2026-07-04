@@ -13,8 +13,8 @@
 #   ./deploy_tpch_and_test.sh -u <user> -h <host> -p <profile> -c <0|1> -l <_env> \
 #       --catalog <catalog> --schema_namespace <ns> [--warehouse_id <id>] [--runs 0..3] [--skip-setup]
 #
-#   --warehouse_id is OPTIONAL: it backs the AI/BI Genie space. Omit it (or leave the prompt
-#   blank) to skip Genie deployment — useful if you don't have SQL warehouse access.
+#   --warehouse_id is OPTIONAL: it backs the AI/BI Genie space and the AI/BI (Lakeview) dashboards.
+#   Omit it (or leave the prompt blank) to skip both — useful if you don't have SQL warehouse access.
 ##########
 
 # Sample-specific constants (tpch-specialist)
@@ -54,7 +54,7 @@ fi
 # Prompt for any remaining missing parameters (shared)
 prompt_common_params
 
-# Optional: SQL warehouse id for the Genie space (blank = skip Genie deployment).
+# Optional: SQL warehouse id for the Genie space + AI/BI dashboards (blank = skip both).
 # Resolved here once; exported + sentinel set so the deploy_tpch.sh child inherits it and
 # does not prompt again.
 prompt_warehouse_optional
@@ -83,7 +83,7 @@ echo "  - Compute: $([ "$compute" == "0" ] && echo "Classic" || echo "Serverless
 echo "  - Catalog: $catalog"
 echo "  - Schema Namespace: $schema_namespace"
 echo "  - Logical Environment: $logical_env"
-echo "  - Genie Space: $([ -n "$warehouse_id" ] && echo "yes (warehouse $warehouse_id)" || echo "skipped (no warehouse id)")"
+echo "  - Genie Space + Dashboards: $([ -n "$warehouse_id" ] && echo "yes (warehouse $warehouse_id)" || echo "skipped (no warehouse id)")"
 echo "  - Run Setup Job: $([ "$run_setup" == "true" ] && echo "yes" || echo "no")"
 echo "  - Number of Run Jobs: $num_runs"
 echo ""

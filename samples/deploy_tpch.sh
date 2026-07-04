@@ -22,7 +22,7 @@ fi
 # Prompt for any remaining missing parameters
 prompt_common_params
 
-# Optional: SQL warehouse id for the Genie space (blank = skip Genie deployment)
+# Optional: SQL warehouse id for the Genie space + AI/BI dashboards (blank = skip both)
 prompt_warehouse_optional
 
 # Validate all required parameters

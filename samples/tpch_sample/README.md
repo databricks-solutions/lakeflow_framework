@@ -58,6 +58,9 @@ real warehouse on top of it. It demonstrates how to use the Lakeflow Framework t
 - **Generate surrogate keys** (`xxhash64`) and resolve facts to the dimension version that was
 **effective as of the order date** (point-in-time / as-of joins).
 - **Expose a governed semantic layer** with **UC Metric Views**.
+- **Layer natural-language analytics** with an optional **AI/BI Genie space** over the gold schema.
+- **Ship optional AI/BI (Lakeview) dashboards** as native bundle resources — a commercial overview
+  and a pipeline-health / governance view.
 - **Simulate incremental operation** over three "days," including SCD2 changes and a backdated
 out-of-order correction on the business timeline.
 
@@ -161,10 +164,10 @@ and **§8 Validating results** for copy-paste verification queries.
 privilege. The bundle creates schemas + the staging volume; it does **not** create the catalog.
 - Access to the `samples.tpch` catalog (available by default in most workspaces).
 - **Serverless** is the default/primary compute path (a classic resource tree is maintained for parity).
-- **(Optional) A SQL warehouse** — only needed if you want the **AI/BI Genie space**. The deploy
-  prompt asks for a warehouse id; leave it blank to **skip Genie deployment**. Everything else in
-  the sample deploys and runs without a warehouse, so users without SQL warehouse access are not
-  blocked.
+- **(Optional) A SQL warehouse** — only needed for the **AI/BI Genie space** and the **AI/BI
+  (Lakeview) dashboards**. The deploy prompt asks for a warehouse id; leave it blank to **skip both
+  Genie and the dashboards**. Everything else in the sample deploys and runs without a warehouse,
+  so users without SQL warehouse access are not blocked.
 
 ---
 
@@ -309,6 +312,83 @@ the 1996 value stays current — the headline framework talking point.
 to the real `dim_part` member, while the Run-2 fact keeps the unknown member (append-only facts are not
 retro-repointed).
 - **Quarantine** continues to catch a second bad batch.
+
+### Ask Genie (natural language)
+
+If you deployed the Genie space (§11.19), open it and ask questions in plain English — the curated
+tables, metric views, and instructions steer Genie to surrogate-key joins and the governed metric
+views. Two examples and the SQL Genie generates:
+
+- *"What were the top 5 market segments by net sales in 1996?"* — joins the fact to the conformed
+  dimensions on surrogate keys and to `dim_date`, exactly as intended:
+
+```sql
+SELECT c.market_segment, SUM(f.net_sales) AS net_sales
+FROM main.tpch_sample_gold.fct_order_lines f
+JOIN main.tpch_sample_gold.dim_customer c ON f.customer_sk = c.customer_sk
+JOIN main.tpch_sample_gold.dim_date d ON f.order_date_key = d.date_key
+WHERE d.year = 1996 AND c.market_segment IS NOT NULL
+GROUP BY c.market_segment
+ORDER BY net_sales DESC
+LIMIT 5
+```
+
+- *"What is the on-time delivery rate by ship mode?"* — queries the governed metric view with
+  `MEASURE(...)` rather than re-deriving the measure from the base fact:
+
+```sql
+SELECT `Ship Mode`, MEASURE(`On-Time Delivery Rate`) AS on_time_delivery_rate
+FROM main.tpch_sample_gold.tpch_sample_sales_metrics
+WHERE `Ship Mode` IS NOT NULL
+GROUP BY ALL
+ORDER BY on_time_delivery_rate DESC
+```
+
+**Questions that showcase the Day-2/3 incremental data.** After Runs 2–3, ask these to surface the
+SCD2 history and late-arriving dimension the incremental loads introduced:
+
+- *"How many order line items are linked to the unknown part member (part_sk = -1)?"* — the
+  **late-arriving dimension**: a Run-2 line item references a part whose master had not arrived yet,
+  so it resolves to the unknown member (§11.18).
+
+```sql
+SELECT COUNT(*) AS order_line_count
+FROM main.tpch_sample_gold.fct_order_lines
+WHERE part_sk = -1
+```
+
+- *"How many suppliers have more than one version in the supplier dimension?"* — the **SCD2
+  historization** from the Run-3 supplier updates (effective 1997), which give affected suppliers a
+  second version:
+
+```sql
+SELECT COUNT(*) AS suppliers_with_multiple_versions
+FROM (
+  SELECT supplier_key
+  FROM main.tpch_sample_gold.dim_supplier
+  GROUP BY supplier_key
+  HAVING COUNT(*) > 1
+)
+```
+
+### Explore the AI/BI dashboards
+
+If you supplied a warehouse id, two **AI/BI (Lakeview) dashboards** are deployed as native bundle
+resources (§11.20) into the `dashboards/` folder under the bundle's workspace path:
+
+- **TPC-H Commercial Overview** — headline KPIs (net sales, orders, AOV, on-time delivery, return
+  rate), the net-sales-by-month trend, and net sales by region / segment / ship mode / top
+  suppliers over the gold star schema.
+- **TPC-H Pipeline Health & Governance** — the framework's own signals: late-arriving/unknown
+  member resolution (`*_sk = -1`), SCD2 history depth (dimension rows vs current entities, plus a
+  supplier version-history table), and a data-quality lens. This one is compelling even on the raw
+  TPC-H data because it visualizes CDC + historization + DQ rather than business volumes.
+
+Both are **optional** (same warehouse gating as Genie) and torn down automatically by
+`destroy_tpch.sh` (they are bundle resources, so `bundle destroy` removes them — no extra cleanup
+step). Because the datasets use unqualified table names bound to `dataset_catalog` /
+`dataset_schema` at deploy, the dashboards automatically target whatever catalog, namespace and
+logical environment the bundle was deployed with.
 
 ---
 
@@ -642,6 +722,27 @@ block, so as native bundle support for Genie spaces matures it can move into a
 rewrite. One trade-off today: `bundle destroy` does not manage the space, so `destroy_tpch.sh`
 trashes it via the CLI (`databricks genie trash-space`) before destroying the bundle (§10).
 
+### 11.20 AI/BI (Lakeview) dashboards via native bundle resources
+
+Unlike Genie, **AI/BI dashboards are first-class Asset Bundle resources**, so the two dashboards
+(`src/dashboards/*.lvdash.json`) are declared in `resources/{classic,serverless}/dashboards/tpch_dashboards.yml`
+using the `dashboards` resource type — no notebook or API call needed. `bundle deploy` creates and
+publishes them; **`bundle destroy` removes them automatically** (no CLI cleanup helper, in contrast
+to the Genie space).
+
+**How they "marry" to the namespace + logical environment.** DABs does not rewrite the serialized
+`.lvdash.json`, so the dataset queries deliberately use **unqualified** table names (`FROM
+fct_order_lines`, `JOIN dim_customer …`). The resource then sets the default context via
+`dataset_catalog: ${var.catalog}` and `dataset_schema: ${var.gold_schema}` — and because
+`gold_schema` already resolves to `<schema_namespace>_gold<logical_env>`, every dataset targets the
+correct catalog, namespace and environment automatically. The display names carry
+`(${var.schema_namespace}${var.logical_env})` so multiple environments don't collide.
+
+**Optional, same as Genie.** The dashboards are warehouse-backed, so `deploy` drops the dashboard
+resource file when no `warehouse_id` is supplied (a one-line gate in `common.sh`); everything else
+still deploys. The queries were validated against the gold schema before authoring, per the Lakeview
+build workflow.
+
 ---
 
 ## 12. Repository layout
@@ -745,8 +846,6 @@ plus one schema per simulated bronze source system.
 ---
 
 ## 15. Backlog / roadmap
-
-- **Genie space — delivered via notebook** (§11.19). As native bundle support for Genie spaces
-  matures, move the definition into a `resources/.../genie/*.yml` file and retire the
-  `create_genie_space` notebook task.
-- **Serve layer** — Lakeview dashboards.
+- **Realistic data distribution** — the base TPC-H data is uniformly generated (flat over time and
+  across categories); an optional volume-preserving reshaping pass could add trend, seasonality and
+  supplier/category skew so the Commercial dashboard tells a richer story.

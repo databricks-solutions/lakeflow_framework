@@ -114,10 +114,11 @@ prompt_common_params() {
     [[ -z "$logical_env" ]] && read -p "Logical environment (should start with '_'): " logical_env
 }
 
-# Optional prompt for a SQL warehouse id that backs the TPC-H Genie space.
-# Genie deployment is OPTIONAL: some users don't have access to a SQL warehouse. Leaving the
-# warehouse id blank simply skips Genie-space creation; the rest of the sample is unaffected.
-# The prompt is skipped when TPCH_WAREHOUSE_RESOLVED is set (a parent script already resolved it).
+# Optional prompt for a SQL warehouse id that backs the TPC-H Genie space and AI/BI dashboards.
+# These are OPTIONAL: some users don't have access to a SQL warehouse. Leaving the warehouse id
+# blank simply skips Genie-space creation and the Lakeview dashboards; the rest of the sample is
+# unaffected. The prompt is skipped when TPCH_WAREHOUSE_RESOLVED is set (a parent script already
+# resolved it).
 prompt_warehouse_optional() {
     # Already resolved (and possibly intentionally left blank) by a parent script — don't re-ask.
     [[ -n "$TPCH_WAREHOUSE_RESOLVED" ]] && return 0
@@ -127,18 +128,19 @@ prompt_warehouse_optional() {
     # blocking on input (they simply skip Genie unless --warehouse_id was given).
     if [[ -z "$warehouse_id" && -z "$warehouse_id_set" && -t 0 ]]; then
         echo ""
-        echo "Optional — AI/BI Genie space:"
+        echo "Optional — AI/BI Genie space + Lakeview dashboards:"
         echo "  This sample can deploy a Genie space over the gold schema for natural-language"
-        echo "  analytics. It requires a SQL warehouse id. If you don't have access to a SQL"
-        echo "  warehouse, leave this blank to SKIP Genie deployment — everything else still"
-        echo "  deploys and runs normally."
-        read -p "SQL warehouse id for Genie (optional, blank = skip): " warehouse_id
+        echo "  analytics, plus two AI/BI (Lakeview) dashboards (Commercial Overview and Pipeline"
+        echo "  Health & Governance). These require a SQL warehouse id. If you don't have access to"
+        echo "  a SQL warehouse, leave this blank to SKIP the Genie space and dashboards —"
+        echo "  everything else still deploys and runs normally."
+        read -p "SQL warehouse id for Genie + dashboards (optional, blank = skip): " warehouse_id
     fi
 
     if [[ -z "$warehouse_id" ]]; then
-        log_info "No SQL warehouse id provided — Genie space deployment will be skipped."
+        log_info "No SQL warehouse id provided — Genie space and dashboards will be skipped."
     else
-        log_info "Genie space will be deployed against SQL warehouse: $warehouse_id"
+        log_info "Genie space and dashboards will be deployed against SQL warehouse: $warehouse_id"
     fi
 
     # Mark as resolved so any child script we invoke inherits the decision and won't re-prompt.
@@ -267,6 +269,14 @@ deploy_bundle() {
         log_info "Deploying to serverless-compute target"
         mkdir -p scratch/resources
         find resources/serverless -name "*.yml" -exec cp {} scratch/resources/ \;
+    fi
+
+    # Optional AI/BI (Lakeview) dashboards are warehouse-backed: drop them from the rendered
+    # resource set when no warehouse_id was supplied (mirrors the optional Genie space, which
+    # no-ops in the same case). Everything else still deploys.
+    if [[ -z "${warehouse_id:-}" ]]; then
+        rm -f scratch/resources/*dashboards*.yml 2>/dev/null || true
+        log_info "No warehouse_id supplied — skipping optional AI/BI dashboard resources"
     fi
     
     # Deploy the bundle

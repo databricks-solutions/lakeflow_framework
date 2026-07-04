@@ -1,0 +1,686 @@
+{
+  "datasets": [
+    {
+      "name": "ds_kpis",
+      "displayName": "Headline KPIs",
+      "queryLines": [
+        "SELECT SUM(net_sales) AS net_sales, COUNT(DISTINCT order_key) AS orders, SUM(quantity) AS units_sold, SUM(net_sales)/NULLIF(COUNT(DISTINCT order_key),0) AS avg_order_value, AVG(CASE WHEN receipt_date <= commit_date THEN 1.0 ELSE 0.0 END) AS on_time_rate, SUM(CASE WHEN return_flag='R' THEN quantity ELSE 0 END)/NULLIF(SUM(quantity),0) AS return_rate FROM fct_order_lines"
+      ]
+    },
+    {
+      "name": "ds_sales_by_month",
+      "displayName": "Net sales by month",
+      "queryLines": [
+        "SELECT DATE_TRUNC('MONTH', order_date) AS order_month, SUM(net_sales) AS net_sales FROM fct_order_lines WHERE order_date IS NOT NULL GROUP BY 1 ORDER BY 1"
+      ]
+    },
+    {
+      "name": "ds_sales_by_region",
+      "displayName": "Net sales by region",
+      "queryLines": [
+        "SELECT c.region_name AS region_name, SUM(f.net_sales) AS net_sales FROM fct_order_lines f JOIN dim_customer c ON f.customer_sk=c.customer_sk WHERE c.region_name IS NOT NULL AND c.region_name<>'Unknown' GROUP BY 1"
+      ]
+    },
+    {
+      "name": "ds_sales_by_segment",
+      "displayName": "Net sales by market segment",
+      "queryLines": [
+        "SELECT c.market_segment AS market_segment, SUM(f.net_sales) AS net_sales FROM fct_order_lines f JOIN dim_customer c ON f.customer_sk=c.customer_sk WHERE c.market_segment IS NOT NULL AND c.market_segment<>'Unknown' GROUP BY 1"
+      ]
+    },
+    {
+      "name": "ds_ontime_by_shipmode",
+      "displayName": "On-time delivery rate by ship mode",
+      "queryLines": [
+        "SELECT ship_mode, AVG(CASE WHEN receipt_date<=commit_date THEN 1.0 ELSE 0.0 END) AS on_time_rate FROM fct_order_lines WHERE ship_mode IS NOT NULL GROUP BY 1"
+      ]
+    },
+    {
+      "name": "ds_top_suppliers",
+      "displayName": "Top suppliers by net sales",
+      "queryLines": [
+        "SELECT s.supplier_name AS supplier_name, SUM(f.net_sales) AS net_sales FROM fct_order_lines f JOIN dim_supplier s ON f.supplier_sk=s.supplier_sk WHERE s.supplier_name<>'Unknown' GROUP BY 1 ORDER BY 2 DESC LIMIT 10"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "p_overview",
+      "displayName": "Overview",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "d1-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## TPC-H Commercial Overview"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-sub",
+            "multilineTextboxSpec": {
+              "lines": [
+                "Governed sales, fulfillment and sourcing metrics over the gold star schema."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-c-netsales",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "net_sales",
+                      "expression": "`net_sales`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "net_sales",
+                  "displayName": "Net Sales"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Net Sales"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-c-orders",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "orders",
+                      "expression": "`orders`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "orders",
+                  "displayName": "Orders"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Orders"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-c-aov",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "avg_order_value",
+                      "expression": "`avg_order_value`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg_order_value",
+                  "displayName": "Avg Order Value"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Order Value"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-c-units",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "units_sold",
+                      "expression": "`units_sold`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "units_sold",
+                  "displayName": "Units Sold"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Units Sold"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-c-ontime",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "on_time_rate",
+                      "expression": "`on_time_rate`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "on_time_rate",
+                  "displayName": "On-Time Delivery Rate"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "On-Time Delivery Rate"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-c-return",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_kpis",
+                  "fields": [
+                    {
+                      "name": "return_rate",
+                      "expression": "`return_rate`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "return_rate",
+                  "displayName": "Return Rate"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Return Rate"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-h-trends",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Sales trends & mix"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-line-month",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_sales_by_month",
+                  "fields": [
+                    {
+                      "name": "order_month",
+                      "expression": "`order_month`"
+                    },
+                    {
+                      "name": "sum(net_sales)",
+                      "expression": "SUM(`net_sales`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "order_month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Order Month"
+                },
+                "y": {
+                  "fieldName": "sum(net_sales)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "net_sales"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Net Sales by Month"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-bar-region",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_sales_by_region",
+                  "fields": [
+                    {
+                      "name": "region_name",
+                      "expression": "`region_name`"
+                    },
+                    {
+                      "name": "sum(net_sales)",
+                      "expression": "SUM(`net_sales`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "region_name",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "region_name"
+                },
+                "y": {
+                  "fieldName": "sum(net_sales)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "net_sales"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Net Sales by Region"
+              },
+              "mark": {
+                "colors": [
+                  "#FFAB00",
+                  "#00A972",
+                  "#FF3621",
+                  "#8BCAE7",
+                  "#AB4057",
+                  "#99DDB4",
+                  "#FCA4A1",
+                  "#919191",
+                  "#BF7080"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-bar-segment",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_sales_by_segment",
+                  "fields": [
+                    {
+                      "name": "market_segment",
+                      "expression": "`market_segment`"
+                    },
+                    {
+                      "name": "sum(net_sales)",
+                      "expression": "SUM(`net_sales`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "market_segment",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "market_segment"
+                },
+                "y": {
+                  "fieldName": "sum(net_sales)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "net_sales"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Net Sales by Market Segment"
+              },
+              "mark": {
+                "colors": [
+                  "#FFAB00",
+                  "#00A972",
+                  "#FF3621",
+                  "#8BCAE7",
+                  "#AB4057",
+                  "#99DDB4",
+                  "#FCA4A1",
+                  "#919191",
+                  "#BF7080"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 15,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-bar-ontime",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_ontime_by_shipmode",
+                  "fields": [
+                    {
+                      "name": "ship_mode",
+                      "expression": "`ship_mode`"
+                    },
+                    {
+                      "name": "sum(on_time_rate)",
+                      "expression": "SUM(`on_time_rate`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "ship_mode",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "ship_mode"
+                },
+                "y": {
+                  "fieldName": "sum(on_time_rate)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "on_time_rate"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "On-Time Delivery Rate by Ship Mode"
+              },
+              "mark": {
+                "colors": [
+                  "#FFAB00",
+                  "#00A972",
+                  "#FF3621",
+                  "#8BCAE7",
+                  "#AB4057",
+                  "#99DDB4",
+                  "#FCA4A1",
+                  "#919191",
+                  "#BF7080"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "d1-bar-suppliers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_top_suppliers",
+                  "fields": [
+                    {
+                      "name": "supplier_name",
+                      "expression": "`supplier_name`"
+                    },
+                    {
+                      "name": "sum(net_sales)",
+                      "expression": "SUM(`net_sales`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "supplier_name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  },
+                  "displayName": "supplier_name"
+                },
+                "y": {
+                  "fieldName": "sum(net_sales)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "net_sales"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Top 10 Suppliers by Net Sales"
+              },
+              "mark": {
+                "colors": [
+                  "#FFAB00",
+                  "#00A972",
+                  "#FF3621",
+                  "#8BCAE7",
+                  "#AB4057",
+                  "#99DDB4",
+                  "#FCA4A1",
+                  "#919191",
+                  "#BF7080"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 21,
+            "width": 3,
+            "height": 6
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
