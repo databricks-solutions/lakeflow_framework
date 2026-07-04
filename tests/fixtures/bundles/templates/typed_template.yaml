@@ -1,0 +1,40 @@
+name: typed_template
+parameters:
+  dataFlowId:
+    type: string
+    required: true
+  batchSize:
+    type: integer
+    required: true
+  enabled:
+    type: boolean
+    required: true
+  tags:
+    type: list
+    required: true
+  metadata:
+    type: object
+    required: true
+  label:
+    type: string
+    required: true
+template:
+  dataFlowId: ${param.dataFlowId}
+  dataFlowGroup: typed_test
+  dataFlowType: standard
+  sourceSystem: test
+  sourceType: cloudFiles
+  sourceViewName: v_typed
+  sourceDetails:
+    path: /data
+  mode: stream
+  targetFormat: delta
+  targetDetails:
+    database: db
+    table: tbl
+  features:
+    batchSize: ${param.batchSize}
+    enabled: ${param.enabled}
+    tags: ${param.tags}
+    metadata: ${param.metadata}
+  description: prefix-${param.label}-suffix

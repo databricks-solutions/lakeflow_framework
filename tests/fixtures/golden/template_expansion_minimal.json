@@ -1,0 +1,18 @@
+{
+  "/virtual/template_main_minimal.json#template_minimal_template_from_template_a": {
+    "dataFlowId": "from_template_a",
+    "dataFlowGroup": "template_test",
+    "tags": {
+      "_isTemplateGenerated": true,
+      "_templateName": "minimal_template"
+    }
+  },
+  "/virtual/template_main_minimal.json#template_minimal_template_from_template_b": {
+    "dataFlowId": "from_template_b",
+    "dataFlowGroup": "template_test",
+    "tags": {
+      "_isTemplateGenerated": true,
+      "_templateName": "minimal_template"
+    }
+  }
+}
