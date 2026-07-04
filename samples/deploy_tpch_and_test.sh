@@ -11,7 +11,10 @@
 #
 # Usage:
 #   ./deploy_tpch_and_test.sh -u <user> -h <host> -p <profile> -c <0|1> -l <_env> \
-#       --catalog <catalog> --schema_namespace <ns> [--runs 0..3] [--skip-setup]
+#       --catalog <catalog> --schema_namespace <ns> [--warehouse_id <id>] [--runs 0..3] [--skip-setup]
+#
+#   --warehouse_id is OPTIONAL: it backs the AI/BI Genie space. Omit it (or leave the prompt
+#   blank) to skip Genie deployment — useful if you don't have SQL warehouse access.
 ##########
 
 # Sample-specific constants (tpch-specialist)
@@ -51,6 +54,11 @@ fi
 # Prompt for any remaining missing parameters (shared)
 prompt_common_params
 
+# Optional: SQL warehouse id for the Genie space (blank = skip Genie deployment).
+# Resolved here once; exported + sentinel set so the deploy_tpch.sh child inherits it and
+# does not prompt again.
+prompt_warehouse_optional
+
 # Validate all required parameters (shared)
 if ! validate_required_params; then
     exit 1
@@ -75,13 +83,14 @@ echo "  - Compute: $([ "$compute" == "0" ] && echo "Classic" || echo "Serverless
 echo "  - Catalog: $catalog"
 echo "  - Schema Namespace: $schema_namespace"
 echo "  - Logical Environment: $logical_env"
+echo "  - Genie Space: $([ -n "$warehouse_id" ] && echo "yes (warehouse $warehouse_id)" || echo "skipped (no warehouse id)")"
 echo "  - Run Setup Job: $([ "$run_setup" == "true" ] && echo "yes" || echo "no")"
 echo "  - Number of Run Jobs: $num_runs"
 echo ""
 
 # Step 1: Deploy using deploy_tpch.sh (runs in a subshell; its env exports do not propagate)
 log_info "Starting TPCH deployment..."
-if ! ./deploy_tpch.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"; then
+if ! ./deploy_tpch.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace" --warehouse_id "$warehouse_id"; then
     log_error "Deployment failed. Exiting."
     exit 1
 fi

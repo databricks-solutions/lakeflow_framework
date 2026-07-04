@@ -22,6 +22,9 @@ fi
 # Prompt for any remaining missing parameters
 prompt_common_params
 
+# Optional: SQL warehouse id for the Genie space (blank = skip Genie deployment)
+prompt_warehouse_optional
+
 # Validate all required parameters
 if ! validate_required_params; then
     exit 1

@@ -161,6 +161,10 @@ and **§8 Validating results** for copy-paste verification queries.
 privilege. The bundle creates schemas + the staging volume; it does **not** create the catalog.
 - Access to the `samples.tpch` catalog (available by default in most workspaces).
 - **Serverless** is the default/primary compute path (a classic resource tree is maintained for parity).
+- **(Optional) A SQL warehouse** — only needed if you want the **AI/BI Genie space**. The deploy
+  prompt asks for a warehouse id; leave it blank to **skip Genie deployment**. Everything else in
+  the sample deploys and runs without a warehouse, so users without SQL warehouse access are not
+  blocked.
 
 ---
 
@@ -199,10 +203,16 @@ cd samples
 | `-l`                 | Logical environment suffix (isolates your deployment) | `_test`       |
 | `--catalog`          | Target catalog                                        | `main`        |
 | `--schema_namespace` | Schema name prefix                                    | `tpch_sample` |
+| `--warehouse_id`     | *(Optional)* SQL warehouse for the Genie space        | (prompted; blank = skip) |
 
 
 > Always pass a unique `-l` (e.g. your initials `_jd`) so you don't collide with other
 > deployments in a shared workspace.
+
+> **Genie space is optional.** If you don't provide a `--warehouse_id` (or leave the prompt
+> blank), Genie-space deployment is skipped and the rest of the sample is unaffected. This keeps
+> the sample deployable for users who don't have access to a SQL warehouse. When a warehouse id is
+> supplied, a Genie space is created over the gold schema as a post-build step.
 
 This deploys three pipelines (`tpch_bronze`, `tpch_silver`, `tpch_gold`) and four jobs (setup +
 runs 1–3) under `/Users/<you>/.bundle/tpch_samples/`.
@@ -218,7 +228,7 @@ full baseline) and is **skippable** once staging exists.
 | #   | Job display name                                                   | What it does                                                               |
 | --- | ------------------------------------------------------------------ | -------------------------------------------------------------------------- |
 | 0   | `… TPCH Samples - 0 - Setup and Initialise Staging (_env)`         | CREATE schemas + volume + full initial Parquet staging                     |
-| 1   | `… TPCH Samples - 1 - Run 1 - Full Refresh (_env)`                 | bronze, silver, then gold (`full_refresh: true`), plus create metric views |
+| 1   | `… TPCH Samples - 1 - Run 1 - Full Refresh (_env)`                 | bronze, silver, then gold (`full_refresh: true`), then create metric views + (optional) Genie space |
 | 2   | `… TPCH Samples - 2 - Run 2 - Dim + Fact Updates (_env)`           | stage batch 2, then run the pipelines (`full_refresh: false`)              |
 | 3   | `… TPCH Samples - 3 - Run 3 - Facts + Out-of-Order Dim Fix (_env)` | stage batch 3, then run the pipelines (`full_refresh: false`)              |
 
@@ -262,7 +272,9 @@ then run the setup-free Run 1 (full refresh) to rebuild the baseline from `initi
 The complete star schema is built: all dims, both base facts, the five aggregate MVs, and the
 two UC metric views. **Show:** the gold schema fully populated; `dim_customer` (flow spec) vs
 `dim_supplier` (materialized view) producing equivalent SCD2 dimensions; query a metric view
-with `MEASURE(...)`.
+with `MEASURE(...)`. If you supplied a warehouse id, an **AI/BI Genie space** ("TPC-H Sample -
+Gold Analytics") is also created over the gold schema (§11.19) — **show** a natural-language
+question (e.g. *"net sales by market segment in 1996"*).
 
 ### Day 2 — Run 2 (incremental: dims + significant facts + DQ)
 
@@ -373,6 +385,12 @@ cd samples
 ```
 
 This tears down the tpch bundle (pipelines, jobs, and the schemas it created).
+
+> **Genie space cleanup is handled too.** The Genie space is created via the Genie API from a
+> notebook task (see §11.19), so `bundle destroy` alone does not manage it. `destroy_tpch.sh`
+> therefore trashes the space first via the CLI (`databricks genie list-spaces` / `trash-space`,
+> matched by title) before destroying the bundle. This is best-effort and idempotent — safe if no
+> space was ever created.
 
 ---
 
@@ -603,6 +621,27 @@ This is a deliberate, heavier operation — incremental runs never silently rewr
 typically monitor the unknown-member count and schedule a fact rebuild after a known backfill of
 late-arriving masters.
 
+### 11.19 Genie space via notebook
+
+Run 1 finishes by creating an **AI/BI Genie space** over the gold star schema
+(`src/notebooks/create_genie_space`, task `create_genie_space`, after `create_metric_views`). It
+curates the space to the facts, conformed dimensions, and both metric views, and is **idempotent**
+(find-or-create by title, so re-runs update in place). It is **optional**: with no `warehouse_id`
+the notebook exits cleanly without failing the job (see §4/§5), so users without SQL warehouse
+access are never blocked.
+
+**Why a notebook (via the Genie API) rather than declaring it in the bundle?** Genie space support
+is **new and still evolving**, and this approach keeps the sample runnable for everyone: not all
+users are on the latest Databricks CLI, and some cannot upgrade it in their environment. A notebook
+task is universally supported, so the sample deploys on any CLI version. We therefore use this
+approach for now.
+
+**Forward-looking:** the space definition in the notebook is authored as a self-contained config
+block, so as native bundle support for Genie spaces matures it can move into a
+`resources/.../genie/*.yml` file and this notebook task be retired — a lift-and-shift, not a
+rewrite. One trade-off today: `bundle destroy` does not manage the space, so `destroy_tpch.sh`
+trashes it via the CLI (`databricks genie trash-space`) before destroying the bundle (§10).
+
 ---
 
 ## 12. Repository layout
@@ -707,4 +746,7 @@ plus one schema per simulated bronze source system.
 
 ## 15. Backlog / roadmap
 
-- **Serve layer** — Lakeview + Genie.
+- **Genie space — delivered via notebook** (§11.19). As native bundle support for Genie spaces
+  matures, move the definition into a `resources/.../genie/*.yml` file and retire the
+  `create_genie_space` notebook task.
+- **Serve layer** — Lakeview dashboards.

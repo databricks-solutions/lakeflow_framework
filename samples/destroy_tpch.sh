@@ -39,6 +39,10 @@ echo "  - BUNDLE_VAR_bronze_schema: $BUNDLE_VAR_bronze_schema"
 echo "  - BUNDLE_VAR_silver_schema: $BUNDLE_VAR_silver_schema"
 echo "  - BUNDLE_VAR_gold_schema:   $BUNDLE_VAR_gold_schema"
 
+# Trash the Genie space first (it is created imperatively via the Genie API, not as a bundle
+# resource, so `bundle destroy` cannot remove it). Best-effort + idempotent.
+trash_genie_spaces_by_title "TPC-H Sample - Gold Analytics${logical_env}" "$profile"
+
 # Destroy the bundle
 echo "Destroying $BUNDLE_NAME"
 cd tpch_sample

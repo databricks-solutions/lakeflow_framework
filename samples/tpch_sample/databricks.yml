@@ -28,6 +28,12 @@ variables:
     default: "tpch_sample_gold"
   workspace_host:
     description: Workspace URL used for API calls from Framework
+  warehouse_id:
+    description: >-
+      Optional SQL warehouse id that backs the AI/BI Genie space. Leave empty to skip
+      Genie-space deployment (for users without SQL warehouse access). Everything else
+      deploys and runs regardless.
+    default: ""
   logical_env:
     description: The logical environment suffix (should start with '_')
     default: ""
