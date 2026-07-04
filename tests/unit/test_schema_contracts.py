@@ -35,6 +35,11 @@ class TestSchemaContracts:
         errors = main_validator.validate(payload)
         assert errors == [], f"expanded_main_minimal.json: {errors}"
 
+    def test_quarantine_table_minimal_validates(self, fixtures_dir: Path, main_validator):
+        payload = json.loads((fixtures_dir / "specs" / "quarantine_table_minimal.json").read_text())
+        errors = main_validator.validate(payload)
+        assert errors == [], f"quarantine_table_minimal.json: {errors}"
+
     def test_template_main_minimal_validates(self, fixtures_dir: Path, template_spec_validator):
         payload = json.loads((fixtures_dir / "specs" / "template_main_minimal.json").read_text())
         errors = template_spec_validator.validate(payload)

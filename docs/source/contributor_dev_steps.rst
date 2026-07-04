@@ -46,18 +46,24 @@ Development Process
    - Optional coverage: add ``--cov=src --cov-report=term-missing``.
    - CI runs the same pytest command on every pull request (``.github/workflows/ci.yml``).
 
-3. Integration Testing  / Samples
- 
+3. Integration Testing / Samples
+
    - Where applicable, add sample pipelines to ``feature-samples`` (for isolated feature demonstrations) or ``pattern-samples`` (for medallion architecture patterns) to show how to use the new feature
-   - Validate dataflow specs locally when you change samples or schemas:
+   - Run integration tests when you change samples, schemas, or validation logic:
 
      .. code-block:: bash
 
-        python scripts/validate_dataflows.py samples/<your_sample>/
-        # or all samples:
-        python scripts/validate_dataflows.py samples/
+        pytest tests/ -m integration
 
-   - CI validates sample bundles with ``scripts/validate_dataflows.py`` when files under ``samples/`` change.
+   - Validate data flow specs locally when you change samples or schemas (prefer per-bundle paths):
+
+     .. code-block:: bash
+
+        python scripts/validate_dataflows.py samples/pattern-samples/
+        python scripts/validate_dataflows.py samples/tpch_sample/
+        python scripts/validate_dataflows.py samples/feature-samples/
+
+   - CI validates sample bundles with ``scripts/validate_dataflows.py samples/`` when files under ``samples/`` change.
    - Deploy and run existing sample pipelines on Databricks to ensure changes are not breaking existing functionality (refer to :doc:`deploy_samples`)
 
 4. Documentation
@@ -66,9 +72,10 @@ Development Process
 
      .. code-block:: bash
 
-        make -C docs spelling
+        bash scripts/ci/docs_spelling_check.sh
         bash scripts/ci/docs_html_check.sh
 
+   - ``make -C docs spelling`` runs the same spelling check (fails on any misspelled words).
    - CI runs spelling and HTML builds when documentation changes; HTML must stay below 20 Sphinx warnings.
 
 Pull Request Process

@@ -13,14 +13,14 @@ Validates dataflow JSON/YAML specification files against the project's JSON sche
 # Validate all dataflow files in the project (with version mapping by default)
 python scripts/validate_dataflows.py
 
-# Validate files in a specific directory
-python scripts/validate_dataflows.py samples/bronze_sample/
+# Validate files in a specific bundle directory
+python scripts/validate_dataflows.py samples/pattern-samples/
 
 # Validate a single file
-python scripts/validate_dataflows.py samples/bronze_sample/src/dataflows/base_samples/dataflowspec/customer_main.json
+python scripts/validate_dataflows.py samples/tpch_sample/src/dataflows/bronze/dataflowspec/customer_main.json
 
 # Validate without version mapping (strict mode - validates against current schema only)
-python scripts/validate_dataflows.py --no-mapping samples/bronze_sample/
+python scripts/validate_dataflows.py --no-mapping samples/tpch_sample/
 
 # Verbose output
 python scripts/validate_dataflows.py -v
@@ -67,16 +67,16 @@ Converts Lakeflow Framework pipeline bundles from JSON format to YAML format, wi
 python scripts/convert_json_to_yaml.py --file path/to/file.json
 
 # Convert an entire bundle
-python scripts/convert_json_to_yaml.py --bundle samples/bronze_sample --output samples/bronze_sample_yaml
+python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --output samples/pattern-samples_yaml
 
 # Convert with overwrite
-python scripts/convert_json_to_yaml.py --bundle samples/bronze_sample --output samples/bronze_sample_yaml --overwrite
+python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --output samples/pattern-samples_yaml --overwrite
 
 # Dry run (preview changes without making them)
-python scripts/convert_json_to_yaml.py --bundle samples/bronze_sample --dry-run
+python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --dry-run
 
 # Convert without validation
-python scripts/convert_json_to_yaml.py --bundle samples/bronze_sample --no-validate
+python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --no-validate
 ```
 
 **Command-Line Options:**
@@ -105,30 +105,30 @@ python scripts/convert_json_to_yaml.py --bundle samples/bronze_sample --no-valid
 
 **Example Output:**
 ```
-Converting bundle from samples/bronze_sample to samples/bronze_sample_yaml
+Converting bundle from samples/pattern-samples to samples/pattern-samples_yaml
 Copying bundle structure...
 Scanning for JSON files to convert...
-Found 34 JSON files to convert
-  Converting: src/dataflows/base_samples/dataflowspec/customer_main.json -> customer_main.yaml
+Found 19 JSON files to convert
+  Converting: src/dataflows/base_samples/bronze/dataflowspec/customer_main.json -> customer_main.yaml
   Converting: src/pipeline_configs/dev_substitutions.json -> dev_substitutions.yaml
 ...
 
 ================================================================================
 Validating converted files...
 ================================================================================
-Validating 30 file(s) (with version mapping)...
+Validating 16 file(s) (with version mapping)...
 ✓ All dataflow files validated successfully
 
 ================================================================================
 Conversion Summary:
 ================================================================================
-Files converted: 34
-  - Main specs: 30
+Files converted: 19
+  - Main specs: 16
   - Flow groups: 0
   - Expectations: 2
-  - Secrets: 1
+  - Secrets: 0
   - Substitutions: 1
-Files removed: 34
+Files removed: 19
 Validation: PASSED
 ================================================================================
 ```
@@ -154,8 +154,8 @@ convert_json_file_to_yaml(
 
 # Convert an entire bundle
 stats = convert_bundle(
-    source_bundle_path="samples/bronze_sample",
-    target_bundle_path="samples/bronze_sample_yaml",
+    source_bundle_path="samples/pattern-samples",
+    target_bundle_path="samples/pattern-samples_yaml",
     validate=True,
     overwrite=True
 )

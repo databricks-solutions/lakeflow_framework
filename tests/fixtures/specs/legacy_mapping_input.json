@@ -1,0 +1,25 @@
+{
+  "dataFlowId": "legacy_flow",
+  "dataFlowType": "standard",
+  "data": {
+    "cdcApplyChanges": {
+      "keys": "id"
+    },
+    "cdcApplyChangesFromSnapshot": {
+      "version": 1
+    },
+    "sourceType": "delta",
+    "sourceDetails": {
+      "pythonFunctionPath": "/funcs/transform.py"
+    },
+    "spark_conf": {
+      "spark.sql.shuffle.partitions": "8"
+    },
+    "targetDetails": {
+      "topic": "orders",
+      "kafkaOptions": {
+        "startingOffsets": "latest"
+      }
+    }
+  }
+}

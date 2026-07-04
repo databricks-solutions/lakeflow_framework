@@ -113,8 +113,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install --require-hashes --no-deps -r requirements-docs.lock
 
-      - name: make spelling
-        run: make -C docs spelling
+      - name: Docs spelling
+        run: bash scripts/ci/docs_spelling_check.sh
 
   docs-html:
     name: Docs HTML build

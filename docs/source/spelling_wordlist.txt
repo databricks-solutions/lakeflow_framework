@@ -26,6 +26,7 @@ dataflowspec
 deduplicate
 dedupes
 deduplication
+deployable
 Del
 Demultiplexing
 dependant

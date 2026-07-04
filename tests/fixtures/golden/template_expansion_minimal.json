@@ -2,6 +2,22 @@
   "/virtual/template_main_minimal.json#template_minimal_template_from_template_a": {
     "dataFlowId": "from_template_a",
     "dataFlowGroup": "template_test",
+    "dataFlowType": "standard",
+    "sourceSystem": "erp",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_tpl_a",
+    "sourceDetails": {
+      "path": "/data/a",
+      "readerOptions": {
+        "cloudFiles.format": "parquet"
+      }
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+      "database": "db_a",
+      "table": "tbl_a"
+    },
     "tags": {
       "_isTemplateGenerated": true,
       "_templateName": "minimal_template"
@@ -10,6 +26,22 @@
   "/virtual/template_main_minimal.json#template_minimal_template_from_template_b": {
     "dataFlowId": "from_template_b",
     "dataFlowGroup": "template_test",
+    "dataFlowType": "standard",
+    "sourceSystem": "erp",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "v_tpl_b",
+    "sourceDetails": {
+      "path": "/data/b",
+      "readerOptions": {
+        "cloudFiles.format": "parquet"
+      }
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+      "database": "db_b",
+      "table": "tbl_b"
+    },
     "tags": {
       "_isTemplateGenerated": true,
       "_templateName": "minimal_template"

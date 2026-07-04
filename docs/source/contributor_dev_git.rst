@@ -4,58 +4,59 @@ GIT
 Branching Strategy
 ------------------
 
-The project follows the GitFlow branching model for version control. This model provides a robust framework for managing larger projects with scheduled releases.
+The project uses **trunk-based development** on ``main``. There is no long-lived
+``develop`` branch; all changes integrate through pull requests into ``main``.
 
-Our repository maintains the following primary branches:
+Primary branches and branch types:
 
-* ``main`` - Contains production-ready code
-* ``develop`` - Main integration branch for ongoing development
-* ``release`` - Used when preparing a new production release
-* ``feature`` - Short-lived branches for new feature development
-* ``fix`` - Short-lived branches for bug fixes
+* ``main`` - Production-ready trunk; always deployable
+* ``feature/*`` - Short-lived branches for new features or larger changes
+* ``fix/*`` - Short-lived branches for bug fixes
 
 Feature Branch Guidelines
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Create feature branches from ``develop``
+* Create feature branches from ``main``
 * Branch naming: ``feature/descriptive-name`` (e.g. ``feature/add-cdc-support``)
 * Keep changes focused and atomic
-* Regularly sync with ``develop`` to minimize merge conflicts
-* Submit pull request to merge back into ``develop`` when complete
+* Regularly sync with ``main`` to minimize merge conflicts
+* Open a pull request to merge into ``main`` when complete
 
 Fix Branch Guidelines
 ^^^^^^^^^^^^^^^^^^^^^
 
-* Create fix branches from ``develop`` for non-critical bugs
+* Create fix branches from ``main``
 * Branch naming: ``fix/issue-description`` (e.g. ``fix/logging-format``)
 * Include issue reference in commit messages when applicable
 * Keep changes minimal and focused on the bug fix
-* Submit pull request to merge back into ``develop`` when complete
+* Open a pull request to merge into ``main`` when complete
 
-Release Strategy
-----------------
+Release and Versioning
+----------------------
 
-The project follows a structured release process aligned with the GitFlow branching model:
+Version bumps are automated when a pull request is **merged** into ``main`` (see
+``.github/workflows/main-build.yml``):
 
-1. **Release Branch Creation**
-   
-   * When ``develop`` branch contains all features planned for release
-   * Create release branch: ``release/vX.Y.Z``
-   * Branch naming follows semantic versioning (e.g. ``release/v1.2.0``)
+* Branches named ``feature/*`` → **minor** version bump (fix reset to 0)
+* Branches named ``fix/*`` → **fix** (patch) version bump
+* Other branch names → no automatic version bump (warning in workflow log)
 
-2. **Release Finalization**
+The workflow updates ``VERSION``, commits to ``main``, and creates a ``vX.Y.Z`` tag.
 
-   * After thorough testing and stabilization:
-     - Merge release branch into ``main``
-     - Tag the release in ``main`` with version number
-     - Merge release branch back into ``develop``
-     - Delete the release branch
+Hotfix Process
+^^^^^^^^^^^^^^
 
-4. **Hotfix Process**
+For urgent production issues:
 
-   * For critical production issues:
-     - Create hotfix branch from ``main`` (e.g. ``hotfix/v1.2.1``)
-     - Implement and test the fix
-     - Merge hotfix into both ``main`` and ``develop``
-     - Tag the new version in ``main``
+1. Create a hotfix branch from ``main`` (e.g. ``fix/critical-data-loss``)
+2. Implement and test the fix
+3. Merge to ``main`` via pull request (squash merge)
+4. Let the version workflow tag ``main`` (``fix/*`` branch → patch bump)
 
+Pull Request Expectations
+-------------------------
+
+* Target branch: ``main``
+* Prefer **squash and merge** for a linear history
+* Ensure **CI** passes (``.github/workflows/ci.yml``) before merge
+* Delete the feature branch after merge

@@ -10,7 +10,7 @@ From the repository root (after `pip install --require-hashes --no-deps -r requi
 # Unit tests (default local/CI command)
 pytest tests/ -m "not integration and not spark"
 
-# Integration tests (samples layout, validate_dataflows script)
+# Integration tests (samples layout, validate_dataflows script, feature-samples builder)
 pytest tests/ -m integration
 
 # Optional coverage report
@@ -30,15 +30,18 @@ tests/
 │   ├── bundles/
 │   └── golden/
 ├── unit/                # Fast, isolated module tests
-└── integration/         # Script-level / sample-dependent tests
+└── integration/         # Sample-dependent tests (require samples/ checkout)
+    ├── conftest.py      # validate_bundle(), bundle paths, feature-samples fixtures
+    ├── test_validate_dataflows.py      # Script helpers + all specs per JSON bundle
+    └── test_feature_samples_spec_builder.py  # DataflowSpecBuilder on feature-samples
 ```
 
 ## Markers
 
 | Marker | Purpose |
 |--------|---------|
-| `integration` | Needs samples checkout or external layout; skipped in default CI |
-| `spark` | Requires a local Spark session; skipped in default CI |
+| `integration` | Needs `samples/` checkout; validates real bundle specs and builders |
+| `spark` | Reserved for future local Spark tests; excluded from default CI |
 | `bdd` | Reserved for future pytest-bdd spec-contract scenarios |
 
 Configure in `pytest.ini`. CI runs: `-m "not integration and not spark"`.
@@ -69,8 +72,8 @@ Local equivalents:
 
 ```bash
 pytest tests/ -m "not integration and not spark"
+pytest tests/ -m integration
 make -C docs spelling
 bash scripts/ci/docs_html_check.sh 19
 python scripts/validate_dataflows.py samples/
-python scripts/validate_dataflows.py samples/tpch_sample/
 ```
