@@ -73,8 +73,10 @@ Prerequisites
 py
 PySpark
 Pytest
+pytest
 pythonModule
 pythonTransform
+repo
 quarantineTargetDetails
 rst
 Schemas
