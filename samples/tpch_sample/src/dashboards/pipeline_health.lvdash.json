@@ -98,7 +98,16 @@
               "encodings": {
                 "value": {
                   "fieldName": "unknown_part_lines",
-                  "displayName": "Unknown-part lines (late-arriving)"
+                  "displayName": "Unknown-part lines (late-arriving)",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -138,7 +147,16 @@
               "encodings": {
                 "value": {
                   "fieldName": "unknown_supplier_lines",
-                  "displayName": "Unknown-supplier lines"
+                  "displayName": "Unknown-supplier lines",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -178,7 +196,16 @@
               "encodings": {
                 "value": {
                   "fieldName": "unknown_customer_lines",
-                  "displayName": "Unknown-customer lines"
+                  "displayName": "Unknown-customer lines",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -218,7 +245,16 @@
               "encodings": {
                 "value": {
                   "fieldName": "total_order_lines",
-                  "displayName": "Total Order Lines"
+                  "displayName": "Total Order Lines",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -258,7 +294,16 @@
               "encodings": {
                 "value": {
                   "fieldName": "suppliers_with_history",
-                  "displayName": "Suppliers with SCD2 history"
+                  "displayName": "Suppliers with SCD2 history",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -298,7 +343,16 @@
               "encodings": {
                 "value": {
                   "fieldName": "parts_with_history",
-                  "displayName": "Parts with SCD2 history"
+                  "displayName": "Parts with SCD2 history",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -374,11 +428,29 @@
                   "fields": [
                     {
                       "fieldName": "sum(total_rows)",
-                      "displayName": "Total rows (all versions)"
+                      "displayName": "Total rows (all versions)",
+                      "format": {
+                        "type": "number-plain",
+                        "abbreviation": "compact",
+                        "decimalPlaces": {
+                          "type": "max",
+                          "places": 1
+                        },
+                        "hideGroupSeparator": false
+                      }
                     },
                     {
                       "fieldName": "sum(current_entities)",
-                      "displayName": "Current entities"
+                      "displayName": "Current entities",
+                      "format": {
+                        "type": "number-plain",
+                        "abbreviation": "compact",
+                        "decimalPlaces": {
+                          "type": "max",
+                          "places": 1
+                        },
+                        "hideGroupSeparator": false
+                      }
                     }
                   ]
                 },
@@ -541,7 +613,14 @@
                   "scale": {
                     "type": "quantitative"
                   },
-                  "displayName": "return_rate"
+                  "displayName": "return_rate",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
                 },
                 "label": {
                   "show": true

@@ -125,6 +125,9 @@ repopulate_resources() {
     else
         find resources/serverless -name "*.yml" -exec cp {} scratch/resources/ \;
     fi
+    if [[ -z "${warehouse_id:-}" ]]; then
+        rm -f scratch/resources/*dashboards*.yml 2>/dev/null || true
+    fi
 }
 
 cleanup_resources() {

@@ -279,8 +279,10 @@ deploy_bundle() {
         log_info "No warehouse_id supplied — skipping optional AI/BI dashboard resources"
     fi
     
-    # Deploy the bundle
-    if databricks bundle deploy -t dev --profile "$profile"; then
+    # Deploy the bundle (--auto-approve: non-interactive deploys e.g. from CI/agents)
+    local deploy_args=(-t dev --profile "$profile")
+    [[ -n "${BUNDLE_AUTO_APPROVE:-}" ]] && deploy_args+=(--auto-approve)
+    if databricks bundle deploy "${deploy_args[@]}"; then
         log_success "$bundle_name deployed successfully"
     else
         log_error "Failed to deploy $bundle_name"

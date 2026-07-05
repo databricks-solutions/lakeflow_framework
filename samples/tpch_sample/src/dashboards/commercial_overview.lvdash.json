@@ -105,7 +105,17 @@
               "encodings": {
                 "value": {
                   "fieldName": "net_sales",
-                  "displayName": "Net Sales"
+                  "displayName": "Net Sales",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -145,7 +155,16 @@
               "encodings": {
                 "value": {
                   "fieldName": "orders",
-                  "displayName": "Orders"
+                  "displayName": "Orders",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -185,7 +204,17 @@
               "encodings": {
                 "value": {
                   "fieldName": "avg_order_value",
-                  "displayName": "Avg Order Value"
+                  "displayName": "Avg Order Value",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -225,7 +254,16 @@
               "encodings": {
                 "value": {
                   "fieldName": "units_sold",
-                  "displayName": "Units Sold"
+                  "displayName": "Units Sold",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -265,7 +303,14 @@
               "encodings": {
                 "value": {
                   "fieldName": "on_time_rate",
-                  "displayName": "On-Time Delivery Rate"
+                  "displayName": "On-Time Delivery Rate",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
                 }
               },
               "frame": {
@@ -305,7 +350,14 @@
               "encodings": {
                 "value": {
                   "fieldName": "return_rate",
-                  "displayName": "Return Rate"
+                  "displayName": "Return Rate",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
                 }
               },
               "frame": {
@@ -375,7 +427,17 @@
                   "scale": {
                     "type": "quantitative"
                   },
-                  "displayName": "net_sales"
+                  "displayName": "net_sales",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    },
+                    "hideGroupSeparator": false
+                  }
                 }
               },
               "frame": {
@@ -429,7 +491,17 @@
                   "scale": {
                     "type": "quantitative"
                   },
-                  "displayName": "net_sales"
+                  "displayName": "net_sales",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    },
+                    "hideGroupSeparator": false
+                  }
                 },
                 "label": {
                   "show": true
@@ -499,7 +571,17 @@
                   "scale": {
                     "type": "quantitative"
                   },
-                  "displayName": "net_sales"
+                  "displayName": "net_sales",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    },
+                    "hideGroupSeparator": false
+                  }
                 },
                 "label": {
                   "show": true
@@ -569,7 +651,14 @@
                   "scale": {
                     "type": "quantitative"
                   },
-                  "displayName": "on_time_rate"
+                  "displayName": "on_time_rate",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
                 },
                 "label": {
                   "show": true
@@ -642,7 +731,17 @@
                   "scale": {
                     "type": "quantitative"
                   },
-                  "displayName": "net_sales"
+                  "displayName": "net_sales",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    },
+                    "hideGroupSeparator": false
+                  }
                 },
                 "label": {
                   "show": true

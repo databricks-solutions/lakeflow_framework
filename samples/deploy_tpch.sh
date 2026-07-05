@@ -52,7 +52,10 @@ fi
 cd tpch_sample
 
 # Deploy the bundle
-deploy_bundle "$BUNDLE_NAME"
+if ! deploy_bundle "$BUNDLE_NAME"; then
+    log_error "Bundle deployment failed. Exiting."
+    exit 1
+fi
 
 # Return to parent directory
 cd ..
