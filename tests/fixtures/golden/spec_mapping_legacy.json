@@ -1,0 +1,27 @@
+{
+  "dataFlowId": "legacy_flow",
+  "dataFlowType": "standard",
+  "data": {
+    "cdcSettings": {
+      "keys": "id"
+    },
+    "cdcSnapshotSettings": {
+      "version": 1
+    },
+    "sourceType": "delta",
+    "sourceDetails": {
+      "pythonTransform": {
+        "functionPath": "/funcs/transform.py"
+      }
+    },
+    "sparkConf": {
+      "spark.sql.shuffle.partitions": "8"
+    },
+    "targetDetails": {
+      "sinkOptions": {
+        "startingOffsets": "latest",
+        "topic": "orders"
+      }
+    }
+  }
+}

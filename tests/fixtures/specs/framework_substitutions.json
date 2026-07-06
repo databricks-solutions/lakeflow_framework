@@ -1,0 +1,11 @@
+{
+  "tokens": {
+    "catalog": "framework_catalog",
+    "layer": "bronze"
+  },
+  "prefix_suffix": {
+    "table": {
+      "prefix": "fw_"
+    }
+  }
+}
