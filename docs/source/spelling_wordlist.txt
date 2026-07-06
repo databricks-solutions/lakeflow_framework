@@ -26,6 +26,7 @@ dataflowspec
 deduplicate
 dedupes
 deduplication
+deployable
 Del
 Demultiplexing
 dependant
@@ -72,8 +73,10 @@ Prerequisites
 py
 PySpark
 Pytest
+pytest
 pythonModule
 pythonTransform
+repo
 quarantineTargetDetails
 rst
 Schemas

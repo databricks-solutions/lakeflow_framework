@@ -1,0 +1,68 @@
+{
+  "dataFlowId": "view_graph_flow",
+  "dataFlowGroup": "test_group",
+  "dataFlowType": "FLOW",
+  "targetFormat": "delta",
+  "targetDetails": {
+    "table": "catalog.schema.target_table",
+    "type": "st"
+  },
+  "flowGroups": [
+    {
+      "flowGroupId": "main",
+      "flows": {
+        "f_source": {
+          "flowType": "append_view",
+          "flowDetails": {
+            "targetTable": "target_table",
+            "sourceView": "v_cdf_source"
+          },
+          "views": {
+            "v_cdf_source": {
+              "mode": "stream",
+              "sourceType": "delta",
+              "sourceDetails": {
+                "database": "bronze",
+                "table": "raw_events",
+                "cdfEnabled": true
+              }
+            },
+            "v_live_source": {
+              "mode": "stream",
+              "sourceType": "delta",
+              "sourceDetails": {
+                "database": "live",
+                "table": "other_table"
+              }
+            },
+            "v_staging_target": {
+              "mode": "stream",
+              "sourceType": "delta",
+              "sourceDetails": {
+                "database": "silver",
+                "table": "target_table"
+              }
+            }
+          }
+        },
+        "f_staging": {
+          "flowType": "append_view",
+          "flowDetails": {
+            "targetTable": "staging_only",
+            "sourceView": "v_external"
+          },
+          "views": {
+            "v_external": {
+              "mode": "stream",
+              "sourceType": "delta",
+              "sourceDetails": {
+                "database": "bronze",
+                "table": "external_only"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

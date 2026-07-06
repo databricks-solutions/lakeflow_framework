@@ -23,9 +23,15 @@ REQUIREMENTS_FILES=(
 for req_file in "${REQUIREMENTS_FILES[@]}"; do
     lock_file="${req_file%.txt}.lock"
     echo "Generating hashed lockfile for ${req_file}..."
+    extra_args=()
+    if [ "$req_file" = "requirements-dev.txt" ]; then
+        # Pin setuptools (distutils shim on Python 3.12+) for --no-deps CI installs.
+        extra_args+=(--allow-unsafe)
+    fi
     pip-compile \
         "$REPO_ROOT/$req_file" \
         --generate-hashes \
+        "${extra_args[@]}" \
         --output-file "$REPO_ROOT/$lock_file" \
         --no-emit-index-url
 

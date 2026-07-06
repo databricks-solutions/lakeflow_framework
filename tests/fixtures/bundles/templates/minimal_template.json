@@ -1,0 +1,31 @@
+{
+  "name": "minimal_template",
+  "parameters": {
+    "dataFlowId": { "type": "string", "required": true },
+    "sourceSystem": { "type": "string", "required": true },
+    "sourceViewName": { "type": "string", "required": true },
+    "path": { "type": "string", "required": true },
+    "database": { "type": "string", "required": true },
+    "table": { "type": "string", "required": true }
+  },
+  "template": {
+    "dataFlowId": "${param.dataFlowId}",
+    "dataFlowGroup": "template_test",
+    "dataFlowType": "standard",
+    "sourceSystem": "${param.sourceSystem}",
+    "sourceType": "cloudFiles",
+    "sourceViewName": "${param.sourceViewName}",
+    "sourceDetails": {
+      "path": "${param.path}",
+      "readerOptions": {
+        "cloudFiles.format": "parquet"
+      }
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+      "database": "${param.database}",
+      "table": "${param.table}"
+    }
+  }
+}

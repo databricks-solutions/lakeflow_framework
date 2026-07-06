@@ -1,0 +1,11 @@
+{
+  "tokens": {
+    "catalog": "pipeline_catalog",
+    "schema": "pipeline_schema"
+  },
+  "prefix_suffix": {
+    "table": {
+      "suffix": "_v1"
+    }
+  }
+}
