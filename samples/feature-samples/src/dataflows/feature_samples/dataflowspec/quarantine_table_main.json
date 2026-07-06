@@ -1,7 +1,7 @@
 {
     "dataFlowId": "feature_quarantine_table",
     "dataFlowGroup": "feature_samples_data_quality",
-    "dataFlowType": "standard",
+    "dataFlowType": "invalid_flow_type",
     "sourceSystem": "testSystem",
     "sourceType": "delta",
     "sourceViewName": "v_customer_address_feature_quarantine_table",
