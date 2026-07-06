@@ -1,5 +1,5 @@
 {
-    "dataFlowId": "dim_customer_gold",
+    "dataFlowId": "dim_customer",
     "dataFlowGroup": "tpch_gold",
     "dataFlowType": "flow",
     "targetFormat": "delta",
@@ -7,7 +7,8 @@
         "table": "dim_customer",
         "schemaPath": "./dim_customer_schema.json",
         "tableProperties": {
-            "delta.enableChangeDataFeed": "true"
+            "delta.enableChangeDataFeed": "true",
+            "delta.enableRowTracking": "true"
         }
     },
     "cdcSettings": {
@@ -25,20 +26,24 @@
             "flowGroupId": "dim_customer",
             "stagingTables": {
                 "stg_customer_appnd_keys": {
-                    "type": "ST"
+                    "type": "ST",
+                    "tableProperties": {
+                        "delta.enableRowTracking": "true"
+                    }
                 },
                 "stg_customer_dedupe_keys": {
                     "type": "ST",
                     "tableProperties": {
-                        "delta.enableChangeDataFeed": "true"
+                        "delta.enableChangeDataFeed": "true",
+                        "delta.enableRowTracking": "true"
                     },
                     "cdcSettings": {
                         "keys": [
-                            "c_custkey"
+                            "customer_key"
                         ],
                         "scd_type": "2",
-                        "sequence_by": "__START_AT",
-                        "except_column_list": ["__START_AT"]
+                        "sequence_by": "version_ts",
+                        "track_history_column_list": ["version_ts"]
                     }
                 }
             },
@@ -57,7 +62,7 @@
                                 "database": "{silver_schema}",
                                 "table": "customer",
                                 "cdfEnabled": true,
-                                "selectExp": ["c_custkey", "__START_AT"]
+                                "selectExp": ["customer_key", "__START_AT as version_ts"]
                             }
                         }
                     }
@@ -76,7 +81,7 @@
                                 "database": "{silver_schema}",
                                 "table": "customer_address",
                                 "cdfEnabled": true,
-                                "selectExp": ["c_custkey", "__START_AT"]
+                                "selectExp": ["customer_key", "__START_AT as version_ts"]
                             }
                         }
                     }
@@ -95,7 +100,7 @@
                                 "database": "{silver_schema}",
                                 "table": "customer_phone",
                                 "cdfEnabled": true,
-                                "selectExp": ["c_custkey", "__START_AT"]
+                                "selectExp": ["customer_key", "__START_AT as version_ts"]
                             }
                         }
                     }

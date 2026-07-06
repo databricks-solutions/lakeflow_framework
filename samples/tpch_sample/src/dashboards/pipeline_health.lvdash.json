@@ -1,0 +1,664 @@
+{
+  "datasets": [
+    {
+      "name": "ds_dq_kpis",
+      "displayName": "Fact resolution KPIs",
+      "queryLines": [
+        "SELECT COUNT(*) AS total_order_lines, SUM(CASE WHEN part_sk=-1 THEN 1 ELSE 0 END) AS unknown_part_lines, SUM(CASE WHEN supplier_sk=-1 THEN 1 ELSE 0 END) AS unknown_supplier_lines, SUM(CASE WHEN customer_sk=-1 THEN 1 ELSE 0 END) AS unknown_customer_lines FROM fct_order_lines"
+      ]
+    },
+    {
+      "name": "ds_versioned_counts",
+      "displayName": "Dimensions with SCD2 history",
+      "queryLines": [
+        "SELECT (SELECT COUNT(*) FROM (SELECT supplier_key FROM dim_supplier WHERE supplier_key<>-1 GROUP BY supplier_key HAVING COUNT(*)>1)) AS suppliers_with_history, (SELECT COUNT(*) FROM (SELECT part_key FROM dim_part WHERE part_key<>-1 GROUP BY part_key HAVING COUNT(*)>1)) AS parts_with_history"
+      ]
+    },
+    {
+      "name": "ds_dim_rows",
+      "displayName": "Dimension rows vs current entities",
+      "queryLines": [
+        "SELECT 'Supplier' AS dimension, COUNT(*) AS total_rows, COUNT(DISTINCT supplier_key) AS current_entities FROM dim_supplier WHERE supplier_key<>-1 UNION ALL SELECT 'Part', COUNT(*), COUNT(DISTINCT part_key) FROM dim_part WHERE part_key<>-1 UNION ALL SELECT 'Customer', COUNT(*), COUNT(DISTINCT customer_key) FROM dim_customer WHERE customer_key<>-1"
+      ]
+    },
+    {
+      "name": "ds_supplier_history",
+      "displayName": "Supplier version history (SCD2)",
+      "queryLines": [
+        "SELECT supplier_key, supplier_name, region_name, __START_AT, __END_AT FROM dim_supplier WHERE supplier_key IN (SELECT supplier_key FROM dim_supplier WHERE supplier_key<>-1 GROUP BY supplier_key HAVING COUNT(*)>1) ORDER BY supplier_key, __START_AT"
+      ]
+    },
+    {
+      "name": "ds_returns_by_region",
+      "displayName": "Return rate by region",
+      "queryLines": [
+        "SELECT c.region_name AS region_name, SUM(CASE WHEN f.return_flag='R' THEN f.quantity ELSE 0 END)/NULLIF(SUM(f.quantity),0) AS return_rate FROM fct_order_lines f JOIN dim_customer c ON f.customer_sk=c.customer_sk WHERE c.region_name<>'Unknown' AND c.region_name IS NOT NULL GROUP BY 1"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "p_health",
+      "displayName": "Overview",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "d2-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## TPC-H Pipeline Health & Governance"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-sub",
+            "multilineTextboxSpec": {
+              "lines": [
+                "Data-quality, late-arriving dimension and SCD2 historization signals produced by the framework."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-c-unkpart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_dq_kpis",
+                  "fields": [
+                    {
+                      "name": "unknown_part_lines",
+                      "expression": "`unknown_part_lines`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "unknown_part_lines",
+                  "displayName": "Unknown-part lines (late-arriving)",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Unknown-part lines (late-arriving)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-c-unksup",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_dq_kpis",
+                  "fields": [
+                    {
+                      "name": "unknown_supplier_lines",
+                      "expression": "`unknown_supplier_lines`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "unknown_supplier_lines",
+                  "displayName": "Unknown-supplier lines",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Unknown-supplier lines"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-c-unkcust",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_dq_kpis",
+                  "fields": [
+                    {
+                      "name": "unknown_customer_lines",
+                      "expression": "`unknown_customer_lines`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "unknown_customer_lines",
+                  "displayName": "Unknown-customer lines",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Unknown-customer lines"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-c-total",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_dq_kpis",
+                  "fields": [
+                    {
+                      "name": "total_order_lines",
+                      "expression": "`total_order_lines`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_order_lines",
+                  "displayName": "Total Order Lines",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Total Order Lines"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-c-suphist",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_versioned_counts",
+                  "fields": [
+                    {
+                      "name": "suppliers_with_history",
+                      "expression": "`suppliers_with_history`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "suppliers_with_history",
+                  "displayName": "Suppliers with SCD2 history",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Suppliers with SCD2 history"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-c-parthist",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_versioned_counts",
+                  "fields": [
+                    {
+                      "name": "parts_with_history",
+                      "expression": "`parts_with_history`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "parts_with_history",
+                  "displayName": "Parts with SCD2 history",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    },
+                    "hideGroupSeparator": false
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Parts with SCD2 history"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-h-scd2",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Historization (SCD2)"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-bar-dimrows",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_dim_rows",
+                  "fields": [
+                    {
+                      "name": "dimension",
+                      "expression": "`dimension`"
+                    },
+                    {
+                      "name": "sum(total_rows)",
+                      "expression": "SUM(`total_rows`)"
+                    },
+                    {
+                      "name": "sum(current_entities)",
+                      "expression": "SUM(`current_entities`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "dimension",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "dimension"
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fields": [
+                    {
+                      "fieldName": "sum(total_rows)",
+                      "displayName": "Total rows (all versions)",
+                      "format": {
+                        "type": "number-plain",
+                        "abbreviation": "compact",
+                        "decimalPlaces": {
+                          "type": "max",
+                          "places": 1
+                        },
+                        "hideGroupSeparator": false
+                      }
+                    },
+                    {
+                      "fieldName": "sum(current_entities)",
+                      "displayName": "Current entities",
+                      "format": {
+                        "type": "number-plain",
+                        "abbreviation": "compact",
+                        "decimalPlaces": {
+                          "type": "max",
+                          "places": 1
+                        },
+                        "hideGroupSeparator": false
+                      }
+                    }
+                  ]
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Dimension rows vs current entities"
+              },
+              "mark": {
+                "layout": "group",
+                "colors": [
+                  "#FFAB00",
+                  "#00A972",
+                  "#FF3621",
+                  "#8BCAE7",
+                  "#AB4057",
+                  "#99DDB4",
+                  "#FCA4A1",
+                  "#919191",
+                  "#BF7080"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-tbl-suphist",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_supplier_history",
+                  "fields": [
+                    {
+                      "name": "supplier_key",
+                      "expression": "`supplier_key`"
+                    },
+                    {
+                      "name": "supplier_name",
+                      "expression": "`supplier_name`"
+                    },
+                    {
+                      "name": "region_name",
+                      "expression": "`region_name`"
+                    },
+                    {
+                      "name": "__START_AT",
+                      "expression": "`__START_AT`"
+                    },
+                    {
+                      "name": "__END_AT",
+                      "expression": "`__END_AT`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "supplier_key",
+                    "displayName": "Supplier Key"
+                  },
+                  {
+                    "fieldName": "supplier_name",
+                    "displayName": "Supplier Name"
+                  },
+                  {
+                    "fieldName": "region_name",
+                    "displayName": "Region"
+                  },
+                  {
+                    "fieldName": "__START_AT",
+                    "displayName": "Effective From"
+                  },
+                  {
+                    "fieldName": "__END_AT",
+                    "displayName": "Effective To"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Supplier version history"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-h-dq",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Data-quality lens"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "d2-bar-returns",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_returns_by_region",
+                  "fields": [
+                    {
+                      "name": "region_name",
+                      "expression": "`region_name`"
+                    },
+                    {
+                      "name": "sum(return_rate)",
+                      "expression": "SUM(`return_rate`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "region_name",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "region_name"
+                },
+                "y": {
+                  "fieldName": "sum(return_rate)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "return_rate",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Return Rate by Region"
+              },
+              "mark": {
+                "colors": [
+                  "#FFAB00",
+                  "#00A972",
+                  "#FF3621",
+                  "#8BCAE7",
+                  "#AB4057",
+                  "#99DDB4",
+                  "#FCA4A1",
+                  "#919191",
+                  "#BF7080"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 23,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
