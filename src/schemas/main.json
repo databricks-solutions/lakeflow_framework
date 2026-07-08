@@ -1,11 +1,11 @@
 {
     "title": "Main DataFlowSpec",
+    "$comment": "nodespec is the default spec type: a spec is validated as a legacy format only when it carries an explicit legacy dataFlowType (standard/flow/materialized_view). Anything else — including specs that omit the type entirely — is treated as nodespec.",
     "if": {
-        "properties": { "data_flow_type": { "const": "nodespec" } },
-        "required": ["data_flow_type"]
+        "properties": { "dataFlowType": { "enum": ["flow", "standard", "materialized_view"] } },
+        "required": ["dataFlowType"]
     },
-    "then": { "$ref": "./spec_nodespec.json#/$defs/nodespecSpec" },
-    "else": {
+    "then": {
         "type": "object",
         "properties": {
             "dataFlowId": {"type": "string"},
@@ -43,5 +43,6 @@
             }
         },
         "required": ["dataFlowId", "dataFlowGroup", "dataFlowType"]
-    }
+    },
+    "else": { "$ref": "./spec_nodespec.json#/$defs/nodespecSpec" }
 }

@@ -15,7 +15,8 @@
                     "type": "string"
                 },
                 "data_flow_type": {
-                    "const": "nodespec"
+                    "const": "nodespec",
+                    "description": "Optional. nodespec is the default spec type, so this may be omitted; when present it must be \"nodespec\"."
                 },
                 "data_flow_version": {
                     "type": "string"
@@ -40,7 +41,6 @@
             "required": [
                 "data_flow_id",
                 "data_flow_group",
-                "data_flow_type",
                 "nodes"
             ],
             "additionalProperties": false

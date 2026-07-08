@@ -46,6 +46,10 @@ class DataflowSpecBuilder:
         build(): Build dataflow specifications.
     """
     
+    # The default spec type used when a spec omits data_flow_type. nodespec is
+    # the framework's unified spec format.
+    DEFAULT_DATA_FLOW_TYPE = "nodespec"
+
     class Keys:
         """Constants for dictionary keys for the dataflow spec JSON files, and final dataflow spec format"""
         # Core dataflow specification keys
@@ -222,6 +226,12 @@ class DataflowSpecBuilder:
         def _extract_spec(spec: Dict) -> Dict:
             """Extract metadata from a dataflow specification."""
             _normalise_spec_metadata(spec)
+            # nodespec is the default/unified spec type, so data_flow_type may be
+            # omitted. Default it here (in-place) so type selection, metadata
+            # validation, schema validation, and transformation all treat a
+            # type-less spec as nodespec.
+            if not spec.get(self.Keys.DATA_FLOW_TYPE):
+                spec[self.Keys.DATA_FLOW_TYPE] = self.DEFAULT_DATA_FLOW_TYPE
             return {
                 "fileType": "main",
                 self.Keys.DATA_FLOW_ID: spec.get(self.Keys.DATA_FLOW_ID, None),
