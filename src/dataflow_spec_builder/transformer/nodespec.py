@@ -11,8 +11,9 @@ spec returns a list.
 
 The snake_case -> camelCase translation is centralised: one global key map
 (``_KEYS``) plus ``_camel`` (flat) / ``_deep_camel`` (nested blobs). Each builder
-copies every config key that isn't "structural" (``_HANDLED`` — input, cdc_*,
-quarantine_*, sink_*, ...); everything else is passthrough table/source detail.
+copies every config key that isn't "structural" (``_HANDLED`` — input_flows,
+cdc_*, data_quality, quarantine, sink_*, ...); everything else is passthrough
+table/source detail.
 """
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple, Set, Union
@@ -45,10 +46,9 @@ _KEYS = {
 
 # Keys a target config handles specially, so they are NOT copied into details.
 _HANDLED = {
-    "input", "table", "table_type", "enabled", "once", "name",
+    "input_flows", "table", "table_type", "enabled", "once", "name",
     "cdc_settings", "cdc_snapshot_settings",
-    "data_quality_expectations_enabled", "data_quality_expectations_path",
-    "quarantine_mode", "quarantine_target_details", "table_migration_details",
+    "data_quality", "quarantine", "table_migration_details",
     "sink_type", "sink_config", "sink_options", "table_details", "source_view",
 }
 
@@ -137,7 +137,7 @@ class NodespecSpecTransformer(BaseSpecTransformer):
                 raise ValueError(
                     f"Materialized view target '{t.get('name')}' defines an inline 'source_view'. "
                     "This is no longer supported. Declare a source node and chain it into the "
-                    "materialized view target via its 'input' array instead.")
+                    "materialized view target via its 'input_flows' array instead.")
         if not targets:
             raise ValueError("Nodespec spec must contain at least one target node")
 
@@ -150,9 +150,9 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     # -- inputs --
 
     def _inputs(self, node: Dict) -> List[Tuple[Optional[str], str]]:
-        """``input`` items as (flow_name, view_name); strings auto-name the flow."""
+        """``input_flows`` items as (flow_name, view_name); strings auto-name the flow."""
         pairs = []
-        for item in node.get("config", {}).get("input", []) or []:
+        for item in node.get("config", {}).get("input_flows", []) or []:
             if isinstance(item, dict) and item.get("view"):
                 pairs.append((item.get("flow"), item["view"]))
             elif not isinstance(item, dict):
@@ -168,16 +168,18 @@ class NodespecSpecTransformer(BaseSpecTransformer):
                 dst["cdcSettings"] = cfg["cdc_settings"]
             if cfg.get("cdc_snapshot_settings"):
                 dst["cdcSnapshotSettings"] = _deep_camel(cfg["cdc_snapshot_settings"])
+        dq = cfg.get("data_quality") or {}
         if dq_default:
-            dst["dataQualityExpectationsEnabled"] = cfg.get("data_quality_expectations_enabled", False)
-        elif cfg.get("data_quality_expectations_enabled"):
-            dst["dataQualityExpectationsEnabled"] = cfg["data_quality_expectations_enabled"]
-        if cfg.get("data_quality_expectations_path"):
-            dst["dataQualityExpectationsPath"] = cfg["data_quality_expectations_path"]
-        if cfg.get("quarantine_mode"):
-            dst["quarantineMode"] = cfg["quarantine_mode"]
-        if cfg.get("quarantine_target_details"):
-            dst["quarantineTargetDetails"] = cfg["quarantine_target_details"]
+            dst["dataQualityExpectationsEnabled"] = bool(dq)
+        elif dq:
+            dst["dataQualityExpectationsEnabled"] = True
+        if dq.get("expectations_path"):
+            dst["dataQualityExpectationsPath"] = dq["expectations_path"]
+        quarantine = cfg.get("quarantine") or {}
+        if quarantine.get("mode"):
+            dst["quarantineMode"] = quarantine["mode"]
+        if quarantine.get("target"):
+            dst["quarantineTargetDetails"] = quarantine["target"]
         if migration and cfg.get("table_migration_details"):
             dst["tableMigrationDetails"] = _deep_camel(cfg["table_migration_details"])
 

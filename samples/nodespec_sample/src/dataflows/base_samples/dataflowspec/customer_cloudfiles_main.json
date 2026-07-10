@@ -8,8 +8,8 @@
             "node_type": "source",
             "source_type": "cloudFiles",
             "config": {
-                "path": "{sample_file_location}/customer/",
                 "mode": "stream",
+                "path": "{sample_file_location}/customer/",
                 "schema_path": "customer_source_schema.json",
                 "reader_options": {
                     "cloudFiles.format": "json",
@@ -36,7 +36,7 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "cluster_by_auto": true,
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_transform_normalize",
                         "flow": "f_transform_normalize"

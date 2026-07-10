@@ -1,7 +1,30 @@
-# ADR-0007: A unified, node-based dataflow spec (`nodespec`)
+# ADR-0008: A unified, node-based dataflow spec (`nodespec`)
 
 **Date:** 2026-06-19
-**Status:** Accepted
+**Status:** Accepted (amended)
+
+---
+
+## Amendment — post-acceptance refinements
+
+The decision below stands. Since acceptance, the authoring syntax has been
+refined; the examples in this ADR use the **original** field names. The current
+names (authoritative reference: ``docs/source/dataflow_spec_ref_main_nodespec.rst``)
+differ as follows:
+
+- **`input` → `input_flows`** — the target-node wiring list was renamed for clarity.
+- **Data quality → nested `data_quality`** object (`{ "expectations_path": ... }`),
+  replacing the `data_quality_expectations_enabled` / `_path` pair; presence implies
+  enabled.
+- **Quarantine → nested `quarantine`** object (`{ "mode", "target" }`), replacing
+  `quarantine_mode` / `quarantine_target_details`.
+- **`data_flow_type` is optional** — nodespec is the framework default, so a spec
+  that omits it is treated as nodespec.
+- **`scd_type` is a string** in `cdc_settings` (e.g. `"2"`).
+- **Sink targets keep flat fields** (`sink_type` / `sink_config` / `sink_options`);
+  a nested `sink` object was considered but deferred.
+- **A node's `config` is schema-discriminated** by `node_type` +
+  `source_type`/`target_type`, so editors offer only the fields valid for that node.
 
 ---
 
@@ -253,7 +276,7 @@ belongs to, and the connections are stated rather than inferred:
         "cdc_settings": {
           "keys": ["CUSTOMER_ID"],
           "sequence_by": "LOAD_TIMESTAMP",
-          "scd_type": 2,
+          "scd_type": "2",
           "except_column_list": ["LOAD_TIMESTAMP"],
           "ignore_null_updates": true
         },

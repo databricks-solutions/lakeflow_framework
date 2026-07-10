@@ -1,8 +1,15 @@
 # Nodespec Feature Samples — Changes, Design & Considerations
 
+> **Note:** this is a historical design/implementation record. Some field names
+> shown below reflect an earlier iteration; the current authoring syntax is in
+> `docs/source/dataflow_spec_ref_main_nodespec.rst`. In particular: targets wire
+> inputs via **`input_flows`**; data quality is a nested **`data_quality`** object;
+> quarantine is a nested **`quarantine`** object; and `data_flow_type` is optional
+> (nodespec is the default).
+
 ## Overview
 
-The Nodespec dataflow spec type introduces a **node-based graph architecture** for defining data pipelines. Instead of the traditional flat (standard) or pre-built flow (flow) spec formats, Nodespec expresses pipelines as directed graphs of **source**, **transformation**, and **target** nodes connected through `inputs` arrays.
+The Nodespec dataflow spec type introduces a **node-based graph architecture** for defining data pipelines. Instead of the traditional flat (standard) or pre-built flow (flow) spec formats, Nodespec expresses pipelines as directed graphs of **source**, **transformation**, and **target** nodes connected through `input_flows` arrays (on target nodes).
 
 This document covers the changes made to support all 33 feature samples from the bronze_sample in the Nodespec format, the migration tooling created, and the design decisions and assumptions behind the implementation.
 

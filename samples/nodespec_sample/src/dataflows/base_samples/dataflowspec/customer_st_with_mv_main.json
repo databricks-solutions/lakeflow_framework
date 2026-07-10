@@ -8,10 +8,10 @@
             "node_type": "source",
             "source_type": "delta",
             "config": {
+                "mode": "stream",
                 "database": "{staging_schema}",
                 "table": "customer",
-                "cdf_enabled": true,
-                "mode": "stream"
+                "cdf_enabled": true
             }
         },
         {
@@ -23,7 +23,7 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "cluster_by_auto": true,
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_source_customer_st_mv",
                         "flow": "f_source_customer_st_mv"

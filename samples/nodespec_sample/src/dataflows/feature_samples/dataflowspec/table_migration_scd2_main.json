@@ -56,7 +56,7 @@
                         ]
                     }
                 },
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_feature_tm_customer_scd2",
                         "flow": "f_feature_tm_customer_scd2"

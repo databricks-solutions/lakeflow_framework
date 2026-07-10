@@ -17,6 +17,7 @@
         {
             "name": "target_for_each_batch_basic_sql",
             "node_type": "target",
+            "target_type": "foreach_batch_sink",
             "config": {
                 "name": "for_each_batch_basic_sql",
                 "sink_type": "basic_sql",
@@ -28,14 +29,13 @@
                         "delta.enableChangeDataFeed": "true"
                     }
                 },
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_customer_purchase_basic_sql",
                         "flow": "f_customer_purchase_basic_sql"
                     }
                 ]
-            },
-            "target_type": "foreach_batch_sink"
+            }
         }
     ]
 }

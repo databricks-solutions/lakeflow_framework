@@ -22,7 +22,7 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "once": true,
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_append_view_once_flow",
                         "flow": "f_append_view_once_flow"

@@ -31,7 +31,7 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_transform_python_extension",
                         "flow": "f_transform_python_extension"

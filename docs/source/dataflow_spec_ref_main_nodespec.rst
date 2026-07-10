@@ -26,13 +26,19 @@ There are three node types:
   (CDC, data quality, quarantine, clustering, and so on).
 
 **How nodes connect.** A *target* node declares what feeds it through an explicit
-``input`` list. *Source* and *transformation* nodes are wired by explicit
+``input_flows`` list. *Source* and *transformation* nodes are wired by explicit
 reference inside their own definition: a SQL transformation names the view it
 reads in its SQL (for example ``FROM STREAM(live.v_source_customer)``), and a
-source names the table, path, or stream it reads. The ``input`` list is therefore
-a target-node construct.
+source names the table, path, or stream it reads. The ``input_flows`` list is
+therefore a target-node construct.
 
 **Casing.** Nodespec specs use ``snake_case`` field names.
+
+**Field order.** Within a node's ``config``, fields are written in a consistent
+order — identity (``table``/``database``), then table/structural details, then
+feature blocks (``cdc_settings``, ``data_quality``, ``quarantine``,
+``table_migration_details``), and finally ``input_flows``. The order is
+conventional only; it does not affect behaviour.
 
 Example: simple data flow
 =========================
@@ -63,7 +69,7 @@ The simplest spec connects a source to a target:
                "config": {
                    "table": "customer_silver",
                    "cluster_by_auto": true,
-                   "input": [
+                   "input_flows": [
                        { "view": "v_source_customer", "flow": "f_customer_ingest" }
                    ]
                }
@@ -71,11 +77,15 @@ The simplest spec connects a source to a target:
        ]
    }
 
+``data_flow_type`` is optional — nodespec is the framework's default spec type, so
+a spec that omits it is treated as nodespec. Include ``"data_flow_type":
+"nodespec"`` only if you want to be explicit.
+
 Example: multi-step transformation and CDC
 ==========================================
 
 Chaining a transformation into a CDC target. The SQL transformation names the
-view it reads; the target lists the transformation in its ``input``:
+view it reads; the target lists the transformation in its ``input_flows``:
 
 .. code-block:: json
 
@@ -107,10 +117,10 @@ view it reads; the target lists the transformation in its ``input``:
                    "cdc_settings": {
                        "keys": ["CUSTOMER_ID"],
                        "sequence_by": "LOAD_TIMESTAMP",
-                       "scd_type": 2,
+                       "scd_type": "2",
                        "ignore_null_updates": true
                    },
-                   "input": ["v_enrich"]
+                   "input_flows": ["v_enrich"]
                }
            }
        ]
@@ -145,9 +155,11 @@ Dataflow metadata configuration
    * - **data_flow_group**
      - ``string``
      - The group to which the data flow belongs.
-   * - **data_flow_type**
+   * - **data_flow_type** (*optional*)
      - ``string``
-     - Must be ``"nodespec"``.
+     - ``"nodespec"``. Optional — nodespec is the default spec type, so a spec
+       that omits ``data_flow_type`` is treated as nodespec. When present it must
+       be ``"nodespec"``.
    * - **data_flow_version** (*optional*)
      - ``string``
      - Version of the dataflow spec for migration purposes.
@@ -295,11 +307,6 @@ Target node configuration
    * - **Field**
      - **Type**
      - **Description**
-   * - **input**
-     - ``array``
-     - What feeds this target. Each item is either an upstream node name
-       (``string``, flow name auto-generated) or an object
-       ``{ "view": <node name>, "flow": <flow name> }`` that sets the flow name.
    * - **table**
      - ``string``
      - Target table name.
@@ -327,26 +334,45 @@ Target node configuration
    * - **cdc_settings** / **cdc_snapshot_settings** (*optional*)
      - ``object``
      - CDC / snapshot-CDC settings for this target.
-   * - **data_quality_expectations_enabled** / **data_quality_expectations_path** (*optional*)
-     - ``boolean`` / ``string``
-     - Enable and locate data quality expectations.
-   * - **quarantine_mode** / **quarantine_target_details** (*optional*)
-     - ``string`` / ``object``
-     - ``off`` (default), ``flag``, or ``table``; quarantine table config when
-       ``table``.
+   * - **data_quality** (*optional*)
+     - ``object``
+     - Data quality expectations: ``{ "expectations_path": <path> }``. Presence
+       enables expectations (there is no separate enabled flag).
+   * - **quarantine** (*optional*)
+     - ``object``
+     - Quarantine for rows failing expectations: ``{ "mode": "flag" | "table",
+       "target": { ... } }``. Omit for no quarantine; ``target`` is the quarantine
+       table config, required when ``mode`` is ``table``.
    * - **table_migration_details** (*optional*)
      - ``object``
      - Table migration configuration.
+   * - **input_flows**
+     - ``array``
+     - What feeds this target. Each item is either an upstream node name
+       (``string``, flow name auto-generated) or an object
+       ``{ "view": <node name>, "flow": <flow name> }`` that sets the flow name.
+       Conventionally written last in the config.
+
+Sink targets
+-----------
+
+When ``target_type`` is a sink (``delta_sink``, ``kafka_sink``,
+``foreach_batch_sink``, ``custom_python_sink``) the target config uses the sink
+fields instead of the delta-table fields: ``name``, ``sink_type`` (sink sub-type,
+e.g. ``basic_sql`` / ``python_function`` for ``foreach_batch_sink``),
+``sink_config`` (sink-specific configuration), and ``sink_options`` (e.g.
+``table_name``/``path`` for a delta sink, or Kafka connection options), plus
+``input_flows``.
 
 Defining flow names
 -------------------
 
 By default the framework derives a flow name from the graph, so simple specs stay
-simple. Use the object form of ``input`` to set a flow name explicitly:
+simple. Use the object form of ``input_flows`` to set a flow name explicitly:
 
 .. code-block:: json
 
-   "input": [
+   "input_flows": [
        "v_source_a",
        { "view": "v_source_b", "flow": "f_append_b" }
    ]
@@ -365,7 +391,7 @@ modes, set via ``snapshot_type``:
   ``source_type`` (``file`` or ``table``) and a ``source`` object. No source node
   is required; the framework reads the files/table directly.
 - **periodic** — the target reads from an upstream **source node** chained via
-  ``input``; ``source_type`` / ``source`` are not used.
+  ``input_flows``; ``source_type`` / ``source`` are not used.
 
 For historical snapshots the ``source`` object fields depend on ``source_type``:
 
@@ -452,8 +478,8 @@ by inline SQL or by chaining a source node into it:
        }
    }
 
-To feed a materialized view from a source node, chain it via ``input`` (an inline
-``source_view`` on the target is **not** supported):
+To feed a materialized view from a source node, chain it via ``input_flows`` (an
+inline ``source_view`` on the target is **not** supported):
 
 .. code-block:: json
 
@@ -469,7 +495,7 @@ To feed a materialized view from a source node, chain it via ``input`` (an inlin
        "config": {
            "table": "customer_mv",
            "table_type": "mv",
-           "input": ["v_mv_source"]
+           "input_flows": ["v_mv_source"]
        }
    }
 
@@ -488,7 +514,7 @@ How Nodespec specs are converted
 3. Source nodes become views; an internal source (one that reads a table produced
    by a target in the same spec) references that table directly.
 4. Transformation nodes become SQL or Python views.
-5. Each ``input`` entry becomes a flow into its target. The flow type is
+5. Each ``input_flows`` entry becomes a flow into its target. The flow type is
    ``merge`` when the target has CDC, otherwise ``append_view`` (or ``append_sql``
    for an inline SQL source).
 6. Each ``table_type: "mv"`` target becomes its own materialized-view flow spec.

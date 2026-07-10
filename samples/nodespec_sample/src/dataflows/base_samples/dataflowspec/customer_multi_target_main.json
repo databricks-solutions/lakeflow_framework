@@ -8,10 +8,10 @@
             "node_type": "source",
             "source_type": "delta",
             "config": {
+                "mode": "stream",
                 "database": "{staging_schema}",
                 "table": "customer",
-                "cdf_enabled": true,
-                "mode": "stream"
+                "cdf_enabled": true
             }
         },
         {
@@ -32,10 +32,13 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "cluster_by_auto": true,
-                "data_quality_expectations_enabled": true,
-                "data_quality_expectations_path": "customer_staging_dqe.json",
-                "quarantine_mode": "flag",
-                "input": [
+                "data_quality": {
+                    "expectations_path": "customer_staging_dqe.json"
+                },
+                "quarantine": {
+                    "mode": "flag"
+                },
+                "input_flows": [
                     {
                         "flow": "f_append_staging",
                         "view": "v_transform_append"
@@ -72,14 +75,17 @@
                     "sequence_by": "LOAD_TIMESTAMP",
                     "ignore_null_updates": true
                 },
-                "data_quality_expectations_enabled": true,
-                "data_quality_expectations_path": "customer_final_dqe.json",
-                "quarantine_mode": "table",
-                "quarantine_target_details": {
-                    "target_format": "delta",
-                    "table": "customer_final_node_quarantine"
+                "data_quality": {
+                    "expectations_path": "customer_final_dqe.json"
                 },
-                "input": [
+                "quarantine": {
+                    "mode": "table",
+                    "target": {
+                        "target_format": "delta",
+                        "table": "customer_final_node_quarantine"
+                    }
+                },
+                "input_flows": [
                     {
                         "flow": "f_merge_final",
                         "view": "v_transform_merge"

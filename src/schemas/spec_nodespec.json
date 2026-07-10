@@ -2,617 +2,532 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "https://dlt-framework/schemas/spec_nodespec.json",
     "title": "Nodespec Dataflow Specification",
-    "description": "Dataflow specification using a node-based architecture. Converts node graphs into Lakeflow Framework's flow-based format. All target-specific settings (CDC, data quality, quarantine) are specified on target nodes directly.",
+    "description": "Node-based dataflow spec (snake_case). A node's `config` is discriminated by node_type + source_type/target_type/table_type so editors offer only the fields valid for that node. Feature bundles (cdc, snapshot, data_quality, quarantine, migration) are single nested objects. Targets declare their inputs via `input_flows`. Sink targets keep their current flat form for now (sink redesign deferred).",
+    "$comment": "A node's `config` is discriminated at the node level via allOf/if-then keyed on node_type + source_type/target_type/table_type; each `then` selects one closed config $def, so editors offer only the fields valid for that node. Nested blobs are typed objects with descriptions. Sink targets keep their current flat form (sink_type/sink_config/sink_options) pending the sink redesign. Legacy definitions_sources.json / definitions_targets.json are camelCase; nodespec is snake_case, so source/target detail shapes are re-declared here. Literal Spark option keys (cloudFiles.*, kafka.*) are preserved verbatim.",
     "$defs": {
         "nodespecSpec": {
             "type": "object",
-            "description": "Nodespec specs use snake_case field names throughout.",
+            "description": "A nodespec pipeline: a graph of source -> transformation -> target nodes.",
             "properties": {
-                "data_flow_id": {
-                    "type": "string"
-                },
-                "data_flow_group": {
-                    "type": "string"
-                },
-                "data_flow_type": {
-                    "const": "nodespec",
-                    "description": "Optional. nodespec is the default spec type, so this may be omitted; when present it must be \"nodespec\"."
-                },
-                "data_flow_version": {
-                    "type": "string"
-                },
-                "tags": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "features": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
+                "data_flow_id": {"type": "string", "description": "Unique id for this dataflow."},
+                "data_flow_group": {"type": "string", "description": "Group this dataflow belongs to (maps to a pipeline)."},
+                "data_flow_type": {"const": "nodespec", "description": "Optional. nodespec is the default spec type, so this may be omitted; when present it must be \"nodespec\"."},
+                "data_flow_version": {"type": "string"},
+                "tags": {"type": "object", "additionalProperties": true},
+                "features": {"type": "object", "additionalProperties": true},
                 "nodes": {
                     "type": "array",
-                    "description": "Array of nodes representing sources, transformations, and targets in a pipeline graph",
-                    "items": {
-                        "$ref": "#/$defs/node"
-                    },
+                    "description": "Nodes in the pipeline graph.",
+                    "items": {"$ref": "#/$defs/node"},
                     "minItems": 1
                 }
             },
-            "required": [
-                "data_flow_id",
-                "data_flow_group",
-                "nodes"
-            ],
+            "required": ["data_flow_id", "data_flow_group", "nodes"],
             "additionalProperties": false
         },
+
         "node": {
             "type": "object",
             "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "Unique name for the node within the pipeline"
-                },
+                "name": {"type": "string", "description": "Unique node name within the pipeline. Also the emitted view name for source/transformation nodes unless output_view_name is set."},
                 "node_type": {
                     "type": "string",
-                    "enum": [
-                        "source",
-                        "transformation",
-                        "target"
-                    ],
-                    "description": "Type of node: source (data input), transformation (processing), or target (data output)"
+                    "enum": ["source", "transformation", "target"],
+                    "description": "source (reads data) | transformation (reshapes a view) | target (writes an output)."
                 },
                 "source_type": {
                     "type": "string",
-                    "enum": [
-                        "batchFiles",
-                        "cloudFiles",
-                        "delta",
-                        "deltaJoin",
-                        "kafka",
-                        "python",
-                        "sql"
-                    ],
-                    "description": "Type of data source (required for source nodes)"
+                    "enum": ["batchFiles", "cloudFiles", "delta", "deltaJoin", "kafka", "python", "sql"],
+                    "description": "Kind of source. Required when node_type=source; selects which config fields apply."
                 },
                 "transformation_type": {
                     "type": "string",
-                    "enum": [
-                        "sql",
-                        "python"
-                    ],
-                    "description": "Type of transformation to apply (required for transformation nodes)"
-                },
-                "output_view_name": {
-                    "type": "string",
-                    "description": "Optional name for the output view. If omitted, defaults to the node name. Applicable to source and transformation nodes."
+                    "enum": ["sql", "python"],
+                    "description": "Kind of transformation. Required when node_type=transformation."
                 },
                 "target_type": {
                     "type": "string",
-                    "enum": [
-                        "delta",
-                        "delta_sink",
-                        "foreach_batch_sink",
-                        "custom_python_sink",
-                        "kafka_sink"
-                    ],
+                    "enum": ["delta", "delta_sink", "foreach_batch_sink", "custom_python_sink", "kafka_sink"],
                     "default": "delta",
-                    "description": "Target format type (required for target nodes). Default: delta"
+                    "description": "Output format for a target. Default: delta (a managed table). The *_sink values write to external sinks."
                 },
-                "enabled": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Whether this node is enabled in the pipeline"
+                "output_view_name": {
+                    "type": "string",
+                    "description": "Overrides the emitted view name (source/transformation nodes). Defaults to the node name."
                 },
-                "config": {
-                    "type": "object",
-                    "description": "Node-specific configuration"
-                }
+                "enabled": {"type": "boolean", "default": true, "description": "Whether this node is included in the pipeline."},
+                "config": {"type": "object", "description": "Node configuration. Its valid fields are determined by node_type and the type field above."}
             },
-            "required": [
-                "name",
-                "node_type"
-            ],
-            "allOf": [
-                {
-                    "if": {
-                        "properties": {
-                            "node_type": {
-                                "const": "source"
-                            }
-                        }
-                    },
-                    "then": {
-                        "required": [
-                            "source_type"
-                        ],
-                        "properties": {
-                            "config": {
-                                "$ref": "#/$defs/source_node_config"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "node_type": {
-                                "const": "transformation"
-                            }
-                        }
-                    },
-                    "then": {
-                        "required": [
-                            "transformation_type"
-                        ],
-                        "properties": {
-                            "config": {
-                                "$ref": "#/$defs/transformation_node_config"
-                            }
-                        }
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {
-                            "node_type": {
-                                "const": "target"
-                            }
-                        }
-                    },
-                    "then": {
-                        "properties": {
-                            "config": {
-                                "$ref": "#/$defs/target_node_config"
-                            }
-                        }
-                    }
-                }
-            ]
-        },
-        "source_node_config": {
-            "type": "object",
-            "description": "Configuration for source nodes. The sourceType field has moved to the node level.",
-            "properties": {
-                "mode": {
-                    "type": "string",
-                    "enum": [
-                        "stream",
-                        "batch"
-                    ],
-                    "default": "stream",
-                    "description": "Processing mode for the source"
-                },
-                "database": {
-                    "type": "string"
-                },
-                "table": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "cdf_enabled": {
-                    "type": "boolean"
-                },
-                "schema_path": {
-                    "type": "string"
-                },
-                "select_exp": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "where_clause": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "reader_options": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "function_path": {
-                    "type": "string",
-                    "description": "Path to Python source function file"
-                },
-                "python_module": {
-                    "type": "string",
-                    "description": "Python module path for source function"
-                },
-                "tokens": {
-                    "type": "object",
-                    "description": "Token dictionary passed to Python sources"
-                },
-                "sql_path": {
-                    "type": "string",
-                    "description": "Path to SQL file for SQL sources"
-                },
-                "sql_statement": {
-                    "type": "string",
-                    "description": "Inline SQL statement for SQL sources"
-                },
-                "starting_version_from_dlt_setup": {
-                    "type": "boolean"
-                },
-                "cdf_change_type_override": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            },
-            "additionalProperties": true
-        },
-        "transformation_node_config": {
-            "type": "object",
-            "description": "Configuration for transformation nodes. The transformationType and outputViewName fields have moved to the node level.",
-            "properties": {
-                "sql_path": {
-                    "type": "string"
-                },
-                "sql_statement": {
-                    "type": "string"
-                },
-                "function_path": {
-                    "type": "string"
-                },
-                "python_module": {
-                    "type": "string"
-                },
-                "tokens": {
-                    "type": "object"
-                }
-            },
-            "additionalProperties": true
-        },
-        "target_node_config": {
-            "type": "object",
-            "description": "Configuration for target nodes. All target-specific settings including CDC, data quality, quarantine, table migration, and sink config are specified here.",
-            "properties": {
-                "input": {
-                    "type": "array",
-                    "items": {
-                        "oneOf": [
-                            {
-                                "type": "string",
-                                "description": "Upstream source/transformation node name. The SDP flow name is auto-generated."
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "view": {
-                                        "type": "string",
-                                        "description": "Upstream source or transformation node name feeding this target"
-                                    },
-                                    "flow": {
-                                        "type": "string",
-                                        "description": "Explicit SDP flow name. Pin this to keep flow names stable across changes (renaming a flow forces a full refresh in SDP)."
-                                    }
-                                },
-                                "required": [
-                                    "view"
-                                ],
-                                "additionalProperties": false
-                            }
-                        ]
-                    },
-                    "description": "Inputs feeding this target. Each item is either an upstream node name (string, flow name auto-generated) or an object {view, flow} that pins the SDP flow name."
-                },
-                "table": {
-                    "type": "string",
-                    "description": "Target table name (for delta targets)"
-                },
-                "database": {
-                    "type": "string",
-                    "description": "Target database/schema name"
-                },
-                "table_type": {
-                    "type": "string",
-                    "enum": [
-                        "st",
-                        "mv"
-                    ],
-                    "default": "st",
-                    "description": "Table type: st (streaming table) or mv (materialized view). Default: st"
-                },
-                "schema_path": {
-                    "type": "string",
-                    "pattern": "\\.(json|ddl)$"
-                },
-                "table_properties": {
-                    "type": "object"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "partition_columns": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "cluster_by_columns": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "cluster_by_auto": {
-                    "type": "boolean"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "spark_conf": {
-                    "type": "object"
-                },
-                "row_filter": {
-                    "type": "string"
-                },
-                "config_flags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "Configuration flags, e.g. ['disableOperationalMetadata']"
-                },
-                "once": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Execute flow to this target only once (batch mode)"
-                },
-                "cdc_settings": {
-                    "$ref": "./definitions_main.json#/definitions/cdcSettings"
-                },
-                "cdc_snapshot_settings": {
-                    "$ref": "#/$defs/snapshotCdcConfig"
-                },
-                "data_quality_expectations_enabled": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Enable data quality expectations for this target"
-                },
-                "data_quality_expectations_path": {
-                    "type": "string",
-                    "description": "Path to the data quality expectations file"
-                },
-                "quarantine_mode": {
-                    "type": "string",
-                    "enum": [
-                        "off",
-                        "flag",
-                        "table"
-                    ],
-                    "default": "off",
-                    "description": "Quarantine mode for this target"
-                },
-                "quarantine_target_details": {
-                    "$ref": "#/$defs/quarantineTargetDetails",
-                    "description": "Quarantine target configuration when quarantine_mode is 'table'"
-                },
-                "table_migration_details": {
-                    "type": "object",
-                    "description": "Table migration configuration",
-                    "properties": {
-                        "catalog_type": {
-                            "type": "string"
-                        },
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "auto_starting_versions_enabled": {
-                            "type": "boolean"
-                        },
-                        "source_details": {
-                            "type": "object"
-                        }
-                    }
-                },
-                "name": {
-                    "type": "string",
-                    "description": "Sink name (for sink target formats)"
-                },
-                "sink_type": {
-                    "type": "string",
-                    "description": "Sink sub-type: basic_sql, python_function"
-                },
-                "sink_config": {
-                    "type": "object",
-                    "description": "Sink-specific configuration (sqlPath, functionPath, tokens, etc.)"
-                },
-                "sink_options": {
-                    "type": "object",
-                    "description": "Delta sink options (path, tableName)"
-                },
-                "sql_path": {
-                    "type": "string",
-                    "description": "SQL file path (for materialized view targets)"
-                },
-                "sql_statement": {
-                    "type": "string",
-                    "description": "Inline SQL statement (for materialized view targets)"
-                },
-                "refresh_policy": {
-                    "type": "string",
-                    "description": "Materialized view refresh policy"
-                },
-                "table_details": {
-                    "type": "object",
-                    "description": "Additional table details (for materialized view targets)",
-                    "properties": {
-                        "private": {
-                            "type": "boolean"
-                        },
-                        "comment": {
-                            "type": "string"
-                        },
-                        "spark_conf": {
-                            "type": "object"
-                        },
-                        "config_flags": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
+            "required": ["name", "node_type"],
             "additionalProperties": false,
             "allOf": [
                 {
-                    "if": {
-                        "properties": {
-                            "data_quality_expectations_enabled": {
-                                "const": true
-                            }
-                        },
-                        "required": [
-                            "data_quality_expectations_enabled"
-                        ]
-                    },
-                    "then": {
-                        "required": [
-                            "data_quality_expectations_path"
-                        ]
-                    }
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "delta"}}, "required": ["node_type", "source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceDeltaConfig"}}}
                 },
                 {
-                    "if": {
-                        "properties": {
-                            "quarantine_mode": {
-                                "const": "table"
-                            }
-                        },
-                        "required": [
-                            "quarantine_mode"
-                        ]
-                    },
-                    "then": {
-                        "required": [
-                            "quarantine_target_details"
-                        ]
-                    }
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "cloudFiles"}}, "required": ["node_type", "source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceCloudFilesConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "batchFiles"}}, "required": ["node_type", "source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceBatchFilesConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "kafka"}}, "required": ["node_type", "source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceKafkaConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "deltaJoin"}}, "required": ["node_type", "source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceDeltaJoinConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "python"}}, "required": ["node_type", "source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/pythonLogicConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "sql"}}, "required": ["node_type", "source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sqlLogicConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "source"}}, "required": ["node_type"]},
+                    "then": {"required": ["source_type"]}
+                },
+
+                {
+                    "if": {"properties": {"node_type": {"const": "transformation"}, "transformation_type": {"const": "sql"}}, "required": ["node_type", "transformation_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sqlLogicConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "transformation"}, "transformation_type": {"const": "python"}}, "required": ["node_type", "transformation_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/pythonLogicConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "transformation"}}, "required": ["node_type"]},
+                    "then": {"required": ["transformation_type"]}
+                },
+
+                {
+                    "if": {"properties": {"node_type": {"const": "target"}, "target_type": {"const": "delta"}}, "required": ["node_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/targetDeltaConfig"}}}
+                },
+                {
+                    "if": {"properties": {"node_type": {"const": "target"}, "target_type": {"enum": ["delta_sink", "kafka_sink", "foreach_batch_sink", "custom_python_sink"]}}, "required": ["node_type", "target_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/targetSinkConfig"}}}
                 }
             ]
         },
+
+        "sourceCommon": {
+            "type": "object",
+            "properties": {
+                "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream", "description": "Read mode. Default: stream."},
+                "select_exp": {"type": "array", "items": {"type": "string"}, "description": "SELECT expressions applied to the source."},
+                "where_clause": {"type": "array", "items": {"type": "string"}, "description": "WHERE predicates applied to the source."},
+                "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$", "description": "Path to a schema file applied when reading."}
+            }
+        },
+
+        "pythonTransform": {
+            "type": "object",
+            "description": "Inline Python transform applied to a source. Provide function_path or python_module (module alias also accepted).",
+            "properties": {
+                "function_path": {"type": "string", "pattern": "\\.py$"},
+                "python_module": {"type": "string"},
+                "module": {"type": "string"},
+                "tokens": {"type": "object", "additionalProperties": true}
+            },
+            "additionalProperties": false
+        },
+
+        "sourceDeltaConfig": {
+            "type": "object",
+            "description": "Delta table source.",
+            "allOf": [{"$ref": "#/$defs/sourceCommon"}],
+            "properties": {
+                "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
+                "database": {"type": "string", "description": "Source schema/database."},
+                "table": {"type": "string", "description": "Source table name."},
+                "table_path": {"type": "string", "description": "Physical path to the Delta table (alternative to database/table)."},
+                "cdf_enabled": {"type": "boolean", "description": "Read the table's Change Data Feed."},
+                "cdf_change_type_override": {"type": "array", "items": {"type": "string", "enum": ["insert", "update_postimage", "delete"]}},
+                "starting_version_from_dlt_setup": {"type": "boolean"},
+                "select_exp": {"type": "array", "items": {"type": "string"}},
+                "where_clause": {"type": "array", "items": {"type": "string"}},
+                "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$"},
+                "reader_options": {"type": "object", "additionalProperties": true},
+                "python_transform": {"$ref": "#/$defs/pythonTransform"}
+            },
+            "required": ["table"],
+            "additionalProperties": false
+        },
+
+        "sourceCloudFilesConfig": {
+            "type": "object",
+            "description": "Auto Loader (cloudFiles) source.",
+            "properties": {
+                "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
+                "path": {"type": "string", "description": "Directory or glob to ingest."},
+                "reader_options": {"$ref": "#/$defs/readerOptionsCloudFiles"},
+                "select_exp": {"type": "array", "items": {"type": "string"}},
+                "where_clause": {"type": "array", "items": {"type": "string"}},
+                "schema_path": {"type": "string", "pattern": "\\.json$"},
+                "python_transform": {"$ref": "#/$defs/pythonTransform"}
+            },
+            "required": ["path", "reader_options"],
+            "additionalProperties": false
+        },
+
+        "sourceBatchFilesConfig": {
+            "type": "object",
+            "description": "Batch file source (read once, not streamed).",
+            "properties": {
+                "mode": {"type": "string", "enum": ["stream", "batch"], "default": "batch"},
+                "format": {"type": "string", "enum": ["csv", "json", "parquet", "text", "xml"]},
+                "path": {"type": "string"},
+                "reader_options": {"type": "object", "additionalProperties": true},
+                "select_exp": {"type": "array", "items": {"type": "string"}},
+                "where_clause": {"type": "array", "items": {"type": "string"}},
+                "schema_path": {"type": "string", "pattern": "\\.json$"},
+                "python_transform": {"$ref": "#/$defs/pythonTransform"}
+            },
+            "required": ["path", "reader_options"],
+            "additionalProperties": false
+        },
+
+        "sourceKafkaConfig": {
+            "type": "object",
+            "description": "Kafka source.",
+            "properties": {
+                "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
+                "reader_options": {"$ref": "#/$defs/readerOptionsKafka"},
+                "select_exp": {"type": "array", "items": {"type": "string"}},
+                "where_clause": {"type": "array", "items": {"type": "string"}},
+                "schema_path": {"type": "string", "pattern": "\\.json$"},
+                "python_transform": {"$ref": "#/$defs/pythonTransform"}
+            },
+            "required": ["reader_options"],
+            "additionalProperties": false
+        },
+
+        "sourceDeltaJoinConfig": {
+            "type": "object",
+            "description": "Join of multiple Delta sources into one view.",
+            "properties": {
+                "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "database": {"type": "string"},
+                            "table": {"type": "string"},
+                            "alias": {"type": "string"},
+                            "join_mode": {"type": "string", "enum": ["stream", "static"], "default": "stream"},
+                            "cdf_enabled": {"type": "boolean"},
+                            "table_path": {"type": "string"},
+                            "select_exp": {"type": "array", "items": {"type": "string"}},
+                            "where_clause": {"type": "array", "items": {"type": "string"}},
+                            "schema_path": {"type": "string", "pattern": "\\.json$"},
+                            "reader_options": {"type": "object", "additionalProperties": true},
+                            "python_transform": {"$ref": "#/$defs/pythonTransform"}
+                        },
+                        "required": ["database", "table", "alias", "cdf_enabled", "join_mode"],
+                        "additionalProperties": false
+                    }
+                },
+                "joins": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "join_type": {"type": "string", "enum": ["left", "inner"], "default": "left"},
+                            "condition": {"type": "string"}
+                        },
+                        "required": ["join_type", "condition"],
+                        "additionalProperties": false
+                    }
+                },
+                "select_exp": {"type": "array", "items": {"type": "string"}},
+                "where_clause": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["sources", "joins"],
+            "additionalProperties": false
+        },
+
+        "sqlLogicConfig": {
+            "type": "object",
+            "description": "SQL source or transformation. Provide exactly one of sql_path or sql_statement.",
+            "oneOf": [
+                {
+                    "properties": {
+                        "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
+                        "sql_path": {"type": "string", "description": "Path to a .sql file."}
+                    },
+                    "required": ["sql_path"],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
+                        "sql_statement": {"type": "string", "description": "Inline SQL. May reference upstream views via STREAM(live.<view>)."}
+                    },
+                    "required": ["sql_statement"],
+                    "additionalProperties": false
+                }
+            ]
+        },
+
+        "pythonLogicConfig": {
+            "type": "object",
+            "description": "Python source or transformation. Provide exactly one of function_path or python_module.",
+            "properties": {
+                "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
+                "function_path": {"type": "string", "pattern": "\\.py$", "description": "Path to a .py file exposing the function."},
+                "python_module": {"type": "string", "pattern": "^[a-zA-Z_][a-zA-Z0-9_.]*\\.[a-zA-Z_][a-zA-Z0-9_]*$", "description": "Dotted module.function reference."},
+                "tokens": {"type": "object", "additionalProperties": true, "description": "Tokens passed to the Python callable."}
+            },
+            "oneOf": [
+                {"required": ["function_path"]},
+                {"required": ["python_module"]}
+            ],
+            "additionalProperties": false
+        },
+
+        "targetDeltaConfig": {
+            "type": "object",
+            "description": "Delta target (target_type=delta). A streaming table by default; set table_type=mv for a materialized view (then supply sql_path/sql_statement or an input_flows source).",
+            "properties": {
+                "input_flows": {"$ref": "#/$defs/inputFlows"},
+                "table": {"type": "string", "description": "Target table name."},
+                "database": {"type": "string", "description": "Target schema/database."},
+                "table_type": {"type": "string", "enum": ["st", "mv"], "default": "st", "description": "st (streaming table) or mv (materialized view). Default: st."},
+                "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$"},
+                "path": {"type": "string", "description": "External location for the table."},
+                "table_properties": {"type": "object", "additionalProperties": {"type": "string"}, "description": "Delta table properties."},
+                "partition_columns": {"type": "array", "items": {"type": "string"}},
+                "cluster_by_columns": {"type": "array", "items": {"type": "string"}},
+                "cluster_by_auto": {"type": "boolean", "description": "Enable Delta automatic liquid clustering."},
+                "comment": {"type": "string"},
+                "spark_conf": {"type": "object"},
+                "row_filter": {"type": "string"},
+                "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disableOperationalMetadata"]}},
+                "once": {"type": "boolean", "default": false, "description": "Run the flow to this target once (batch), then stop."},
+                "cdc_settings": {"$ref": "./definitions_main.json#/definitions/cdcSettings"},
+                "cdc_snapshot_settings": {"$ref": "#/$defs/snapshotCdcConfig"},
+                "table_migration_details": {"$ref": "#/$defs/tableMigrationDetails"},
+                "sql_path": {"type": "string", "description": "MV only: path to a .sql file defining the view."},
+                "sql_statement": {"type": "string", "description": "MV only: inline SQL defining the view."},
+                "refresh_policy": {"type": "string", "enum": ["auto", "incremental", "incremental_strict", "full"], "description": "MV only: refresh policy."},
+                "table_details": {
+                    "type": "object",
+                    "description": "MV only: additional table details.",
+                    "properties": {
+                        "private": {"type": "boolean"},
+                        "comment": {"type": "string"},
+                        "spark_conf": {"type": "object"},
+                        "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disableOperationalMetadata"]}}
+                    },
+                    "additionalProperties": false
+                },
+                "data_quality": {"$ref": "#/$defs/dataQuality"},
+                "quarantine": {"$ref": "#/$defs/quarantine"}
+            },
+            "required": ["table"],
+            "additionalProperties": false
+        },
+
+        "targetSinkConfig": {
+            "type": "object",
+            "description": "Sink target (target_type = delta_sink / kafka_sink / foreach_batch_sink / custom_python_sink). NOTE: the sink redesign is DEFERRED — sink fields remain in their current flat form (sink_type / sink_config / sink_options) rather than a nested `sink` object. Revisit when the sink redesign is taken up.",
+            "properties": {
+                "input_flows": {"$ref": "#/$defs/inputFlows"},
+                "name": {"type": "string", "description": "Sink name."},
+                "sink_type": {"type": "string", "description": "Sink sub-type, e.g. basic_sql or python_function (foreach_batch_sink)."},
+                "sink_config": {"type": "object", "additionalProperties": true, "description": "Sink-specific configuration (e.g. sql_path, function_path, tokens)."},
+                "sink_options": {"type": "object", "additionalProperties": true, "description": "Sink options (e.g. table_name/path for delta_sink; topic/bootstrap servers for kafka_sink)."}
+            },
+            "additionalProperties": false
+        },
+
+        "inputFlows": {
+            "type": "array",
+            "description": "Upstream views feeding this target. Each item is a node name (flow auto-named) or {view, flow} to pin the SDP flow name.",
+            "items": {
+                "oneOf": [
+                    {"type": "string", "description": "Upstream node name; SDP flow name auto-generated."},
+                    {
+                        "type": "object",
+                        "properties": {
+                            "view": {"type": "string", "description": "Upstream node name feeding this target."},
+                            "flow": {"type": "string", "description": "Explicit SDP flow name. Pin to keep it stable (renaming forces a full refresh)."}
+                        },
+                        "required": ["view"],
+                        "additionalProperties": false
+                    }
+                ]
+            }
+        },
+
+        "dataQuality": {
+            "type": "object",
+            "description": "Data quality expectations. Presence enables expectations (no separate enabled flag).",
+            "properties": {
+                "expectations_path": {"type": "string", "description": "Path to the expectations file."}
+            },
+            "required": ["expectations_path"],
+            "additionalProperties": false
+        },
+
+        "quarantine": {
+            "type": "object",
+            "description": "Quarantine for rows failing expectations. Omit the whole object for no quarantine.",
+            "properties": {
+                "mode": {"type": "string", "enum": ["flag", "table"], "description": "flag: mark rows in place; table: route bad rows to a side table."},
+                "target": {"$ref": "#/$defs/quarantineTarget", "description": "Quarantine table config (required when mode=table)."}
+            },
+            "required": ["mode"],
+            "additionalProperties": false,
+            "if": {"properties": {"mode": {"const": "table"}}, "required": ["mode"]},
+            "then": {"required": ["target"]}
+        },
+
+        "quarantineTarget": {
+            "type": "object",
+            "properties": {
+                "target_format": {"type": "string", "enum": ["delta"], "default": "delta"},
+                "table": {"type": "string"},
+                "database": {"type": "string"},
+                "table_properties": {"type": "object", "additionalProperties": {"type": "string"}},
+                "path": {"type": "string"},
+                "partition_columns": {"type": "array", "items": {"type": "string"}},
+                "cluster_by_columns": {"type": "array", "items": {"type": "string"}},
+                "cluster_by_auto": {"type": "boolean"}
+            },
+            "additionalProperties": false
+        },
+
+        "tableMigrationDetails": {
+            "type": "object",
+            "description": "One-time migration of an existing table into this pipeline.",
+            "properties": {
+                "enabled": {"type": "boolean"},
+                "auto_starting_versions_enabled": {"type": "boolean", "default": true},
+                "catalog_type": {"type": "string", "enum": ["hms", "uc"]},
+                "source_details": {
+                    "type": "object",
+                    "properties": {
+                        "database": {"type": "string"},
+                        "table": {"type": "string"},
+                        "select_exp": {"type": "array", "items": {"type": "string"}},
+                        "where_clause": {"type": "array", "items": {"type": "string"}},
+                        "except_columns": {"type": "array", "items": {"type": "string"}}
+                    },
+                    "required": ["database", "table"],
+                    "additionalProperties": false
+                }
+            },
+            "required": ["enabled", "catalog_type", "source_details"],
+            "additionalProperties": false
+        },
+
         "snapshotCdcConfig": {
             "type": "object",
-            "description": "Snapshot CDC configuration for a target (snake_case). The framework normalises these keys to the backend's camelCase at build time.",
+            "description": "Snapshot CDC config for a target. Historical snapshots read files/tables directly (no source node); periodic snapshots read from an upstream source.",
             "properties": {
-                "keys": {
-                    "type": "array",
-                    "items": { "type": "string" }
-                },
-                "scd_type": {
-                    "type": ["string", "integer"]
-                },
-                "snapshot_type": {
-                    "type": "string",
-                    "enum": ["historical", "periodic"],
-                    "description": "Historical snapshots read files/tables directly and need no source node; periodic snapshots read from a source."
-                },
-                "source_type": {
-                    "type": "string",
-                    "enum": ["file", "table"],
-                    "description": "Historical snapshot source kind: 'file' (read snapshot files) or 'table' (read a versioned table). Not used for periodic snapshots."
-                },
+                "keys": {"type": "array", "items": {"type": "string"}},
+                "scd_type": {"type": ["string", "integer"]},
+                "snapshot_type": {"type": "string", "enum": ["historical", "periodic"]},
+                "source_type": {"type": "string", "enum": ["file", "table"], "description": "Historical source kind. Not used for periodic."},
                 "source": {
                     "type": "object",
-                    "description": "Historical snapshot source specification — the source is built here (not via a source node). Fields depend on source_type. Periodic snapshots omit this and read from an upstream source node.",
+                    "description": "Historical snapshot source. Fields depend on source_type. Periodic snapshots omit this.",
                     "properties": {
-                        "table": {
-                            "type": "string",
-                            "description": "Source table (source_type 'table'), e.g. '{schema}.snapshot_source'."
-                        },
-                        "path": {
-                            "type": "string",
-                            "description": "Snapshot file path/pattern (source_type 'file'); may contain a {version} token."
-                        },
-                        "format": {
-                            "type": "string",
-                            "description": "File format for file sources (e.g. 'csv', 'parquet', 'json')."
-                        },
-                        "reader_options": {
-                            "type": "object",
-                            "additionalProperties": true,
-                            "description": "Reader options passed to the file reader (e.g. {\"header\": \"true\"})."
-                        },
-                        "schema_path": {
-                            "type": "string",
-                            "description": "Path to a schema file applied when reading file sources."
-                        },
-                        "select_exp": {
-                            "type": "array",
-                            "items": { "type": "string" },
-                            "description": "Select expressions applied to the snapshot source."
-                        },
-                        "version_type": {
-                            "type": "string",
-                            "description": "How snapshot versions are interpreted (e.g. 'timestamp', 'integer')."
-                        },
-                        "version_column": {
-                            "type": "string",
-                            "description": "Column carrying the snapshot version (source_type 'table')."
-                        },
-                        "datetime_format": {
-                            "type": "string",
-                            "description": "Datetime format used to parse the {version} token for timestamp-versioned file sources (e.g. '%Y_%m_%d')."
-                        },
-                        "deduplicate_mode": {
-                            "type": "string",
-                            "description": "Deduplication mode applied to snapshot rows."
-                        },
-                        "recursiveFileLookup": {
-                            "type": ["boolean", "string"],
-                            "description": "Recurse into subdirectories when discovering snapshot files."
-                        }
+                        "table": {"type": "string"},
+                        "path": {"type": "string"},
+                        "format": {"type": "string"},
+                        "reader_options": {"type": "object", "additionalProperties": true},
+                        "schema_path": {"type": "string"},
+                        "select_exp": {"type": "array", "items": {"type": "string"}},
+                        "version_type": {"type": "string"},
+                        "version_column": {"type": "string"},
+                        "starting_version": {"type": ["string", "integer"]},
+                        "datetime_format": {"type": "string"},
+                        "deduplicate_mode": {"type": "string"},
+                        "recursiveFileLookup": {"type": ["boolean", "string"]}
                     },
                     "additionalProperties": true
                 },
-                "track_history_column_list": {
-                    "type": "array",
-                    "items": { "type": "string" }
-                },
-                "track_history_except_column_list": {
-                    "type": "array",
-                    "items": { "type": "string" }
-                }
+                "track_history_column_list": {"type": "array", "items": {"type": "string"}},
+                "track_history_except_column_list": {"type": "array", "items": {"type": "string"}}
             },
             "required": ["keys", "scd_type", "snapshot_type"],
             "additionalProperties": true
         },
-        "quarantineTargetDetails": {
+
+        "readerOptionsCloudFiles": {
             "type": "object",
-            "description": "Quarantine target configuration (snake_case).",
+            "description": "Auto Loader options. cloudFiles.format is required; format-specific options are offered once it is set.",
             "properties": {
-                "target_format": {
-                    "type": "string"
-                },
-                "table": {
-                    "type": "string"
-                },
-                "database": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "cluster_by_auto": {
-                    "type": "boolean"
-                },
-                "cluster_by_columns": {
-                    "type": "array",
-                    "items": { "type": "string" }
-                },
-                "partition_columns": {
-                    "type": "array",
-                    "items": { "type": "string" }
-                }
+                "cloudFiles.format": {"type": "string", "enum": ["avro", "binaryFile", "csv", "json", "orc", "parquet", "text", "xml"]},
+                "cloudFiles.inferColumnTypes": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                "cloudFiles.schemaEvolutionMode": {"type": "string", "enum": ["addNewColumns", "rescue", "failOnNewColumns"]},
+                "cloudFiles.schemaHints": {"type": "string"},
+                "cloudFiles.schemaLocation": {"type": "string"},
+                "cloudFiles.maxFilesPerTrigger": {"type": "string", "default": "1000"},
+                "cloudFiles.maxBytesPerTrigger": {"type": "string"},
+                "cloudFiles.includeExistingFiles": {"type": "string", "enum": ["true", "false"], "default": "true"},
+                "cloudFiles.allowOverwrites": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                "cloudFiles.useStrictGlobber": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                "cloudFiles.validateOptions": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                "pathGlobFilter": {"type": "string"},
+                "recursiveFileLookup": {"type": "string", "enum": ["true", "false"], "default": "false"}
             },
-            "required": ["target_format"],
+            "required": ["cloudFiles.format"],
+            "additionalProperties": true,
+            "allOf": [
+                {
+                    "if": {"properties": {"cloudFiles.format": {"const": "csv"}}, "required": ["cloudFiles.format"]},
+                    "then": {"properties": {
+                        "header": {"type": "string", "enum": ["true", "false"], "default": "true"},
+                        "inferSchema": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "sep": {"type": "string", "default": ","},
+                        "quote": {"type": "string", "default": "\""},
+                        "mode": {"type": "string", "enum": ["PERMISSIVE", "DROPMALFORMED", "FAILFAST"], "default": "PERMISSIVE"},
+                        "multiLine": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "rescuedDataColumn": {"type": "string", "default": "_rescued_data"}
+                    }}
+                },
+                {
+                    "if": {"properties": {"cloudFiles.format": {"const": "json"}}, "required": ["cloudFiles.format"]},
+                    "then": {"properties": {
+                        "mode": {"type": "string", "enum": ["PERMISSIVE", "DROPMALFORMED", "FAILFAST"], "default": "PERMISSIVE"},
+                        "multiLine": {"type": "string", "enum": ["true", "false"], "default": "false"},
+                        "rescuedDataColumn": {"type": "string", "default": "_rescued_data"}
+                    }}
+                }
+            ]
+        },
+
+        "readerOptionsKafka": {
+            "type": "object",
+            "description": "Kafka reader options.",
+            "properties": {
+                "subscribe": {"type": "string"},
+                "kafka.bootstrap.servers": {"type": "string"},
+                "kafka.group.id": {"type": "string"},
+                "kafka.security.protocol": {"type": "string", "default": "SASL_SSL"},
+                "kafka.sasl.mechanism": {"type": "string", "default": "PLAIN"},
+                "kafka.ssl.truststore.location": {"type": "string"},
+                "kafka.ssl.truststore.password": {"type": "string"},
+                "kafka.ssl.keystore.location": {"type": "string"},
+                "kafka.ssl.keystore.password": {"type": "string"},
+                "startingOffsets": {"type": "string"},
+                "endingOffsets": {"type": "string"},
+                "minPartitions": {"type": "string"},
+                "failOnDataLoss": {"type": "string"}
+            },
+            "required": ["kafka.bootstrap.servers"],
             "additionalProperties": true
         }
     }

@@ -29,10 +29,13 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "data_quality_expectations_enabled": true,
-                "data_quality_expectations_path": "./customer_address_dqe.json",
-                "quarantine_mode": "flag",
-                "input": [
+                "data_quality": {
+                    "expectations_path": "./customer_address_dqe.json"
+                },
+                "quarantine": {
+                    "mode": "flag"
+                },
+                "input_flows": [
                     {
                         "view": "v_customer_address_feature_quarantine_flag",
                         "flow": "f_customer_address_feature_quarantine_flag"

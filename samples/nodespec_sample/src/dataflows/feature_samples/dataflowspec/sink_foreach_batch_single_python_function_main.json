@@ -17,6 +17,7 @@
         {
             "name": "target_for_each_batch_python_function",
             "node_type": "target",
+            "target_type": "foreach_batch_sink",
             "config": {
                 "name": "for_each_batch_python_function",
                 "sink_type": "python_function",
@@ -28,14 +29,13 @@
                         "staging_volume": "{staging_volume}"
                     }
                 },
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_customer_purchase_python_function",
                         "flow": "f_customer_purchase_python_function"
                     }
                 ]
-            },
-            "target_type": "foreach_batch_sink"
+            }
         }
     ]
 }

@@ -22,7 +22,7 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_append_view_flow",
                         "flow": "f_append_view_flow"

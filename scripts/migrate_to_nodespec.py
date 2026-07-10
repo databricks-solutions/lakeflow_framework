@@ -11,6 +11,15 @@ camelCase field names used by the standard/flow/materialized_view formats
 ``table_properties``) while leaving opaque value maps (table properties,
 reader options, spark conf, tokens) untouched.
 
+Target wiring and feature settings use the current nodespec shape: targets
+declare their inputs via ``input_flows``; data quality is a nested
+``data_quality`` object; quarantine is a nested ``quarantine`` object
+(``mode`` + optional ``target``). Sink targets keep their flat
+``sink_type``/``sink_config``/``sink_options`` fields. Output is emitted in a
+canonical field order (identity, then table/structural details, then feature
+bundles, then ``input_flows``). Passing an existing nodespec spec normalises any
+legacy fields and reorders it (idempotent).
+
 Usage:
     python migrate_to_nodespec.py <input_spec> [--output <path>]
     python migrate_to_nodespec.py <input_dir> --output-dir <dir> [--recursive]
@@ -90,6 +99,13 @@ _TABLE_MIGRATION_MAP = {
     "tableName": "table_name",
 }
 
+# Inner keys of table_migration_details.source_details (a delta source shape).
+_MIGRATION_SOURCE_MAP = {
+    "selectExp": "select_exp",
+    "whereClause": "where_clause",
+    "exceptColumns": "except_columns",
+}
+
 _PYTHON_TRANSFORM_MAP = {
     "functionPath": "function_path",
     "pythonModule": "python_module",
@@ -102,6 +118,51 @@ def _rename(d: Dict, mapping: Dict[str, str]) -> Dict:
     if not isinstance(d, dict):
         return d
     return {mapping.get(k, k): v for k, v in d.items()}
+
+
+# ─── canonical field ordering ────────────────────────────────────────────────
+# A single, readable order applied to emitted specs, nodes, and configs so that
+# generated (and hand-authored) specs read consistently: identity first, then
+# table/structural details, then feature bundles, with input_flows (the wiring)
+# last. Keys not listed keep their original relative order, after the known ones.
+
+_SPEC_ORDER = ["data_flow_id", "data_flow_group", "data_flow_type",
+               "data_flow_version", "tags", "features", "nodes"]
+
+_NODE_ORDER = ["name", "node_type", "source_type", "transformation_type",
+               "target_type", "output_view_name", "enabled", "config"]
+
+_CONFIG_ORDER = [
+    "mode", "database", "table", "table_path", "path", "format",
+    "cdf_enabled", "cdf_change_type_override", "starting_version_from_dlt_setup",
+    "table_type",
+    "function_path", "python_module", "sql_path", "sql_statement", "tokens",
+    "select_exp", "where_clause", "schema_path", "reader_options", "python_transform",
+    "table_properties", "partition_columns", "cluster_by_columns", "cluster_by_auto",
+    "comment", "spark_conf", "row_filter", "config_flags",
+    "refresh_policy", "table_details", "once",
+    "cdc_settings", "cdc_snapshot_settings", "data_quality", "quarantine",
+    "table_migration_details",
+    "name", "sink_type", "sink_config", "sink_options",
+    "input_flows",
+]
+
+
+def _order(d: Dict, order: List[str]) -> Dict:
+    """Return d with keys in `order` first (when present), remaining keys after."""
+    if not isinstance(d, dict):
+        return d
+    known = [k for k in order if k in d]
+    rest = [k for k in d if k not in order]
+    return {k: d[k] for k in known + rest}
+
+
+def _order_node(node: Dict) -> Dict:
+    """Order a node's keys and its config's keys canonically."""
+    node = _order(node, _NODE_ORDER)
+    if isinstance(node.get("config"), dict):
+        node["config"] = _order(node["config"], _CONFIG_ORDER)
+    return node
 
 
 def _convert_source_details(details: Dict) -> Dict:
@@ -143,23 +204,28 @@ def _add_target_settings(config: Dict, src: Dict) -> None:
     if snapshot:
         config["cdc_snapshot_settings"] = _convert_snapshot(snapshot)
 
-    dq_enabled = _get(src, "dataQualityExpectationsEnabled", "data_quality_expectations_enabled")
-    if dq_enabled:
-        config["data_quality_expectations_enabled"] = dq_enabled
+    # Data quality collapses to a single nested object; presence implies enabled,
+    # so the standalone enabled flag is dropped.
     dq_path = _get(src, "dataQualityExpectationsPath", "data_quality_expectations_path")
     if dq_path:
-        config["data_quality_expectations_path"] = dq_path
+        config["data_quality"] = {"expectations_path": dq_path}
 
+    # Quarantine collapses mode + target details into one nested object.
+    # Mode "off" (or absent) means no quarantine, so no object is emitted.
     quarantine_mode = _get(src, "quarantineMode", "quarantine_mode")
-    if quarantine_mode:
-        config["quarantine_mode"] = quarantine_mode
-    quarantine_details = _get(src, "quarantineTargetDetails", "quarantine_target_details")
-    if quarantine_details:
-        config["quarantine_target_details"] = _rename(quarantine_details, _QUARANTINE_MAP)
+    if quarantine_mode and quarantine_mode != "off":
+        quarantine: Dict[str, Any] = {"mode": quarantine_mode}
+        quarantine_details = _get(src, "quarantineTargetDetails", "quarantine_target_details")
+        if quarantine_details:
+            quarantine["target"] = _rename(quarantine_details, _QUARANTINE_MAP)
+        config["quarantine"] = quarantine
 
     table_migration = _get(src, "tableMigrationDetails", "table_migration_details")
     if table_migration:
-        config["table_migration_details"] = _rename(table_migration, _TABLE_MIGRATION_MAP)
+        tm = _rename(table_migration, _TABLE_MIGRATION_MAP)
+        if isinstance(tm.get("source_details"), dict):
+            tm["source_details"] = _rename(tm["source_details"], _MIGRATION_SOURCE_MAP)
+        config["table_migration_details"] = tm
 
 
 def _result_envelope(spec: Dict, nodes: List[Dict]) -> Dict:
@@ -177,7 +243,37 @@ def _result_envelope(spec: Dict, nodes: List[Dict]) -> Dict:
         result["tags"] = spec["tags"]
     if spec.get("features"):
         result["features"] = spec["features"]
-    return result
+    result["nodes"] = [_order_node(n) for n in nodes]
+    return _order(result, _SPEC_ORDER)
+
+
+def _migrate_nodespec_config(cfg: Dict) -> None:
+    """Migrate a single node config's legacy fields to the current shape, in place."""
+    if "input" in cfg and "input_flows" not in cfg:
+        cfg["input_flows"] = cfg.pop("input")
+    path = cfg.pop("data_quality_expectations_path", None)
+    cfg.pop("data_quality_expectations_enabled", None)
+    if path and "data_quality" not in cfg:
+        cfg["data_quality"] = {"expectations_path": path}
+    mode = cfg.pop("quarantine_mode", None)
+    qtd = cfg.pop("quarantine_target_details", None)
+    if mode and mode != "off" and "quarantine" not in cfg:
+        quarantine: Dict[str, Any] = {"mode": mode}
+        if qtd:
+            quarantine["target"] = qtd
+        cfg["quarantine"] = quarantine
+
+
+def _migrate_nodespec(spec: Dict) -> Dict:
+    """Normalise an existing nodespec spec: migrate any legacy config fields
+    (input -> input_flows; data_quality_expectations_* -> data_quality;
+    quarantine_mode/quarantine_target_details -> quarantine) and apply the
+    canonical field order. Idempotent for already-current specs."""
+    for node in spec.get("nodes", []):
+        if isinstance(node.get("config"), dict):
+            _migrate_nodespec_config(node["config"])
+    spec["nodes"] = [_order_node(n) for n in spec.get("nodes", [])]
+    return _order(spec, _SPEC_ORDER)
 
 
 def migrate_spec(spec: Dict) -> Dict:
@@ -191,7 +287,7 @@ def migrate_spec(spec: Dict) -> Dict:
     elif spec_type == "materialized_view":
         return _migrate_materialized_view(spec)
     elif spec_type == "nodespec":
-        return spec  # already nodespec
+        return _migrate_nodespec(spec)  # normalise legacy fields + canonical order
     else:
         print(f"  Warning: Unknown dataFlowType '{spec_type}', treating as standard")
         return _migrate_standard(spec)
@@ -201,19 +297,30 @@ def migrate_spec(spec: Dict) -> Dict:
 
 def _migrate_standard(spec: Dict) -> Dict:
     """Convert a standard spec to nodespec."""
-    source_id = spec.get("sourceViewName") or "v_source"
-    source_node = _build_source_node(source_id, spec.get("sourceType", "delta"),
-                                      spec.get("sourceDetails", {}), spec.get("mode", "stream"))
+    # Historical snapshot targets read files/tables directly (via
+    # cdc_snapshot_settings) and have no source node — the standard spec carries
+    # no sourceDetails in that case, so don't synthesise one.
+    snapshot = _get(spec, "cdcSnapshotSettings", "cdc_snapshot_settings") or {}
+    is_historical_snapshot = _get(snapshot, "snapshotType", "snapshot_type") == "historical"
+
+    nodes: List[Dict] = []
+    source_id: Optional[str] = None
+    if not is_historical_snapshot:
+        source_id = spec.get("sourceViewName") or "v_source"
+        nodes.append(_build_source_node(source_id, spec.get("sourceType", "delta"),
+                                        spec.get("sourceDetails", {}), spec.get("mode", "stream")))
 
     target_config, target_type = _build_spec_target(spec)
-    target_config["input"] = [source_id]
+    if source_id:
+        target_config["input_flows"] = [source_id]
     target_name = target_config.get("table") or target_config.get("name") or "output"
     target_node: Dict[str, Any] = {"name": f"target_{target_name}", "node_type": "target"}
     if target_type != "delta":
         target_node["target_type"] = target_type
     target_node["config"] = target_config
+    nodes.append(target_node)
 
-    return _result_envelope(spec, [source_node, target_node])
+    return _result_envelope(spec, nodes)
 
 
 def _build_source_node(name: str, source_type: str, source_details: Dict, mode: str) -> Dict:
@@ -283,7 +390,7 @@ def _migrate_flow(spec: Dict) -> Dict:
                 continue
             node_ids.add(target_id)
             config = _build_target_config_from_staging(stg_name, stg_config)
-            config["input"] = []
+            config["input_flows"] = []
             nodes.append({"name": target_id, "node_type": "target", "config": config})
 
         for flow_name, flow_config in flows.items():
@@ -350,7 +457,7 @@ def _migrate_flow(spec: Dict) -> Dict:
             target_key = target_table.split(".")[-1]
             target_node = find_target_node(target_key)
             if target_node is not None:
-                target_node["config"].setdefault("input", []).append(source_node_id)
+                target_node["config"].setdefault("input_flows", []).append(source_node_id)
             else:
                 # Main (spec-level) target (delta or sink).
                 target_id = f"target_{target_key}"
@@ -359,7 +466,7 @@ def _migrate_flow(spec: Dict) -> Dict:
                     main_config, target_type = _build_spec_target(spec)
                     if flow_details.get("once"):
                         main_config["once"] = True
-                    main_config["input"] = [source_node_id]
+                    main_config["input_flows"] = [source_node_id]
                     main_node: Dict[str, Any] = {"name": target_id, "node_type": "target"}
                     if target_type != "delta":
                         main_node["target_type"] = target_type
@@ -369,8 +476,8 @@ def _migrate_flow(spec: Dict) -> Dict:
     # Drop placeholder empty input lists.
     for node in nodes:
         config = node.get("config", {})
-        if config.get("input") == []:
-            del config["input"]
+        if config.get("input_flows") == []:
+            del config["input_flows"]
 
     return _result_envelope(spec, nodes)
 
@@ -429,7 +536,7 @@ def _migrate_materialized_view(spec: Dict) -> Dict:
                 source_view.get("sourceDetails") or source_view.get("source_details", {}),
                 "batch",
             ))
-            target_config["input"] = [source_id]
+            target_config["input_flows"] = [source_id]
 
         nodes.append({"name": f"target_{mv_name}", "node_type": "target", "config": target_config})
 

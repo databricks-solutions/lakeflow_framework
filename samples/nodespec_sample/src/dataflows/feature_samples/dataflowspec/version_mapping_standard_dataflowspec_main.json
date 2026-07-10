@@ -32,7 +32,7 @@
                     "ignore_null_updates": false,
                     "scd_type": "1"
                 },
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_version_mapping_standard",
                         "flow": "f_version_mapping_standard"

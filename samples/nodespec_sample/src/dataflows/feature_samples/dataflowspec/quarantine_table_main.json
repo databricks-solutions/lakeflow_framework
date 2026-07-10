@@ -29,13 +29,16 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "data_quality_expectations_enabled": true,
-                "data_quality_expectations_path": "./customer_address_dqe.json",
-                "quarantine_mode": "table",
-                "quarantine_target_details": {
-                    "target_format": "delta"
+                "data_quality": {
+                    "expectations_path": "./customer_address_dqe.json"
                 },
-                "input": [
+                "quarantine": {
+                    "mode": "table",
+                    "target": {
+                        "target_format": "delta"
+                    }
+                },
+                "input_flows": [
                     {
                         "view": "v_customer_address_feature_quarantine_table",
                         "flow": "f_customer_address_feature_quarantine_table"

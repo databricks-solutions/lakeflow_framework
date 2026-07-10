@@ -50,18 +50,18 @@
                 "database": "live",
                 "table": "stg_feature_historical_files_snapshot_flow",
                 "cdf_enabled": true,
+                "cdf_change_type_override": [
+                    "insert",
+                    "update_postimage",
+                    "delete"
+                ],
+                "starting_version_from_dlt_setup": true,
                 "select_exp": [
                     "CUSTOMER_ID",
                     "FIRST_NAME",
                     "LAST_NAME",
                     "EMAIL",
                     "_change_type AS META_CDC_CHANGE_TYPE"
-                ],
-                "starting_version_from_dlt_setup": true,
-                "cdf_change_type_override": [
-                    "insert",
-                    "update_postimage",
-                    "delete"
                 ]
             }
         },
@@ -73,7 +73,7 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "input": [
+                "input_flows": [
                     {
                         "view": "v_feature_historical_files_snapshot_append",
                         "flow": "f_feature_historical_files_snapshot_append"

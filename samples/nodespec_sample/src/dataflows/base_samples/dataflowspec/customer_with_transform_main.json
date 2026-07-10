@@ -12,10 +12,10 @@
             "node_type": "source",
             "source_type": "delta",
             "config": {
+                "mode": "stream",
                 "database": "{staging_schema}",
                 "table": "customer",
-                "cdf_enabled": true,
-                "mode": "stream"
+                "cdf_enabled": true
             }
         },
         {
@@ -23,10 +23,10 @@
             "node_type": "source",
             "source_type": "delta",
             "config": {
+                "mode": "stream",
                 "database": "{staging_schema}",
                 "table": "customer_address",
-                "cdf_enabled": true,
-                "mode": "stream"
+                "cdf_enabled": true
             }
         },
         {
@@ -35,7 +35,7 @@
             "config": {
                 "table": "customer_transform_append_node",
                 "cluster_by_auto": true,
-                "input": [
+                "input_flows": [
                     {
                         "flow": "f_append_customer",
                         "view": "v_source_customer"
@@ -49,7 +49,7 @@
             "config": {
                 "table": "customer_transform_append_node",
                 "cluster_by_auto": true,
-                "input": [
+                "input_flows": [
                     {
                         "flow": "f_append_address",
                         "view": "v_source_customer_address"
@@ -62,9 +62,9 @@
             "node_type": "source",
             "source_type": "delta",
             "config": {
+                "mode": "stream",
                 "table": "customer_transform_append_node",
-                "cdf_enabled": true,
-                "mode": "stream"
+                "cdf_enabled": true
             }
         },
         {
@@ -84,7 +84,7 @@
                     "ignore_null_updates": true,
                     "scd_type": "2"
                 },
-                "input": [
+                "input_flows": [
                     {
                         "flow": "f_merge_append_cdf",
                         "view": "v_source_append_cdf"
@@ -97,9 +97,9 @@
             "node_type": "source",
             "source_type": "delta",
             "config": {
+                "mode": "stream",
                 "table": "customer_transform_merge_node",
-                "cdf_enabled": true,
-                "mode": "stream"
+                "cdf_enabled": true
             }
         },
         {
@@ -131,7 +131,7 @@
                     "sequence_by": "LOAD_TIMESTAMP",
                     "ignore_null_updates": true
                 },
-                "input": [
+                "input_flows": [
                     {
                         "flow": "f_enrich_final",
                         "view": "v_transform_final"

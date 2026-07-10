@@ -8,9 +8,9 @@
             "node_type": "source",
             "source_type": "delta",
             "config": {
+                "mode": "batch",
                 "database": "{staging_schema}",
-                "table": "customer",
-                "mode": "batch"
+                "table": "customer"
             }
         },
         {
@@ -19,7 +19,7 @@
             "config": {
                 "table": "feature_mv_source_view",
                 "table_type": "mv",
-                "input": [
+                "input_flows": [
                     {
                         "flow": "f_mv_source_view_load",
                         "view": "v_feature_mv_source_view"
@@ -55,12 +55,15 @@
                 "table": "feature_mv_with_quarantine",
                 "table_type": "mv",
                 "sql_statement": "SELECT * FROM {staging_schema}.customer_address",
-                "data_quality_expectations_enabled": true,
-                "data_quality_expectations_path": "./customer_address_dqe.json",
-                "quarantine_mode": "table",
-                "quarantine_target_details": {
-                    "target_format": "delta",
-                    "cluster_by_auto": true
+                "data_quality": {
+                    "expectations_path": "./customer_address_dqe.json"
+                },
+                "quarantine": {
+                    "mode": "table",
+                    "target": {
+                        "target_format": "delta",
+                        "cluster_by_auto": true
+                    }
                 }
             }
         },
