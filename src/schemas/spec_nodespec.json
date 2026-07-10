@@ -143,7 +143,13 @@
         "source_delta_config": {
             "type": "object",
             "description": "Delta table source.",
-            "allOf": [{"$ref": "#/$defs/source_common"}],
+            "allOf": [
+                {"$ref": "#/$defs/source_common"},
+                {
+                    "if": {"properties": {"starting_version_from_dlt_setup": {"const": true}}, "required": ["starting_version_from_dlt_setup"]},
+                    "then": {"properties": {"cdf_enabled": {"const": true}}}
+                }
+            ],
             "properties": {
                 "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
                 "database": {"type": "string", "description": "Source schema/database."},
@@ -335,6 +341,7 @@
             },
             "required": ["table"],
             "additionalProperties": false,
+            "not": {"required": ["cluster_by_columns", "partition_columns"]},
             "allOf": [
                 {
                     "if": {"properties": {"table_type": {"const": "mv"}}, "required": ["table_type"]},
@@ -485,7 +492,25 @@
                 "track_history_except_column_list": {"type": "array", "items": {"type": "string"}}
             },
             "required": ["keys", "scd_type", "snapshot_type"],
-            "additionalProperties": true
+            "additionalProperties": true,
+            "allOf": [
+                {
+                    "$comment": "Periodic snapshots read from an upstream source node; no inline source_type/source.",
+                    "if": {"properties": {"snapshot_type": {"const": "periodic"}}, "required": ["snapshot_type"]},
+                    "then": {"properties": {"source_type": false, "source": false}},
+                    "else": {"required": ["source_type", "source"]}
+                },
+                {
+                    "$comment": "Historical file source needs a path and format.",
+                    "if": {"properties": {"source_type": {"const": "file"}}, "required": ["source_type"]},
+                    "then": {"properties": {"source": {"required": ["path", "format"]}}}
+                },
+                {
+                    "$comment": "Historical table source needs a table.",
+                    "if": {"properties": {"source_type": {"const": "table"}}, "required": ["source_type"]},
+                    "then": {"properties": {"source": {"required": ["table"]}}}
+                }
+            ]
         },
 
         "reader_options_cloud_files": {
