@@ -454,7 +454,7 @@
                         "starting_version": {"type": ["string", "integer"]},
                         "datetime_format": {"type": "string"},
                         "deduplicate_mode": {"type": "string"},
-                        "recursiveFileLookup": {"type": ["boolean", "string"]}
+                        "recursive_file_lookup": {"type": ["boolean", "string"]}
                     },
                     "additionalProperties": true
                 },

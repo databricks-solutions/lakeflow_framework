@@ -30,7 +30,7 @@
                         },
                         "version_type": "timestamp",
                         "datetime_format": "%Y%m%d",
-                        "recursiveFileLookup": true
+                        "recursive_file_lookup": true
                     },
                     "track_history_except_column_list": [
                         "LOAD_TIMESTAMP"

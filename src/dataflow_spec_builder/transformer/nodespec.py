@@ -40,6 +40,7 @@ _KEYS = {
     "snapshot_type": "snapshotType", "source_type": "sourceType", "version_type": "versionType",
     "version_column": "versionColumn", "starting_version": "startingVersion",
     "datetime_format": "datetimeFormat", "deduplicate_mode": "deduplicateMode",
+    "recursive_file_lookup": "recursiveFileLookup",
     "catalog_type": "catalogType", "auto_starting_versions_enabled": "autoStartingVersionsEnabled",
     "source_details": "sourceDetails", "table_name": "tableName",
 }

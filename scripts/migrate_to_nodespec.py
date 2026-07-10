@@ -70,8 +70,8 @@ _TARGET_DETAIL_MAP = {
 }
 
 # Snapshot settings carry camelCase keys at both the top level and inside the
-# nested `source` object. `recursiveFileLookup` is intentionally left camelCase
-# (the framework reads it as-is).
+# nested `source` object. All are converted to snake_case for nodespec; the
+# transformer maps them back to the backend's camelCase at build time.
 _SNAPSHOT_MAP = {
     "snapshotType": "snapshot_type",
     "sourceType": "source_type",
@@ -83,6 +83,7 @@ _SNAPSHOT_MAP = {
     "schemaPath": "schema_path",
     "selectExp": "select_exp",
     "deduplicateMode": "deduplicate_mode",
+    "recursiveFileLookup": "recursive_file_lookup",
 }
 
 _QUARANTINE_MAP = {
