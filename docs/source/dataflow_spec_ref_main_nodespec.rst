@@ -324,7 +324,8 @@ Target node configuration
      - Delta table properties.
    * - **partition_columns** / **cluster_by_columns** / **cluster_by_auto** (*optional*)
      - ``array`` / ``array`` / ``boolean``
-     - Partitioning and liquid clustering.
+     - Partitioning and liquid clustering. ``partition_columns`` and
+       ``cluster_by_columns`` are mutually exclusive.
    * - **comment** / **spark_conf** / **row_filter** / **config_flags** (*optional*)
      - ``string`` / ``object`` / ``string`` / ``array``
      - Additional table settings.
@@ -352,6 +353,15 @@ Target node configuration
        (``string``, flow name auto-generated) or an object
        ``{ "view": <node name>, "flow": <flow name> }`` that sets the flow name.
        Conventionally written last in the config.
+
+.. note::
+   Which fields are valid depends on ``table_type``. Streaming-table settings
+   (``cdc_settings``, ``cdc_snapshot_settings``, ``table_migration_details``,
+   ``once``) are only allowed on streaming tables (``table_type`` ``st`` or
+   omitted); materialized-view settings (``sql_path``, ``sql_statement``,
+   ``refresh_policy``, ``table_details``) are only allowed on materialized views
+   (``table_type: "mv"``). The schema enforces this, so an editor flags, e.g.,
+   ``sql_path`` on a streaming table or ``cdc_settings`` on a materialized view.
 
 Sink targets
 -----------
