@@ -5,7 +5,7 @@
     "description": "Node-based dataflow spec (snake_case). A node's `config` is discriminated by node_type + source_type/target_type/table_type so editors offer only the fields valid for that node. Feature bundles (cdc, snapshot, data_quality, quarantine, migration) are single nested objects. Targets declare their inputs via `input_flows`. Sink targets keep their current flat form for now (sink redesign deferred).",
     "$comment": "A node's `config` is discriminated at the node level via allOf/if-then keyed on node_type + source_type/target_type/table_type; each `then` selects one closed config $def, so editors offer only the fields valid for that node. Nested blobs are typed objects with descriptions. Sink targets keep their current flat form (sink_type/sink_config/sink_options) pending the sink redesign. Legacy definitions_sources.json / definitions_targets.json are camelCase; nodespec is snake_case, so source/target detail shapes are re-declared here. Literal Spark option keys (cloudFiles.*, kafka.*) are preserved verbatim.",
     "$defs": {
-        "nodespecSpec": {
+        "nodespec_spec": {
             "type": "object",
             "description": "A nodespec pipeline: a graph of source -> transformation -> target nodes.",
             "properties": {
@@ -63,31 +63,31 @@
             "allOf": [
                 {
                     "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "delta"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceDeltaConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_delta_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "cloudFiles"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceCloudFilesConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_cloud_files_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "batchFiles"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceBatchFilesConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_batch_files_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "kafka"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceKafkaConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_kafka_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "deltaJoin"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sourceDeltaJoinConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_delta_join_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "python"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/pythonLogicConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/python_logic_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "sql"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sqlLogicConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sql_logic_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "source"}}, "required": ["node_type"]},
@@ -96,11 +96,11 @@
 
                 {
                     "if": {"properties": {"node_type": {"const": "transformation"}, "transformation_type": {"const": "sql"}}, "required": ["node_type", "transformation_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sqlLogicConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sql_logic_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "transformation"}, "transformation_type": {"const": "python"}}, "required": ["node_type", "transformation_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/pythonLogicConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/python_logic_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "transformation"}}, "required": ["node_type"]},
@@ -109,16 +109,16 @@
 
                 {
                     "if": {"properties": {"node_type": {"const": "target"}, "target_type": {"const": "delta"}}, "required": ["node_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/targetDeltaConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/target_delta_config"}}}
                 },
                 {
                     "if": {"properties": {"node_type": {"const": "target"}, "target_type": {"enum": ["delta_sink", "kafka_sink", "foreach_batch_sink", "custom_python_sink"]}}, "required": ["node_type", "target_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/targetSinkConfig"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/target_sink_config"}}}
                 }
             ]
         },
 
-        "sourceCommon": {
+        "source_common": {
             "type": "object",
             "properties": {
                 "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream", "description": "Read mode. Default: stream."},
@@ -128,7 +128,7 @@
             }
         },
 
-        "pythonTransform": {
+        "python_transform": {
             "type": "object",
             "description": "Inline Python transform applied to a source. Provide function_path or python_module (module alias also accepted).",
             "properties": {
@@ -140,10 +140,10 @@
             "additionalProperties": false
         },
 
-        "sourceDeltaConfig": {
+        "source_delta_config": {
             "type": "object",
             "description": "Delta table source.",
-            "allOf": [{"$ref": "#/$defs/sourceCommon"}],
+            "allOf": [{"$ref": "#/$defs/source_common"}],
             "properties": {
                 "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
                 "database": {"type": "string", "description": "Source schema/database."},
@@ -156,29 +156,29 @@
                 "where_clause": {"type": "array", "items": {"type": "string"}},
                 "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "reader_options": {"type": "object", "additionalProperties": true},
-                "python_transform": {"$ref": "#/$defs/pythonTransform"}
+                "python_transform": {"$ref": "#/$defs/python_transform"}
             },
             "required": ["table"],
             "additionalProperties": false
         },
 
-        "sourceCloudFilesConfig": {
+        "source_cloud_files_config": {
             "type": "object",
             "description": "Auto Loader (cloudFiles) source.",
             "properties": {
                 "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
                 "path": {"type": "string", "description": "Directory or glob to ingest."},
-                "reader_options": {"$ref": "#/$defs/readerOptionsCloudFiles"},
+                "reader_options": {"$ref": "#/$defs/reader_options_cloud_files"},
                 "select_exp": {"type": "array", "items": {"type": "string"}},
                 "where_clause": {"type": "array", "items": {"type": "string"}},
                 "schema_path": {"type": "string", "pattern": "\\.json$"},
-                "python_transform": {"$ref": "#/$defs/pythonTransform"}
+                "python_transform": {"$ref": "#/$defs/python_transform"}
             },
             "required": ["path", "reader_options"],
             "additionalProperties": false
         },
 
-        "sourceBatchFilesConfig": {
+        "source_batch_files_config": {
             "type": "object",
             "description": "Batch file source (read once, not streamed).",
             "properties": {
@@ -189,28 +189,28 @@
                 "select_exp": {"type": "array", "items": {"type": "string"}},
                 "where_clause": {"type": "array", "items": {"type": "string"}},
                 "schema_path": {"type": "string", "pattern": "\\.json$"},
-                "python_transform": {"$ref": "#/$defs/pythonTransform"}
+                "python_transform": {"$ref": "#/$defs/python_transform"}
             },
             "required": ["path", "reader_options"],
             "additionalProperties": false
         },
 
-        "sourceKafkaConfig": {
+        "source_kafka_config": {
             "type": "object",
             "description": "Kafka source.",
             "properties": {
                 "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
-                "reader_options": {"$ref": "#/$defs/readerOptionsKafka"},
+                "reader_options": {"$ref": "#/$defs/reader_options_kafka"},
                 "select_exp": {"type": "array", "items": {"type": "string"}},
                 "where_clause": {"type": "array", "items": {"type": "string"}},
                 "schema_path": {"type": "string", "pattern": "\\.json$"},
-                "python_transform": {"$ref": "#/$defs/pythonTransform"}
+                "python_transform": {"$ref": "#/$defs/python_transform"}
             },
             "required": ["reader_options"],
             "additionalProperties": false
         },
 
-        "sourceDeltaJoinConfig": {
+        "source_delta_join_config": {
             "type": "object",
             "description": "Join of multiple Delta sources into one view.",
             "properties": {
@@ -230,7 +230,7 @@
                             "where_clause": {"type": "array", "items": {"type": "string"}},
                             "schema_path": {"type": "string", "pattern": "\\.json$"},
                             "reader_options": {"type": "object", "additionalProperties": true},
-                            "python_transform": {"$ref": "#/$defs/pythonTransform"}
+                            "python_transform": {"$ref": "#/$defs/python_transform"}
                         },
                         "required": ["database", "table", "alias", "cdf_enabled", "join_mode"],
                         "additionalProperties": false
@@ -255,7 +255,7 @@
             "additionalProperties": false
         },
 
-        "sqlLogicConfig": {
+        "sql_logic_config": {
             "type": "object",
             "description": "SQL source or transformation. Provide exactly one of sql_path or sql_statement.",
             "oneOf": [
@@ -278,7 +278,7 @@
             ]
         },
 
-        "pythonLogicConfig": {
+        "python_logic_config": {
             "type": "object",
             "description": "Python source or transformation. Provide exactly one of function_path or python_module.",
             "properties": {
@@ -294,11 +294,11 @@
             "additionalProperties": false
         },
 
-        "targetDeltaConfig": {
+        "target_delta_config": {
             "type": "object",
             "description": "Delta target (target_type=delta). A streaming table by default; set table_type=mv for a materialized view (then supply sql_path/sql_statement or an input_flows source).",
             "properties": {
-                "input_flows": {"$ref": "#/$defs/inputFlows"},
+                "input_flows": {"$ref": "#/$defs/input_flows"},
                 "table": {"type": "string", "description": "Target table name."},
                 "database": {"type": "string", "description": "Target schema/database."},
                 "table_type": {"type": "string", "enum": ["st", "mv"], "default": "st", "description": "st (streaming table) or mv (materialized view). Default: st."},
@@ -314,8 +314,8 @@
                 "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disableOperationalMetadata"]}},
                 "once": {"type": "boolean", "default": false, "description": "Run the flow to this target once (batch), then stop."},
                 "cdc_settings": {"$ref": "./definitions_main.json#/definitions/cdcSettings"},
-                "cdc_snapshot_settings": {"$ref": "#/$defs/snapshotCdcConfig"},
-                "table_migration_details": {"$ref": "#/$defs/tableMigrationDetails"},
+                "cdc_snapshot_settings": {"$ref": "#/$defs/snapshot_cdc_config"},
+                "table_migration_details": {"$ref": "#/$defs/table_migration_details"},
                 "sql_path": {"type": "string", "description": "MV only: path to a .sql file defining the view."},
                 "sql_statement": {"type": "string", "description": "MV only: inline SQL defining the view."},
                 "refresh_policy": {"type": "string", "enum": ["auto", "incremental", "incremental_strict", "full"], "description": "MV only: refresh policy."},
@@ -330,18 +330,18 @@
                     },
                     "additionalProperties": false
                 },
-                "data_quality": {"$ref": "#/$defs/dataQuality"},
+                "data_quality": {"$ref": "#/$defs/data_quality"},
                 "quarantine": {"$ref": "#/$defs/quarantine"}
             },
             "required": ["table"],
             "additionalProperties": false
         },
 
-        "targetSinkConfig": {
+        "target_sink_config": {
             "type": "object",
             "description": "Sink target (target_type = delta_sink / kafka_sink / foreach_batch_sink / custom_python_sink). NOTE: the sink redesign is DEFERRED — sink fields remain in their current flat form (sink_type / sink_config / sink_options) rather than a nested `sink` object. Revisit when the sink redesign is taken up.",
             "properties": {
-                "input_flows": {"$ref": "#/$defs/inputFlows"},
+                "input_flows": {"$ref": "#/$defs/input_flows"},
                 "name": {"type": "string", "description": "Sink name."},
                 "sink_type": {"type": "string", "description": "Sink sub-type, e.g. basic_sql or python_function (foreach_batch_sink)."},
                 "sink_config": {"type": "object", "additionalProperties": true, "description": "Sink-specific configuration (e.g. sql_path, function_path, tokens)."},
@@ -350,7 +350,7 @@
             "additionalProperties": false
         },
 
-        "inputFlows": {
+        "input_flows": {
             "type": "array",
             "description": "Upstream views feeding this target. Each item is a node name (flow auto-named) or {view, flow} to pin the SDP flow name.",
             "items": {
@@ -369,7 +369,7 @@
             }
         },
 
-        "dataQuality": {
+        "data_quality": {
             "type": "object",
             "description": "Data quality expectations. Presence enables expectations (no separate enabled flag).",
             "properties": {
@@ -384,7 +384,7 @@
             "description": "Quarantine for rows failing expectations. Omit the whole object for no quarantine.",
             "properties": {
                 "mode": {"type": "string", "enum": ["flag", "table"], "description": "flag: mark rows in place; table: route bad rows to a side table."},
-                "target": {"$ref": "#/$defs/quarantineTarget", "description": "Quarantine table config (required when mode=table)."}
+                "target": {"$ref": "#/$defs/quarantine_target", "description": "Quarantine table config (required when mode=table)."}
             },
             "required": ["mode"],
             "additionalProperties": false,
@@ -392,7 +392,7 @@
             "then": {"required": ["target"]}
         },
 
-        "quarantineTarget": {
+        "quarantine_target": {
             "type": "object",
             "properties": {
                 "target_format": {"type": "string", "enum": ["delta"], "default": "delta"},
@@ -407,7 +407,7 @@
             "additionalProperties": false
         },
 
-        "tableMigrationDetails": {
+        "table_migration_details": {
             "type": "object",
             "description": "One-time migration of an existing table into this pipeline.",
             "properties": {
@@ -431,7 +431,7 @@
             "additionalProperties": false
         },
 
-        "snapshotCdcConfig": {
+        "snapshot_cdc_config": {
             "type": "object",
             "description": "Snapshot CDC config for a target. Historical snapshots read files/tables directly (no source node); periodic snapshots read from an upstream source.",
             "properties": {
@@ -465,7 +465,7 @@
             "additionalProperties": true
         },
 
-        "readerOptionsCloudFiles": {
+        "reader_options_cloud_files": {
             "type": "object",
             "description": "Auto Loader options. cloudFiles.format is required; format-specific options are offered once it is set.",
             "properties": {
@@ -509,7 +509,7 @@
             ]
         },
 
-        "readerOptionsKafka": {
+        "reader_options_kafka": {
             "type": "object",
             "description": "Kafka reader options.",
             "properties": {

@@ -44,5 +44,5 @@
         },
         "required": ["dataFlowId", "dataFlowGroup", "dataFlowType"]
     },
-    "else": { "$ref": "./spec_nodespec.json#/$defs/nodespecSpec" }
+    "else": { "$ref": "./spec_nodespec.json#/$defs/nodespec_spec" }
 }
