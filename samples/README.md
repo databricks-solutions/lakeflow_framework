@@ -7,7 +7,7 @@ The Framework comes with extensive samples that demonstrate the use of the frame
 | **`feature-samples`** | Demonstrates every framework feature in isolation using a single `{namespace}_feature` schema. The simplest entry point. |
 | **`pattern-samples`** | End-to-end medallion architecture patterns (bronze → silver → gold) across multiple schemas. Includes multi-source streaming, stream-static joins, CDC from snapshot sources, and gold-layer materialized views. |
 | **`yaml_sample`** | Demonstrates that data flow specs can be written in YAML format instead of JSON. Contains YAML equivalents of basic specs. |
-| **`tpch_sample`** | The most comprehensive end-to-end reference, built on the TPC-H dataset in the UC samples catalog. Covers multi-source schema-on-read bronze, conformed/historized silver (SCD2 + SCD1 + append-only facts with DQ quarantine), and a governed gold star schema with surrogate keys, point-in-time joins, pre-aggregated MVs, and UC metric views. Uses template specs and a three-run incremental simulation. See its [README](tpch_sample/README.md). |
+| **`tpch_sample`** | The most comprehensive end-to-end reference, built on the TPC-H dataset in the UC samples catalog. Covers multi-source schema-on-read bronze, conformed/history-tracked silver (SCD2 + SCD1 + append-only facts with DQ quarantine), and a governed gold star schema with surrogate keys, point-in-time joins, pre-aggregated MVs, and UC metric views. Uses template specs and a three-run incremental simulation. See its [README](tpch_sample/README.md). |
 
 ## Deploying the Samples
 
@@ -146,12 +146,12 @@ Parameters:
 
 ## TPC-H Sample
 
-The TPC-H sample is the most comprehensive end-to-end example in the framework. Built on the TPC-H schema in the Databricks UC samples catalog, it turns a realistic, sample dataset into a fully streaming medallion data warehouse — from multi-source raw ingestion through conformed, historized silver to a governed gold star schema with value-add aggregations.
+The TPC-H sample is the most comprehensive end-to-end example in the framework. Built on the TPC-H schema in the Databricks UC samples catalog, it turns a realistic, sample dataset into a fully streaming medallion data warehouse — from multi-source raw ingestion through conformed, history-tracked silver to a governed gold star schema with value-add aggregations.
 
 It demonstrates a wide range of framework capabilities together, including:
 
 * **Schema-on-read bronze** that infers and evolves the schema, ingesting Parquet from eight simulated source systems via Auto Loader.
-* **Conformed, historized silver** with SCD2 dimensions, SCD1 reference data, append-only facts, and data-quality expectations with quarantine.
+* **Conformed, history-tracked silver** with SCD2 dimensions, SCD1 reference data, append-only facts, and data-quality expectations with quarantine.
 * **Governed gold star schema** with surrogate keys and point-in-time (as-of) joins, plus two metrics approaches side by side: pre-aggregated materialized views and UC metric views.
 * **Template specs** that collapse repetitive bronze and silver flows into reusable templates.
 * **A three-run incremental simulation** covering SCD changes, fact growth, a backdated out-of-order correction, and ongoing quarantine.

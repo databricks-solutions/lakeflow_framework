@@ -27,8 +27,8 @@ python scripts/validate_dataflows.py -v
 ```
 
 **What it validates:**
-- Searches for all `*_main.json` files in `dataflows/**/dataflowspec/` directories
-- Validates against `src/schemas/main.json` (which routes to appropriate sub-schemas)
+- Searches for all `*_main.json` files under `dataflows/` (including `dataflowspec/` subdirectories and flat `dataflows/*_main.json` layouts)
+- Validates against `src/lakeflow_framework/schemas/main.json` (which routes to appropriate sub-schemas)
 - Reports validation errors with clear messages
 
 **Version Mapping (enabled by default):**

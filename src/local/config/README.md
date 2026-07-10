@@ -4,7 +4,7 @@ Fork-safe sparse override directory for framework configuration files.
 
 ## How it works
 
-Files placed here are **deep-merged on top of their `src/config/default/`
+Files placed here are **deep-merged on top of their `src/lakeflow_framework/config/default/`
 counterparts** at runtime. You only need to include the keys you want to
 change — all other keys retain their default values.
 
@@ -25,7 +25,7 @@ key improvements:
 
 ## Supported files
 
-Any file present in `src/config/default/` can be partially overridden here
+Any file present in `src/lakeflow_framework/config/default/` can be partially overridden here
 using the same filename. Common candidates:
 
 | File | Purpose |
@@ -47,7 +47,7 @@ default.
 To migrate:
 
 1. Identify which keys in your `config/override/` files differ from
-   `config/default/`.
+   `lakeflow_framework/config/default/`.
 2. Create sparse files here containing only those differing keys.
 3. Delete or empty `config/override/`.
 

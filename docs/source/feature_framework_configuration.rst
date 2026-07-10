@@ -126,7 +126,7 @@ Example — change one global setting without touching the rest of ``global.json
    }
 
 Save this as ``src/local/config/global.json``. All other keys from
-``src/config/default/global.json`` are kept unchanged.
+``src/lakeflow_framework/config/default/global.json`` are kept unchanged.
 
 For **directory-based config** (e.g. ``dataflow_spec_mapping/``), place the
 entire override directory in ``src/local/config/`` — the local directory takes

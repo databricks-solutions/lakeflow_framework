@@ -421,7 +421,7 @@ Validation
 
 Each expanded spec is validated using the existing schema validators to ensure correctness.
 
-Template usage specs are validated against the schema at ``src/schemas/spec_template.json``:
+Template usage specs are validated against the schema at ``src/lakeflow_framework/schemas/spec_template.json``:
 
 - ``template``: Required string (template name without .json extension)
 - ``params``: Required array with at least one parameter object

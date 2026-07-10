@@ -14,7 +14,7 @@ pytest tests/ -m "not integration and not spark"
 pytest tests/ -m integration
 
 # Optional coverage report
-pytest tests/ -m "not integration and not spark" --cov=src --cov-report=term-missing
+pytest tests/ -m "not integration and not spark" --cov=lakeflow_framework --cov-report=term-missing
 ```
 
 Use **Python 3.12** for development; newer Python versions may break PySpark-related dependencies.
@@ -32,7 +32,7 @@ tests/
 ├── unit/                # Fast, isolated module tests
 └── integration/         # Sample-dependent tests (require samples/ checkout)
     ├── conftest.py      # validate_bundle(), bundle paths, feature-samples fixtures
-    ├── test_validate_dataflows.py      # Script helpers + all specs per JSON bundle
+    ├── test_validate_dataflows.py      # Per-bundle sample validation + CLI subprocess
     └── test_feature_samples_spec_builder.py  # DataflowSpecBuilder on feature-samples
 ```
 
@@ -50,7 +50,7 @@ Configure in `pytest.ini`. CI runs: `-m "not integration and not spark"`.
 
 1. **Use `pipeline_context`** — do not call `initialize_core()` inline in test modules.
 2. **Prefer `tests/fixtures/`** — unit tests should not depend on `samples/` paths.
-3. **Mirror `src/`** — `tests/unit/test_<module>.py` maps to `src/<module>.py`.
+3. **Mirror the package** — `tests/unit/test_<module>.py` maps to `src/lakeflow_framework/<module>.py`; use `lakeflow_framework.*` imports (not compat shims).
 4. **One concern per test** — name tests `test_<behavior>_when_<condition>`.
 5. **No DLT mocks** — tests that need `@dp.table` belong in samples/E2E, not unit tests.
 

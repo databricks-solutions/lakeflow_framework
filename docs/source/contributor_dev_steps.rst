@@ -43,7 +43,7 @@ Development Process
         pytest tests/ -m "not integration and not spark"
 
    - See ``tests/README.md`` for layout, fixtures, markers, and conventions.
-   - Optional coverage: add ``--cov=src --cov-report=term-missing``.
+   - Optional coverage: add ``--cov=lakeflow_framework --cov-report=term-missing``.
    - CI runs the same pytest command on every pull request (``.github/workflows/ci.yml``).
 
 3. Integration Testing / Samples
