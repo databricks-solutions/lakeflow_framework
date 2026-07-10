@@ -230,7 +230,7 @@ Source node configuration
      - **Description**
    * - **source_type**
      - ``string``
-     - ``delta``, ``cloudFiles``, ``batchFiles``, ``kafka``, ``sql``, ``python``.
+     - ``delta``, ``cloud_files``, ``batch_files``, ``delta_join``, ``kafka``, ``sql``, ``python``.
    * - **mode** (*optional*)
      - ``string``
      - ``stream`` or ``batch``. Default: ``stream``.
@@ -239,7 +239,7 @@ Source node configuration
      - For ``delta`` sources.
    * - **path**
      - ``string``
-     - For ``cloudFiles`` / ``batchFiles`` sources.
+     - For ``cloud_files`` / ``batch_files`` sources.
    * - **cdf_enabled** (*optional*)
      - ``boolean``
      - Enable Change Data Feed for Delta sources.
