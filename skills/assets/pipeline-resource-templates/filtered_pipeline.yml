@@ -1,0 +1,24 @@
+resources:
+  pipelines:
+    PIPELINE_NAME:
+      name: PIPELINE_NAME
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      channel: CURRENT
+      serverless: true
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+
+      configuration:
+        bundle.sourcePath: /Workspace/${workspace.file_path}/src
+        framework.sourcePath: /Workspace/${var.framework_source_path}
+        workspace.host: ${workspace.host}
+        bundle.target: ${bundle.target}
+        pipeline.layer: ${var.layer}
+        # Uncomment and set the filters you need:
+        # pipeline.dataFlowIdFilter: flow_id_1,flow_id_2
+        # pipeline.dataFlowGroupFilter: group_name
+        # pipeline.flowGroupIdFilter: fg_1,fg_2
+        # pipeline.fileFilter: dataflows/my_table/dataflowspec/my_table_main.json
+        # pipeline.targetTableFilter: target_table_1,target_table_2

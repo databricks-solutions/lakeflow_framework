@@ -1,0 +1,14 @@
+{
+    "type": "struct",
+    "fields": [
+        {"name": "equipment_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "equipment_type", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "state", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "install_date", "type": "date", "nullable": true, "metadata": {}},
+        {"name": "last_maintenance_date", "type": "date", "nullable": true, "metadata": {}},
+        {"name": "condition_score", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "failure_count", "type": "integer", "nullable": true, "metadata": {}},
+        {"name": "latitude", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "longitude", "type": "double", "nullable": true, "metadata": {}}
+    ]
+}

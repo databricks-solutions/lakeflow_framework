@@ -1,0 +1,11 @@
+{
+    "expect": [
+        {"name": "customer_id_not_null", "constraint": "customer_id IS NOT NULL", "tag": "completeness", "enabled": true},
+        {"name": "valid_state", "constraint": "state IN ('NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS') OR state IS NULL", "tag": "validity", "enabled": true},
+        {"name": "valid_customer_type", "constraint": "customer_type IN ('residential', 'commercial', 'industrial') OR customer_type IS NULL", "tag": "validity", "enabled": true}
+    ],
+    "expect_or_drop": [],
+    "expect_or_fail": [
+        {"name": "pk_not_null", "constraint": "customer_id IS NOT NULL", "tag": "integrity", "enabled": true}
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "expect": [
+        {"name": "meter_id_not_null", "constraint": "meter_id IS NOT NULL", "tag": "completeness", "enabled": true},
+        {"name": "reading_timestamp_not_null", "constraint": "reading_timestamp IS NOT NULL", "tag": "completeness", "enabled": true},
+        {"name": "kwh_not_null", "constraint": "kwh_used IS NOT NULL", "tag": "completeness", "enabled": true},
+        {"name": "valid_voltage", "constraint": "voltage BETWEEN 200 AND 260", "tag": "range", "enabled": true}
+    ],
+    "expect_or_drop": [
+        {"name": "positive_kwh", "constraint": "kwh_used >= 0", "tag": "range", "enabled": true}
+    ],
+    "expect_or_fail": []
+}
