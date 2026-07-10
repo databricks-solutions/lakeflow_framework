@@ -334,7 +334,30 @@
                 "quarantine": {"$ref": "#/$defs/quarantine"}
             },
             "required": ["table"],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {"properties": {"table_type": {"const": "mv"}}, "required": ["table_type"]},
+                    "then": {
+                        "$comment": "Materialized view: streaming-table-only fields are not allowed.",
+                        "properties": {
+                            "cdc_settings": false,
+                            "cdc_snapshot_settings": false,
+                            "table_migration_details": false,
+                            "once": false
+                        }
+                    },
+                    "else": {
+                        "$comment": "Streaming table (table_type st/omitted): materialized-view-only fields are not allowed.",
+                        "properties": {
+                            "sql_path": false,
+                            "sql_statement": false,
+                            "refresh_policy": false,
+                            "table_details": false
+                        }
+                    }
+                }
+            ]
         },
 
         "target_sink_config": {
