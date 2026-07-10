@@ -68,6 +68,31 @@ def _deep_camel(obj: Any) -> Any:
     return obj
 
 
+# nodespec authors enum VALUES in snake_case; the backend/legacy formats expect
+# camelCase for a few of them. Map those back on the transformer's output.
+_SOURCE_TYPE_TO_BACKEND = {"cloud_files": "cloudFiles", "batch_files": "batchFiles", "delta_join": "deltaJoin"}
+_CONFIG_FLAG_TO_BACKEND = {"disable_operational_metadata": "disableOperationalMetadata"}
+
+
+def _values_to_backend(obj: Any) -> Any:
+    """Recursively map nodespec snake_case enum values back to backend values
+    (sourceType: cloud_files->cloudFiles etc.; configFlags entries). Applied to
+    the final flow spec, so it also covers the file/table snapshot sourceType and
+    the sql/delta transform sourceType, which are simply left unchanged."""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k == "sourceType" and isinstance(v, str):
+                obj[k] = _SOURCE_TYPE_TO_BACKEND.get(v, v)
+            elif k == "configFlags" and isinstance(v, list):
+                obj[k] = [_CONFIG_FLAG_TO_BACKEND.get(x, x) if isinstance(x, str) else x for x in v]
+            else:
+                _values_to_backend(v)
+    elif isinstance(obj, list):
+        for i in obj:
+            _values_to_backend(i)
+    return obj
+
+
 def _first(cfg: Dict, *keys: str) -> Dict:
     """{camel(key): value} for the first present snake key (e.g. sql_path|sql_statement)."""
     for k in keys:
@@ -110,6 +135,8 @@ class NodespecSpecTransformer(BaseSpecTransformer):
 
         if not specs:
             raise ValueError("Nodespec spec must contain at least one target node")
+        for s in specs:
+            _values_to_backend(s)
         return specs if len(specs) > 1 else specs[0]
 
     @staticmethod

@@ -92,7 +92,7 @@
                 "refresh_policy": "incremental_strict",
                 "table_details": {
                     "config_flags": [
-                        "disableOperationalMetadata"
+                        "disable_operational_metadata"
                     ]
                 }
             }

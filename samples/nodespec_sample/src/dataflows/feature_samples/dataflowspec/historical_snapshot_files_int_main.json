@@ -13,7 +13,7 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "config_flags": [
-                    "disableOperationalMetadata"
+                    "disable_operational_metadata"
                 ],
                 "cdc_snapshot_settings": {
                     "keys": [

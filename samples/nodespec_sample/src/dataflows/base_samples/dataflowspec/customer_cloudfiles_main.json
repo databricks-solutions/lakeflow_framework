@@ -6,7 +6,7 @@
         {
             "name": "v_source_files",
             "node_type": "source",
-            "source_type": "cloudFiles",
+            "source_type": "cloud_files",
             "config": {
                 "mode": "stream",
                 "path": "{sample_file_location}/customer/",

@@ -37,7 +37,7 @@
                 },
                 "source_type": {
                     "type": "string",
-                    "enum": ["batchFiles", "cloudFiles", "delta", "deltaJoin", "kafka", "python", "sql"],
+                    "enum": ["batch_files", "cloud_files", "delta", "delta_join", "kafka", "python", "sql"],
                     "description": "Kind of source. Required when node_type=source; selects which config fields apply."
                 },
                 "transformation_type": {
@@ -66,11 +66,11 @@
                     "then": {"properties": {"config": {"$ref": "#/$defs/source_delta_config"}}}
                 },
                 {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "cloudFiles"}}, "required": ["node_type", "source_type"]},
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "cloud_files"}}, "required": ["node_type", "source_type"]},
                     "then": {"properties": {"config": {"$ref": "#/$defs/source_cloud_files_config"}}}
                 },
                 {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "batchFiles"}}, "required": ["node_type", "source_type"]},
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "batch_files"}}, "required": ["node_type", "source_type"]},
                     "then": {"properties": {"config": {"$ref": "#/$defs/source_batch_files_config"}}}
                 },
                 {
@@ -78,7 +78,7 @@
                     "then": {"properties": {"config": {"$ref": "#/$defs/source_kafka_config"}}}
                 },
                 {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "deltaJoin"}}, "required": ["node_type", "source_type"]},
+                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "delta_join"}}, "required": ["node_type", "source_type"]},
                     "then": {"properties": {"config": {"$ref": "#/$defs/source_delta_join_config"}}}
                 },
                 {
@@ -311,7 +311,7 @@
                 "comment": {"type": "string"},
                 "spark_conf": {"type": "object"},
                 "row_filter": {"type": "string"},
-                "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disableOperationalMetadata"]}},
+                "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disable_operational_metadata"]}},
                 "once": {"type": "boolean", "default": false, "description": "Run the flow to this target once (batch), then stop."},
                 "cdc_settings": {"$ref": "./definitions_main.json#/definitions/cdcSettings"},
                 "cdc_snapshot_settings": {"$ref": "#/$defs/snapshot_cdc_config"},
@@ -326,7 +326,7 @@
                         "private": {"type": "boolean"},
                         "comment": {"type": "string"},
                         "spark_conf": {"type": "object"},
-                        "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disableOperationalMetadata"]}}
+                        "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disable_operational_metadata"]}}
                     },
                     "additionalProperties": false
                 },

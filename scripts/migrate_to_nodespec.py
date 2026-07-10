@@ -158,10 +158,32 @@ def _order(d: Dict, order: List[str]) -> Dict:
     return {k: d[k] for k in known + rest}
 
 
+# nodespec authors enum VALUES in snake_case; legacy formats use camelCase for
+# a few of them, so snake them during migration.
+_SOURCE_TYPE_TO_SNAKE = {"cloudFiles": "cloud_files", "batchFiles": "batch_files", "deltaJoin": "delta_join"}
+_CONFIG_FLAG_TO_SNAKE = {"disableOperationalMetadata": "disable_operational_metadata"}
+
+
+def _snake_config_flag_values(obj) -> None:
+    """Recursively snake `config_flags` array values in place."""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k == "config_flags" and isinstance(v, list):
+                obj[k] = [_CONFIG_FLAG_TO_SNAKE.get(x, x) if isinstance(x, str) else x for x in v]
+            else:
+                _snake_config_flag_values(v)
+    elif isinstance(obj, list):
+        for i in obj:
+            _snake_config_flag_values(i)
+
+
 def _order_node(node: Dict) -> Dict:
-    """Order a node's keys and its config's keys canonically."""
+    """Order a node's keys and its config's keys canonically, and snake enum values."""
+    if node.get("source_type") in _SOURCE_TYPE_TO_SNAKE:
+        node["source_type"] = _SOURCE_TYPE_TO_SNAKE[node["source_type"]]
     node = _order(node, _NODE_ORDER)
     if isinstance(node.get("config"), dict):
+        _snake_config_flag_values(node["config"])
         node["config"] = _order(node["config"], _CONFIG_ORDER)
     return node
 
