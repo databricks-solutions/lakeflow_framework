@@ -1,0 +1,47 @@
+{
+    "name": "silver_scd1_template",
+    "parameters": {
+        "dataFlowId": { "type": "string", "required": true },
+        "sourceDatabase": { "type": "string", "required": true },
+        "sourceTable": { "type": "string", "required": true },
+        "sourceViewName": { "type": "string", "required": true },
+        "selectExp": { "type": "list", "required": true },
+        "targetTable": { "type": "string", "required": true },
+        "schemaPath": { "type": "string", "required": true },
+        "keys": { "type": "list", "required": true },
+        "sequenceBy": { "type": "string", "required": true },
+        "exceptColumnList": { "type": "list", "required": true }
+    },
+    "template": {
+        "dataFlowId": "${param.dataFlowId}",
+        "dataFlowGroup": "tpch_silver",
+        "dataFlowType": "standard",
+        "sourceSystem": "tpch",
+        "sourceType": "delta",
+        "sourceViewName": "${param.sourceViewName}",
+        "sourceDetails": {
+            "database": "${param.sourceDatabase}",
+            "table": "${param.sourceTable}",
+            "cdfEnabled": true,
+            "selectExp": "${param.selectExp}"
+        },
+        "mode": "stream",
+        "targetFormat": "delta",
+        "targetDetails": {
+            "database": "{silver_schema}",
+            "table": "${param.targetTable}",
+            "tableProperties": {
+                "delta.enableChangeDataFeed": "true",
+                "delta.enableRowTracking": "true"
+            },
+            "schemaPath": "${param.schemaPath}"
+        },
+        "cdcSettings": {
+            "keys": "${param.keys}",
+            "scd_type": "1",
+            "sequence_by": "${param.sequenceBy}",
+            "except_column_list": "${param.exceptColumnList}",
+            "ignore_null_updates": false
+        }
+    }
+}

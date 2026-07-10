@@ -66,9 +66,16 @@ class QuarantineManager():
         if self.quarantine_mode != QuarantineMode.TABLE:
             return
 
+        # self.target is already catalog.schema-qualified (BaseTargetDelta folds `database` into
+        # `table`). When a quarantine `database` is supplied, derive the name from the UNQUALIFIED
+        # target so TargetFactory qualifies it exactly once; otherwise reuse the qualified target.
+        q_table = self.quarantine_target_details.get("table", None)
+        q_database = self.quarantine_target_details.get("database", None)
         quarantine_details = {
-            "table": f"{self.target}_quarantine" if not self.quarantine_target_details.get("table", None) else self.quarantine_target_details.get("table"),
-            "database": self.quarantine_target_details.get("database", None) if not self.quarantine_target_details.get("table", None) else None,
+            "table": q_table or (
+                f"{self.target.split('.')[-1]}_quarantine" if q_database else f"{self.target}_quarantine"
+            ),
+            "database": None if q_table else q_database,
             "tableProperties": utility.merge_dicts(
                 self.quarantine_target_details.get("tableProperties", {}),
                 self.mandatory_table_properties

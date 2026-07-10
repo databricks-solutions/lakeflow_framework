@@ -1,0 +1,16 @@
+{
+    "dataFlowId": "fct_part_supply",
+    "dataFlowGroup": "tpch_gold",
+    "dataFlowType": "materialized_view",
+    "materializedViews": {
+        "fct_part_supply": {
+            "sqlPath": "fct_part_supply.sql",
+            "tableDetails": {
+                "comment": "Part-supplier supply fact (one row per part-supplier pair) with part and supplier descriptive attributes.",
+                "tableProperties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        }
+    }
+}

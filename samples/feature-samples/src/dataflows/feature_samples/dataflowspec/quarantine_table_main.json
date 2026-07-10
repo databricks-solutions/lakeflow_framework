@@ -30,6 +30,7 @@
     "dataQualityExpectationsPath": "./customer_address_dqe.json",
     "quarantineMode": "table",
     "quarantineTargetDetails": {
-        "targetFormat": "delta"
+        "targetFormat": "delta",
+        "database": "{feature_schema}"
     }
 }

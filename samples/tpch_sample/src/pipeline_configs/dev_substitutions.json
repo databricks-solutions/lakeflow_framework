@@ -1,9 +1,17 @@
 {
     "tokens": {
-        "staging_schema": "main.lakeflow_samples_tpch_staging{logical_env}",
-        "bronze_schema": "main.lakeflow_samples_tpch_bronze{logical_env}",
-        "silver_schema": "main.lakeflow_samples_tpch_silver{logical_env}",
-        "gold_schema": "main.lakeflow_samples_tpch_gold{logical_env}",
-        "staging_source_root": "/Volumes/main/lakeflow_samples_tpch_staging{logical_env}/stg_volume/tpc_h"
+        "staging_schema":                  "main.tpch_sample_staging{logical_env}",
+        "silver_schema":                   "main.tpch_sample_silver{logical_env}",
+        "gold_schema":                     "main.tpch_sample_gold{logical_env}",
+        "staging_volume":                  "stg_volume",
+        "sample_file_location":            "/Volumes/main/tpch_sample_staging{logical_env}/stg_volume",
+        "bronze_reference_data_schema":    "main.tpch_sample_bronze_reference_data{logical_env}",
+        "bronze_crm_schema":               "main.tpch_sample_bronze_crm{logical_env}",
+        "bronze_procurement_schema":       "main.tpch_sample_bronze_procurement{logical_env}",
+        "bronze_vendor_mgmt_schema":       "main.tpch_sample_bronze_vendor_mgmt{logical_env}",
+        "bronze_order_mgmt_schema":        "main.tpch_sample_bronze_order_mgmt{logical_env}",
+        "bronze_order_fulfillment_schema": "main.tpch_sample_bronze_order_fulfillment{logical_env}",
+        "bronze_product_catalog_schema":   "main.tpch_sample_bronze_product_catalog{logical_env}",
+        "bronze_inventory_schema":         "main.tpch_sample_bronze_inventory{logical_env}"
     }
 }

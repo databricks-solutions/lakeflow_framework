@@ -1,0 +1,24 @@
+{
+  "dataFlowId": "quarantine_minimal",
+  "dataFlowGroup": "test_group",
+  "dataFlowType": "standard",
+  "sourceSystem": "test",
+  "sourceType": "delta",
+  "sourceViewName": "v_quarantine_source",
+  "sourceDetails": {
+    "database": "src_db",
+    "table": "src_table"
+  },
+  "mode": "stream",
+  "targetFormat": "delta",
+  "targetDetails": {
+    "database": "tgt_db",
+    "table": "tgt_table"
+  },
+  "dataQualityExpectationsEnabled": false,
+  "quarantineMode": "table",
+  "quarantineTargetDetails": {
+    "targetFormat": "delta",
+    "table": "quarantine_minimal_quarantine"
+  }
+}
