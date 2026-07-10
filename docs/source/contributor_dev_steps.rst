@@ -25,6 +25,8 @@ Development Process
 -------------------
 1. Local Development
    
+   - Follow :doc:`contributor_imports` for ``lakeflow_framework.*`` vs compat
+     shim import rules.
    - Follow coding standards and style guides
        - Ensure the yapf extension is installed and enabled in VS Code (refer to step 2 of :doc:`contributor_dev_env`)
        - Use yapf to format your python code (right click and select 'Format Document With' then select yapf)

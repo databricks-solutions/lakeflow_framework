@@ -1,4 +1,4 @@
-# ADR-0008: Strategy B — Workspace Files-first config and schema resolution
+# ADR-0010: Strategy B — Workspace Files-first config and schema resolution
 
 **Date:** 2026-05-23
 **Status:** Accepted
@@ -8,7 +8,7 @@
 
 ## Context
 
-With the introduction of the `lakeflow_framework` Python package (ADR-0007),
+With the introduction of the `lakeflow_framework` Python package (ADR-0009),
 default config files (`config/default/`) and JSON schemas (`schemas/`) are
 bundled inside the wheel via `importlib.resources`. Previously they lived only
 in Workspace Files at `{framework_path}/lakeflow_framework/config/default/`.

@@ -6,6 +6,7 @@ Framework Development & Contributors
    :caption: Contents:
    
    contributor_dev_env
+   contributor_imports
    contributor_dev_git
    contributor_dev_steps
    contributor_dev_docs

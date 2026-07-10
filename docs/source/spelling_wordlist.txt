@@ -12,6 +12,7 @@ cdcSettings
 cdcSnapshotSettings
 changelog
 cli
+compat
 Cmd
 config
 configs
@@ -31,6 +32,7 @@ dedupes
 deduplication
 deployable
 deps
+deployers
 Del
 Demultiplexing
 dependant
@@ -102,6 +104,7 @@ Subquery
 subdirectory
 subqueries
 subpackage
+subpackages
 tableMigrationDetails
 tableProperties
 targetFormat
