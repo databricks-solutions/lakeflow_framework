@@ -1,0 +1,14 @@
+{
+    "type": "struct",
+    "fields": [
+        {"name": "outage_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "state", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "cause", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "start_time", "type": "timestamp", "nullable": true, "metadata": {}},
+        {"name": "end_time", "type": "timestamp", "nullable": true, "metadata": {}},
+        {"name": "duration_minutes", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "affected_meters", "type": "integer", "nullable": true, "metadata": {}},
+        {"name": "latitude", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "longitude", "type": "double", "nullable": true, "metadata": {}}
+    ]
+}

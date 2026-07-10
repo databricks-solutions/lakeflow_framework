@@ -1,0 +1,47 @@
+{
+    "name": "standard_bronze_ingestion",
+    "parameters": {
+        "dataFlowId": {"type": "string", "required": true},
+        "sourceSystem": {"type": "string", "required": false, "default": "source"},
+        "sourceTable": {"type": "string", "required": true},
+        "targetTable": {"type": "string", "required": true},
+        "schemaPath": {"type": "string", "required": false, "default": ""},
+        "keyColumns": {"type": "list", "required": true},
+        "sequenceBy": {"type": "string", "required": true},
+        "scdType": {"type": "string", "required": false, "default": "1"},
+        "sourceType": {"type": "string", "required": false, "default": "delta"}
+    },
+    "template": {
+        "dataFlowId": "${param.dataFlowId}",
+        "dataFlowGroup": "bronze",
+        "dataFlowType": "standard",
+        "sourceType": "${param.sourceType}",
+        "sourceSystem": "${param.sourceSystem}",
+        "sourceViewName": "v_${param.sourceTable}",
+        "sourceDetails": {
+            "database": "{bronze_schema}",
+            "table": "${param.sourceTable}",
+            "cdfEnabled": true,
+            "schemaPath": "${param.schemaPath}"
+        },
+        "mode": "stream",
+        "targetFormat": "delta",
+        "targetDetails": {
+            "table": "${param.targetTable}",
+            "tableProperties": {
+                "delta.autoOptimize.optimizeWrite": "true",
+                "delta.autoOptimize.autoCompact": "true"
+            }
+        },
+        "cdcSettings": {
+            "keys": "${param.keyColumns}",
+            "sequence_by": "${param.sequenceBy}",
+            "scd_type": "${param.scdType}",
+            "ignore_null_updates": true,
+            "except_column_list": []
+        },
+        "dataQualityExpectationsEnabled": true,
+        "quarantineMode": "off",
+        "quarantineTargetDetails": {}
+    }
+}

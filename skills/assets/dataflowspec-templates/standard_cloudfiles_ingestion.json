@@ -1,0 +1,49 @@
+{
+    "name": "standard_cloudfiles_ingestion",
+    "parameters": {
+        "dataFlowId": {"type": "string", "required": true},
+        "sourceSystem": {"type": "string", "required": false, "default": "files"},
+        "sourcePath": {"type": "string", "required": true},
+        "fileFormat": {"type": "string", "required": false, "default": "csv"},
+        "targetTable": {"type": "string", "required": true},
+        "schemaPath": {"type": "string", "required": false, "default": ""},
+        "keyColumns": {"type": "list", "required": true},
+        "sequenceBy": {"type": "string", "required": true}
+    },
+    "template": {
+        "dataFlowId": "${param.dataFlowId}",
+        "dataFlowGroup": "bronze_files",
+        "dataFlowType": "standard",
+        "sourceType": "cloudFiles",
+        "sourceSystem": "${param.sourceSystem}",
+        "sourceViewName": "v_${param.targetTable}",
+        "sourceDetails": {
+            "path": "${param.sourcePath}",
+            "readerOptions": {
+                "cloudFiles.format": "${param.fileFormat}",
+                "header": "true",
+                "cloudFiles.inferColumnTypes": "true"
+            },
+            "schemaPath": "${param.schemaPath}"
+        },
+        "mode": "stream",
+        "targetFormat": "delta",
+        "targetDetails": {
+            "table": "${param.targetTable}",
+            "tableProperties": {
+                "delta.autoOptimize.optimizeWrite": "true",
+                "delta.autoOptimize.autoCompact": "true"
+            }
+        },
+        "cdcSettings": {
+            "keys": "${param.keyColumns}",
+            "sequence_by": "${param.sequenceBy}",
+            "scd_type": "1",
+            "ignore_null_updates": true,
+            "except_column_list": []
+        },
+        "dataQualityExpectationsEnabled": true,
+        "quarantineMode": "off",
+        "quarantineTargetDetails": {}
+    }
+}

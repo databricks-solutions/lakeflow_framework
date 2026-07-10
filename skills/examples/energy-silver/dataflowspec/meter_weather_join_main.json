@@ -1,0 +1,86 @@
+{
+    "dataFlowId": "meter_weather_enriched",
+    "dataFlowGroup": "energy_silver",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "silver_meter_weather",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "clusterByColumns": ["customer_id", "reading_date"]
+    },
+    "cdcSettings": {
+        "keys": ["meter_id", "reading_timestamp"],
+        "sequence_by": "reading_timestamp",
+        "scd_type": "1",
+        "ignore_null_updates": true,
+        "except_column_list": []
+    },
+    "dataQualityExpectationsEnabled": false,
+    "quarantineMode": "off",
+    "quarantineTargetDetails": {},
+    "flowGroups": [
+        {
+            "flowGroupId": "fg_meter_weather",
+            "stagingTables": {},
+            "flows": {
+                "f_stream_static_join": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "silver_meter_weather",
+                        "sourceView": "v_meter_weather_joined"
+                    },
+                    "views": {
+                        "v_meter_weather_joined": {
+                            "mode": "stream",
+                            "sourceType": "deltaJoin",
+                            "sourceDetails": {
+                                "sources": [
+                                    {
+                                        "alias": "m",
+                                        "database": "{bronze_schema}",
+                                        "table": "bronze_meter_readings",
+                                        "mode": "stream",
+                                        "cdfEnabled": true
+                                    },
+                                    {
+                                        "alias": "c",
+                                        "database": "{bronze_schema}",
+                                        "table": "bronze_customers",
+                                        "mode": "static"
+                                    },
+                                    {
+                                        "alias": "w",
+                                        "database": "{bronze_schema}",
+                                        "table": "bronze_weather",
+                                        "mode": "static"
+                                    }
+                                ],
+                                "joinType": "left",
+                                "joinCondition": "m.customer_id = c.customer_id AND c.state = w.state AND CAST(m.reading_timestamp AS DATE) = w.date",
+                                "selectExp": [
+                                    "m.meter_id",
+                                    "m.customer_id",
+                                    "m.reading_timestamp",
+                                    "CAST(m.reading_timestamp AS DATE) AS reading_date",
+                                    "m.kwh_used",
+                                    "m.voltage",
+                                    "m.power_factor",
+                                    "c.state",
+                                    "c.customer_type",
+                                    "c.rate_plan",
+                                    "c.has_solar",
+                                    "w.temp_high_c",
+                                    "w.temp_low_c",
+                                    "w.humidity_pct",
+                                    "w.wind_speed_kmh"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
