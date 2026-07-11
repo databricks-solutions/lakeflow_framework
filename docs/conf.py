@@ -5,13 +5,19 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-import json
 import os
-import subprocess
 import sys
-from datetime import datetime
 sys.path.append(os.path.abspath("."))  # Ensure the script is discoverable
 from custom_markdown_builder import CustomMarkdownTranslator
+
+# Ensure sphinx-immaterial registers domain synopses before env init.
+from sphinx.domains.python import PythonDomain
+import sphinx.domains.std
+
+PythonDomain.initial_data.setdefault("synopses", {})
+sphinx.domains.std.StandardDomain.initial_data.setdefault("synopses", {})
+import sphinx_immaterial.apidoc.python.synopses  # noqa: F401
+import sphinx_immaterial.apidoc.generic_synopses  # noqa: F401
 
 project = 'Lakeflow Framework'
 copyright = '2026, Databricks'
@@ -36,144 +42,299 @@ extensions = [
     'sphinx_design',
     'myst_parser',
     'sphinx_tabs.tabs',
+    'sphinx_copybutton',
     'custom_markdown_builder',
     "sphinxcontrib.spelling",
 ]
 
 autosectionlabel_prefix_document = True
 
+# MyST — task-list checkboxes (Quick Start prerequisites) and fenced directives
+myst_enable_extensions = [
+    "colon_fence",
+    "tasklist",
+]
+myst_enable_checkboxes = True
+
 templates_path = ['_templates', 'source/_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# Code blocks: line numbers in a Cursor/VS Code-style gutter (table layout).
+html_codeblock_linenos_style = 'table'
+
+# Copy button — WAF-style command snippets only (not dark spec/code panels)
+copybutton_selector = "div.lf-command-block div.highlight pre"
+copybutton_prompt_is_regexp = True
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,6}\.\.\. | {5,8}: "
+copybutton_only_copy_prompt_lines = False
+copybutton_remove_prompts = True
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-import sphinx_rtd_theme
 
 intersphinx_mapping = {
     'rtd': ('https://docs.readthedocs.io/en/stable/', None),
     'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
 }
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_immaterial"
 html_baseurl = "https://databricks-solutions.github.io/lakeflow_framework/"
+html_logo = "source/_static/lff-logo.png"
+html_favicon = "source/_static/lff-logo.png"
 
-# Inject the version switcher into the sidebar.
-html_sidebars = {
-    '**': [
-        'versions.html',
-        'globaltoc.html',
-        'relations.html',
-        'sourcelink.html',
-        'searchbox.html',
+html_theme_options = {
+    "site_url": html_baseurl,
+    "repo_url": "https://github.com/databricks-solutions/lakeflow_framework",
+    "repo_name": "lakeflow_framework",
+    "icon": {
+        "repo": "fontawesome/brands/github",
+    },
+    "features": [
+        "navigation.instant",
+        "navigation.top",
+        "navigation.tabs",
+        "navigation.tabs.sticky",
+        "toc.integrate",
+        "toc.follow",
+        "search.suggest",
+        "content.code.copy",
     ],
+    "version_dropdown": True,
+    "version_json": "versions.json",
+    "palette": [
+        {
+            "media": "(prefers-color-scheme: light)",
+            "scheme": "default",
+            "primary": "red",
+            "accent": "blue-grey",
+            "toggle": {
+                "icon": "material/brightness-7",
+                "name": "Switch to dark mode",
+            },
+        },
+        {
+            "media": "(prefers-color-scheme: dark)",
+            "scheme": "slate",
+            "primary": "red",
+            "accent": "blue-grey",
+            "toggle": {
+                "icon": "material/brightness-4",
+                "name": "Switch to light mode",
+            },
+        },
+    ],
+    "font": {
+        "text": "Roboto",
+        "code": "Roboto Mono",
+    },
 }
 
 html_static_path = ['source/_static']
 html_css_files = [
+    'databricks-theme.css',
     'custom.css',
 ]
 
-# Suppress generic Sphinx "Last updated" text; custom version metadata is shown.
+# Suppress generic Sphinx "Last updated" text.
 html_last_updated_fmt = None
 
-
-def _head_release_date() -> str:
-    try:
-        return subprocess.run(
-            ["git", "log", "-1", "--format=%cs"],
-            cwd=_here,
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
-    except Exception:
-        return ""
+html_context = {
+    "docs_current_version": os.environ.get("DOCS_CURRENT_VERSION", "current"),
+}
 
 
-def _format_release_date(date_str: str) -> str:
-    if not date_str:
-        return ""
-    try:
-        dt = datetime.strptime(date_str, "%Y-%m-%d")
-        return dt.strftime("%B %d, %Y")
-    except ValueError:
-        return date_str
+def _patch_landing_nav(app, pagename, templatename, context, doctree):
+    """Use index.html as the Home landing page; WAF-style section nav."""
+    nav = context.get("nav")
+    if nav is None:
+        return
 
+    from sphinx_immaterial.nav_adapt import MkdocsNavEntry
 
-def _fallback_versions() -> list[dict[str, str]]:
-    head_release_date = _head_release_date()
-    return [
-        {
-            "name": "current",
-            "display_version": release,
-            "url": "../current/index.html",
-            "is_latest": True,
-            "status": "current",
-            "release_date": head_release_date,
-            "release_date_human": _format_release_date(head_release_date),
-        }
+    pathto = context["pathto"]
+    master = app.config.master_doc
+    home_url = pathto(master)
+    is_home = pagename == master
+
+    # Section index pages: non-selectable sidebar title, tab lands on first child.
+    section_index_pages = frozenset({
+        "features",
+        "deploy_framework",
+        "build_pipeline_bundle",
+        "dataflow_spec_reference",
+        "contributor",
+    })
+
+    def _first_leaf(entry):
+        current = entry
+        while current.children:
+            current = current.children[0]
+        return current
+
+    def _docname_from_url(url):
+        if not url or url == "#":
+            return None
+        path = url.split("#", 1)[0]
+        if path.endswith(".html"):
+            return path[:-5]
+        return path
+
+    def apply_section_captions(entries):
+        for entry in entries:
+            if entry.children:
+                apply_section_captions(entry.children)
+            docname = _docname_from_url(entry.url)
+            if docname in section_index_pages and entry.children:
+                leaf = _first_leaf(entry)
+                if leaf.url:
+                    entry.caption_only = True
+                    entry.url = leaf.url
+
+    apply_section_captions(nav)
+
+    def rewrite_home_urls(entries):
+        for entry in entries:
+            if entry.url:
+                path = entry.url.split("#", 1)[0]
+                if path == "home.html" or path.endswith("/home.html"):
+                    fragment = entry.url[len(path):]
+                    entry.url = home_url + fragment
+            rewrite_home_urls(entry.children)
+
+    rewrite_home_urls(nav)
+
+    nav[:] = [
+        entry
+        for entry in nav
+        if not (entry.url and entry.url.split("#", 1)[0] == home_url and "Home" in entry.title)
     ]
 
+    nav.insert(
+        0,
+        MkdocsNavEntry(
+            title_text="Home",
+            url=home_url,
+            children=[],
+            active=is_home,
+            current=is_home,
+            active_or_section_within_active=is_home,
+            caption_only=False,
+        ),
+    )
 
-def _load_versions() -> list[dict[str, str]]:
-    versions_file = os.environ.get("DOCS_VERSIONS_FILE")
-    if not versions_file:
-        default_versions_file = os.path.join(_here, "build", "html", "versions.json")
-        if os.path.exists(default_versions_file):
-            versions_file = default_versions_file
+    if is_home:
+        for entry in nav[1:]:
+            entry.active = False
+            entry.current = False
+            entry.active_or_section_within_active = False
 
-    if not versions_file:
-        return _fallback_versions()
+        page = context.get("page")
+        if page is not None:
+            if "hide" not in page["meta"]:
+                page["meta"]["hide"] = []
+            page["meta"]["hide"].append("navigation")
+            page["meta"]["hide"].append("toc")
 
-    try:
-        with open(versions_file, encoding="utf-8") as f:
-            versions = json.load(f)
-    except FileNotFoundError:
-        return _fallback_versions()
-
-    # For per-version pages, switch from site-root links (e.g. "v1.2.3/") to
-    # sibling paths (e.g. "../v1.2.3/"), which work under GitHub project pages.
-    adapted = []
-    for item in versions:
-        adapted.append(
-            {
-                "name": item["name"],
-                "display_version": item.get("display_version", item["name"].lstrip("v")),
-                "url": f"../{item['name']}/index.html",
-                "is_latest": item.get("is_latest", False),
-                "status": item.get("status", "release"),
-                "release_date": item.get("release_date", ""),
-                "release_date_human": _format_release_date(item.get("release_date", "")),
-            }
-        )
-    return adapted
+    context["nav"] = nav
 
 
-def _current_version_meta(versions: list[dict[str, str]], current: str) -> dict[str, str]:
-    for item in versions:
-        if item["name"] == current:
-            return item
-    return {
-        "name": current,
-        "display_version": current.lstrip("v"),
-        "url": f"../{current}/index.html",
-        "is_latest": current == "current",
-        "status": "current" if current == "current" else "release",
-        "release_date": "",
-        "release_date_human": "",
-    }
+def _enable_codeblock_linenos(app, doctree):
+    """Show line numbers on syntax-highlighted code blocks (except command snippets)."""
+    from docutils import nodes
+
+    for node in doctree.findall(nodes.literal_block):
+        classes = list(node.get('classes', []))
+        if 'lf-command-block' in classes:
+            continue
+        if node.rawsource == node.astext():
+            node['linenos'] = True
 
 
-_docs_current_version = os.environ.get("DOCS_CURRENT_VERSION", "current")
-_docs_versions = _load_versions()
+def _tag_command_blocks(app, doctree):
+    """Quick Start console fences → light WAF-style command blocks with copy button."""
+    from docutils import nodes
 
-html_context = {
-    "docs_current_version": _docs_current_version,
-    "docs_versions": _docs_versions,
-    "docs_current_version_meta": _current_version_meta(_docs_versions, _docs_current_version),
-}
+    if app.env.docname != 'quick_start':
+        return
+
+    for node in doctree.findall(nodes.literal_block):
+        language = node.get('language', '')
+        if language not in ('console', 'bash', 'shell', 'text', ''):
+            continue
+        classes = list(node.get('classes', []))
+        if 'lf-command-block' not in classes:
+            classes.append('lf-command-block')
+            node['classes'] = classes
+        node.attributes.pop('linenos', None)
+
+
+def _table_column_count(table) -> int:
+    from docutils import nodes
+
+    for tgroup in table.findall(nodes.tgroup):
+        cols = tgroup.get('cols')
+        if cols:
+            return int(cols)
+    return 0
+
+
+def _is_page_metadata_table(table) -> bool:
+    """Feature-page metadata strip: 2 cols, Applies To / Configuration Scope rows."""
+    from docutils import nodes
+
+    if _table_column_count(table) != 2:
+        return False
+
+    rows = list(table.findall(nodes.row))
+    if not rows:
+        return False
+
+    entries = list(rows[0].findall(nodes.entry))
+    if not entries:
+        return False
+
+    first_cell = entries[0].astext()
+    return (
+        'Applies To' in first_cell
+        or 'Configuration Scope' in first_cell
+        or 'Databricks Docs' in first_cell
+    )
+
+
+def _mark_content_tables(app, doctree, docname=None):
+    """Tag body list-tables for theme CSS (excludes h1 metadata strips)."""
+    from docutils import nodes
+
+    for table in doctree.findall(nodes.table):
+        if _is_page_metadata_table(table):
+            continue
+
+        classes = list(table.get('classes', []))
+        if 'lf-content-table' not in classes:
+            classes.append('lf-content-table')
+        if 'data' not in classes:
+            classes.append('data')
+
+        col_count = _table_column_count(table)
+        col_class = f'lf-table-cols-{col_count}'
+        if 2 <= col_count <= 6 and col_class not in classes:
+            classes.append(col_class)
+
+        table['classes'] = classes
+
 
 def setup(app):
     app.set_translator("markdown", CustomMarkdownTranslator)
-    app.add_css_file('custom.css')
+
+    def _init_domain_synopses(app):
+        for domain_name in ("py", "std"):
+            domain = app.env.get_domain(domain_name)
+            if "synopses" not in domain.data:
+                domain.data["synopses"] = {}
+
+    app.connect("builder-inited", _init_domain_synopses)
+    app.connect("doctree-read", _tag_command_blocks)
+    app.connect("doctree-read", _enable_codeblock_linenos)
+    app.connect("doctree-read", _mark_content_tables)
+    app.connect("html-page-context", _patch_landing_nav, priority=999)
     #app.add_builder(MarkdownBuilder)

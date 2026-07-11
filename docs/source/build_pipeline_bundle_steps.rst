@@ -70,7 +70,7 @@ A new Pipeline Bundle can be created using the following methods.
   .. note:: 
       This method assumes that:
         * You have the Databricks CLI installed and configured. If not, please refer to the `Databricks CLI documentation <https://docs.databricks.com/dev-tools/cli/index.html>`_.
-        * You have a custom template file that you want to use to initialize the bundle. Refer to the `Databricks CLI documentation <https://https://docs.databricks.com/en/dev-tools/bundles/templates.html#use-a-custom-bundle-template>`_ for more information on how to create a custom template.
+        * You have a custom template file that you want to use to initialize the bundle. Refer to the `Databricks CLI documentation <https://docs.databricks.com/en/dev-tools/bundles/templates.html#use-a-custom-bundle-template>`_ for more information on how to create a custom template.
         * A custom template should be maintained centrally, discuss this with your platform team.
 
   You can create a new DABs bundle from the command line by executing the command:

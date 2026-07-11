@@ -32,16 +32,18 @@ The pipeline builds:
 
 - `main` as `current`
 - selected release tags
+- optional local branches with `--preview`
 - `docs/build/html/versions.json`
 - root redirect `docs/build/html/index.html -> current/index.html`
 
-### 2) Keep selector UI scope minimal and theme-aligned
+Each version is built from that ref's own `docs/conf.py` + `docs/source` (worktree). Historical RTD docs keep RTD; rebranded refs use immaterial.
 
-- Keep the RTD selector at the bottom (`docs/_templates/versions.html`).
-- Keep breadcrumb version/release-date metadata (`docs/_templates/breadcrumbs.html`).
-- Do **not** keep a second custom header selector path.
+### 2) Shared superset `versions.json` + theme-native selectors
 
-This limits ongoing CSS/template overrides and reduces regressions from theme changes.
+- Write one `versions.json` with both mike fields (`version`, `title`, `aliases`) and legacy RTD fields (`name`, `display_version`, `url`, …).
+- RTD refs consume it at build time via `DOCS_VERSIONS_FILE` / `versions.html`.
+- Immaterial refs enable `version_dropdown` and load the same file over HTTP.
+- Do **not** force the building checkout's conf onto every historical version.
 
 ### 3) Place docs tooling under `docs/scripts/`
 

@@ -54,7 +54,7 @@ The framework composes Spark Declarative Pipelines into repeatable, configuratio
 Next steps
 ----------
 
-* Start with :doc:`getting_started`
+* Start with :doc:`quick_start`
 * Review architecture in :doc:`concepts`
 * Explore practical implementations in :doc:`patterns`
 * Review spec-level options in :doc:`dataflow_spec_reference`

@@ -1,0 +1,1191 @@
+/*
+ * Databricks header CTA ("Try Databricks") — bg-cta-red from databricks.com
+ * Base: #EB1600  Hover: #BD2B26  Active/light: #FF5F46
+ */
+:root,
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #eb1600;
+  --md-primary-fg-color--light: #ff5f46;
+  --md-primary-fg-color--dark: #bd2b26;
+  --md-accent-fg-color: #1b3139;
+
+  /* sphinx-design alignment */
+  --sd-color-primary: #eb1600;
+  --sd-color-primary-highlight: #bd2b26;
+  --sd-color-primary-text: #fff;
+  --sd-color-tabs-label-active: #eb1600;
+  --sd-color-tabs-label-hover: #bd2b26;
+  --sd-color-tabs-underline-active: #eb1600;
+  --sd-color-card-border-hover: #eb1600;
+
+  /* sphinx-tabs (JSON/YAML format switchers) */
+  --lf-tabs-divider: #dce0e2;
+  --lf-tabs-border: #dce0e2;
+  --lf-tabs-inactive-bg: #f3f6f6;
+  --lf-tabs-inactive-fg: #566268;
+  --lf-tabs-active-bg: #fff;
+  --lf-tabs-active-fg: #eb1600;
+  --lf-tabs-active-indicator: #eb1600;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #eb1600;
+  --md-primary-fg-color--light: #ff5f46;
+  --md-primary-fg-color--dark: #bd2b26;
+  --md-accent-fg-color: #dce0e2;
+
+  --sd-color-primary: #eb1600;
+  --sd-color-primary-highlight: #ff5f46;
+  --sd-color-primary-text: #fff;
+  --sd-color-tabs-label-active: #ff5f46;
+  --sd-color-tabs-label-hover: #ff5f46;
+  --sd-color-tabs-underline-active: #ff5f46;
+  --sd-color-card-border-hover: #ff5f46;
+
+  --lf-tabs-divider: #3d484d;
+  --lf-tabs-border: #3d484d;
+  --lf-tabs-inactive-bg: rgba(255, 255, 255, 0.06);
+  --lf-tabs-inactive-fg: #a9b3b8;
+  --lf-tabs-active-bg: #243036;
+  --lf-tabs-active-fg: #ff5f46;
+  --lf-tabs-active-indicator: #ff5f46;
+}
+
+/* Landing hero — WAF-style centered light panel */
+.lf-hero {
+  margin: 0 0 2.5rem;
+  padding: 2.5rem 1.5rem 2rem;
+  text-align: center;
+  background: transparent;
+  color: var(--md-default-fg-color, #1b3139);
+}
+
+.lf-hero__title {
+  margin: 0 0 0.5rem;
+  color: #eb1600;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+/* Beat sphinx-immaterial .md-typeset h1 (light gray, 2em) */
+.md-typeset .lf-hero h1.lf-hero__title {
+  margin: 0 0 0.5rem;
+  color: #eb1600;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+/* Hero subtitle — same colour as lead; larger semibold type */
+.md-typeset .lf-hero p.lf-hero__subtitle {
+  max-width: 46rem;
+  margin: 0 auto 1.25rem;
+  color: var(--md-default-fg-color, #1b3139);
+  font-family: var(--md-text-font, "Roboto"), sans-serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  opacity: 0.92;
+}
+
+.md-typeset .lf-hero p.lf-hero__lead {
+  max-width: 46rem;
+  margin: 0 auto 1.75rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--md-default-fg-color, #1b3139);
+  opacity: 0.92;
+}
+
+.lf-hero__lead strong {
+  color: inherit;
+  font-weight: 700;
+}
+
+/* Secondary blurb below hero, above feature cards */
+.md-typeset section:has(> .lf-hero) > p,
+.md-typeset .lf-hero + p {
+  max-width: 46rem;
+  margin: 0 auto 2rem;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--md-default-fg-color, #1b3139);
+}
+
+/* Landing page — full-width content column (no sidebar gutter) */
+body:has(.lf-hero) .md-main__inner {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+body:has(.lf-hero) .md-main__inner .md-sidebar[hidden] {
+  display: none !important;
+}
+
+body:has(.lf-hero) .md-content {
+  width: 100%;
+  max-width: none;
+}
+
+body:has(.lf-hero) .md-content__inner {
+  max-width: none;
+  margin: 0 auto;
+  padding: 0 clamp(0.75rem, 2vw, 1.5rem) 2rem;
+}
+
+.lf-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0 0 2rem;
+}
+
+@media (min-width: 48em) {
+  .lf-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64em) {
+  .lf-feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.lf-feature-card {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-top: 3px solid #eb1600;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.lf-feature-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.lf-feature-card__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: #1b3139;
+}
+
+.lf-feature-card__title {
+  margin: 0;
+  color: #1b3139;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.md-typeset .lf-feature-card h3.lf-feature-card__title {
+  margin: 0;
+  color: #1b3139;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.lf-feature-card__divider {
+  width: 100%;
+  height: 0;
+  margin: 0 0 1rem;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+}
+
+.lf-feature-card__body {
+  flex: 1;
+  margin: 0 0 1.25rem;
+  color: var(--md-default-fg-color, #1b3139);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.md-typeset .lf-feature-card p.lf-feature-card__body {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.lf-feature-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: auto;
+  color: #eb1600;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.lf-feature-card__link:hover {
+  color: #bd2b26;
+  text-decoration: none;
+}
+
+.lf-feature-card__link-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+[data-md-color-scheme="slate"] .lf-feature-card {
+  background: var(--md-default-bg-color, #1e2128);
+  border-color: #3a3f4b;
+  border-top-color: #eb1600;
+}
+
+[data-md-color-scheme="slate"] .lf-feature-card__icon,
+[data-md-color-scheme="slate"] .lf-feature-card__title,
+[data-md-color-scheme="slate"] .md-typeset .lf-feature-card h3.lf-feature-card__title {
+  color: #dce0e2;
+}
+
+[data-md-color-scheme="slate"] .lf-feature-card__divider {
+  border-top-color: #3a3f4b;
+}
+
+.lf-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0;
+  justify-content: center;
+}
+
+.lf-hero-actions .lf-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lf-hero-actions .lf-btn-icon {
+  width: 1.1em;
+  height: 1.1em;
+  flex-shrink: 0;
+}
+
+.lf-hero-actions .lf-btn-icon--after {
+  margin-left: 0.15rem;
+}
+
+.lf-hero-actions .lf-btn-icon--before {
+  margin-right: 0.05rem;
+}
+
+.lf-hero-actions .md-button--primary {
+  background-color: #eb1600;
+  border-color: #eb1600;
+  color: #fff;
+}
+
+.lf-hero-actions .md-button--primary:hover {
+  background-color: #bd2b26;
+  border-color: #bd2b26;
+}
+
+.lf-hero-actions .md-button--secondary {
+  background-color: #fff;
+  border: 1px solid #eb1600;
+  color: #eb1600;
+}
+
+.lf-hero-actions .md-button--secondary:hover {
+  background-color: rgba(235, 22, 0, 0.06);
+  border-color: #bd2b26;
+  color: #bd2b26;
+}
+
+/* Hide duplicate RST section title when landing hero is present */
+.md-typeset section:has(> .lf-hero) > h1,
+.md-content__inner > h1:first-child:has(+ .document .lf-hero),
+.md-content__inner > h1:first-child:has(+ .lf-hero),
+.md-typeset > h1:first-child:has(+ .lf-hero) {
+  display: none;
+}
+
+.md-header {
+  background-color: #eb1600;
+}
+.md-header .md-header__title,
+.md-header .md-header__ellipsis,
+.md-header .md-header__button,
+.md-header .md-icon {
+  color: #fff;
+}
+
+.md-header .md-header__button.md-logo img {
+  height: 1.75rem;
+  width: auto;
+}
+
+.md-header .md-header__button.md-logo svg {
+  display: none;
+}
+
+.md-header__source,
+.md-source,
+.md-source__repository,
+.md-source__fact,
+.md-source__fact--version {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.md-source__icon,
+.md-source__icon svg {
+  color: #fff !important;
+  fill: currentColor !important;
+}
+
+.md-tabs {
+  background-color: #eb1600;
+  color: #fff;
+}
+
+.md-tabs__list {
+  align-items: center;
+  margin: 0 0 0 0.2rem;
+  padding: 0;
+}
+
+.md-tabs__item {
+  display: flex;
+  align-items: center;
+  height: 2.4rem;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+}
+
+.md-tabs__link {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin-top: 0;
+  padding: 0;
+  font-size: 0.7rem;
+  font-weight: 400;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+.md-tabs__link span {
+  display: inline-block;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+/* Nav tabs — WAF-style: active bright white, inactive muted */
+.md-tabs__link {
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-weight: 400;
+  opacity: 1 !important;
+  transition: color 0.15s ease;
+}
+
+.md-tabs__link:hover,
+.md-tabs__link:focus {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.md-tabs__link:visited {
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+
+.md-tabs__item--active .md-tabs__link,
+.md-tabs__link--active {
+  color: #fff !important;
+  font-weight: 400;
+  opacity: 1 !important;
+}
+
+.md-tabs__item--active .md-tabs__link:hover,
+.md-tabs__item--active .md-tabs__link:focus,
+.md-tabs__item--active .md-tabs__link:visited {
+  color: #fff !important;
+}
+
+.md-search__input {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.md-search__input::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.md-search__icon {
+  color: #fff;
+}
+
+/* Primary sidebar — WAF-style: grey links, red active, generous row padding */
+.md-nav--primary .md-nav__link[href] {
+  color: var(--md-default-fg-color, #1b3139);
+}
+
+.md-nav--primary .md-nav__link[href]:visited {
+  color: var(--md-default-fg-color, #1b3139);
+}
+
+.md-nav--primary .md-nav__item .md-nav__link--active,
+.md-nav--primary .md-nav__item--active > .md-nav__link.md-nav__link--active {
+  color: var(--md-primary-fg-color, #eb1600);
+}
+
+.md-nav--primary .md-nav__item .md-nav__link--active:visited,
+.md-nav--primary .md-nav__item--active > .md-nav__link.md-nav__link--active:visited {
+  color: var(--md-primary-fg-color, #eb1600);
+}
+
+.md-nav--primary .md-nav__link[href]:hover,
+.md-nav--primary .md-nav__link[href]:focus-visible {
+  color: var(--md-primary-fg-color, #eb1600);
+}
+
+.md-nav--primary .md-nav__title {
+  color: var(--md-default-fg-color, #1b3139);
+  font-weight: 700;
+}
+
+.md-nav--primary .md-nav__link {
+  margin-top: 0;
+  padding: 0.35rem 0.75rem;
+  scroll-snap-align: none;
+}
+
+.md-nav--primary .md-nav__link > .md-nav__link {
+  padding: 0;
+}
+
+/*
+ * Sidebar scroll — use one scroll container (scrollwrap), not nested nav lists.
+ * Lifted tabs pin nested section nav to a 1fr grid row, which clips long lists
+ * (e.g. Features) before the scrollbar reaches the last items.
+ */
+.md-nav--primary .md-nav__title ~ .md-nav__list {
+  overflow: visible;
+  scroll-snap-type: none;
+  flex: none;
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-header--lifted ~ .md-container .md-sidebar--primary .md-sidebar__scrollwrap {
+    max-height: calc(100vh - 4.8rem - 1rem);
+    margin: 0.5rem 0 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .md-sidebar--primary .md-sidebar__inner {
+    padding-bottom: 2rem;
+  }
+
+  .md-nav--lifted.md-nav--primary .md-nav {
+    position: static;
+    height: auto;
+    display: block;
+  }
+
+  .md-nav--lifted .md-nav[data-md-level="1"] {
+    display: block;
+    grid-template-rows: none;
+  }
+}
+
+/*
+ * Content tables (Option A) — RST list-tables tagged lf-content-table in conf.py.
+ * h1 metadata strips (no thead) are excluded by the build hook.
+ */
+.md-typeset table.lf-content-table {
+  display: table !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 0 1.25rem 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  border: 1px solid rgba(27, 49, 57, 0.12);
+  border-radius: 0.2rem;
+  background-color: var(--md-default-bg-color);
+  overflow-x: auto;
+}
+
+.md-typeset table.lf-content-table > thead > tr > th {
+  background-color: #f4f6f8;
+  color: var(--md-default-fg-color, #1b3139);
+  font-weight: 700;
+  text-align: left;
+  vertical-align: top;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid rgba(27, 49, 57, 0.14);
+  white-space: normal;
+  word-break: normal;
+}
+
+.md-typeset table.lf-content-table > tbody > tr > td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5rem 0.85rem;
+  border-top: 1px solid rgba(27, 49, 57, 0.1);
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.md-typeset table.lf-content-table > tbody > tr:hover {
+  background-color: rgba(27, 49, 57, 0.03);
+}
+
+/* Parameter-style 5-column tables */
+.md-typeset table.lf-table-cols-5 > thead > tr > :nth-child(1),
+.md-typeset table.lf-table-cols-5 > tbody > tr > :nth-child(1) {
+  width: 22%;
+}
+
+.md-typeset table.lf-table-cols-5 > thead > tr > :nth-child(2),
+.md-typeset table.lf-table-cols-5 > tbody > tr > :nth-child(2) {
+  width: 9%;
+}
+
+.md-typeset table.lf-table-cols-5 > thead > tr > :nth-child(3),
+.md-typeset table.lf-table-cols-5 > tbody > tr > :nth-child(3) {
+  width: 9%;
+}
+
+.md-typeset table.lf-table-cols-5 > thead > tr > :nth-child(4),
+.md-typeset table.lf-table-cols-5 > tbody > tr > :nth-child(4) {
+  width: 14%;
+}
+
+.md-typeset table.lf-table-cols-5 > thead > tr > :nth-child(5),
+.md-typeset table.lf-table-cols-5 > tbody > tr > :nth-child(5) {
+  width: 46%;
+}
+
+/* Sphinx basic.css sets span.pre { white-space: nowrap } — force wrap in tables */
+.md-typeset table.lf-content-table > tbody > tr > :nth-child(1) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.md-typeset table.lf-content-table > tbody > tr > :nth-child(1) p,
+.md-typeset table.lf-content-table > tbody > tr > :nth-child(1) code,
+.md-typeset table.lf-content-table > tbody > tr > :nth-child(1) span.pre {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.md-typeset table.lf-table-cols-5 > thead > tr > :nth-child(2),
+.md-typeset table.lf-table-cols-5 > tbody > tr > :nth-child(2),
+.md-typeset table.lf-table-cols-5 > thead > tr > :nth-child(3),
+.md-typeset table.lf-table-cols-5 > tbody > tr > :nth-child(3) {
+  white-space: nowrap;
+}
+
+.md-typeset table.lf-table-cols-4 > thead > tr > :nth-child(1),
+.md-typeset table.lf-table-cols-4 > tbody > tr > :nth-child(1) {
+  width: 16%;
+}
+
+.md-typeset table.lf-table-cols-4 > thead > tr > :nth-child(2),
+.md-typeset table.lf-table-cols-4 > tbody > tr > :nth-child(2) {
+  width: 14%;
+}
+
+.md-typeset table.lf-table-cols-4 > thead > tr > :nth-child(3),
+.md-typeset table.lf-table-cols-4 > tbody > tr > :nth-child(3) {
+  width: 14%;
+}
+
+.md-typeset table.lf-table-cols-4 > thead > tr > :nth-child(4),
+.md-typeset table.lf-table-cols-4 > tbody > tr > :nth-child(4) {
+  width: 56%;
+}
+
+.md-typeset table.lf-table-cols-3 > thead > tr > :nth-child(1),
+.md-typeset table.lf-table-cols-3 > tbody > tr > :nth-child(1) {
+  width: 20%;
+}
+
+.md-typeset table.lf-table-cols-3 > thead > tr > :nth-child(2),
+.md-typeset table.lf-table-cols-3 > tbody > tr > :nth-child(2) {
+  width: 18%;
+}
+
+.md-typeset table.lf-table-cols-3 > thead > tr > :nth-child(3),
+.md-typeset table.lf-table-cols-3 > tbody > tr > :nth-child(3) {
+  width: 62%;
+}
+
+.md-typeset table.lf-table-cols-2 > thead > tr > :nth-child(1),
+.md-typeset table.lf-table-cols-2 > tbody > tr > :nth-child(1) {
+  width: 28%;
+}
+
+.md-typeset table.lf-table-cols-2 > thead > tr > :nth-child(2),
+.md-typeset table.lf-table-cols-2 > tbody > tr > :nth-child(2) {
+  width: 72%;
+}
+
+.md-typeset table.lf-content-table td p {
+  margin: 0 0 0.35em 0;
+}
+
+.md-typeset table.lf-content-table td p:last-child {
+  margin-bottom: 0;
+}
+
+.md-typeset table.lf-content-table td ul,
+.md-typeset table.lf-content-table td ol {
+  margin: 0.25em 0 0;
+  padding-left: 1.2em;
+}
+
+.md-typeset table.lf-content-table td li {
+  margin: 0;
+  padding: 0;
+}
+
+.md-typeset table.lf-content-table td li p {
+  margin: 0;
+  padding: 0.1em 0;
+}
+
+.md-typeset table.lf-content-table tr.highlight-row td,
+.md-typeset .highlight-cell {
+  background-color: green !important;
+  color: white !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table.lf-content-table {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table.lf-content-table > thead > tr > th {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table.lf-content-table > tbody > tr > td {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/*
+ * Feature metadata table (Applies To / Configuration Scope / Databricks Docs).
+ * Targets the list-table rendered immediately after each feature page h1.
+ *
+ * Option B (active): left accent strip, left-aligned.
+ * Option A: shaded panel — grey background (#f4f6f8).
+ * Option C: minimal definition rows.
+ * Bottom dividers (D1–D3) pair with Option C; not used with A/B.
+ */
+.md-typeset section > h1 + table.docutils {
+  display: table;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 1.25rem 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--md-default-bg-color);
+  border: 1px solid rgba(27, 49, 57, 0.12);
+  border-left: 4px solid var(--md-primary-fg-color, #eb1600);
+  border-radius: 0.3rem;
+  overflow: hidden;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.md-typeset section > h1 + table.docutils td {
+  text-align: left !important;
+  vertical-align: top;
+  padding: 0.35rem 0.85rem;
+  border: none;
+  background: transparent;
+}
+
+.md-typeset section > h1 + table.docutils tr:first-child td {
+  padding-top: 0.45rem;
+}
+
+.md-typeset section > h1 + table.docutils tr:last-child td {
+  padding-bottom: 0.45rem;
+}
+
+.md-typeset section > h1 + table.docutils td:first-child {
+  width: 1%;
+  white-space: nowrap;
+  color: var(--md-default-fg-color--light, #526770);
+  font-weight: 500;
+  border-right: 1px solid rgba(27, 49, 57, 0.1);
+  vertical-align: top;
+}
+
+.md-typeset section > h1 + table.docutils td p {
+  margin: 0;
+  text-align: left;
+}
+
+.md-typeset section > h1 + table.docutils td ul {
+  margin: 0;
+  padding-left: 1.15em;
+}
+
+.md-typeset section > h1 + table.docutils td li {
+  margin: 0;
+  padding: 0;
+}
+
+.md-typeset section > h1 + table.docutils td li p {
+  margin: 0;
+  padding: 0.05em 0;
+}
+
+[data-md-color-scheme="slate"] .md-typeset section > h1 + table.docutils {
+  border-color: rgba(255, 255, 255, 0.12);
+  border-left-color: var(--md-primary-fg-color, #eb1600);
+}
+
+[data-md-color-scheme="slate"] .md-typeset section > h1 + table.docutils td:first-child {
+  border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Option A — shaded panel:
+.md-typeset section > h1 + table.docutils {
+  background-color: #f4f6f8;
+  border: 1px solid rgba(27, 49, 57, 0.14);
+  border-left: 1px solid rgba(27, 49, 57, 0.14);
+}
+*/
+
+/* Option C + bottom dividers — minimal rows:
+.md-typeset section > h1 + table.docutils {
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+.md-typeset section > h1 + table.docutils td {
+  padding: 0.45rem 0;
+}
+.md-typeset section > h1 + table.docutils tr + tr td {
+  border-top: 1px solid rgba(27, 49, 57, 0.1);
+}
+.md-typeset section > h1 + table.docutils td:first-child {
+  border-right: none;
+  padding-right: 1.5rem;
+}
+  D1: width 100%; padding-bottom 1rem; border-bottom 1px grey
+  D2: width 100%; padding-bottom 1rem; border-bottom 2px red
+  D3: width fit-content; padding-bottom 0.75rem; border-bottom 1px grey
+*/
+
+/* Fenced / highlighted code blocks - Cursor editor panel */
+.md-typeset div[class*="highlight-"].notranslate {
+  display: block;
+  width: 100%;
+  margin: 0.75em 0;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background-color: #1a1a1a;
+}
+
+.md-typeset div[class*="highlight-"].notranslate .highlight {
+  background-color: #1a1a1a !important;
+  margin: 0;
+}
+
+/* Beat pygments.css default white background */
+.md-typeset div[class*="highlight-"] .highlight {
+  background: #1a1a1a !important;
+}
+
+.md-typeset div[class*="highlight-"] .highlight,
+.md-typeset div[class*="highlight-"] .highlighttable,
+.md-typeset .highlighttable .code {
+  --lf-code-font-size: 0.62rem;
+  --md-code-bg-color: #1a1a1a;
+  --md-code-fg-color: #d4d4d4;
+  --md-code-hl-keyword-color: #9cdcfe;
+  --md-code-hl-string-color: #ce5cce;
+  --md-code-hl-number-color: #b5cea8;
+  --md-code-hl-special-color: #ce5cce;
+  --md-code-hl-function-color: #dcdcaa;
+  --md-code-hl-constant-color: #d4d4d4;
+  --md-code-hl-name-color: #d4d4d4;
+  --md-code-hl-operator-color: #d4d4d4;
+  --md-code-hl-punctuation-color: #ffd700;
+  --md-code-hl-comment-color: #6a9955;
+  --md-code-hl-generic-color: #858585;
+  --md-code-hl-variable-color: #9cdcfe;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--lf-code-font-size);
+  line-height: 1.35;
+  background-color: #1a1a1a !important;
+}
+
+.md-typeset .highlight .highlighttable {
+  display: flow-root;
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background-color: #1a1a1a;
+}
+
+.md-typeset .highlight .highlighttable tbody,
+.md-typeset .highlight .highlighttable tr {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.md-typeset .highlight .highlighttable td {
+  display: block;
+  padding: 0;
+  border: none;
+  vertical-align: top;
+}
+
+.md-typeset .highlight .highlighttable td.linenos {
+  flex: 0 0 auto;
+  min-width: 2.75em;
+  background-color: #1a1a1a;
+  border-right: 1px solid #2d2d2d;
+  padding: 0.5em 0.55em 0.5em 0.65em;
+  user-select: none;
+  text-align: right;
+}
+
+.md-typeset .highlight .highlighttable td.linenos pre,
+.md-typeset .highlight .highlighttable td.linenos .linenodiv pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: #6e7681;
+  font-size: var(--lf-code-font-size, 0.62rem);
+  line-height: 1.35;
+  font-family: inherit;
+}
+
+.md-typeset .highlight .highlighttable td.linenos .normal {
+  color: #6e7681;
+}
+
+.md-typeset .highlight .highlighttable td.code {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.md-typeset .highlight .highlighttable td.code pre {
+  margin: 0;
+  padding: 0.5em 0.75em;
+  background: transparent;
+  color: #d4d4d4;
+  font-size: var(--lf-code-font-size, 0.62rem);
+  line-height: 1.35;
+  font-family: inherit;
+}
+
+.md-typeset div[class*="highlight-"] pre,
+.md-typeset div[class*="highlight-"] .highlight pre {
+  font-size: var(--lf-code-font-size, 0.62rem);
+  line-height: 1.35;
+  background-color: #1a1a1a;
+  color: #d4d4d4;
+  font-family: inherit;
+}
+
+.md-typeset div[class*="highlight-"] pre span,
+.md-typeset .highlighttable td.code pre span {
+  font-size: inherit;
+  line-height: inherit;
+  font-family: inherit;
+}
+
+.md-typeset pre > code {
+  font-size: inherit;
+  padding: 0.5em 0.75em;
+  background-color: transparent;
+  color: inherit;
+  font-family: inherit;
+}
+
+.md-typeset div[class*="highlight-"] [data-linenos]:before {
+  color: #6e7681 !important;
+  box-shadow: inset -1px 0 #2d2d2d !important;
+  background-color: #1a1a1a !important;
+  font-size: var(--lf-code-font-size, 0.62rem);
+}
+
+.md-typeset div[class*="highlight-"] .highlight .nt,
+.md-typeset .highlighttable .highlight .nt {
+  color: #9cdcfe;
+}
+
+.md-typeset div[class*="highlight-"] .highlight .s2,
+.md-typeset div[class*="highlight-"] .highlight .s1,
+.md-typeset div[class*="highlight-"] .highlight .ss,
+.md-typeset .highlighttable .highlight .s2,
+.md-typeset .highlighttable .highlight .s1,
+.md-typeset .highlighttable .highlight .ss {
+  color: #ce5cce;
+}
+
+.md-typeset div[class*="highlight-"] .highlight .kc,
+.md-typeset .highlighttable .highlight .kc {
+  color: #d4d4d4;
+}
+
+.md-typeset div[class*="highlight-"] .highlight .mi,
+.md-typeset div[class*="highlight-"] .highlight .mf,
+.md-typeset .highlighttable .highlight .mi,
+.md-typeset .highlighttable .highlight .mf {
+  color: #b5cea8;
+}
+
+.md-typeset div[class*="highlight-"] .highlight .p,
+.md-typeset .highlighttable .highlight .p {
+  color: #ffd700;
+}
+
+.md-typeset div[class*="highlight-"] .highlight .w,
+.md-typeset .highlighttable .highlight .w {
+  color: transparent;
+}
+
+.md-typeset .highlight span.filename {
+  font-size: 0.62rem;
+  background-color: #252526;
+  color: #cccccc;
+  border-bottom-color: #2d2d2d;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/*
+ * Command snippets (Quick Start) — WAF / MkDocs Material-style light panels.
+ * Scoped via .lf-command-block; dark Cursor panels stay default elsewhere.
+ */
+.md-typeset div.lf-command-block[class*="highlight-"].notranslate {
+  display: block;
+  width: 100%;
+  margin: 0.35em 0 0.5em;
+  padding: 0;
+  border: none;
+  border-radius: 0.2rem;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  box-shadow: none;
+}
+
+.md-typeset ol li div.lf-command-block[class*="highlight-"].notranslate,
+.md-typeset ul li div.lf-command-block[class*="highlight-"].notranslate {
+  margin-top: 0.25em;
+}
+
+.md-typeset div.lf-command-block[class*="highlight-"].notranslate .highlight,
+.md-typeset div.lf-command-block .highlighttable,
+.md-typeset div.lf-command-block .highlighttable .code {
+  --lf-command-font-size: 0.75rem;
+  --md-code-bg-color: #f5f5f5;
+  --md-code-fg-color: #364152;
+  background-color: #f5f5f5 !important;
+  font-family: var(--md-code-font, "Roboto Mono"), ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, monospace;
+  font-size: var(--lf-command-font-size);
+  line-height: 1.4;
+}
+
+.md-typeset div.lf-command-block .highlight .highlighttable {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background-color: #f5f5f5;
+}
+
+.md-typeset div.lf-command-block .highlight .highlighttable tbody,
+.md-typeset div.lf-command-block .highlight .highlighttable tr {
+  display: block;
+  width: 100%;
+}
+
+.md-typeset div.lf-command-block .highlight .highlighttable td.linenos {
+  display: none !important;
+}
+
+.md-typeset div.lf-command-block .highlight .highlighttable td.code {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.md-typeset div.lf-command-block pre,
+.md-typeset div.lf-command-block .highlight pre,
+.md-typeset div.lf-command-block .highlight .go,
+.md-typeset div.lf-command-block .highlight span {
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  color: #364152 !important;
+  font-size: var(--lf-command-font-size, 0.75rem);
+  line-height: 1.4;
+  font-family: inherit;
+  font-weight: 400;
+  white-space: pre;
+}
+
+.md-typeset div.lf-command-block pre,
+.md-typeset div.lf-command-block .highlight pre {
+  padding: 0.55em 0.75em;
+}
+
+.md-typeset div.lf-command-block .highlight {
+  position: relative;
+  margin: 0;
+  background: #f5f5f5 !important;
+  border: none;
+  box-shadow: none;
+}
+
+/* One copy control — hide immaterial duplicate on command snippets */
+.md-typeset div.lf-command-block .md-clipboard {
+  display: none !important;
+}
+
+/* Copy button — WAF-style: borderless icon, always visible */
+.md-typeset div.lf-command-block .highlight button.copybtn {
+  opacity: 0.65;
+  top: 0.3em;
+  right: 0.3em;
+  width: 1.5em;
+  height: 1.5em;
+  padding: 0;
+  border: none;
+  border-radius: 0.2rem;
+  background-color: transparent;
+  color: #8b949e;
+  box-shadow: none;
+  transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.md-typeset div.lf-command-block .highlight:hover button.copybtn {
+  opacity: 0.85;
+}
+
+.md-typeset div.lf-command-block .highlight button.copybtn:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.65);
+  color: #57606a;
+}
+
+.md-typeset div.lf-command-block .highlight button.copybtn.success {
+  opacity: 1;
+  background-color: transparent;
+  border: none;
+  color: var(--md-primary-fg-color, #eb1600);
+}
+
+/* Task lists — WAF-style prerequisite checkboxes (Quick Start) */
+.md-typeset ul.contains-task-list {
+  margin-left: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.md-typeset .task-list-item {
+  margin-left: 0;
+  padding-left: 0;
+  list-style-type: none;
+}
+
+.md-typeset .task-list-item-checkbox {
+  accent-color: var(--md-primary-fg-color, #eb1600);
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Sphinx-tabs — compact sizing + Databricks colour scheme */
+.md-typeset .sphinx-tabs {
+  margin-bottom: 0.75rem;
+}
+
+.md-typeset [role="tablist"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--lf-tabs-divider);
+}
+
+.md-typeset .sphinx-tabs-tab {
+  font-size: 0.75rem;
+  line-height: 1.25;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px 4px 0 0;
+  color: var(--lf-tabs-inactive-fg);
+  background-color: var(--lf-tabs-inactive-bg);
+  border: 1px solid var(--lf-tabs-border);
+  border-bottom: none;
+  font-weight: 500;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.md-typeset .sphinx-tabs-tab:hover {
+  color: var(--md-primary-fg-color--dark, #bd2b26);
+}
+
+.md-typeset .sphinx-tabs-tab[aria-selected="true"] {
+  margin: 0;
+  color: var(--lf-tabs-active-fg);
+  background-color: var(--lf-tabs-active-bg);
+  border-color: var(--lf-tabs-border);
+  border-bottom: 2px solid var(--lf-tabs-active-indicator);
+  font-weight: 600;
+}
+
+.md-typeset .sphinx-tabs-tab:focus-visible {
+  outline: 2px solid var(--md-primary-fg-color);
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+.md-typeset .sphinx-tabs-panel {
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--lf-tabs-border);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+
+.md-typeset .sphinx-tabs-panel.code-tab {
+  padding: 0;
+}
+
+/* Code blocks inside tabs — flush with panel, no outer gutter */
+.md-typeset .sphinx-tabs-panel div[class*="highlight-"].notranslate {
+  margin: 0;
+  border-radius: 0;
+  width: 100%;
+}
+
+.md-typeset .sphinx-tabs-panel div[class*="highlight-"].notranslate .highlight,
+.md-typeset .sphinx-tabs-panel .highlighttable {
+  border-radius: 0;
+}

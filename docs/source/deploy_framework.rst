@@ -6,3 +6,4 @@ Deploy the Framework
 
    deploy_framework_bundle
    deploy_ci_cd
+   deploy_samples.md
