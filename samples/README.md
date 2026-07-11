@@ -7,7 +7,7 @@ The Framework comes with extensive samples that demonstrate the use of the frame
 | **`feature-samples`** | Demonstrates every framework feature in isolation using a single `{namespace}_feature` schema. The simplest entry point. |
 | **`pattern-samples`** | End-to-end medallion architecture patterns (bronze → silver → gold) across multiple schemas. Includes multi-source streaming, stream-static joins, CDC from snapshot sources, and gold-layer materialized views. |
 | **`yaml_sample`** | Demonstrates that data flow specs can be written in YAML format instead of JSON. Contains YAML equivalents of basic specs. |
-| **`tpch_sample`** | The most comprehensive end-to-end reference, built on the TPC-H dataset in the UC samples catalog. Covers multi-source schema-on-read bronze, conformed/history-tracked silver (SCD2 + SCD1 + append-only facts with DQ quarantine), and a governed gold star schema with surrogate keys, point-in-time joins, pre-aggregated MVs, and UC metric views. Uses template specs and a three-run incremental simulation. See its [README](tpch_sample/README.md). |
+| **`tpch_sample`** | The most comprehensive end-to-end reference, built on the TPC-H dataset in the UC samples catalog. Covers multi-source schema-on-read bronze, conformed/history-tracked silver (SCD2 + SCD1 + append-only facts with DQ quarantine), and a governed gold star schema with surrogate keys, point-in-time joins, pre-aggregated MVs, and UC metric views. Uses template specs and a three-run incremental simulation. See its README.md |
 
 ## Deploying the Samples
 
@@ -21,7 +21,7 @@ The samples can be deployed using the scripts located in the `samples` directory
 ### Prerequisites
 
 * Databricks CLI installed and configured
-* Lakeflow framework already deployed to your workspace (see [Deploying the Framework](../docs/source/deploy_framework.rst))
+* Lakeflow framework already deployed to your workspace (see {doc}`deploy_framework`)
 
 ### Interactive Deployment
 
@@ -156,4 +156,4 @@ It demonstrates a wide range of framework capabilities together, including:
 * **Template specs** that collapse repetitive bronze and silver flows into reusable templates.
 * **A three-run incremental simulation** covering SCD changes, fact growth, a backdated out-of-order correction, and ongoing quarantine.
 
-To deploy it, use the `deploy_tpch.sh` script following the same methods described above. See the sample's own [README](tpch_sample/README.md) for the full walkthrough, design choices, and demo flow.
+To deploy it, use the `deploy_tpch.sh` script following the same methods described above. See the sample's own See its README.md for the full walkthrough, design choices, and demo flow.

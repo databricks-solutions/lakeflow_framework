@@ -43,7 +43,7 @@ Understanding both modes is important when writing or using a contrib module.
        because ``src/`` is.  However, any *external* dependencies declared by
        the contrib module still need to be installed separately — they are not
        bundled with the flat deploy.  Install them as cluster libraries or
-       via ``src/local/libraries/`` (see :doc:`/source/feature_python_extensions`).
+       via ``src/local/libraries/`` (see :doc:`feature_python_extensions`).
    * - **Wheel + local overlay**
      - Wheel installed, plus ``framework.sourcePath`` set for
        ``src/local/config/`` sparse overrides.
