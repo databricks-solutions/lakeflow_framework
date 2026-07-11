@@ -11,6 +11,9 @@ Schema Definitions
    * - **Databricks Docs:**
      - NA
 
+Overview
+--------
+
 The Framework supports the definition of schemas in the following ways:
 
 * Schema on Read:

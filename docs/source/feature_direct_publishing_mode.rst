@@ -9,8 +9,11 @@ Direct Publishing Mode
    * - **Configuration Scope:**
      - :bdg-success:`Pipeline` :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     -  - https://docs.databricks.com/aws/en/dlt/target-schema
-        - https://docs.databricks.com/aws/en/dlt/configure-pipeline
+     -  - `Set the target catalog and schema <https://docs.databricks.com/aws/en/dlt/target-schema>`_
+        - `Configure pipelines <https://docs.databricks.com/aws/en/dlt/configure-pipeline>`_
+
+Overview
+--------
 
 .. Note::
   Direct publishing mode should be enabled by default for all new pipelines by specifying the ``schema`` field in the pipeline resource file. Sample pipeline have been updated to have direct publishing mode enabled. To enable direct publishing mode on existing pipelines, the pipeline needs to be destroyed and redeployed with the ``target`` field updated to ``schema`` in the pipeline resource file.

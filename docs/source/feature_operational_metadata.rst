@@ -11,6 +11,9 @@ Operational Metadata
    * - **Databricks Docs:**
      - NA
 
+Overview
+--------
+
 Operational metadata is data that describes a given data load and pipeline execution, for example:
 
 * Ingestion date

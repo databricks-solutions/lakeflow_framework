@@ -11,6 +11,9 @@ Data Quality - Quarantine
    * - **Databricks Docs:**
      - NA
 
+Overview
+--------
+
 The Lakeflow Framework provides a quarantine feature that allows you to quarantine records that violate defined pipeline expectations. 
 
 There are multiple ways to handle quarantined records and these can be configured using the ``quarantineMode`` property in the Data Flow Spec. Available options are:

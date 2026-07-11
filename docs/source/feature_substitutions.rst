@@ -11,6 +11,9 @@ Substitutions
    * - **Databricks Docs:**
      - NA
 
+Overview
+--------
+
 When deploying pipeline bundles to different environments (dev, sit, prod), there will normally be a need to cater for differences in resource names (e.g. schema names, storage accounts, url's ) across environments. The substitutions feature caters for this by allowing you to substitute values in your Data Flow Spec and SQL scripts, with values defined in a configuration file.
 
 Substitutions can be configured in two ways:

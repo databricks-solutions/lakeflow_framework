@@ -9,7 +9,10 @@ Soft Deletes
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/en/delta-live-tables/python-ref.html#change-data-capture-from-a-change-feed-with-python-in-delta-live-tables
+     - `Change data capture from a change feed (Python) <https://docs.databricks.com/en/delta-live-tables/python-ref.html#change-data-capture-from-a-change-feed-with-python-in-delta-live-tables>`_
+
+Overview
+--------
 
 The Lakeflow Framework provides support for soft deletes when processing change data capture (CDC) events using the ``apply_changes()`` function. This allows you to handle DELETE operations in your CDC data while maintaining a history of deleted records.
 

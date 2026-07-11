@@ -4,9 +4,11 @@
 Build strategy:
 - Always build ``main`` as ``current``.
 - Build selected release tags from docs/scripts/select_versions.py.
-- Each version is built with **that ref's own** ``docs/conf.py`` and ``docs/source``
-  (so historical RTD docs stay RTD; rebranded branches use immaterial).
-- ``--preview`` also builds local branches into the version menu.
+- ``current`` and release tags use **main's** ``docs/conf.py`` (and templates)
+  with that ref's ``docs/source``, so the RTD version selector stays available
+  even for tags that predate versioning UI.
+- ``--preview`` builds the current branch as ``local-branch-preview`` using
+  **that branch's** conf + source (e.g. immaterial rebrand).
 - Write per-version output under docs/build/html/<version>/.
 - Generate docs/build/html/versions.json as a **superset** manifest consumed by
   both sphinx-immaterial (mike fields) and legacy RTD ``versions.html``.
@@ -23,6 +25,8 @@ import sys
 from pathlib import Path
 
 DOCS_BASEURL = "https://databricks-solutions.github.io/lakeflow_framework/"
+PREVIEW_VERSION_NAME = "local-branch-preview"
+MAIN_CONF_WORKTREE = "_conf_main"
 
 
 def _run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
@@ -43,14 +47,11 @@ def _selected_tags(repo_root: Path) -> list[str]:
     return json.loads(output) if output else []
 
 
-def _list_preview_branches(repo_root: Path) -> list[str]:
-    """Local branches to include in preview builds (excludes main; current is main)."""
-    raw = _run_capture(
-        ["git", "for-each-ref", "--format=%(refname:short)", "refs/heads"],
-        cwd=repo_root,
-    )
-    branches = [line.strip() for line in raw.splitlines() if line.strip()]
-    return [b for b in branches if b != "main"]
+def _current_branch(repo_root: Path) -> str:
+    try:
+        return _run_capture(["git", "branch", "--show-current"], cwd=repo_root)
+    except subprocess.CalledProcessError:
+        return ""
 
 
 def _safe_remove(path: Path) -> None:
@@ -109,6 +110,51 @@ def _superset_versions(links: list[dict[str, str]]) -> list[dict[str, object]]:
     return payload
 
 
+def _ensure_worktree(
+    *,
+    repo_root: Path,
+    worktrees_root: Path,
+    name: str,
+    ref: str,
+) -> Path:
+    path = worktrees_root / name
+    if path.exists():
+        return path
+    _run(["git", "worktree", "add", "--detach", str(path), ref], cwd=repo_root)
+    return path
+
+
+def _sphinx_build(
+    *,
+    repo_root: Path,
+    conf_dir: Path,
+    source_dir: Path,
+    out_dir: Path,
+    version_name: str,
+    versions_file: Path,
+) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    env["DOCS_CURRENT_VERSION"] = version_name
+    # Legacy RTD conf.py loads the shared manifest at build time.
+    env["DOCS_VERSIONS_FILE"] = str(versions_file)
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "sphinx",
+            "-b",
+            "html",
+            "-c",
+            str(conf_dir),
+            str(source_dir),
+            str(out_dir),
+        ],
+        cwd=repo_root,
+        env=env,
+    )
+
+
 def _build_ref(
     *,
     repo_root: Path,
@@ -117,37 +163,52 @@ def _build_ref(
     versions_file: Path,
     ref: str,
     version_name: str,
+    conf_from_main: bool,
 ) -> None:
-    """Build from a git ref using that ref's own docs conf + source."""
-    worktree_path = worktrees_root / _normalize_name(version_name)
-    _run(["git", "worktree", "add", "--detach", str(worktree_path), ref], cwd=repo_root)
-    try:
-        out_dir = output_root / version_name
-        out_dir.mkdir(parents=True, exist_ok=True)
-        env = os.environ.copy()
-        env["DOCS_CURRENT_VERSION"] = version_name
-        # Legacy RTD conf.py loads the shared manifest at build time.
-        env["DOCS_VERSIONS_FILE"] = str(versions_file)
-        conf_dir = worktree_path / "docs"
-        source_dir = conf_dir / "source"
-        print(f"Building docs for {ref} -> {version_name}", file=sys.stderr)
-        _run(
-            [
-                sys.executable,
-                "-m",
-                "sphinx",
-                "-b",
-                "html",
-                "-c",
-                str(conf_dir),
-                str(source_dir),
-                str(out_dir),
-            ],
-            cwd=repo_root,
-            env=env,
+    """Build one version folder.
+
+    When ``conf_from_main`` is True, use main's docs conf/templates with this
+    ref's source (keeps the RTD version selector on historical tags).
+    Preview uses the **working tree** conf + source.
+    """
+    if version_name == PREVIEW_VERSION_NAME:
+        # Working tree: pick up local conf.py / theme edits immediately.
+        source_wt = repo_root
+        conf_dir = repo_root / "docs"
+        conf_label = f"{ref} (working tree)"
+    else:
+        source_wt = _ensure_worktree(
+            repo_root=repo_root,
+            worktrees_root=worktrees_root,
+            name=_normalize_name(version_name),
+            ref=ref,
         )
-    finally:
-        _run(["git", "worktree", "remove", "--force", str(worktree_path)], cwd=repo_root)
+        if conf_from_main:
+            conf_wt = _ensure_worktree(
+                repo_root=repo_root,
+                worktrees_root=worktrees_root,
+                name=MAIN_CONF_WORKTREE,
+                ref="main",
+            )
+            conf_dir = conf_wt / "docs"
+            conf_label = "main"
+        else:
+            conf_dir = source_wt / "docs"
+            conf_label = ref
+
+    source_dir = source_wt / "docs" / "source"
+    print(
+        f"Building docs for {ref} -> {version_name} (conf={conf_label})",
+        file=sys.stderr,
+    )
+    _sphinx_build(
+        repo_root=repo_root,
+        conf_dir=conf_dir,
+        source_dir=source_dir,
+        out_dir=output_root / version_name,
+        version_name=version_name,
+        versions_file=versions_file,
+    )
 
 
 def main() -> None:
@@ -156,8 +217,9 @@ def main() -> None:
         "--preview",
         action="store_true",
         help=(
-            "Also build local branches into the version menu. "
-            "``current`` remains ``main``; select a feature branch to preview its theme/IA."
+            "Also build the current git branch as ``local-branch-preview`` "
+            "using that branch's own conf/source. "
+            "``current`` and release tags keep main's conf (RTD selector)."
         ),
     )
     args = parser.parse_args()
@@ -178,8 +240,19 @@ def main() -> None:
     versions: list[dict[str, str]] = [{"name": "current", "ref": "main"}]
     versions.extend({"name": t, "ref": t} for t in tags)
     if args.preview:
-        for branch in _list_preview_branches(repo_root):
-            versions.append({"name": _normalize_name(branch), "ref": branch})
+        preview_branch = _current_branch(repo_root)
+        if not preview_branch:
+            print(
+                "Warning: --preview ignored (detached HEAD; no current branch).",
+                file=sys.stderr,
+            )
+        elif preview_branch == "main":
+            print(
+                "Warning: --preview ignored (already on main; current covers it).",
+                file=sys.stderr,
+            )
+        else:
+            versions.append({"name": PREVIEW_VERSION_NAME, "ref": preview_branch})
 
     # De-duplicate while preserving order.
     deduped: list[dict[str, str]] = []
@@ -193,7 +266,11 @@ def main() -> None:
     links = []
     for item in deduped:
         is_current = item["name"] == "current"
-        display_version = _version_for_ref(repo_root, item["ref"], item["name"].lstrip("v"))
+        is_preview = item["name"] == PREVIEW_VERSION_NAME
+        if is_preview:
+            display_version = f"{PREVIEW_VERSION_NAME} ({item['ref']})"
+        else:
+            display_version = _version_for_ref(repo_root, item["ref"], item["name"].lstrip("v"))
         links.append(
             {
                 "name": item["name"],
@@ -221,8 +298,6 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    # Build every selected ref (including preview branches filtered out of the
-    # dropdown by the current-version de-dupe — still useful as named folders).
     for item in deduped:
         _build_ref(
             repo_root=repo_root,
@@ -231,7 +306,16 @@ def main() -> None:
             versions_file=versions_file,
             ref=item["ref"],
             version_name=item["name"],
+            conf_from_main=item["name"] != PREVIEW_VERSION_NAME,
         )
+
+    # Immaterial's mike client resolves version_json relative to the version
+    # folder. Copy the site-root manifest into each version dir so both
+    # ``versions.json`` and ``../versions.json`` resolve successfully.
+    for item in deduped:
+        dest = output_root / item["name"] / "versions.json"
+        if (output_root / item["name"]).is_dir():
+            shutil.copy2(versions_file, dest)
 
     # Root redirect for GitHub Pages.
     index_html = """<!DOCTYPE html>

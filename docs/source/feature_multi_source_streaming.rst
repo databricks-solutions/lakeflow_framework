@@ -9,7 +9,10 @@ Multi-Source Streaming
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/en/delta-live-tables/flows.html
+     - `Load and process data incrementally with Lakeflow pipeline flows <https://docs.databricks.com/en/delta-live-tables/flows.html>`_
+
+Overview
+--------
 
 Delta Live Tables supports processing that requires reading data from multiple streaming sources to update a single streaming table via:
 

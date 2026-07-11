@@ -9,7 +9,10 @@ Supported Target Types
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/en/delta-live-tables/python-ref.html
+     - `Lakeflow pipelines Python language reference <https://docs.databricks.com/en/delta-live-tables/python-ref.html>`_
+
+Overview
+--------
 
 The Lakeflow Framework supports multiple target types. 
 

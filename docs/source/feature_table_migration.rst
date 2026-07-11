@@ -11,6 +11,9 @@ Table Migration
    * - **Databricks Docs:**
      - NA
 
+Overview
+--------
+
 The table migration feature allows you to migrate data from existing Delta or SDP tables into a new Spark Declarative Pipeline. It supports both HMS and UC catalogs.
 
 General Concepts

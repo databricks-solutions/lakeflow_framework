@@ -9,7 +9,10 @@ Spark Configuration
    * - **Configuration Scope:**
      - :bdg-info:`Global` :bdg-success:`Pipeline`
    * - **Databricks Docs:**
-     - https://spark.apache.org/docs/latest/configuration.html
+     - `Apache Spark Configuration <https://spark.apache.org/docs/latest/configuration.html>`_
+
+Overview
+--------
 
 The Spark Configuration feature allows you to define and manage Spark configurations either globally at framework level across all pipelines or at pipeline bundle level. 
 

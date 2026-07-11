@@ -11,6 +11,9 @@ Logical Environments
    * - **Databricks Docs:**
      - NA
 
+Overview
+--------
+
 The logical environment feature allows you to specify additional naming separation for Pipeline and Unity Catalog resources. This allows for fine grain separation of resources when working with larger teams in development and SIT environments. 
 
 The logical environment is appended as a suffix to the Pipeline name and the Unity Catalog resource names at Bundle deployment time.

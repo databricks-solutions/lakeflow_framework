@@ -9,8 +9,8 @@ Python Code, Libraries & Init Scripts
    * - **Configuration Scope:**
      - :bdg-info:`Pipeline`
    * - **Databricks Docs:**
-     - - https://docs.databricks.com/aws/en/ldp/developer/external-dependencies
-       - https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment
+     - - `Manage Python dependencies for pipelines <https://docs.databricks.com/aws/en/ldp/developer/external-dependencies>`_
+       - `Pipeline environment <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_
 
 Overview
 --------

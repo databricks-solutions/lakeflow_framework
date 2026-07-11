@@ -9,8 +9,11 @@ Liquid Clustering
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/en/delta/clustering.html
-     
+     - `Use liquid clustering for tables <https://docs.databricks.com/en/delta/clustering.html>`_
+
+Overview
+--------
+
 Liquid clustering is a Databricks feature that replaces traditional table partitioning and ``ZORDER`` to simplify data layout decisions and optimize query performance. It provides flexibility to redefine clustering keys without rewriting existing data, allowing data layout to evolve alongside analytic needs over time.
 
 Use Cases

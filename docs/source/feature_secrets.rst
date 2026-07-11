@@ -9,7 +9,7 @@ Secrets Management
    * - **Configuration Scope:**
      - :bdg-info:`Pipeline`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/en/security/secrets
+     - `Secret management <https://docs.databricks.com/en/security/secrets>`_
 
 Overview
 --------

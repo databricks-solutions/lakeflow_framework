@@ -9,7 +9,10 @@ Mandatory Table Properties
    * - **Configuration Scope:**
      - :bdg-info:`Global`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/aws/en/delta/table-properties
+     - `Table properties reference <https://docs.databricks.com/aws/en/delta/table-properties>`_
+
+Overview
+--------
 
 The Mandatory Table Properties feature allows you to define a set of table properties that will be automatically applied to all tables created by the Framework. This ensures consistent table configurations across your data Lakehouse.
 

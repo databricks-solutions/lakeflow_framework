@@ -9,7 +9,7 @@ Change Data Feed (CDF)
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/en/delta/delta-change-data-feed
+     - `Use change data feed on Databricks <https://docs.databricks.com/en/delta/delta-change-data-feed>`_
 
 
 Overview

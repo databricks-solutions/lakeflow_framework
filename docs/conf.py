@@ -23,6 +23,9 @@ project = 'Lakeflow Framework'
 copyright = '2026, Databricks'
 author = 'Erik Seefeld, Haille Woldegebriel'
 
+# Site title in the header / <title> — project name only (no version / "documentation").
+html_title = project
+
 # Read version from the VERSION file at the repo root so conf.py never
 # needs a manual update when a release is cut.
 _here = os.path.dirname(os.path.abspath(__file__))
@@ -100,7 +103,9 @@ html_theme_options = {
         "content.code.copy",
     ],
     "version_dropdown": True,
-    "version_json": "versions.json",
+    # Parent of each version folder (mike default). Plain "versions.json"
+    # resolves inside the version dir and 404s in multiversion layouts.
+    "version_json": "../versions.json",
     "palette": [
         {
             "media": "(prefers-color-scheme: light)",

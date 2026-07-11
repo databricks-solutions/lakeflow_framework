@@ -9,7 +9,10 @@ Data Quality - Expectations
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/en/delta-live-tables/expectations.html
+     - `Manage data quality with pipeline expectations <https://docs.databricks.com/en/delta-live-tables/expectations.html>`_
+
+Overview
+--------
 
 Define expectations in your Data Flow Spec to apply quality constraints that validate data as it flows through ETL pipelines. 
 

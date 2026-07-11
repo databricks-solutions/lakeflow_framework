@@ -9,7 +9,10 @@ Change Data Capture (CDC)
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - https://docs.databricks.com/en/delta-live-tables/cdc.html
+     - `The AUTO CDC APIs: Simplify change data capture with pipelines <https://docs.databricks.com/en/delta-live-tables/cdc.html>`_
+
+Overview
+--------
 
 Lakeflow Declarative Pipelines simplifies change data capture (CDC) with the AUTO CDC and AUTO CDC FROM SNAPSHOT APIs.
 

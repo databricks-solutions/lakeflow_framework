@@ -11,6 +11,9 @@ Logging
    * - **Databricks Docs:**
      - NA
 
+Overview
+--------
+
 The Lakeflow Framework provides logging capabilities to track pipeline execution and troubleshoot issues. By default, logging uses Python's standard ``logging`` module with a plain text stdout handler (logger name ``lakeflowframework``).
 
 You can optionally plug in a **custom logger** via a dedicated ``logger.json`` config file.
@@ -19,9 +22,6 @@ You can optionally plug in a **custom logger** via a dedicated ``logger.json`` c
   :class: warning
 
   * Framework code and extensions should use the shared logger helper ``pipeline_config.get_logger()`` rather than creating their own loggers.
-
-Overview
---------
 
 Supported Loggers
 ^^^^^^^^^^^^^^^^^

@@ -686,43 +686,35 @@ body:has(.lf-hero) .md-content__inner {
 
 /*
  * Feature metadata table (Applies To / Configuration Scope / Databricks Docs).
- * Targets the list-table rendered immediately after each feature page h1.
- *
- * Option B (active): left accent strip, left-aligned.
- * Option A: shaded panel — grey background (#f4f6f8).
- * Option C: minimal definition rows.
- * Bottom dividers (D1–D3) pair with Option C; not used with A/B.
+ * Minimal definition rows + soft brand badges (Databricks red tint, square corners).
  */
 .md-typeset section > h1 + table.docutils {
   display: table;
   width: fit-content;
   max-width: 100%;
-  margin: 0 0 1.25rem 0;
+  margin: 0 0 1.35rem 0;
   border-collapse: separate;
   border-spacing: 0;
-  background-color: var(--md-default-bg-color);
-  border: 1px solid rgba(27, 49, 57, 0.12);
-  border-left: 4px solid var(--md-primary-fg-color, #eb1600);
-  border-radius: 0.3rem;
-  overflow: hidden;
   font-size: 0.72rem;
   line-height: 1.45;
+  background: none;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(27, 49, 57, 0.12);
+  padding-bottom: 0.75rem;
+  overflow: visible;
 }
 
 .md-typeset section > h1 + table.docutils td {
   text-align: left !important;
   vertical-align: top;
-  padding: 0.35rem 0.85rem;
+  padding: 0.45rem 0;
   border: none;
   background: transparent;
 }
 
-.md-typeset section > h1 + table.docutils tr:first-child td {
-  padding-top: 0.45rem;
-}
-
-.md-typeset section > h1 + table.docutils tr:last-child td {
-  padding-bottom: 0.45rem;
+.md-typeset section > h1 + table.docutils tr + tr td {
+  border-top: 1px solid rgba(27, 49, 57, 0.1);
 }
 
 .md-typeset section > h1 + table.docutils td:first-child {
@@ -730,7 +722,8 @@ body:has(.lf-hero) .md-content__inner {
   white-space: nowrap;
   color: var(--md-default-fg-color--light, #526770);
   font-weight: 500;
-  border-right: 1px solid rgba(27, 49, 57, 0.1);
+  border-right: none;
+  padding-right: 1.5rem;
   vertical-align: top;
 }
 
@@ -755,42 +748,30 @@ body:has(.lf-hero) .md-content__inner {
 }
 
 [data-md-color-scheme="slate"] .md-typeset section > h1 + table.docutils {
-  border-color: rgba(255, 255, 255, 0.12);
-  border-left-color: var(--md-primary-fg-color, #eb1600);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
 }
 
-[data-md-color-scheme="slate"] .md-typeset section > h1 + table.docutils td:first-child {
-  border-right-color: rgba(255, 255, 255, 0.1);
+[data-md-color-scheme="slate"] .md-typeset section > h1 + table.docutils tr + tr td {
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Option A — shaded panel:
-.md-typeset section > h1 + table.docutils {
-  background-color: #f4f6f8;
-  border: 1px solid rgba(27, 49, 57, 0.14);
-  border-left: 1px solid rgba(27, 49, 57, 0.14);
+/* Soft brand badges — overrides solid Bootstrap info/success; RST :bdg-* unchanged */
+.md-typeset .sd-badge.sd-bg-info,
+.md-typeset .sd-badge.sd-bg-success {
+  background-color: rgba(235, 22, 0, 0.1) !important;
+  color: #c41200 !important;
+  border: 1px solid rgba(235, 22, 0, 0.22);
+  border-radius: 0.15rem;
+  font-weight: 600;
+  padding: 0.28em 0.55em;
 }
-*/
 
-/* Option C + bottom dividers — minimal rows:
-.md-typeset section > h1 + table.docutils {
-  background: none;
-  border: none;
-  border-radius: 0;
+[data-md-color-scheme="slate"] .md-typeset .sd-badge.sd-bg-info,
+[data-md-color-scheme="slate"] .md-typeset .sd-badge.sd-bg-success {
+  background-color: rgba(255, 95, 70, 0.16) !important;
+  color: #ff8a75 !important;
+  border-color: rgba(255, 95, 70, 0.28);
 }
-.md-typeset section > h1 + table.docutils td {
-  padding: 0.45rem 0;
-}
-.md-typeset section > h1 + table.docutils tr + tr td {
-  border-top: 1px solid rgba(27, 49, 57, 0.1);
-}
-.md-typeset section > h1 + table.docutils td:first-child {
-  border-right: none;
-  padding-right: 1.5rem;
-}
-  D1: width 100%; padding-bottom 1rem; border-bottom 1px grey
-  D2: width 100%; padding-bottom 1rem; border-bottom 2px red
-  D3: width fit-content; padding-bottom 0.75rem; border-bottom 1px grey
-*/
 
 /* Fenced / highlighted code blocks - Cursor editor panel */
 .md-typeset div[class*="highlight-"].notranslate {
@@ -1188,4 +1169,18 @@ body:has(.lf-hero) .md-content__inner {
 .md-typeset .sphinx-tabs-panel div[class*="highlight-"].notranslate .highlight,
 .md-typeset .sphinx-tabs-panel .highlighttable {
   border-radius: 0;
+}
+
+/* Version selector: open on click/focus, not hover */
+.md-header .md-version:hover .md-version__list {
+  max-height: 0;
+  opacity: 0;
+  animation: none;
+}
+
+.md-header .md-version:focus-within .md-version__list {
+  max-height: 18rem;
+  opacity: 1;
+  overflow: auto;
+  animation: none;
 }

@@ -11,6 +11,9 @@ Framework configuration
    * - **Databricks Docs:**
      - NA
 
+Overview
+--------
+
 Framework-level settings (global JSON/YAML, substitutions, secrets, spec
 mappings, operational metadata) live under ``src/config/default/``. Individual
 values can be overridden per-deployment using sparse files in
