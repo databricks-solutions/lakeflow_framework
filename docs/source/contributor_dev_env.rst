@@ -45,6 +45,14 @@ Once you have cloned the Lakeflow Framework repository, you'll need to follow th
 
       python -m build
 
+   If you use `uv <https://docs.astral.sh/uv/>`_, the equivalent is:
+
+   .. code-block:: bash
+
+      uv build --wheel --clear -o dist
+
+   Both commands use the setuptools backend declared in ``pyproject.toml``.
+
    If you change a dependency in any of the ``requirements*.txt`` files,
    regenerate all three lockfiles with the helper script from the repo root:
 
