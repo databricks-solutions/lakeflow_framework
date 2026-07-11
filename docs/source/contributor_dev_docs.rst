@@ -17,7 +17,7 @@ The source files for the documentation are located in the ``docs/source`` direct
 Writing Documentation
 --------------------------
 
-1. If a new feature is added or change to existing feature, ensure the feature is well documented in a new feature file or update the existing feature file with the name feature_<feature_name>.rst and add it to the :doc:`features` page.
+1. If a new feature is added or change to existing feature, ensure the feature is well documented in a new feature file or update the existing feature file with the name ``feature_<feature_name>.rst``. Add it to the matching Features hub section and to the :doc:`features_a_z` index.
 
    - In the feature file, include:
 

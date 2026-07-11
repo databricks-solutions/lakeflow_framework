@@ -162,8 +162,9 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
     is_home = pagename == master
 
     # Section index pages: non-selectable sidebar title, tab lands on first child.
+    # Features is a real hub landing (cards + nested groups), so it is not
+    # caption-only — the Features tab should open features.html.
     section_index_pages = frozenset({
-        "features",
         "deploy_framework",
         "build_pipeline_bundle",
         "dataflow_spec_reference",

@@ -145,6 +145,20 @@ body:has(.lf-hero) .md-content__inner {
   margin: 0 0 2rem;
 }
 
+/* Features hub category cards — slightly denser than home marketing cards */
+.lf-hub-grid {
+  margin-top: 1.25rem;
+}
+
+.lf-hub-grid .lf-feature-card {
+  padding: 1.25rem;
+}
+
+.lf-hub-grid .lf-feature-card__body {
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
 @media (min-width: 48em) {
   .lf-feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -474,6 +488,10 @@ body:has(.lf-hero) .md-content__inner {
  * Sidebar scroll — use one scroll container (scrollwrap), not nested nav lists.
  * Lifted tabs pin nested section nav to a 1fr grid row, which clips long lists
  * (e.g. Features) before the scrollbar reaches the last items.
+ *
+ * Only unlock the level-1 section shell — do NOT force every nested .md-nav to
+ * display:block/height:auto (that leaves collapsed siblings taking vertical
+ * space → large empty gaps between items like Tables & Quality).
  */
 .md-nav--primary .md-nav__title ~ .md-nav__list {
   overflow: visible;
@@ -493,16 +511,46 @@ body:has(.lf-hero) .md-content__inner {
     padding-bottom: 2rem;
   }
 
-  .md-nav--lifted.md-nav--primary .md-nav {
+  .md-nav--lifted.md-nav--primary > .md-nav__list > .md-nav__item > .md-nav,
+  .md-nav--lifted .md-nav[data-md-level="1"] {
     position: static;
     height: auto;
     display: block;
-  }
-
-  .md-nav--lifted .md-nav[data-md-level="1"] {
-    display: block;
     grid-template-rows: none;
   }
+}
+
+/*
+ * Features-style deep trees: no expand/collapse chevrons. Section links
+ * navigate to the hub page; only the active path stays open.
+ *
+ * Immaterial often renders section hubs as plain .md-nav__item with a child
+ * .md-nav (no --nested / toggle). Collapse those unless the item is active
+ * (ancestors of the current page also get --active).
+ */
+.md-nav--primary .md-nav__item--nested > .md-nav__container > label.md-nav__link {
+  display: none;
+}
+
+.md-nav--primary .md-nav__item--nested > .md-nav__container > .md-nav__link[href] {
+  width: 100%;
+  margin-right: 0;
+}
+
+.md-nav--primary .md-nav__item:not(.md-nav__item--active) > .md-nav {
+  display: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden;
+}
+
+.md-nav--primary .md-nav__item--active > .md-nav {
+  display: block;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  visibility: visible;
 }
 
 /*
