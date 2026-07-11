@@ -99,9 +99,9 @@ Deprecation timeline
 Further reading
 ---------------
 
-- ``docs/decisions/0009-lakeflow-framework-package.md`` — package layout,
-  wheel distribution, and shim policy (ADR-0009).
-- ``docs/decisions/0010-strategy-b-disk-first-resolver.md`` — how bundled
-  config and schemas resolve against workspace files (ADR-0010).
+- ``docs/decisions/0008-lakeflow-framework-package.md`` — package layout,
+  wheel distribution, and shim policy (ADR-0008).
+- ``docs/decisions/0009-strategy-b-disk-first-resolver.md`` — how bundled
+  config and schemas resolve against workspace files (ADR-0009).
 - :doc:`deploy_wheel` — wheel install and shim guidance for deployers.
 - :doc:`contributor_contrib` — import rules specific to ``contrib/`` modules.

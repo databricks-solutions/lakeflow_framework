@@ -1,4 +1,4 @@
-# ADR-0009: `lakeflow_framework` pip-installable package
+# ADR-0008: `lakeflow_framework` pip-installable package
 
 **Date:** 2026-05-23
 **Status:** Accepted
@@ -107,7 +107,7 @@ deploy) converge on it.
 
 `src/lakeflow_framework/contrib/` is introduced as a scaffold with an empty
 `__init__.py` and a support-policy `README.rst`. No modules land in this PR.
-See `docs/decisions/0009-*` (this file) for the publish model and
+See `docs/decisions/0008-*` (this file) for the publish model and
 `docs/source/contributor_contrib.rst` for the contributor guide.
 
 ### Optional extras
@@ -137,7 +137,7 @@ module is added.
   risk with customer code.
 - Existing flat-deploy customers are unaffected: the `src/` shims preserve
   backward compatibility, and `framework.sourcePath` + disk-first resolution
-  (ADR-0010) means behaviour is identical to pre-v0.16.0.
+  (ADR-0009) means behaviour is identical to pre-v0.16.0.
 - Editable installs (`pip install -e ".[contrib]"`) are supported for local
   development; the `src/` layout ensures the installed package and the source
   tree are the same directory.
