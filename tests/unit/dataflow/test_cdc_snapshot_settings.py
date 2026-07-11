@@ -7,7 +7,7 @@ from datetime import datetime
 import pyspark.sql.types as T
 import pytest
 
-from dataflow.cdc_snapshot import (
+from lakeflow_framework.dataflow.cdc_snapshot import (
     CDCSnapshotFlow,
     CDCSnapshotSettings,
     CDCSnapshotSourceTypes,

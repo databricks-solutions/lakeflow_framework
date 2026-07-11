@@ -6,9 +6,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from dataflow.enums import Mode, QuarantineMode, TableType, TargetType
-from dataflow.quarantine import QuarantineManager
-from dataflow.targets import TargetDeltaMaterializedView, TargetDeltaStreamingTable
+from lakeflow_framework.dataflow.enums import Mode, QuarantineMode, TableType, TargetType
+from lakeflow_framework.dataflow.quarantine import QuarantineManager
+from lakeflow_framework.dataflow.targets import TargetDeltaMaterializedView, TargetDeltaStreamingTable
 
 
 def _streaming_target(table: str) -> TargetDeltaStreamingTable:

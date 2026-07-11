@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from bundle_loader import register_bundle_sys_paths, run_init_scripts
+from lakeflow_framework.bundle_loader import register_bundle_sys_paths, run_init_scripts
 from helpers import make_tree
 
 logger = logging.getLogger("test_bundle_loader")
@@ -110,6 +110,19 @@ class TestRunInitScripts:
         assert builtins._test_order == ["first", "second"]
         del builtins._test_order
 
+    def test_runs_post_scripts(self, tmp_path: Path):
+        bundle = tmp_path / "bundle"
+        make_tree(bundle, {
+            "init/post/run_me.py": "import builtins; builtins._post_ran = True",
+        })
+
+        import builtins
+
+        builtins._post_ran = False
+        run_init_scripts(str(tmp_path / "fw"), str(bundle), "post", logger)
+        assert builtins._post_ran is True
+        del builtins._post_ran
+
     def test_skips_underscore_files(self, tmp_path: Path):
         bundle = tmp_path / "bundle"
         make_tree(bundle, {
@@ -141,6 +154,21 @@ class TestRunInitScripts:
         assert builtins._fw_order == ["fw", "bundle"]
         del builtins._fw_order
 
+    def test_missing_phase_dir_is_silent(self, tmp_path: Path):
+        fw = tmp_path / "fw"
+        bundle = tmp_path / "bundle"
+        fw.mkdir()
+        bundle.mkdir()
+        run_init_scripts(str(fw), str(bundle), "pre", logger)
+
     def test_invalid_phase_raises(self, tmp_path: Path):
         with pytest.raises(ValueError, match="Invalid init phase"):
             run_init_scripts(str(tmp_path), str(tmp_path), "bad_phase", logger)  # type: ignore
+
+    def test_script_exception_propagates(self, tmp_path: Path):
+        bundle = tmp_path / "bundle"
+        make_tree(bundle, {
+            "init/pre/fail.py": "raise RuntimeError('deliberate failure')",
+        })
+        with pytest.raises(RuntimeError, match="deliberate failure"):
+            run_init_scripts(str(tmp_path / "fw"), str(bundle), "pre", logger)

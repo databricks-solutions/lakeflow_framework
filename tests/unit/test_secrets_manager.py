@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from secrets_manager import SecretConfig, SecretValue, SecretsManager
+from lakeflow_framework.secrets_manager import SecretConfig, SecretValue, SecretsManager
 
 
 class TestSecretConfig:
@@ -36,9 +36,9 @@ class TestSecretValue:
 
 class TestSecretsManager:
     def test_loads_and_merges_framework_and_pipeline_secrets(
-        self, tmp_path: Path, pipeline_context, framework_src_path, fixtures_dir: Path
+        self, tmp_path: Path, pipeline_context, framework_package_path, fixtures_dir: Path
     ):
-        schema = str(framework_src_path / "schemas" / "secrets.json")
+        schema = str(framework_package_path / "schemas" / "secrets.json")
         fw = tmp_path / "fw_secrets.json"
         pl = tmp_path / "pl_secrets.json"
         fw.write_text((fixtures_dir / "specs" / "framework_secrets.json").read_text())
@@ -53,9 +53,9 @@ class TestSecretsManager:
             secrets_manager.get_secret("missing_alias")
 
     def test_substitute_secrets_with_configured_alias(
-        self, tmp_path: Path, pipeline_context, framework_src_path
+        self, tmp_path: Path, pipeline_context, framework_package_path
     ):
-        schema = str(framework_src_path / "schemas" / "secrets.json")
+        schema = str(framework_package_path / "schemas" / "secrets.json")
         secrets_file = tmp_path / "secrets.json"
         empty_pipeline = tmp_path / "empty.json"
         secrets_file.write_text('{"db_password": {"scope": "s", "key": "k"}}')

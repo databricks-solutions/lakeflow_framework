@@ -5,13 +5,13 @@ from __future__ import annotations
 import pyspark.sql.types as T
 import pytest
 
-from constants import SystemColumns
-from dataflow.dataflow import DataFlow
-from dataflow.dataflow_spec import DataflowSpec
-from dataflow.enums import QuarantineMode, SinkType, TargetType
-from dataflow.flow_group import FlowGroup
-from dataflow.flows.append_sql import FlowAppendSql
-from dataflow.targets.staging_table import StagingTable
+from lakeflow_framework.constants import SystemColumns
+from lakeflow_framework.dataflow.dataflow import DataFlow
+from lakeflow_framework.dataflow.dataflow_spec import DataflowSpec
+from lakeflow_framework.dataflow.enums import QuarantineMode, SinkType, TargetType
+from lakeflow_framework.dataflow.flow_group import FlowGroup
+from lakeflow_framework.dataflow.flows.append_sql import FlowAppendSql
+from lakeflow_framework.dataflow.targets.staging_table import StagingTable
 
 
 def _streaming_spec(**overrides) -> DataflowSpec:
@@ -40,7 +40,9 @@ class TestDataFlowInitQuarantine:
             def add_quarantine_columns_delta(self, target_details):
                 return target_details
 
-        monkeypatch.setattr("dataflow.dataflow.QuarantineManager", FakeQuarantineManager)
+        monkeypatch.setattr(
+            "lakeflow_framework.dataflow.dataflow.QuarantineManager", FakeQuarantineManager
+        )
         spec = _streaming_spec(
             dataQualityExpectationsEnabled=True,
             dataQualityExpectations={

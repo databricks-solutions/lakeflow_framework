@@ -74,6 +74,16 @@ Set this path using the ``BUNDLE_VAR_framework_source_path`` environment variabl
    The ``framework_source_path`` setting applies to all pipelines in the bundle. While individual pipeline versions can be 
    modified directly in the Databricks workspace, this is not recommended for production environments.
 
+.. note::
+   **Wheel-deploy mode (v0.20.0+)**
+
+   When using ``pip install lakeflow-framework``, ``framework.sourcePath`` is
+   optional.  Default configs and schemas are bundled inside the wheel and
+   loaded via ``importlib.resources``.  You only need to set
+   ``framework.sourcePath`` if you want to apply ``src/local/config/`` sparse
+   overrides on top of the bundled defaults.  See :doc:`deploy_wheel` for
+   details.
+
 Best Practices
 --------------
 1. Default Version

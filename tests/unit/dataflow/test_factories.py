@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from dataflow.enums import FlowType, SourceType, TableType, TargetType
-from dataflow.flows import FlowAppendSql, FlowAppendView, FlowMerge, FlowMaterializedView
-from dataflow.flows.factory import FlowFactory
-from dataflow.sources import SourceBatchFiles, SourceCloudFiles, SourceDelta, SourceDeltaJoin
-from dataflow.sources import SourceKafka, SourcePython, SourceSql
-from dataflow.sources.base import BaseSource
-from dataflow.sources.factory import SourceFactory
-from dataflow.targets import (
+from lakeflow_framework.dataflow.enums import FlowType, SourceType, TableType, TargetType
+from lakeflow_framework.dataflow.flows import FlowAppendSql, FlowAppendView, FlowMerge, FlowMaterializedView
+from lakeflow_framework.dataflow.flows.factory import FlowFactory
+from lakeflow_framework.dataflow.sources import SourceBatchFiles, SourceCloudFiles, SourceDelta, SourceDeltaJoin
+from lakeflow_framework.dataflow.sources import SourceKafka, SourcePython, SourceSql
+from lakeflow_framework.dataflow.sources.base import BaseSource
+from lakeflow_framework.dataflow.sources.factory import SourceFactory
+from lakeflow_framework.dataflow.targets import (
     TargetCustomPythonSink,
     TargetDeltaMaterializedView,
     TargetDeltaSink,
@@ -19,8 +19,8 @@ from dataflow.targets import (
     TargetForEachBatchSink,
     TargetKafkaSink,
 )
-from dataflow.targets.factory import TargetFactory
-from dataflow.targets.sink_foreach_batch import ForEachBatchSinkType
+from lakeflow_framework.dataflow.targets.factory import TargetFactory
+from lakeflow_framework.dataflow.targets.sink_foreach_batch import ForEachBatchSinkType
 
 
 class TestSourceFactory:

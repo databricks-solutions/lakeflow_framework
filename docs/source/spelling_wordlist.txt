@@ -4,6 +4,7 @@ Artifactory
 async
 autocomplete
 backfill
+backend
 behaviour
 cardinality
 cdc
@@ -11,11 +12,14 @@ cdcSettings
 cdcSnapshotSettings
 changelog
 cli
+compat
 Cmd
 config
 configs
+contrib
 css
 Ctrl
+customisation
 customisations
 dataFlowId
 Dataframe
@@ -27,6 +31,8 @@ deduplicate
 dedupes
 deduplication
 deployable
+deps
+deployers
 Del
 Demultiplexing
 dependant
@@ -47,6 +53,7 @@ initialisation
 Inmon
 IntelliSense
 instantiation
+integrations
 json
 keystore
 kwargs
@@ -82,6 +89,7 @@ rst
 Schemas
 schemas
 sdist
+semver
 Serverless
 sinkOptions
 sourceDetails
@@ -95,6 +103,8 @@ stdout
 Subquery
 subdirectory
 subqueries
+subpackage
+subpackages
 tableMigrationDetails
 tableProperties
 targetFormat

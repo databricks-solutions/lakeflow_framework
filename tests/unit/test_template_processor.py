@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from dataflow_spec_builder.template_processor import TemplateProcessor
+from lakeflow_framework.dataflow_spec_builder.template_processor import TemplateProcessor
 from helpers import make_tree
 
 

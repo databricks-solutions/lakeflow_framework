@@ -5,9 +5,9 @@ from __future__ import annotations
 import pyspark.sql.types as T
 import pytest
 
-from pipeline_config import initialize_mandatory_table_properties, initialize_operational_metadata_schema
-from dataflow.enums import TableType, TargetConfigFlags
-from dataflow.targets import TargetDeltaStreamingTable
+from lakeflow_framework.pipeline_config import initialize_mandatory_table_properties, initialize_operational_metadata_schema
+from lakeflow_framework.dataflow.enums import TableType, TargetConfigFlags
+from lakeflow_framework.dataflow.targets import TargetDeltaStreamingTable
 
 
 class TestBaseTargetDeltaValidation:

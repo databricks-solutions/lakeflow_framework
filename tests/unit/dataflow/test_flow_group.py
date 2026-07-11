@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from dataflow.flow_group import FlowGroup
-from dataflow.flows.append_sql import FlowAppendSql
-from dataflow.targets.staging_table import StagingTable
+from lakeflow_framework.dataflow.flow_group import FlowGroup
+from lakeflow_framework.dataflow.flows.append_sql import FlowAppendSql
+from lakeflow_framework.dataflow.targets.staging_table import StagingTable
 
 
 class _DuplicateKeyDict(dict):
@@ -89,7 +89,7 @@ class TestFlowGroupGetStagingTables:
 
 class TestBaseFlowWithViews:
     def test_get_views_returns_view_objects(self, pipeline_context):
-        from dataflow.flows.append_view import FlowAppendView
+        from lakeflow_framework.dataflow.flows.append_view import FlowAppendView
 
         flow = FlowAppendView(
             flowName="f1",

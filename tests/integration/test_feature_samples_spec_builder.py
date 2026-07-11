@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from dataflow_spec_builder.dataflow_spec_builder import DataflowSpecBuilder
+from lakeflow_framework.dataflow_spec_builder.dataflow_spec_builder import DataflowSpecBuilder
 
 pytestmark = pytest.mark.integration
 

@@ -25,6 +25,8 @@ Development Process
 -------------------
 1. Local Development
    
+   - Follow :doc:`contributor_imports` for ``lakeflow_framework.*`` vs compat
+     shim import rules.
    - Follow coding standards and style guides
        - Ensure the yapf extension is installed and enabled in VS Code (refer to step 2 of :doc:`contributor_dev_env`)
        - Use yapf to format your python code (right click and select 'Format Document With' then select yapf)
@@ -43,7 +45,7 @@ Development Process
         pytest tests/ -m "not integration and not spark"
 
    - See ``tests/README.md`` for layout, fixtures, markers, and conventions.
-   - Optional coverage: add ``--cov=src --cov-report=term-missing``.
+   - Optional coverage: add ``--cov=lakeflow_framework --cov-report=term-missing``.
    - CI runs the same pytest command on every pull request (``.github/workflows/ci.yml``).
 
 3. Integration Testing / Samples

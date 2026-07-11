@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataflow.expectations import DataQualityExpectations
+from lakeflow_framework.dataflow.expectations import DataQualityExpectations
 
 
 class TestDataQualityExpectations:

@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from dataflow.enums import FlowType, Mode, SourceType, TableType
-from dataflow_spec_builder.transformer.factory import SpecTransformerFactory
-from dataflow_spec_builder.transformer.flow import FlowSpecTransformer
-from dataflow_spec_builder.transformer.materialized_views import MaterializedViewSpecTransformer
-from dataflow_spec_builder.transformer.standard import StandardSpecTransformer
+from lakeflow_framework.dataflow.enums import FlowType, Mode, SourceType, TableType
+from lakeflow_framework.dataflow_spec_builder.transformer.factory import SpecTransformerFactory
+from lakeflow_framework.dataflow_spec_builder.transformer.flow import FlowSpecTransformer
+from lakeflow_framework.dataflow_spec_builder.transformer.materialized_views import MaterializedViewSpecTransformer
+from lakeflow_framework.dataflow_spec_builder.transformer.standard import StandardSpecTransformer
 
 
 class TestStandardSpecTransformer:

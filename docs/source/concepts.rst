@@ -70,11 +70,12 @@ The Framework Bundle contains:
    * - Component
      - Description
    * - **Framework Source Code**
-     - The core framework source code under the ``src`` folder.
+     - The core framework source code under the ``src/lakeflow_framework/`` package.
    * - **Global Framework Configuration**
-     - The global framework configuration under the ``src/config`` folder.
-   * - **Data Flow Spec Schema Definition**
-     - The Data Flow Spec schema definition and validations under the ``src/schemas`` folder.
+     - The framework default configuration under ``src/lakeflow_framework/config/default/``. Customer
+       overrides go in ``src/local/config/`` as sparse files — only the keys to change are needed.
+   * - **Data Flow Spec Schema Definitions**
+     - The Data Flow Spec schema definitions and validations under ``src/lakeflow_framework/schemas/``.
    * - **Deployment YAML file**
      - The ``databricks.yml`` file which defines the bundle deployment settings.
 
@@ -86,7 +87,7 @@ The Framework Bundle is deployed to a given workspace files location from where 
 Framework Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The Framework and most of its features will have configuration settings that can be set in the Framework Bundle ``src/config`` folder. The configuration settings are explained in the section: :doc:`features`
+The Framework and most of its features will have configuration settings that can be set in the Framework Bundle ``src/lakeflow_framework/config/default/`` folder. Default values ship with the framework and are resolved automatically; individual keys can be overridden by placing sparse files in ``src/local/config/``. The configuration settings are explained in the section: :doc:`features`
 
 .. admonition:: Setting Precedence
   :class: note
