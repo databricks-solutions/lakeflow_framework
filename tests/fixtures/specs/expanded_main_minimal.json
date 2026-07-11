@@ -1,0 +1,18 @@
+{
+  "dataFlowId": "minimal_flow",
+  "dataFlowGroup": "test_group",
+  "dataFlowType": "standard",
+  "sourceSystem": "test",
+  "sourceType": "delta",
+  "sourceViewName": "v_minimal_source",
+  "sourceDetails": {
+    "database": "src_db",
+    "table": "src_table"
+  },
+  "mode": "stream",
+  "targetFormat": "delta",
+  "targetDetails": {
+    "database": "tgt_db",
+    "table": "tgt_table"
+  }
+}

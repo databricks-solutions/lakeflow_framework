@@ -4,7 +4,7 @@ Setting up CI/CD
 Automate deployment of **Framework Bundles** and **Pipeline Bundles** using the same Databricks Asset Bundle (DAB) CLI pattern in your CI/CD agent.
 
 For deploy order and ownership, see :doc:`deploy_before_you_deploy`.
-For local development deploy, see :doc:`deploy_local`.
+For local development deploy, see :doc:`deploy_local_framework` and :doc:`deploy_local_pipeline_bundle`.
 For framework versioning, path layout, and pinning — see :doc:`feature_versioning_framework`.
 
 Platform-specific examples (GitHub Actions, etc.): `CI/CD for DABs <https://docs.databricks.com/en/dev-tools/bundles/ci-cd-bundles.html>`_.

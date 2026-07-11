@@ -24,7 +24,7 @@ Step 1 — Ensure the Lakeflow Framework is deployed
 Before creating a Pipeline Bundle, confirm the framework is **available in your target workspace** at a path you can reference as ``framework_source_path``. Either:
 
 * **Central / platform-owned** — the platform team (or federated domain platform) has deployed the Framework Bundle to a shared workspace files location for your environment; obtain the path and version from them.
-* **Developer-owned (local dev / POC)** — you deployed the framework yourself via :doc:`deploy_local`; the default path is under your user ``.bundle/.../files/src``.
+* **Developer-owned (local dev / POC)** — you deployed the framework yourself via :doc:`deploy_local_framework`; the default path is under your user ``.bundle/.../files/src``.
 
 Checklist:
 
@@ -156,7 +156,7 @@ Adjust ``databricks.yml`` to include configurations similar to:
    * By default the Framework Bundle deploys under the owner's
      ``.bundle/<project name>/<target environment>/<framework_version>/files/src`` path.
    * ``owner`` can be passed on the command line or via CI/CD so the path resolves in each deployment context.
-     See :doc:`deploy_local` (Pipeline bundle section).
+     See :doc:`deploy_local_pipeline_bundle`.
 
 Step 4 — Select your bundle structure
 =====================================

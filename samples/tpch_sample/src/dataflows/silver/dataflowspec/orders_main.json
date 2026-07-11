@@ -1,31 +1,43 @@
 {
-    "dataFlowId": "orders_silver",
+    "dataFlowId": "orders",
     "dataFlowGroup": "tpch_silver",
     "dataFlowType": "standard",
     "sourceSystem": "tpch",
     "sourceType": "delta",
     "sourceViewName": "v_orders",
     "sourceDetails": {
-        "database": "{bronze_schema}",
+        "database": "{bronze_order_mgmt_schema}",
         "table": "orders",
-        "cdfEnabled": true
+        "cdfEnabled": true,
+        "selectExp": [
+            "o_orderkey as order_key",
+            "o_custkey as customer_key",
+            "o_orderstatus as order_status",
+            "o_totalprice as total_price",
+            "o_orderdate as order_date",
+            "o_orderpriority as order_priority",
+            "o_clerk as clerk",
+            "o_shippriority as ship_priority",
+            "o_comment as comment",
+            "load_timestamp"
+        ]
     },
     "mode": "stream",
     "targetFormat": "delta",
     "targetDetails": {
+        "database": "{silver_schema}",
         "table": "orders",
         "tableProperties": {
-            "delta.enableChangeDataFeed": "true"
+            "delta.enableChangeDataFeed": "true",
+            "delta.enableRowTracking": "true"
         },
         "schemaPath": "orders_schema.json"
     },
-    "cdcSettings": {
-        "keys": [
-            "o_orderkey"
-        ],
-        "scd_type": "2",
-        "sequence_by": "load_timestamp",
-        "except_column_list": ["load_timestamp"],
-        "ignore_null_updates": false
+    "dataQualityExpectationsEnabled": true,
+    "dataQualityExpectationsPath": "./orders_dqe.json",
+    "quarantineMode": "table",
+    "quarantineTargetDetails": {
+        "targetFormat": "delta",
+        "database": "{silver_schema}"
     }
 }

@@ -117,6 +117,24 @@
   color: var(--md-default-fg-color, #1b3139);
 }
 
+/* Onboarding line — directly above home cards, left-aligned */
+.md-typeset section:has(> .lf-hero) .lf-landing-onboarding,
+.md-typeset .lf-landing-onboarding {
+  max-width: none;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  text-align: left;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--md-default-fg-color, #1b3139);
+}
+
+.md-typeset .lf-landing-onboarding > p {
+  margin: 0;
+  max-width: none;
+  text-align: left;
+}
+
 /* Home — Why LFF (positioning) between hero blurb and capability cards */
 .md-typeset section:has(> .lf-hero) > h2,
 .md-typeset .lf-hero ~ h2 {

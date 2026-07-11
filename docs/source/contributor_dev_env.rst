@@ -1,48 +1,128 @@
-Development Environment Setup
-#############################
+Set up your environment
+#######################
 
-The sections below assumes the Lakeflow Framework repository has been cloned from git and you are in the root directory. If not please do so first.
+Prepare a local development environment for contributing to the Lakeflow Framework — clone the repo, install dependencies, and configure your editor.
 
-Setting up for development as a contributor to the Lakeflow Framework
-=====================================================================
+For the full contribution path after setup, see :doc:`contributor_dev_steps`.
+For import rules, see :doc:`contributor_imports`.
+For documentation lockfiles and ``make html``, see :doc:`contributor_dev_docs`.
 
-Once you have cloned the Lakeflow Framework repository, you'll need to follow the steps below to set up the framework.
+Prerequisites
+=============
 
-1. **Install requirements**
+Before you begin, verify:
 
-   The dev dependencies are pinned and hash-verified in
-   ``requirements-dev.lock`` (generated from ``requirements-dev.txt``).
-   Installing from the lockfile guarantees a reproducible environment that
-   matches what CI uses.
+- [ ] **Git** installed
+- [ ] **Python 3.10+** installed (see ``requires-python`` in ``pyproject.toml``)
+- [ ] **pip** available in your shell
+- [ ] **IDE (optional)** — VS Code or Cursor recommended for Data Flow Spec IntelliSense and yapf formatting
 
-   Install them from the root directory by running the following command (you
-   may also want to use a virtual environment for this by running
-   ``python -m venv .venv/`` first. See `Python Virtual Environments
-   <https://docs.python.org/3/tutorial/venv.html>`_ for more details):
+Step 1 — Clone the repository
+===============================
 
-   .. code-block:: bash
-      :class: lf-command-block
+Open a terminal and clone the framework repository:
 
-      pip install --require-hashes --no-deps -r requirements-dev.lock
+.. code-block:: console
+   :class: lf-command-block
 
-   ``requirements-dev.lock`` includes everything in ``requirements-docs.lock``
-   too, so you do not need a separate install step for building the
-   documentation.
+   git clone https://github.com/databricks-solutions/lakeflow_framework.git
+   cd lakeflow_framework
 
-   If you change a dependency in any of the ``requirements*.txt`` files,
-   regenerate all three lockfiles with the helper script from the repo root:
+Step 2 — Create a virtual environment (recommended)
+===================================================
 
-   .. code-block:: bash
-      :class: lf-command-block
+Use a virtual environment so project dependencies stay isolated from your system Python. See `Python Virtual Environments <https://docs.python.org/3/tutorial/venv.html>`_ for details.
 
-      ./scripts/generate_lockfiles.sh
+.. code-block:: console
+   :class: lf-command-block
 
-   See :doc:`contributor_dev_docs` for more details on the lockfiles.
-2. **Set up VS Code extensions**
-   
-   Once you open the Lakeflow Framework workspace in VS Code for the first time, VS Code will prompt you to install the recommended extensions. 
-   If you missed this prompt, you can review and install the recommended extensions with the Extensions: Show Recommended Extensions command or by clicking on the extensions tab on left side of the window and selecting "Workspace Recommendations".
+   python -m venv .venv
+   source .venv/bin/activate
+
+On Windows, activate with ``.venv\Scripts\activate``.
+
+Step 3 — Install dev dependencies
+=================================
+
+The dev dependencies are pinned and hash-verified in ``requirements-dev.lock`` (generated from ``requirements-dev.txt``). Installing from the lockfile guarantees a reproducible environment that matches CI.
+
+From the **repository root**:
+
+.. code-block:: console
+   :class: lf-command-block
+
+   pip install --require-hashes --no-deps -r requirements-dev.lock
+
+``requirements-dev.lock`` includes everything in ``requirements-docs.lock``, so you do not need a separate install step for building documentation.
 
 .. note::
 
-    To deploy the Lakeflow Framework to your Databricks workspace, follow the steps in :doc:`deploy`.
+   ``--require-hashes`` makes ``pip`` verify each package against the lockfile.
+   ``--no-deps`` is safe here because the lockfile already contains the full resolved dependency set.
+
+Step 4 — Optional: editable install for IDE and pytest
+======================================================
+
+For a lighter setup that resolves imports without locking all transitive hashes (useful for IDE auto-complete and local ``pytest`` runs):
+
+.. code-block:: console
+   :class: lf-command-block
+
+   pip install -e ".[contrib]"
+
+This installs the framework in editable mode from ``pyproject.toml``, including the ``[contrib]`` extra. Use ``pip install -e ".[all]"`` to pull in future contrib sub-extras as they land.
+
+Build a distribution wheel at any time with:
+
+.. code-block:: console
+   :class: lf-command-block
+
+   python -m build
+
+Step 5 — Set up VS Code extensions
+====================================
+
+Open the Lakeflow Framework workspace in VS Code (or Cursor). On first open, the editor prompts you to install **recommended workspace extensions**.
+
+If you missed the prompt:
+
+* Run **Extensions: Show Recommended Extensions**, or
+* Open the Extensions view and select **Workspace Recommendations**
+
+Install the recommended extensions — including **yapf** for Python formatting used in :doc:`contributor_dev_steps`.
+
+Step 6 — Verify the setup
+=========================
+
+From the repository root, confirm unit tests run:
+
+.. code-block:: console
+   :class: lf-command-block
+
+   pytest tests/ -m "not integration and not spark"
+
+See ``tests/README.md`` for layout, markers, and conventions.
+
+When you change dependencies
+============================
+
+If you add, remove, or bump a dependency in any ``requirements*.txt`` file, regenerate all lockfiles from the repo root:
+
+.. code-block:: console
+   :class: lf-command-block
+
+   ./scripts/generate_lockfiles.sh
+
+Commit the regenerated ``.lock`` files with your dependency change. See :doc:`contributor_dev_docs` for documentation lockfile details.
+
+.. note::
+
+   To deploy the framework to a Databricks workspace for integration testing, follow :doc:`deploy_local_framework` or :doc:`quick_start`.
+
+See also
+--------
+
+- :doc:`contributor` — Contributors hub
+- :doc:`contributor_dev_steps` — contribution workflow
+- :doc:`contributor_imports` — ``lakeflow_framework.*`` import conventions
+- :doc:`contributor_dev_docs` — write and build documentation

@@ -1,29 +1,9 @@
 {
     "type": "struct",
     "fields": [
-        {
-            "name": "c_custkey",
-            "type": "long",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "c_phonetype",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "c_phone",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "load_timestamp",
-            "type": "timestamp",
-            "nullable": false,
-            "metadata": {}
-        }
+        { "name": "customer_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "phone", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} },
+        { "name": "effective_date", "type": "timestamp", "nullable": false, "metadata": {} }
     ]
 }

@@ -20,59 +20,78 @@
      </div>
    </div>
 
-Run one bundle. Get bronze, silver, and gold pipelines aligned to Databricks Lakeflow Spark Declarative Pipelines — with reusable patterns, data quality, CDC, and materialized views.
+Deploy the framework once, then pipeline bundles shaped to how your organisation runs data — medallion, domain-owned data products, or your own architecture. Author pipelines with patterns and templates for speed and consistency.
 
-New to the framework? Read :doc:`what_is_lakeflow_framework` for a product-level overview, then continue with :doc:`quick_start`.
+.. image:: images/lff-architecture-v1-two-boxes.jpg
+   :alt: Lakeflow Framework architecture — Framework Bundle and Pipeline Bundle on a DABS Foundation
+   :align: center
+   :width: 720px
+
+.. container:: lf-landing-onboarding
+
+   New to the framework? Read :doc:`what_is_lakeflow_framework` for a product-level overview, then continue with :doc:`quick_start`.
 
 .. raw:: html
 
-   <div class="lf-feature-grid">
+   <div class="lf-feature-grid lf-hub-grid">
      <article class="lf-feature-card">
        <div class="lf-feature-card__header">
-         <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 8h4V4H4v4m6 12h4v-4h-4v4M4 20h4v-4H4v4M4 12h4V8H4v4m6 4h4v-4h-4v4m6-8v4h4V8h-4m-6 8h4v-4h-4v4m6 4h4v-4h-4v4m0-10v4h4V8h-4z"/></svg>
-         <h3 class="lf-feature-card__title">Pattern-based design</h3>
+         <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 2 7v10l10 5 10-5V7L12 2m0 2.18 6.9 3.45L12 11.08 5.1 7.63 12 4.18M4 8.82l7 3.5v7.36l-7-3.5V8.82m9 10.86v-7.36l7-3.5v7.35l-7 3.51z"/></svg>
+         <h3 class="lf-feature-card__title">Architecture</h3>
        </div>
        <hr class="lf-feature-card__divider" />
-       <p class="lf-feature-card__body">Medallion, streaming, CDC, and gold-serving patterns out of the box.</p>
-       <a class="lf-feature-card__link" href="patterns.html">
+       <p class="lf-feature-card__body">Operating models, Framework and Pipeline Bundles, data flow specs, and DABs on Lakeflow SDP.</p>
+       <a class="lf-feature-card__link" href="concepts.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
-         Explore patterns
-       </a>
-     </article>
-     <article class="lf-feature-card">
-       <div class="lf-feature-card__header">
-         <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6m4 18H6V4h7v5h5v11M8 15h8v2H8v-2m0-4h8v2H8v-2m0-4h5v2H8V7z"/></svg>
-         <h3 class="lf-feature-card__title">Configuration-driven specs</h3>
-       </div>
-       <hr class="lf-feature-card__divider" />
-       <p class="lf-feature-card__body">Declarative data flow specs — templates, expectations, quarantine, and more.</p>
-       <a class="lf-feature-card__link" href="dataflow_spec_reference.html">
-         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
-         Spec reference
-       </a>
-     </article>
-     <article class="lf-feature-card">
-       <div class="lf-feature-card__header">
-         <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m12 2 4 4h3v8.17L12 22 5 14.17V6h3l4-4m0 2.83L9.83 7H7v5.76L12 18.4l5-5.64V7h-2.83L12 4.83z"/></svg>
-         <h3 class="lf-feature-card__title">DABs-native deploy</h3>
-       </div>
-       <hr class="lf-feature-card__divider" />
-       <p class="lf-feature-card__body">Deploy with Declarative Automation Bundles; no wheels or control tables required.</p>
-       <a class="lf-feature-card__link" href="deploy.html">
-         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
-         Deploy guide
+         Explore architecture
        </a>
      </article>
      <article class="lf-feature-card">
        <div class="lf-feature-card__header">
          <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2M9 17H7v-7h2v7m4 0h-2V7h2v10m4 0h-2v-4h2v4z"/></svg>
-         <h3 class="lf-feature-card__title">Samples &amp; guides</h3>
+         <h3 class="lf-feature-card__title">Samples</h3>
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Feature samples, pattern samples, and the end-to-end TPCH reference warehouse.</p>
        <a class="lf-feature-card__link" href="deploy_samples.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
-         View samples
+         Browse feature &amp; pattern samples
+       </a>
+     </article>
+     <article class="lf-feature-card">
+       <div class="lf-feature-card__header">
+         <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 8h4V4H4v4m6 12h4v-4h-4v4M4 20h4v-4H4v4M4 12h4V8H4v4m6 4h4v-4h-4v4m6-8v4h4V8h-4m-6 8h4v-4h-4v4m6 4h4v-4h-4v4m0-10v4h4V8h-4z"/></svg>
+         <h3 class="lf-feature-card__title">Build</h3>
+       </div>
+       <hr class="lf-feature-card__divider" />
+       <p class="lf-feature-card__body">Bundle structure, pipeline bundle steps, data flow spec reference, and medallion patterns.</p>
+       <a class="lf-feature-card__link" href="build_pipeline_bundle.html">
+         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
+         Author pipeline bundles &amp; specs
+       </a>
+     </article>
+     <article class="lf-feature-card">
+       <div class="lf-feature-card__header">
+         <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m12 2 4 4h3v8.17L12 22 5 14.17V6h3l4-4m0 2.83L9.83 7H7v5.76L12 18.4l5-5.64V7h-2.83L12 4.83z"/></svg>
+         <h3 class="lf-feature-card__title">Deploy</h3>
+       </div>
+       <hr class="lf-feature-card__divider" />
+       <p class="lf-feature-card__body">Deploy the Framework Bundle and Pipeline Bundles — flat DAB deploy, pip wheel, local CLI, or CI/CD.</p>
+       <a class="lf-feature-card__link" href="deploy.html">
+         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
+         Deploy framework &amp; pipelines
+       </a>
+     </article>
+     <article class="lf-feature-card">
+       <div class="lf-feature-card__header">
+         <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6m4 18H6V4h7v5h5v11M8 15h8v2H8v-2m0-4h8v2H8v-2m0-4h5v2H8V7z"/></svg>
+         <h3 class="lf-feature-card__title">Features</h3>
+       </div>
+       <hr class="lf-feature-card__divider" />
+       <p class="lf-feature-card__body">Metadata-driven specs, configuration, Python extensions, data quality, sources and targets, and platform features.</p>
+       <a class="lf-feature-card__link" href="features.html">
+         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
+         Browse features by category
        </a>
      </article>
    </div>

@@ -1,0 +1,21 @@
+{
+  "template": "minimal_template",
+  "parameterSets": [
+    {
+      "dataFlowId": "from_template_a",
+      "sourceSystem": "erp",
+      "sourceViewName": "v_tpl_a",
+      "path": "/data/a",
+      "database": "db_a",
+      "table": "tbl_a"
+    },
+    {
+      "dataFlowId": "from_template_b",
+      "sourceSystem": "erp",
+      "sourceViewName": "v_tpl_b",
+      "path": "/data/b",
+      "database": "db_b",
+      "table": "tbl_b"
+    }
+  ]
+}

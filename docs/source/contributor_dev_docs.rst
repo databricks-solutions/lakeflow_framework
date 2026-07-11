@@ -1,140 +1,193 @@
-Updating the Documentation
-##########################
+Write & build docs
+##################
 
-The documentation is written in `reStructuredText <http://docutils.sourceforge.net/rst.html>`_ format and is built using `Sphinx <http://sphinx-doc.org/>`_.
+Author and build the Lakeflow Framework documentation — reStructuredText and MyST sources, Sphinx, and the hub-based information architecture.
 
-Sphinx was chosen for it's ease of use and ability to:
+For local setup, see :doc:`contributor_dev_env` (``requirements-dev.lock`` includes docs dependencies).
+For the contribution workflow and doc CI checks, see :doc:`contributor_dev_steps`.
 
-* easily generate a navigation bar and index.
-* easily add cross references to other parts of the documentation.
-* support for the more advanced documentation requirements for some of the pipeline pattern and feature documentation.
+Documentation layout
+====================
 
-Source Files
-------------
+Source files live under ``docs/source/``. Top-level navigation is defined in :doc:`index`.
 
-The source files for the documentation are located in the ``docs/source`` directory.
+.. list-table::
+   :header-rows: 1
+   :widths: 22 78
 
-Writing Documentation
---------------------------
+   * - Section
+     - Role
+   * - **Home** (:doc:`index`)
+     - Landing page with hero and entry cards (`docs/source/_landing.rst`)
+   * - **Get Started**
+     - :doc:`quick_start`, :doc:`what_is_lakeflow_framework`
+   * - **Architecture**
+     - :doc:`concepts` — operating model, bundles, specs
+   * - **Samples**
+     - :doc:`deploy_samples` — feature, pattern, and TPCH samples
+   * - **Build**
+     - :doc:`build_pipeline_bundle` hub — structure, steps, spec reference, patterns
+   * - **Deploy**
+     - :doc:`deploy` hub — before you deploy, :doc:`deploy_framework` subsection, pipeline bundle local deploy, :doc:`deploy_ci_cd`
+   * - **Features**
+     - :doc:`features` hub — category sub-hubs and ``feature_*.rst`` pages; :doc:`features_a_z` index
+   * - **Contributors**
+     - :doc:`contributor` hub — env, git/releases, workflow, imports, this page
 
-1. If a new feature is added or change to existing feature, ensure the feature is well documented in a new feature file or update the existing feature file with the name ``feature_<feature_name>.rst``. Add it to the matching Features hub section and to the :doc:`features_a_z` index.
+**Hub pages** (for example :doc:`deploy`, :doc:`contributor`, :doc:`features`, :doc:`deploy_framework`) use:
 
-   - In the feature file, include:
+* A short intro paragraph
+* An ``lf-feature-grid`` / ``lf-hub-grid`` card block (see ``docs/source/_landing.rst`` or :doc:`deploy` for examples)
+* A **hidden** ``.. toctree::`` listing child pages (and optional ``:caption:`` groups for sidebar sections)
 
-     - Feature description
-     - Configuration options
-     - Usage examples / sample code
+Only ``dataflow_spec_reference`` is treated as a caption-only section index in ``docs/conf.py`` — other top-level tabs link to their hub page directly.
 
-2. Update Data Flow Spec reference where applicable
+Writing documentation
+=====================
 
+Feature pages
+-------------
+
+When you add or change framework behavior:
+
+1. Create or update ``docs/source/feature_<name>.rst``
+2. Include the standard metadata table (**Applies To**, **Configuration Scope**, **Databricks Docs** where relevant)
+3. Add the page to the matching **Features** sub-hub toctree (for example ``features_metadata.rst``) and to :doc:`features_a_z`
+4. Update :doc:`dataflow_spec_reference` when the Data Flow Spec schema changes
+
+Deploy and build pages
+----------------------
+
+Deploy docs are split by audience:
+
+* **Framework** — :doc:`deploy_framework_options`, :doc:`deploy_local_framework`, :doc:`deploy_wheel` under :doc:`deploy_framework`
+* **Pipeline bundle** — :doc:`deploy_local_pipeline_bundle`
+* **Shared** — :doc:`deploy_before_you_deploy`, :doc:`deploy_ci_cd`
+
+Add new deploy guides to the appropriate hub toctree in ``deploy.rst`` or ``deploy_framework.rst``, and add a hub card when the page is a primary entry point.
+
+Build guides live under the :doc:`build_pipeline_bundle` hub.
+
+Cross-references
+----------------
+
+* RST: ``:doc:`page_name``` or ``:doc:`Title <page_name>```
+* MyST (``quick_start.md``, ``deploy_samples.md``): ``{doc}`page_name```
+* Sections: ``:ref:`label-name``` (use unique labels; avoid duplicating labels across spec ref pages)
 
 Styling
---------
-Styling for the documentation which controls the look of the html output is in two main locations
+=======
 
-1. The theme and options that are used to generate the html output is defined in the conf.py file. The existing theme should not be changed unless there is an agreement on a new theme.
-   
-   - More information on theming can be found here: https://www.sphinx-doc.org/en/master/usage/theming.html
-   - The available html output options can be found here: https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-2. Custom styling can be found in the custom.css file which can be found in the docs/_static directory.
-   
-   - More information on how to add custom CSS can be found here: https://docs.readthedocs.com/platform/stable/guides/adding-custom-css.html#overriding-or-replacing-a-theme-s-stylesheet
+Theme and HTML
+--------------
 
-Generating the Documentation
+* Theme and build options: ``docs/conf.py`` (``sphinx_immaterial`` — do not change theme without team agreement)
+* Brand CSS: ``docs/source/_static/databricks-theme.css``, ``docs/source/_static/custom.css``
+* Landing and hub cards: ``lf-feature-card``, ``lf-hub-grid`` classes in raw HTML blocks
+
+Command-line and code blocks
 ----------------------------
 
-Supported Formats
-~~~~~~~~~~~~~~~~~
+Shell commands use the WAF-style command snippet pattern:
 
-Sphinx has been configured to generate the following formats:
+.. code-block:: console
+   :class: lf-command-block
 
-* HTML
-* Markdown
+   make -C docs html
 
-Dependencies
-~~~~~~~~~~~~
+* **``console``** + ``:class: lf-command-block`` — terminal commands (copy button enabled via ``conf.py``)
+* **``python``**, **``yaml``**, **``toml``** — language blocks without ``lf-command-block`` unless the block is a shell one-liner
+* Spec and config examples in body text use normal ``.. code-block:: yaml`` / ``json`` as appropriate
 
-The documentation build dependencies are pinned in ``requirements-docs.lock``,
-a hashed lockfile generated from ``requirements-docs.txt``. Installing from the
-lockfile (rather than the unpinned ``requirements-docs.txt``) guarantees a
-reproducible build and lets ``pip`` verify each package against its expected
-hash.
+Prerequisites checklist items use ``- [ ]`` (MyST task lists are enabled for ``.md`` sources).
 
-To install the documentation dependencies, run the following command from the
-root directory of the repository:
+Build locally
+=============
 
-.. code-block:: bash
+Install dependencies
+--------------------
+
+From the repo root (or use ``requirements-dev.lock`` from :doc:`contributor_dev_env`):
+
+.. code-block:: console
    :class: lf-command-block
 
    pip install --require-hashes --no-deps -r requirements-docs.lock
 
 .. note::
 
-   ``--require-hashes`` makes ``pip`` verify the SHA-256 hash of every
-   downloaded wheel/sdist against the hash recorded in the lockfile.
-   ``--no-deps`` is safe (and recommended) here because the lockfile already
-   contains the complete, fully-resolved transitive dependency set.
+   ``requirements-dev.lock`` already includes ``requirements-docs.lock`` — a full dev install is enough for doc builds.
 
-If you have already installed the full dev dependencies via
-``requirements-dev.lock`` (see :doc:`contributor_dev_env`), you do **not** need
-to install the documentation dependencies separately —
-``requirements-dev.lock`` already includes everything in
-``requirements-docs.lock``.
+Build HTML
+----------
 
-Updating dependencies / regenerating the lockfile
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From the ``docs/`` directory:
 
-If you add, remove, or bump a documentation dependency, edit
-``requirements-docs.txt`` (the unhashed source-of-truth file) and then
-regenerate the lockfile by running the helper script from the root of the
-repository:
+.. code-block:: console
+   :class: lf-command-block
 
-.. code-block:: bash
+   make html
+
+Output: ``docs/build/html/index.html``
+
+Preview with a local HTTP server (recommended for navigation and version UI testing):
+
+.. code-block:: console
+   :class: lf-command-block
+
+   cd build/html && python3 -m http.server 8000
+
+Then open ``http://localhost:8000/index.html``.
+
+Other targets
+-------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 72
+
+   * - Command
+     - Purpose
+   * - ``make -C docs spelling``
+     - Spelling check (fails on misspellings; requires Enchant — ``brew install enchant`` on macOS)
+   * - ``make -C docs md``
+     - Markdown export to ``docs/build/markdown/``
+   * - ``make -C docs html-multiversion-preview``
+     - Versioned site under ``docs/build/html/current/`` plus ``local-branch-preview`` for the current branch
+   * - ``make -C docs clean``
+     - Remove ``docs/build/`` (use after structural IA changes if the build cache misbehaves)
+
+See ``docs/README.md`` for multiversion publishing rules and GitHub Pages layout.
+
+Updating doc dependencies
+-------------------------
+
+Edit ``requirements-docs.txt``, then regenerate lockfiles from the repo root:
+
+.. code-block:: console
    :class: lf-command-block
 
    ./scripts/generate_lockfiles.sh
 
-This script regenerates ``requirements.lock``, ``requirements-dev.lock``, and
-``requirements-docs.lock`` from their corresponding ``.txt`` files using
-``pip-compile`` (from the ``pip-tools`` package, which you can install with
-``pip install pip-tools``). Commit the regenerated ``.lock`` files alongside
-your change to ``requirements-docs.txt`` in the same pull request so that CI
-and other contributors stay in sync.
+Commit the updated ``requirements-docs.lock`` (and related ``.lock`` files) in the same pull request.
 
-Building the Documentation
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+CI checks
+=========
 
-The Framework comes with a make file to build the documentation. There is one for Bash and one for Windows.
+When you change files under ``docs/``, run before pushing:
 
-To build the documentation, run the following command in the docs directory:
-
-* HTML:
-
-   .. code-block:: bash
-      :class: lf-command-block
-
-      make html
-
-* Markdown:
-
-   .. code-block:: bash
-      :class: lf-command-block
-
-      make md
-
-The above commands will build the documentation and save it in the ``docs/build`` directory.
-
-To view the documentation, open the below files in your browser.:
-
-* HTML: ``docs/build/html/index.html``
-* Markdown: ``docs/build/markdown/index.md``
-
-Clean the Documentation
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Sometimes it will be necessary to delete the build directory and re-build the documentation. To do this, run the following command in the docs directory:
-
-.. code-block:: bash
+.. code-block:: console
    :class: lf-command-block
 
-   make clean
+   bash scripts/ci/docs_spelling_check.sh
+   bash scripts/ci/docs_html_check.sh
+
+CI runs these when ``docs/`` changes on pull requests. Keep Sphinx **warnings** below the CI threshold documented in :doc:`contributor_dev_steps`.
+
+See also
+--------
+
+- :doc:`contributor` — Contributors hub
+- :doc:`contributor_dev_steps` — pull request workflow
+- ``docs/README.md`` — multiversion builds and GitHub Pages
+- ``docs/decisions/`` — architecture decisions for docs and packaging

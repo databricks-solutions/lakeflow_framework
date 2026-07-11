@@ -1,84 +1,110 @@
-Development Steps
-#################
+Contribution workflow
+#####################
 
-This guide outlines the process for contributing features or fixes to the Lakeflow Framework.
+End-to-end process for contributing features or fixes to the Lakeflow Framework.
 
-Issue Creation
---------------
-1. Create a new issue in the GitHub repository
-   
-   - Clearly describe the feature or bug
-   - Include acceptance criteria
-   - Add relevant labels (feature/bug/enhancement)
-   - Link to related issues if applicable
+**Start with** :doc:`contributor_dev_git` for branch naming and manual ``VERSION`` updates in your pull request.
 
-Branch Management
------------------
-1. Create a feature branch from develop
-   
-   - Use naming convention: ``feature/[brief-description]``
-   - Example: ``feature/add-scd2-support``
-2. Keep branches focused on single features/fixes
-3. Regularly sync with develop to avoid merge conflicts
+For environment setup, see :doc:`contributor_dev_env`.
+For import rules, see :doc:`contributor_imports`.
 
-Development Process
--------------------
-1. Local Development
-   
-   - Follow coding standards and style guides
-       - Ensure the yapf extension is installed and enabled in VS Code (refer to step 2 of :doc:`contributor_dev_env`)
-       - Use yapf to format your python code (right click and select 'Format Document With' then select yapf)
-   - Stick to solid principles and object oriented design patterns
-   - Deploy updated framework to Databricks to ensure it is working as expected
-   - Use meaningful commit messages
-   - Keep commits atomic and focused
+Step 1 — Open an issue
+======================
 
-2. Unit Testing
-   
-   - Currently being redeveloped and will be added back in soon.
+Create a GitHub issue before significant work:
 
-3. Integration Testing  / Samples
- 
-   - Where applicable, add sample pipelines to ``feature-samples`` (for isolated feature demonstrations) or ``pattern-samples`` (for medallion architecture patterns) to show how to use the new feature
-   - Deploy and run existing sample pipelines on Databricks to ensure changes are not breaking existing functionality (refer to :doc:`deploy_samples`)
+* Clearly describe the feature or bug
+* Include acceptance criteria
+* Add labels (``feature``, ``bug``, ``enhancement``, as appropriate)
+* Link related issues when applicable
 
-4. Documentation
-   - Update documentation per :doc:`contributor_dev_docs`
+Step 2 — Create a branch
+========================
 
-Pull Request Process
---------------------
-1. PR Creation
-   
-   - Create PR from feature branch to develop
-   - Fill out PR template completely
-   - Link related issues
-   - Add relevant reviewers
+From an up-to-date ``main``:
 
-2. PR Review
-   
-   - Address reviewer comments
-   - Update code/docs as needed
-   - Get required approvals
+.. code-block:: console
+   :class: lf-command-block
 
-3. Merge Process
-   
-   - **Squash and merge** to develop
-   - Delete feature branch after merge
-   - Close related issues
+   git checkout main
+   git pull origin main
+   git checkout -b feature/my-change
 
-Post-Merge Steps
-----------------
-1. Verify Changes
-   
-   - Confirm changes are working in develop
-   - Check documentation is published correctly
-   - Validate CI/CD pipeline passes
+See :doc:`contributor_dev_git` for branching strategy, naming conventions, and semver guidance.
 
-2. Monitor
-   
-   - Watch for any issues in develop
-   - Be prepared to address any problems quickly
+Step 3 — Develop locally
+========================
 
+* Format Python with **yapf** (install via workspace recommendations in :doc:`contributor_dev_env`)
+* Keep commits atomic with meaningful messages
+* Deploy updated framework to Databricks when behavior affects pipelines (see :doc:`deploy_local_framework`)
+* Add tests to the test suite when you change the framework code
 
+Step 4 — Run tests
+==================
 
+**Unit tests** (from repository root):
 
+.. code-block:: console
+   :class: lf-command-block
+
+   pytest tests/ -m "not integration and not spark"
+
+Optional coverage: ``--cov=lakeflow_framework --cov-report=term-missing``. See ``tests/README.md`` for markers and layout. CI runs the same command on every pull request.
+
+**Integration tests** (when you change samples, schemas, or validation logic):
+
+.. code-block:: console
+   :class: lf-command-block
+
+   pytest tests/ -m integration
+
+**Validate data flow specs** (prefer per-bundle paths):
+
+.. code-block:: console
+   :class: lf-command-block
+
+   python scripts/validate_dataflows.py samples/pattern-samples/
+   python scripts/validate_dataflows.py samples/tpch_sample/
+   python scripts/validate_dataflows.py samples/feature-samples/
+
+When adding a feature, add or extend samples in ``feature-samples`` (isolated demos) or ``pattern-samples`` (medallion patterns) as appropriate. Deploy and run affected pipelines on Databricks — see :doc:`deploy_samples`.
+
+Step 5 — Update documentation
+=============================
+
+* Update docs per :doc:`contributor_dev_docs` (feature pages, spec reference, cross-links)
+* Before pushing doc changes:
+
+.. code-block:: console
+   :class: lf-command-block
+
+   bash scripts/ci/docs_spelling_check.sh
+   bash scripts/ci/docs_html_check.sh
+
+``make -C docs spelling`` runs the same spelling check. CI builds HTML when ``docs/`` changes; keep Sphinx warnings below the CI threshold.
+
+Step 6 — Open and merge a pull request
+======================================
+
+1. Push your branch and open a PR **to ``main``**
+2. Include an updated ``VERSION`` file when the change should ship as a release (see :doc:`contributor_dev_git`)
+3. Complete the PR template; link the issue; request reviewers
+4. Address review feedback; ensure **CI passes**
+5. **Squash and merge** to ``main`` (see :doc:`contributor_dev_git`)
+6. Delete the branch after merge
+
+Step 7 — Verify after merge
+===========================
+
+* Confirm ``main`` CI is green
+* Check published docs on the next docs deploy if you changed documentation
+* Monitor for regressions on ``main``
+
+See also
+--------
+
+- :doc:`contributor_dev_git` — branching, versioning, and releases
+- :doc:`contributor_dev_env` — local setup
+- :doc:`contributor_dev_docs` — documentation authoring
+- :doc:`feature_versioning_framework` — framework version paths in workspace deploy

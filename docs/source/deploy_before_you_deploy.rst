@@ -67,5 +67,6 @@ Which path you use is an org choice. The framework is commonly deployed to a sec
 Next steps
 ==========
 
-* :doc:`deploy_local` — deploy from your laptop (dev inner loop)
+* :doc:`deploy_local_framework` — deploy the framework from your laptop (dev inner loop)
+* :doc:`deploy_local_pipeline_bundle` — deploy a pipeline bundle from your laptop
 * :doc:`deploy_ci_cd` — automate deploy with CI/CD, including framework versioning

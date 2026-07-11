@@ -62,4 +62,3 @@ Browse the guides below. Deploy pipeline bundles in the **Deploy** section (:doc
    build_pipeline_bundle_steps
    Data Flow Spec Reference <dataflow_spec_reference>
    Patterns: Data Flows and Pipelines <patterns>
-   pipeline_execution

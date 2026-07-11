@@ -1,0 +1,28 @@
+# AI/BI (Lakeview) dashboards — OPTIONAL, warehouse-backed.
+#
+# Deployed only when a warehouse_id is supplied: the deploy script drops this file from the
+# rendered resource set when warehouse_id is empty, mirroring the optional AI/BI Genie space.
+#
+# dataset_catalog / dataset_schema bind every dataset in the .lvdash.json to the deployed
+# catalog + gold schema. Both vars already carry the schema_namespace and logical_env
+# (gold_schema = <schema_namespace>_gold<logical_env>), so the dashboards marry to whatever
+# namespace / environment the bundle targets. The dashboard queries use unqualified table
+# names on purpose so this default context applies.
+#
+# file_path is relative to this file once copied into scratch/resources/ at deploy time.
+resources:
+  dashboards:
+    tpch_commercial_overview:
+      display_name: "TPC-H Commercial Overview (${var.schema_namespace}${var.logical_env})"
+      file_path: ../../src/dashboards/commercial_overview.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      parent_path: ${workspace.file_path}/dashboards
+      dataset_catalog: ${var.catalog}
+      dataset_schema: ${var.gold_schema}
+    tpch_pipeline_health:
+      display_name: "TPC-H Pipeline Health & Governance (${var.schema_namespace}${var.logical_env})"
+      file_path: ../../src/dashboards/pipeline_health.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      parent_path: ${workspace.file_path}/dashboards
+      dataset_catalog: ${var.catalog}
+      dataset_schema: ${var.gold_schema}

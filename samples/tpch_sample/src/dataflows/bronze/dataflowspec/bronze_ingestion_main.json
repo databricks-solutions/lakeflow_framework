@@ -1,0 +1,101 @@
+{
+    "template": "bronze_parquet_ingestion_template",
+    "parameterSets": [
+        {
+            "dataFlowId": "crm_customer",
+            "sourceSystem": "crm",
+            "sourceViewName": "v_customer",
+            "path": "{sample_file_location}/sources/crm/customer/",
+            "database": "{bronze_crm_schema}",
+            "table": "customer"
+        },
+        {
+            "dataFlowId": "crm_customer_address",
+            "sourceSystem": "crm",
+            "sourceViewName": "v_customer_address",
+            "path": "{sample_file_location}/sources/crm/customer_address/",
+            "database": "{bronze_crm_schema}",
+            "table": "customer_address"
+        },
+        {
+            "dataFlowId": "crm_customer_phone",
+            "sourceSystem": "crm",
+            "sourceViewName": "v_customer_phone",
+            "path": "{sample_file_location}/sources/crm/customer_phone/",
+            "database": "{bronze_crm_schema}",
+            "table": "customer_phone"
+        },
+        {
+            "dataFlowId": "procurement_supplier",
+            "sourceSystem": "procurement",
+            "sourceViewName": "v_supplier",
+            "path": "{sample_file_location}/sources/procurement/supplier/",
+            "database": "{bronze_procurement_schema}",
+            "table": "supplier"
+        },
+        {
+            "dataFlowId": "vendor_mgmt_supplier_address",
+            "sourceSystem": "vendor_mgmt",
+            "sourceViewName": "v_supplier_address",
+            "path": "{sample_file_location}/sources/vendor_mgmt/supplier_address/",
+            "database": "{bronze_vendor_mgmt_schema}",
+            "table": "supplier_address"
+        },
+        {
+            "dataFlowId": "vendor_mgmt_supplier_phone",
+            "sourceSystem": "vendor_mgmt",
+            "sourceViewName": "v_supplier_phone",
+            "path": "{sample_file_location}/sources/vendor_mgmt/supplier_phone/",
+            "database": "{bronze_vendor_mgmt_schema}",
+            "table": "supplier_phone"
+        },
+        {
+            "dataFlowId": "reference_data_region",
+            "sourceSystem": "reference_data",
+            "sourceViewName": "v_region",
+            "path": "{sample_file_location}/sources/reference_data/region/",
+            "database": "{bronze_reference_data_schema}",
+            "table": "region"
+        },
+        {
+            "dataFlowId": "reference_data_nation",
+            "sourceSystem": "reference_data",
+            "sourceViewName": "v_nation",
+            "path": "{sample_file_location}/sources/reference_data/nation/",
+            "database": "{bronze_reference_data_schema}",
+            "table": "nation"
+        },
+        {
+            "dataFlowId": "product_catalog_part",
+            "sourceSystem": "product_catalog",
+            "sourceViewName": "v_part",
+            "path": "{sample_file_location}/sources/product_catalog/part/",
+            "database": "{bronze_product_catalog_schema}",
+            "table": "part"
+        },
+        {
+            "dataFlowId": "inventory_partsupp",
+            "sourceSystem": "inventory",
+            "sourceViewName": "v_partsupp",
+            "path": "{sample_file_location}/sources/inventory/partsupp/",
+            "database": "{bronze_inventory_schema}",
+            "table": "partsupp"
+        },
+        {
+            "dataFlowId": "order_mgmt_orders",
+            "sourceSystem": "order_mgmt",
+            "sourceViewName": "v_orders",
+            "path": "{sample_file_location}/sources/order_mgmt/orders/",
+            "database": "{bronze_order_mgmt_schema}",
+            "table": "orders"
+        },
+        {
+            "dataFlowId": "order_fulfillment_lineitem",
+            "sourceSystem": "order_fulfillment",
+            "sourceViewName": "v_lineitem",
+            "path": "{sample_file_location}/sources/order_fulfillment/lineitem/",
+            "database": "{bronze_order_fulfillment_schema}",
+            "table": "lineitem"
+        }
+    ]
+}

@@ -1,0 +1,175 @@
+# Pull-request and branch CI for the Lakeflow Framework repository.
+#
+# Design: one workflow, parallel jobs. Path-filtered jobs skip when unrelated files
+# change. Sample dataflow specs are validated with scripts/validate_dataflows.py
+# when files under samples/ change.
+#
+# | Job               | When it runs                          |
+# |-------------------|---------------------------------------|
+# | changes           | Always (path filter outputs)          |
+# | pytest            | Always on PR / push                   |
+# | docs-spelling     | docs/** changed                       |
+# | docs-html         | docs/** changed                       |
+# | validate-samples  | samples/** changed                    |
+
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on:
+      group: databricks-solutions-protected-runner-group
+      labels: linux-ubuntu-latest
+    outputs:
+      docs: ${{ steps.filter.outputs.docs }}
+      samples: ${{ steps.filter.outputs.samples }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Path filters
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'requirements-docs.txt'
+              - 'requirements-docs.lock'
+            samples:
+              - 'samples/**'
+
+  pytest:
+    name: Unit tests
+    runs-on:
+      group: databricks-solutions-protected-runner-group
+      labels: linux-ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+
+      - name: Configure JFrog PyPI registry (OIDC)
+        uses: ./.github/actions/setup-jfrog
+        with:
+          configure-pip: 'true'
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --require-hashes --no-deps -r requirements-dev.lock
+
+      - name: Run pytest
+        run: |
+          pytest tests/ -m "not integration and not spark" -q
+
+  docs-spelling:
+    name: Docs spelling
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
+    runs-on:
+      group: databricks-solutions-protected-runner-group
+      labels: linux-ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+
+      - name: Configure JFrog PyPI registry (OIDC)
+        uses: ./.github/actions/setup-jfrog
+        with:
+          configure-pip: 'true'
+
+      - name: Install spelling dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq aspell-en libenchant-2-dev
+          python -m pip install --upgrade pip
+          pip install --require-hashes --no-deps -r requirements-docs.lock
+
+      - name: Docs spelling
+        run: bash scripts/ci/docs_spelling_check.sh
+
+  docs-html:
+    name: Docs HTML build
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
+    runs-on:
+      group: databricks-solutions-protected-runner-group
+      labels: linux-ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+
+      - name: Configure JFrog PyPI registry (OIDC)
+        uses: ./.github/actions/setup-jfrog
+        with:
+          configure-pip: 'true'
+
+      - name: Install docs dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --require-hashes --no-deps -r requirements-docs.lock
+
+      - name: make html (warning budget)
+        run: bash scripts/ci/docs_html_check.sh 19
+
+  validate-samples:
+    name: Validate sample dataflows
+    needs: changes
+    if: needs.changes.outputs.samples == 'true'
+    runs-on:
+      group: databricks-solutions-protected-runner-group
+      labels: linux-ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+
+      - name: Configure JFrog PyPI registry (OIDC)
+        uses: ./.github/actions/setup-jfrog
+        with:
+          configure-pip: 'true'
+
+      - name: Install validator dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --require-hashes --no-deps -r requirements.lock
+
+      - name: Validate sample dataflows
+        run: python scripts/validate_dataflows.py samples/

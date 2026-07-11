@@ -27,9 +27,9 @@ md:
 	@cp -r "$(SOURCEDIR)/_static"/* "$(BUILDDIR)/markdown/_static"
 	@echo "Build finished. The markdown files are in $(BUILDDIR)/markdown."
 
-# Add explicit spelling target
+# Add explicit spelling target (fails if any misspelled words are found)
 spelling:
-	@$(SPHINXBUILD) -M spelling "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@bash "$(abspath $(dir $(lastword $(MAKEFILE_LIST))))/../scripts/ci/docs_spelling_check.sh"
 
 # Build versioned docs without sphinx-multiversion.
 html-multiversion:

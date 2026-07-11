@@ -15,18 +15,62 @@ Overview
 --------
 
 Framework-level settings (global JSON/YAML, substitutions, secrets, spec
-mappings, operational metadata) live under ``src/config/default/``. Individual
-values can be overridden per-deployment using sparse files in
-``src/local/config/`` — only the keys you want to change are needed.
+mappings, operational metadata) ship inside the ``lakeflow_framework`` package
+and are resolved automatically at runtime.  Individual values can be overridden
+per-deployment using sparse files in ``src/local/config/`` — only the keys you
+want to change are needed.
+
+.. note::
+
+   **Default config location (v0.20.0+)**
+
+   Framework default files now live inside the installed package at
+   ``src/lakeflow_framework/config/default/`` rather than at the top-level
+   ``src/config/default/`` used in earlier releases.  If you are referencing
+   these paths directly (e.g. in CI scripts or custom tooling), update them
+   accordingly.  All framework-internal loading is handled automatically and
+   requires no code changes.
 
 Configuration
 -------------
 
 | **Scope: Global (framework bundle)**
-| **Default:** ``src/config/default/`` — authoritative, always read.
+| **Defaults:** ``src/lakeflow_framework/config/default/`` — bundled with the package, always available.
 | **Override:** ``src/local/config/`` — sparse override; deep-merged on top of defaults.
 
-Under ``src/config/default/`` you normally have:
+.. _config-resolution-order:
+
+Resolution order (Strategy B)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The framework resolves every default config file through a three-step process:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 5 30 65
+
+   * - Step
+     - Source
+     - Details
+   * - 1
+     - **Workspace Files** (explicit)
+     - ``{framework_path}/lakeflow_framework/config/default/<file>``
+       when ``framework.sourcePath`` is set and the file exists in workspace files.
+       Workspace Files are checked first so that the workspace files copy always wins — explicit
+       beats implicit.
+   * - 2
+     - **Package data** (fallback)
+     - ``importlib.resources`` — reads from the installed
+       ``lakeflow_framework`` wheel or the ``src/lakeflow_framework/`` tree
+       when ``src/`` is on ``sys.path`` (flat deploy).  Used when the file is
+       not found via Step 1, or when ``framework.sourcePath`` is not set.
+   * - 3
+     - **``src/local/config/`` custom override**
+     - Deep-merged on top of the result from Step 1 or 2, when
+       ``framework.sourcePath`` is set and the sparse fragment exists.
+       Only the keys present in the custom override are changed.
+
+Under ``src/lakeflow_framework/config/default/`` you normally have:
 
 * exactly one global file: ``global.json``, ``global.yaml``, or ``global.yml``
 * a ``dataflow_spec_mapping/`` directory (see :doc:`feature_versioning_dataflow_spec`)
@@ -69,12 +113,12 @@ Local override (``src/local/config/``)
 
 Place sparse JSON/YAML files in ``src/local/config/`` to override individual
 keys without copying the entire default file. The framework **deep-merges** the
-overlay on top of the defaults at runtime:
+custom override on top of the defaults at runtime:
 
-* Dict values are merged recursively — only the keys present in the overlay
+* Dict values are merged recursively — only the keys present in the custom override
   are changed.
 * Non-dict values and lists are replaced wholesale.
-* Keys not present in the overlay retain their default values.
+* Keys not present in the custom override retain their default values.
 
 Example — change one global setting without touching the rest of ``global.json``:
 
@@ -85,7 +129,7 @@ Example — change one global setting without touching the rest of ``global.json
    }
 
 Save this as ``src/local/config/global.json``. All other keys from
-``src/config/default/global.json`` are kept unchanged.
+``src/lakeflow_framework/config/default/global.json`` are kept unchanged.
 
 For **directory-based config** (e.g. ``dataflow_spec_mapping/``), place the
 entire override directory in ``src/local/config/`` — the local directory takes

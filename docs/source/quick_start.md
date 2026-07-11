@@ -59,7 +59,7 @@ databricks bundle deploy -t dev -p <profile>
 ```{admonition} Workspace host in databricks.yml
 :class: note
 
-You can set `targets.dev.workspace.host` in `databricks.yml`, or leave the host unset so the CLI uses the host from the selected profile. See {doc}`deploy_local` for details.
+You can set `targets.dev.workspace.host` in `databricks.yml`, or leave the host unset so the CLI uses the host from the selected profile. See {doc}`deploy_local_framework` for details.
 ```
 
 ---

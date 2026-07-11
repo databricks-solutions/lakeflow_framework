@@ -1,7 +1,7 @@
 What is the Lakeflow Framework?
 ===============================
 
-The Lakeflow Framework is a metadata-driven framework for building Databricks Lakeflow Spark Declarative Pipelines. It uses a configuration-driven, pattern-based approach to support both batch and streaming workloads across the medallion architecture. Pipelines are deployed with Declarative Automation Bundles, keeping delivery consistent across environments. The framework is designed for simplicity, extensibility, and long-term alignment with the Databricks product roadmap.
+The Lakeflow Framework is a metadata-driven framework for building Databricks Lakeflow Spark Declarative Pipelines. It uses a configuration-driven, pattern-based approach to support both batch and streaming workloads across the medallion architecture. Deploy the **Framework Bundle** once, then **Pipeline Bundles** for your data flows — with Declarative Automation Bundles (DABs) for flat workspace deploy (default) or the ``lakeflow-framework`` PyPI wheel (v0.20.0+). Optional ``contrib`` packages extend the core framework with community integrations. The framework is designed for simplicity, extensibility, and long-term alignment with the Databricks product roadmap.
 
 .. image:: images/lff-architecture-v1-two-boxes.jpg
    :alt: Lakeflow Framework architecture — Framework Bundle and Pipeline Bundle on a DABS Foundation
@@ -29,6 +29,7 @@ Core concepts
 -------------
 
 * **Pattern-based pipeline design**: reusable building blocks standardize implementation and reduce duplication.
+* **Framework and Pipeline Bundles**: deploy the Framework Bundle to the workspace first, then one or more Pipeline Bundles that reference it at ``framework_source_path`` (see :doc:`deploy_before_you_deploy`).
 * **Two-layer architecture**:
 
   * SDP wrapper components expose Spark Declarative Pipelines APIs directly, keeping behavior explicit and close to the platform.
@@ -36,8 +37,8 @@ Core concepts
 
 * **Deployment and operations principles**:
 
-  * DABs-native deployment model
-  * No artifacts or wheel files required
+  * DABs-native deployment — flat workspace deploy (default) or ``pip install lakeflow-framework`` (v0.20.0+)
+  * Optional ``contrib`` integrations without expanding core package dependencies
   * Minimal third-party dependencies
   * No control tables
   * Extensible framework structure
@@ -62,4 +63,5 @@ Next steps
 * Review architecture in :doc:`concepts`
 * Explore practical implementations in :doc:`patterns`
 * Review spec-level options in :doc:`dataflow_spec_reference`
-* Build and deploy your first bundle in :doc:`build_pipeline_bundle`
+* Build pipeline bundles in :doc:`build_pipeline_bundle`
+* Deploy the framework and pipelines via :doc:`deploy` — read :doc:`deploy_before_you_deploy` first for deploy order and ownership

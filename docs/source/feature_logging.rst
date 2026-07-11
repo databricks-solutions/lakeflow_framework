@@ -21,7 +21,7 @@ You can optionally plug in a **custom logger** via a dedicated ``logger.json`` c
 .. admonition:: Setting Precedence
   :class: warning
 
-  * Framework code and extensions should use the shared logger helper ``pipeline_config.get_logger()`` rather than creating their own loggers.
+  * Framework code and extensions should use the shared logger helper ``get_logger()`` from ``lakeflow_framework.pipeline_config`` rather than creating their own loggers.
 
 Supported Loggers
 ^^^^^^^^^^^^^^^^^
@@ -460,14 +460,14 @@ Using the Logger in Code
 
 .. code-block:: python
 
-   from pipeline_config import get_logger
+   from lakeflow_framework.pipeline_config import get_logger
 
    logger = get_logger()
    logger.info("Processing batch %s", batch_id)
 
-``utility.set_logger`` remains for backward compatibility and delegates to the framework default logger factory; new code should use ``pipeline_config.get_logger()``.
+``lakeflow_framework.utility.set_logger`` remains for backward compatibility and delegates to the framework default logger factory; new code should use ``get_logger()`` from ``lakeflow_framework.pipeline_config``.
 
-Custom loggers that support async flushing may require an explicit ``close()`` at the end of the pipeline. Consider a **post_init** hook under ``extensions/post_init/`` that calls ``close()`` on the primary logger when exposed.
+Custom loggers that support async flushing may require an explicit ``close()`` at the end of the pipeline. Consider a **post-init** hook under ``src/init/post/`` (pipeline bundle) or ``src/local/init/post/`` (framework bundle) that calls ``close()`` on the primary logger when exposed.
 
 Troubleshooting
 ^^^^^^^^^^^^^^^^

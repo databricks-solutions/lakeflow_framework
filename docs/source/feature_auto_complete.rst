@@ -64,25 +64,25 @@ Add the following code into your ``settings.json`` replacing ``<path to framewor
                 "fileMatch": [
                     "*_flow.json"
                 ],
-                "url": "<path to framework folder>/src/schemas/flow_group.json"
+                "url": "<path to framework folder>/src/lakeflow_framework/schemas/flow_group.json"
             },
             {
                 "fileMatch": [
                     "*_main.json"
                 ],
-                "url": "<path to framework folder>/src/schemas/main.json"
+                "url": "<path to framework folder>/src/lakeflow_framework/schemas/main.json"
             },
             {
                 "fileMatch": [
                     "*_dqe.json"
                 ],
-                "url": "<path to framework folder>/src/schemas/expectations.json"
+                "url": "<path to framework folder>/src/lakeflow_framework/schemas/expectations.json"
             },
             {
                 "fileMatch": [
                     "*_secrets.json"
                 ],
-                "url": "<path to framework folder>/src/schemas/secrets.json"
+                "url": "<path to framework folder>/src/lakeflow_framework/schemas/secrets.json"
             }
         ]
     }
@@ -100,25 +100,25 @@ Example ``settings.json`` file:
               "fileMatch": [
                   "*flow.json"
               ],
-              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/schemas/flow_group.json"
+              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/flow_group.json"
           },
           {
               "fileMatch": [
                   "*main.json"
               ],
-              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/schemas/main.json"
+              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/main.json"
           },
           {
               "fileMatch": [
                   "*_dqe.json"
               ],
-              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/schemas/expectations.json"
+              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/expectations.json"
           },
           {
               "fileMatch": [
                   "*_secrets.json"
               ],
-              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/schemas/secrets.json"
+              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/secrets.json"
           }
       ]
   } 

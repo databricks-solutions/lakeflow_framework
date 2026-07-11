@@ -34,7 +34,7 @@ The `docs/Makefile` supports these explicit targets:
 - `make html`
   - Standard single-version HTML build into `docs/build/html`.
 - `make spelling`
-  - Runs the spelling builder (`sphinxcontrib-spelling`).
+  - Runs the spelling builder and **fails** if any misspelled words are found (`scripts/ci/docs_spelling_check.sh`).
 - `make md`
   - Builds Markdown output to `docs/build/markdown` and copies images/static assets.
 - `make html-multiversion`

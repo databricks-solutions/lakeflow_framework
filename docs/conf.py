@@ -162,11 +162,10 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
     is_home = pagename == master
 
     # Section index pages: non-selectable sidebar title, tab lands on first child.
-    # Architecture / Deploy / Samples / Features / Build are real top-level page links.
-    # Get Started uses Sphinx :caption:. Contributors remains caption-only.
+    # Architecture / Deploy / Samples / Features / Build / Contributors are real
+    # top-level hub links. Get Started uses Sphinx :caption:.
     section_index_pages = frozenset({
         "dataflow_spec_reference",
-        "contributor",
     })
 
     def _docname_from_url(url):
