@@ -79,7 +79,7 @@ without change until `v1.0.0`.
 ```toml
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "lakeflow-framework"
