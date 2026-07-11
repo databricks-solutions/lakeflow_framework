@@ -162,20 +162,12 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
     is_home = pagename == master
 
     # Section index pages: non-selectable sidebar title, tab lands on first child.
-    # Features is a real hub landing (cards + nested groups), so it is not
-    # caption-only — the Features tab should open features.html.
+    # Architecture / Deploy / Samples / Features / Build are real top-level page links.
+    # Get Started uses Sphinx :caption:. Contributors remains caption-only.
     section_index_pages = frozenset({
-        "deploy_framework",
-        "build_pipeline_bundle",
         "dataflow_spec_reference",
         "contributor",
     })
-
-    def _first_leaf(entry):
-        current = entry
-        while current.children:
-            current = current.children[0]
-        return current
 
     def _docname_from_url(url):
         if not url or url == "#":
@@ -191,10 +183,10 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
                 apply_section_captions(entry.children)
             docname = _docname_from_url(entry.url)
             if docname in section_index_pages and entry.children:
-                leaf = _first_leaf(entry)
-                if leaf.url:
+                first_child = entry.children[0]
+                if first_child.url:
                     entry.caption_only = True
-                    entry.url = leaf.url
+                    entry.url = first_child.url
 
     apply_section_captions(nav)
 
@@ -254,24 +246,6 @@ def _enable_codeblock_linenos(app, doctree):
             continue
         if node.rawsource == node.astext():
             node['linenos'] = True
-
-
-def _tag_command_blocks(app, doctree):
-    """Quick Start console fences → light WAF-style command blocks with copy button."""
-    from docutils import nodes
-
-    if app.env.docname != 'quick_start':
-        return
-
-    for node in doctree.findall(nodes.literal_block):
-        language = node.get('language', '')
-        if language not in ('console', 'bash', 'shell', 'text', ''):
-            continue
-        classes = list(node.get('classes', []))
-        if 'lf-command-block' not in classes:
-            classes.append('lf-command-block')
-            node['classes'] = classes
-        node.attributes.pop('linenos', None)
 
 
 def _table_column_count(table) -> int:
@@ -339,7 +313,6 @@ def setup(app):
                 domain.data["synopses"] = {}
 
     app.connect("builder-inited", _init_domain_synopses)
-    app.connect("doctree-read", _tag_command_blocks)
     app.connect("doctree-read", _enable_codeblock_linenos)
     app.connect("doctree-read", _mark_content_tables)
     app.connect("html-page-context", _patch_landing_nav, priority=999)

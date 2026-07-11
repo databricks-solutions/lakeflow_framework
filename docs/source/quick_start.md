@@ -8,15 +8,18 @@ Get the Lakeflow Framework deployed and running sample pipelines in your Databri
 
 Before you begin, verify:
 
-- [ ] **Databricks CLI** installed and configured — required for local Asset Bundle deployment ([CLI documentation](https://docs.databricks.com/dev-tools/cli/index.html))
 - [ ] **Databricks workspace** access with permission to deploy bundles and run Lakeflow Spark Declarative Pipelines
+- [ ] **Databricks CLI** installed — required for local Asset Bundle deployment ([CLI documentation](https://docs.databricks.com/dev-tools/cli/index.html))
+- [ ] **CLI authentication** — run `databricks auth login` for your workspace, or use a configured CLI profile
 - [ ] **Unity Catalog** enabled in your workspace
-- [ ] **VS Code** installed — used for Data Flow Spec IntelliSense (optional but recommended)
+- [ ] **UC catalog** already exists for sample deployment (default `main`, or pass another with `--catalog`) — the deploy scripts create schemas in that catalog, not the catalog itself
+- [ ] Familiarity with [Lakeflow Spark Declarative Pipelines](https://docs.databricks.com/aws/en/ldp/) concepts (helpful, not required)
+- [ ] **IDE installed (optional)** — for example VS Code or Cursor, used for Data Flow Spec IntelliSense
 
 ```{admonition} New to Asset Bundles?
 :class: tip
 
-The framework ships as a Databricks Asset Bundle (DAB). Configure your workspace host and CLI profile in `databricks.yml` before deploying. See {doc}`deploy_framework_bundle` for full configuration options.
+The framework ships as a Declarative Automation Bundle (DAB). Authenticate the CLI first, then optionally set the workspace host in `databricks.yml` (or leave it unset to use the host from your CLI profile). See {doc}`deploy` for the full deploy workflow.
 ```
 
 ---
@@ -26,36 +29,60 @@ The framework ships as a Databricks Asset Bundle (DAB). Configure your workspace
 1. Open a terminal on your local machine
 2. Clone the repository and enter the project directory:
 
-```console
-git clone https://github.com/databricks-solutions/lakeflow_framework.git
-```
+```{code-block} console
+:class: lf-command-block
 
-```console
+git clone https://github.com/databricks-solutions/lakeflow_framework.git
 cd lakeflow_framework
 ```
 
 ---
 
-## Step 2 — Deploy the framework
+## Step 2 — Authenticate the Databricks CLI
+
+Authenticate against the workspace you will deploy to:
+
+```{code-block} console
+:class: lf-command-block
+
+databricks auth login --host https://<your-workspace-url>
+```
+
+Or use an existing named profile (for example after `databricks auth login --profile <name>`):
+
+```{code-block} console
+:class: lf-command-block
+
+databricks bundle deploy -t dev -p <profile>
+```
+
+```{admonition} Workspace host in databricks.yml
+:class: note
+
+You can set `targets.dev.workspace.host` in `databricks.yml`, or leave the host unset so the CLI uses the host from the selected profile. See {doc}`deploy_local` for details.
+```
+
+---
+
+## Step 3 — Deploy the framework
 
 From the **repository root**:
 
 1. Validate the framework bundle
 
-```console
+```{code-block} console
+:class: lf-command-block
+
 databricks bundle validate
 ```
 
 2. Deploy to your workspace
 
-```console
-databricks bundle deploy
-```
+```{code-block} console
+:class: lf-command-block
 
-| Step | What happens |
-| ---- | ------------ |
-| 1 | `bundle validate` — checks bundle configuration and workspace connectivity |
-| 2 | `bundle deploy` — publishes the framework bundle to your workspace under `.bundle/` |
+databricks bundle deploy -t dev
+```
 
 ```{admonition} Target workspace and profile
 :class: note
@@ -63,21 +90,33 @@ databricks bundle deploy
 By default the CLI deploys to the `dev` target in `databricks.yml`. Use `-t <target>` to deploy elsewhere and `-p <profile>` to select a different CLI profile.
 ```
 
-**Full reference:** {doc}`deploy_framework_bundle`
+**Full reference:** {doc}`deploy`
 
 ---
 
-## Step 3 — Deploy the samples
+## Step 4 — Deploy the samples
 
-1. Open a terminal in the **`samples/`** directory
-2. Run the deploy script:
+Samples require the framework deploy above. `./deploy.sh` deploys the full sample set (feature-samples and pattern-samples). For bundle descriptions and other scripts, see `samples/README.md` in the repository.
 
-   ```console
-   cd samples
-   ./deploy.sh
-   ```
+From the **`samples/`** directory:
 
-3. Follow the prompts (or pass flags for non-interactive use):
+```{code-block} console
+:class: lf-command-block
+
+cd samples
+```
+
+Choose either interactive or full command-line deploy.
+
+### Option A — Interactive deploy
+
+Run with no flags and answer the prompts:
+
+```{code-block} console
+:class: lf-command-block
+
+./deploy.sh
+```
 
 | Prompt | Purpose | Default |
 | ------ | ------- | ------- |
@@ -85,9 +124,37 @@ By default the CLI deploys to the `dev` target in `databricks.yml`. Use `-t <tar
 | Workspace host | Full workspace URL | — |
 | CLI profile | Named CLI profile | `DEFAULT` |
 | Compute | `0` = classic, `1` = serverless | `1` |
-| UC catalog | Target catalog | `main` |
+| UC catalog | Existing target catalog | `main` |
 | Schema namespace | Prefix for sample schemas | `lakeflow_samples` |
 | Logical environment | Isolation suffix (e.g. `_jd`) | — |
+
+### Option B — Full command-line deploy
+
+Pass all required parameters in one command (no prompts):
+
+```{code-block} console
+:class: lf-command-block
+
+./deploy.sh -u <databricks_username> -h <workspace_host> [-p <profile>] [-c <compute>] [-l <logical_env>] [--catalog <catalog>] [--schema_namespace <schema_namespace>]
+```
+
+Example:
+
+```{code-block} console
+:class: lf-command-block
+
+./deploy.sh -u jane.doe@company.com -h https://company.cloud.databricks.com -l _jd -c 1
+```
+
+| Flag | Purpose | Default |
+| ---- | ------- | ------- |
+| `-u` / `--user` | Workspace user (required) | — |
+| `-h` / `--host` | Workspace URL (required) | — |
+| `-p` / `--profile` | CLI profile | `DEFAULT` |
+| `-c` / `--compute` | `0` = classic, `1` = serverless | `1` |
+| `-l` / `--logical_env` | Isolation suffix | `_test` |
+| `--catalog` | Existing UC catalog | `main` |
+| `--schema_namespace` | Schema name prefix | `lakeflow_samples` |
 
 ```{admonition} Always set a logical environment
 :class: warning
@@ -95,15 +162,9 @@ By default the CLI deploys to the `dev` target in `databricks.yml`. Use `-t <tar
 Use a unique logical environment suffix (initials, story ID, or project name) so your sample schemas and jobs do not overwrite another user's deployment in a shared workspace.
 ```
 
-Deploy only feature samples (fastest path):
-
-```console
-./deploy_feature_samples.sh -u <user> -h <workspace_host> -l _<your_suffix>
-```
-
 ---
 
-## Step 4 — Run the feature samples
+## Step 5 — Run the feature samples
 
 1. In the Databricks workspace, open **Workflows** and locate the job:
 
@@ -111,7 +172,9 @@ Deploy only feature samples (fastest path):
 
    Or run from the CLI (from the `samples/feature-samples` bundle directory after deploy):
 
-   ```console
+   ```{code-block} console
+   :class: lf-command-block
+
    databricks bundle run feature_samples_run_job -t dev
    ```
 
@@ -121,7 +184,7 @@ This is the simplest entry point — every framework feature runs in a single sc
 
 ---
 
-## Step 5 — Enable VS Code IntelliSense
+## Step 6 — Enable VS Code IntelliSense
 
 Add the framework JSON schemas to your VS Code `settings.json` so Data Flow specs get auto-complete and validation.
 
@@ -132,14 +195,9 @@ Add the framework JSON schemas to your VS Code `settings.json` so Data Flow spec
 
 ---
 
-## Step 6 — Understand the framework
+## Step 7 — Understand the framework
 
-| Topic | Start here |
-| ----- | ---------- |
-| Operating model (centralized vs domain-oriented) | {doc}`concepts` |
-| Medallion and streaming patterns | {doc}`patterns` |
-| Feature catalogue | {doc}`features` |
-| Product overview | {doc}`what_is_lakeflow_framework` |
+Read {doc}`concepts` for architecture and operating models, then browse {doc}`features` for what you can configure.
 
 ---
 

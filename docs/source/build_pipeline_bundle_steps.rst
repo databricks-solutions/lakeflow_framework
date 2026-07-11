@@ -1,348 +1,393 @@
 Building a Pipeline Bundle
 ##########################
 
+Create a Pipeline Bundle, configure it, author data flows, and define Spark Declarative Pipelines.
+
 Prerequisites
 =============
 
-- The Lakeflow Framework must be deployed. See :doc:`deploy_framework` for details.
-- Ensure you have autocomplete for Data Flow Specs configured. See :doc:`feature_auto_complete` for details.
-- Understanding of the core concepts of the Framework. See :doc:`concepts` for details.
+Before you begin, verify:
 
-Steps to build a Pipeline Bundle
-================================
+- [ ] **Databricks workspace** access with permission to deploy bundles and run Lakeflow Spark Declarative Pipelines
+- [ ] **Databricks CLI** installed — required for local Asset Bundle deployment ([CLI documentation](https://docs.databricks.com/dev-tools/cli/index.html))
+- [ ] **CLI authentication** — run `databricks auth login` for your workspace, or use a configured CLI profile
+- [ ] **The Lakeflow Framework is deployed** — see Step 1 below and :doc:`deploy_before_you_deploy`
+- [ ] **Unity Catalog** enabled in your workspace
+- [ ] **UC catalog** already exists for sample deployment (default `main`, or pass another with `--catalog`) — the deploy scripts create schemas in that catalog, not the catalog itself
+- [ ] Familiarity with [Lakeflow Spark Declarative Pipelines](https://docs.databricks.com/aws/en/ldp/) concepts (helpful, not required)
+- [ ] **The framework concepts are understood** — see :doc:`concepts`
+- [ ] **Autocomplete for Data Flow Specs** is configured — see :doc:`feature_auto_complete`
 
-1. Create a new Pipeline Bundle
--------------------------------
+Step 1 — Ensure the Lakeflow Framework is deployed
+==================================================
 
-A new Pipeline Bundle can be created using the following methods.
+Before creating a Pipeline Bundle, confirm the framework is **available in your target workspace** at a path you can reference as ``framework_source_path``. Either:
 
-* **Copy Pipeline Bundle Template:**
-  
-  You can copy the ``pipeline_bundle_template`` bundle provided with the framework. The bundle is located in the root directory of the Framework Repository.
+* **Central / platform-owned** — the platform team (or federated domain platform) has deployed the Framework Bundle to a shared workspace files location for your environment; obtain the path and version from them.
+* **Developer-owned (local dev / POC)** — you deployed the framework yourself via :doc:`deploy_local`; the default path is under your user ``.bundle/.../files/src``.
 
-* **Databricks CLI - Initialize Blank Bundle:**
+Checklist:
 
-  .. note:: 
-      The following steps assume that you have the Databricks CLI installed and configured. If not, please refer to the `Databricks CLI documentation <https://docs.databricks.com/dev-tools/cli/index.html>`_.
+* Framework files exist in the workspace
+* You know the full ``framework_source_path`` (including target and version segment)
+* ``databricks.yml`` in your pipeline bundle will reference that path
 
-  You can create a new DABs bundle from the command line by executing the command:
+See :doc:`deploy_before_you_deploy` for deploy order and ownership. When pinning to a specific version, see :doc:`feature_versioning_framework`.
 
-  .. code-block:: bash
+Step 2 — Create a new Pipeline Bundle
+=====================================
 
-      databricks bundle init
+Choose one of the following methods.
 
-  This will create a new DABs bundle with the following structure:
+Copy the Pipeline Bundle template
+---------------------------------
 
-  ::
+Copy the ``pipeline_bundle_template`` bundle from the root of the Framework repository.
 
-      my_pipeline_bundle/
-      ├── fixtures/
-      ├── resources/
-      ├── scratch/
-      │   ├── exploration.ipynb
-      │   └── README.md
-      ├── databricks.yml
-      └── README.md
+Initialize a blank bundle with the Databricks CLI
+--------------------------------------------------
 
+.. note::
 
-  Modify the bundle to have the following structure without the files:
+   Requires the Databricks CLI installed and configured. See the
+   `Databricks CLI documentation <https://docs.databricks.com/dev-tools/cli/index.html>`_.
 
-  ::
+.. code-block:: console
+   :class: lf-command-block
 
-      my_pipeline_bundle/
-      ├── fixtures/
-      ├── resources/
-      │   └── my_first_pipeline.yml
-      ├── scratch/
-      ├── src/
-      │   ├── dataflows/
-      │   ├── init/
-      │   │   ├── pre/
-      │   │   └── post/
-      │   ├── libraries/
-      │   ├── pipeline_configs/
-      │   └── python/
-      ├── databricks.yml
-      └── README.md
+   databricks bundle init
 
-* **Databricks CLI - Initialize Bundle Using a Custom Template:**
+This creates a DABs bundle similar to:
 
-  .. note:: 
-      This method assumes that:
-        * You have the Databricks CLI installed and configured. If not, please refer to the `Databricks CLI documentation <https://docs.databricks.com/dev-tools/cli/index.html>`_.
-        * You have a custom template file that you want to use to initialize the bundle. Refer to the `Databricks CLI documentation <https://docs.databricks.com/en/dev-tools/bundles/templates.html#use-a-custom-bundle-template>`_ for more information on how to create a custom template.
-        * A custom template should be maintained centrally, discuss this with your platform team.
+::
 
-  You can create a new DABs bundle from the command line by executing the command:
+    my_pipeline_bundle/
+    ├── fixtures/
+    ├── resources/
+    ├── scratch/
+    │   ├── exploration.ipynb
+    │   └── README.md
+    ├── databricks.yml
+    └── README.md
 
-  .. code-block:: bash
+Adjust it to the Pipeline Bundle layout (directories only shown):
 
-      databricks bundle init <path_to_custom_template_file>
+::
 
-* **Copy an Existing Pipeline Bundle:**
+    my_pipeline_bundle/
+    ├── fixtures/
+    ├── resources/
+    │   └── my_first_pipeline.yml
+    ├── scratch/
+    ├── src/
+    │   ├── dataflows/
+    │   ├── init/
+    │   │   ├── pre/
+    │   │   └── post/
+    │   ├── libraries/
+    │   ├── pipeline_configs/
+    │   └── python/
+    ├── databricks.yml
+    └── README.md
 
-  You can always copy an existing Pipeline Bundle to use as a starting point for a new Pipeline Bundle. If doing this bear in mind that you may need to:
+Initialize from a custom template
+---------------------------------
 
-  - Reset the targets and parameters in the ``databricks.yml`` file
-  - Clear out the following folders: ``resources/``, ``src/dataflows/``, ``src/pipeline_configs/``, ``src/python/``, ``src/libraries/``, ``src/init/pre/``, and ``src/init/post/``
+.. note::
 
-2. Update the ``databricks.yml`` File
--------------------------------------
+   * Requires the Databricks CLI installed and configured.
+   * Requires a custom template — see
+     `custom bundle templates <https://docs.databricks.com/en/dev-tools/bundles/templates.html#use-a-custom-bundle-template>`_.
+   * Custom templates should be maintained centrally; discuss with your platform team.
 
-The databricks.yml needs to be adjusted to include the following configurations:
+.. code-block:: console
+   :class: lf-command-block
+
+   databricks bundle init <path_to_custom_template_file>
+
+Copy an existing Pipeline Bundle
+--------------------------------
+
+You can copy an existing Pipeline Bundle as a starting point. If you do:
+
+* Reset targets and parameters in ``databricks.yml``
+* Clear ``resources/``, ``src/dataflows/``, ``src/pipeline_configs/``, ``src/python/``,
+  ``src/libraries/``, ``src/init/pre/``, and ``src/init/post/`` as needed
+
+Step 3 — Update ``databricks.yml``
+==================================
+
+Adjust ``databricks.yml`` to include configurations similar to:
 
 .. code-block:: yaml
 
-  bundle:
-    name: bundle_name
+   bundle:
+     name: bundle_name
 
-  include:
-    - resources/*.yml
+   include:
+     - resources/*.yml
 
-  variables:
-    owner:
-      description: The owner of the bundle
-      default: ${workspace.current_user.userName}
-    catalog:
-      description: The target UC catalog
-      default: main
-    schema:
-      description: The target UC schema
-      default: default
-    layer:
-      description: The target medallion layer
-      default: bronze
+   variables:
+     owner:
+       description: The owner of the bundle
+       default: ${workspace.current_user.userName}
+     catalog:
+       description: The target UC catalog
+       default: main
+     schema:
+       description: The target UC schema
+       default: default
+     layer:
+       description: The target medallion layer
+       default: bronze
 
-    
-  targets:
-    dev:
-      mode: development
-      default: true
-      workspace:
-        host: https://<workspace>.databricks.com/
-      variables:
-        framework_source_path: /Workspace/Users/${var.owner}/.bundle/lakeflow_framework/dev/current/files/src
-
-.. note::
-    * The ``framework_source_path`` variable should point to the location of where the Lakeflow Framework bundle is deployed in the Databricks workspace. 
-    * By default the Lakeflow Framework Bundle is deployed to the owner's (person deploying the bundle) workspace folder in the ``.bundle/<project name>/<target environment>/<framework_version>/files/src`` directory.
-    * The ``owner`` can either be passed via the command line or via your CI/CD tool to allow deployment to the appropriate workspace files location in the given deployment context. See the :doc:`deploy_pipeline_bundle` section for more information.
-
-3. Select your Bundle Structure
--------------------------------
-
-Based on the Use Case and the standards defined in your Org, select the appropriate bundle structure. See the :doc:`build_pipeline_bundle_structure` section for guidance.
-
-4. Select your Data Flow Specification Language / Format
---------------------------------------------------------
-
-Based on the implementation and standards in your Org, you can select the appropriate specification language / format. See the :doc:`feature_spec_format` section details.
-
-Be aware that:
-
-- The default format is `JSON`.
-- The format may have already been enforced globally at Framework level per your org standards.
-- If enabled at Framework level, you can set the format at the Pipeline Bundle level.
-- You cannot mix and match formats in the same bundle, it's important to ensure consistency for engineers working on the same bundle.
-
-5. Setup your Substitutions Configuration
------------------------------------------
-
-If you haven't already done so, familiarize yourself with the :doc:`feature_substitutions` feature of the Framework.
-
-If you need to use substitutions and the substitutions you require have not been configure globally at the Framework level, you need to now setup your substitutions file. See the :doc:`feature_substitutions` section for guidance.
+   targets:
+     dev:
+       mode: development
+       default: true
+       workspace:
+         host: https://<workspace>.databricks.com/
+       variables:
+         framework_source_path: /Workspace/Users/${var.owner}/.bundle/lakeflow_framework/dev/current/files/src
 
 .. note::
-    This step is optional and only required if substitutions are required to deploy the same pipeline bundle to multiple environments with different resources names. This step can also be actioned later in the build process after the Data Flow Specs have been created.
 
-6. Build your Data Flows
+   * ``framework_source_path`` must point to where the Lakeflow Framework bundle is deployed in the workspace.
+   * By default the Framework Bundle deploys under the owner's
+     ``.bundle/<project name>/<target environment>/<framework_version>/files/src`` path.
+   * ``owner`` can be passed on the command line or via CI/CD so the path resolves in each deployment context.
+     See :doc:`deploy_local` (Pipeline bundle section).
+
+Step 4 — Select your bundle structure
+=====================================
+
+Based on the use case and your org standards, choose a bundle structure.
+See :doc:`build_pipeline_bundle_structure`.
+
+Step 5 — Select your Data Flow Spec format
+==========================================
+
+Choose the specification language / format for your org. See :doc:`feature_spec_format`.
+
+Keep in mind:
+
+* The default format is JSON
+* Format may already be enforced globally at the Framework level
+* If enabled at Framework level, you can set format at the Pipeline Bundle level
+* Do not mix formats in the same bundle
+
+Step 6 — Set up substitutions (optional)
+========================================
+
+If you need substitutions and they are not already configured globally, set up your substitutions file.
+See :doc:`feature_substitutions`.
+
+.. note::
+
+   Optional — only required when the same pipeline bundle must deploy to multiple environments
+   with different resource names. You can also do this later after Data Flow Specs exist.
+
+Step 7 — Build your data flows
+==============================
+
+Repeat the following for each data flow.
+
+Understand the use case
+-----------------------
+
+Decide:
+
+* Data flow type: Standard, Flows or Materialized Views
+* An existing pattern or a new design — see :doc:`patterns`
+
+Consider:
+
+* Which medallion layer the flow reads from and writes to
+* Streaming vs batch
+* Target table SCD0, SCD1, or SCD2
+* Data quality rules
+* Number of sources, join strategy, shared keys / sequence columns
+* Transform type and complexity
+* Latency / SLA requirements
+
+Update substitutions
+--------------------
+
+Add any substitutions required for this data flow to the substitutions file.
+
+Add init scripts (optional)
+---------------------------
+
+If the pipeline needs Spark configuration, event hooks, or one-time setup outside data-flow logic,
+add ``.py`` scripts to:
+
+* ``src/init/pre/`` — run **before** SDP data flow declarations
+* ``src/init/post/`` — run **after** SDP data flow declarations
+
+Scripts run in sorted filename order. Names starting with ``_`` are skipped.
+Use a numeric prefix (for example ``01_setup.py``) to control order.
+See :doc:`feature_python_extensions`.
+
+.. note::
+
+   Optional — only when pipeline-level lifecycle setup is needed.
+
+Build the Data Flow Spec
 ------------------------
 
-Iterate over the following steps to create each individual Data Flow:
+Use the spec format you chose in **Step 5**. Then decide how to author the flow:
 
-1. **Understand your Use Case:**
+**Full Data Flow Spec** — write a complete spec file for this flow. Use when the flow is one-off or does not share structure with others in the bundle.
 
-  In this step you will need to make two selections:
-    a. The Data Flow Type: Standard or Flows
-    #. Select from an existing pattern or create a new one. Refer to the :doc:`patterns` section for more information on the different patterns.
+**Template-based spec** — define a reusable pattern once, then instantiate it with parameter sets when many flows differ only by table names, schemas, or similar parameters. See :doc:`feature_templates`.
 
-  To make these selections you need to consider the following:
-    a. What layer of the Lakehouse will the Data Flow read from and write to?
-    #. Is this a streaming or batch data flow?
-    #. Is my target table SCD0, SCD1 or SCD2?
-    #. Are there Data Quality rules that need to be applied to the data?
-    #. How many source tables are there, what join strategy is require and do the tables share common keys and sequence columns?
-    #. Are there any transformations required and if so what type and complexity?
-    #. What are the latency / SLA requirements?
+**Create a subdirectory** for the flow based on your bundle structure, under ``src/dataflows/`` if needed.
 
-2. **Update your Substitutions Configuration:**
+If using **templates**:
 
-  If necessary add any substitutions required for your Data Flow to the substitutions file.
+* Add a **template definition** under ``templates/`` (for example ``templates/<name>.json``) with parameters and the spec pattern
+* Add a **template Data Flow Spec** that references the template and supplies one or more ``parameterSets`` — each set generates one runtime spec
 
-3. **Add Init Scripts** *(optional)*:
+If writing a **full spec**:
 
-  If your pipeline requires Spark configuration, event hook registration, or any one-time setup that must run outside of Data Flow logic, add ``.py`` scripts to:
+* Add the Data Flow Spec file(s) for the flow
 
-  - ``src/init/pre/`` — run **before** SDP data flow declarations
-  - ``src/init/post/`` — run **after** SDP data flow declarations
+Reference material:
 
-  Scripts are executed in sorted filename order. Files whose names begin with ``_`` are skipped. Use a numeric prefix (e.g. ``01_setup.py``) to control execution order.
+* :doc:`dataflow_spec_reference` — how to author the spec
+* :doc:`feature_templates` — template definitions and parameter sets
+* :doc:`patterns` — high-level patterns and sample shapes
+* :doc:`deploy_samples` — deploy samples to inspect working examples
 
-  Refer to the :doc:`feature_python_extensions` section for full details.
+**Create schema JSON / DDL file(s)** in the ``schemas`` subdirectory of the data flow home folder:
 
-  .. note::
-      This step is optional and only required when pipeline-level lifecycle setup is needed.
+* Prefer an explicit schema for source and target tables (unless you want automatic Bronze schema evolution)
+* Schemas are optional for staging tables
+* Each schema in its own file, referenced from the Data Flow Spec
 
-4. **Build the Data Flow Spec:**
+See :doc:`feature_schemas` for the schema specification.
 
-  a. Create a sub-directory per you selected bundle structure:
+**Create SQL transform file(s)** in the ``dml`` subdirectory when the flow uses transforms.
 
-    If necessary, create a new folder in the ``src/dataflows`` directory based on your selected bundle strategy.
-  
-  b. Create Data Flow Spec file(s):
+**Create data quality expectations file(s)** in the ``expectations`` subdirectory when needed.
+See :doc:`feature_data_quality_expectations`.
 
-    * Refer to the :doc:`dataflow_spec_reference` section to build your Data Flow Spec
-    * Refer to the :doc:`patterns` section for high level patterns and sample code.
-    * Refer to the :doc:`deploy_samples` section on how to deploy the samples so you can reference the sample code.
+**Add pipeline logic modules** *(optional)* — if the spec references custom Python
+(``pythonModule``, ``pythonTransform.module``, or a custom sink), add modules or packages under ``src/python/``.
+The framework adds ``src/python/`` to ``sys.path`` at pipeline initialisation.
+See :doc:`feature_python_extensions`.
 
-  c. Create schema JSON / DDL files(s):
-  
-    Create your schema JSON / DDL files in the ``schema`` sub-directory of your Data Flow Spec's home folder:
-      
-      * You should in general always specify a schema for your source and target tables, unless you want schema evolution to happen automatically in Bronze.
-      * Schema definitions are optional for staging tables.
-      * Each schema must be defined in it's own individual file.
-      * Each schema must be referenced by the appropriate object(s) in your Data Flow Spec JSON file(s).
+.. note::
 
-    A schema file must have a format similar to the below example:
+   Optional — only when the Data Flow Spec references a custom Python module.
 
-    The schema specification can be found in the :doc:`feature_schemas` section.
+Step 8 — Create pipeline definitions
+====================================
 
-    d. Create SQL Transform file(s):
+After pipeline definitions are authored, deploy the bundle — see :doc:`deploy`.
 
-      If you have transforms in your Data Flow, you will need to create a SQL file for each transform, in the ``dml`` sub-directory of your Data Flow Spec's home folder.
+Define Spark Declarative Pipelines as YAML under ``resources/``. Each pipeline has its own file.
+DABs uses these files to create pipelines in the target workspace.
 
-    e. Create Data Quality Expectations file(s):
+How many resource files you create depends on the bundle structure you selected.
 
-      If you have data quality expectations in your Data Flow, you will need to create an expectations file for your target table in the ``expectations`` sub-directory of your Data Flow Spec's home folder.
+Create a resource YAML file
+---------------------------
 
-      Refer to the :doc:`feature_data_quality_expectations` section for guidance on how to create an expectations file.
+Add a new YAML file in ``resources/``, named after the pipeline.
 
-    f. **Add Pipeline Logic Modules** *(optional)*:
+Add the base YAML definition
+----------------------------
 
-      If your Data Flow Spec references custom Python code — e.g. ``pythonModule``, ``pythonTransform.module``, or a custom sink — add the corresponding ``.py`` modules or packages to ``src/python/``.
+Replace ``<value>`` placeholders on the highlighted lines:
 
-      The framework adds ``src/python/`` to ``sys.path`` at pipeline initialisation so spec strings such as ``"module": "my_transforms"`` resolve without any extra configuration.
+.. code-block:: yaml
+   :emphasize-lines: 3, 4
 
-      Refer to the :doc:`feature_python_extensions` section for details on flat vs. package layout options.
+   resources:
+     pipelines:
+       <value_pipeline_name>:
+         name: <value_pipeline_name>
+         catalog: ${var.catalog}
+         schema: ${var.schema}
+         channel: CURRENT
+         serverless: true
+         libraries:
+           - notebook:
+               path: ${var.framework_source_path}/dlt_pipeline
 
-      .. note::
-          This step is optional and only required when your Data Flow Spec references a custom Python module.
+         configuration:
+           bundle.sourcePath: /Workspace/${workspace.file_path}/src
+           framework.sourcePath: /Workspace/${var.framework_source_path}
+           workspace.host: ${workspace.host}
+           bundle.target: ${bundle.target}
+           pipeline.layer: ${var.layer}
 
-7. Create your Pipeline Definitions
------------------------------------
+Add Data Flow filters (optional)
+--------------------------------
 
-Spark Declarative Pipelines are defined in the ``resources`` directory. Each Pipeline is defined in it's own individual YAML file.
+By default a pipeline executes all data flows in the bundle. When you define multiple pipelines,
+filter which flows each pipeline runs:
 
-DAB's will use these YAML files to create the Spark Declarative Pipelines in the target Databricks Workspace.
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-How many pipeline resource files you create and how you configure them will be based on the Bundle Structure you have selected.
+   * - Configuration option
+     - Description
+   * - ``pipeline.dataFlowIdFilter``
+     - Data flow ID(s) to include
+   * - ``pipeline.dataFlowGroupFilter``
+     - Data flow group(s) to include
+   * - ``pipeline.flowGroupIdFilter``
+     - Flow group ID(s) within a data flow to include
+   * - ``pipeline.fileFilter``
+     - File path for the data flow to include
+   * - ``pipeline.targetTableFiler``
+     - Target table(s) to include
 
-To create a single Pipeline definition, follow these steps:
+.. note::
 
-1. **Create a resource YAML file:**
+   Filter values can be a single value or a comma-separated list.
 
-  Create a new YAML file in the ``resources`` directory. Name it after the Pipeline you want to create.
+Example with filters:
 
-2. **Add the Base YAML Definition:**
+.. code-block:: yaml
+   :emphasize-lines: 19-22
 
-  Add the following base content to the file, replacing the ``<value>`` tags in the highlighted rows with the appropriate values for your Pipeline.
-  
-  .. code-block:: yaml
-    :emphasize-lines: 3, 4
+   resources:
+     pipelines:
+       <value_pipeline_name>:
+         name: <value_pipeline_name>
+         catalog: ${var.catalog}
+         schema: ${var.schema}
+         channel: CURRENT
+         serverless: true
+         libraries:
+           - notebook:
+               path: ${var.framework_source_path}/dlt_pipeline
 
-      resources:
-        pipelines:
-          <value_pipeline_name>:
-            name:  <value_pipeline_name>
-            catalog: ${var.catalog}
-            schema: ${var.schema}
-            channel: CURRENT
-            serverless: true
-            libraries:
-              - notebook:
-                  path: ${var.framework_source_path}/dlt_pipeline
+         configuration:
+           bundle.sourcePath: /Workspace/${workspace.file_path}/src
+           framework.sourcePath: /Workspace/${var.framework_source_path}
+           workspace.host: ${workspace.host}
+           bundle.target: ${bundle.target}
+           pipeline.layer: ${var.layer}
+           pipeline.targetTableFiler: <value_target_table>
+           pipeline.dataFlowIdFilter: <value_flow_id>
+           pipeline.flowGroupIdFilter: <value_flow_group_id>
+           pipeline.fileFilter: <value_file_path>
 
-            configuration:
-              bundle.sourcePath: /Workspace/${workspace.file_path}/src
-              framework.sourcePath: /Workspace/${var.framework_source_path}
-              workspace.host: ${workspace.host}
-              bundle.target: ${bundle.target}
-              pipeline.layer: ${var.layer}
+Add cluster libraries (optional)
+--------------------------------
 
-3. **Add any required Data Flow filters:**
+Install third-party or in-house packages via ``environment.dependencies`` in the pipeline resource YAML.
+See :doc:`feature_python_extensions`. Sources include:
 
-  By default, if you don't specify any Data Flow filters, the pipeline will execute all Data Flows in your Pipeline Bundle.
+* **PyPI** — ``- my_package>=1.0``
+* **UC Volumes** — ``- /Volumes/catalog/schema/my_pkg.whl``
+* **Artifact repository** — ``- https://artifactory.example.com/my_pkg.whl``
+* **Bundle wheel** — ``- /Workspace/${workspace.file_path}/src/libraries/my_package.whl``
 
-  If you are creating more than one Pipeline definition in your bundle, you may want your Pipeline(s) to only execute specific Data Flows. 
-
-  The Framework provides number of ways to filter the Data Flows a pipeline executes. These can be set per the configuration options described below:
-
-  .. list-table::
-    :header-rows: 1
-    :widths: 30 70
-
-    * - Configuration Option
-      - Description
-    * - ``pipeline.dataFlowIdFilter``
-      - The ID(s) of the data flow to include in the pipeline
-    * - ``pipeline.dataFlowGroupFilter``
-      - The data flow group(s) to include in the pipeline
-    * - ``pipeline.flowGroupIdFilter``
-      - The ID's of the flow group(s), in a data flow, to include in the pipeline
-    * - ``pipeline.fileFilter``
-      - The file path for the data flow to include in the pipeline
-    * - ``pipeline.targetTableFiler``
-      - The target table(s) to include in the pipeline
-
-  .. note::
-      For all the above filter fields, the values can be a single value or multiple values separated by a comma.
-
-  You can add the appropriate Data Flow filter options described above to the Pipeline definition, as show below:
-
-  .. code-block:: yaml
-    :emphasize-lines: 19-22
-
-      resources:
-        pipelines:
-          <value_pipeline_name>:
-            name:  <value_pipeline_name>
-            catalog: ${var.catalog}
-            schema: ${var.schema}
-            channel: CURRENT
-            serverless: true
-            libraries:
-              - notebook:
-                  path: ${var.framework_source_path}/dlt_pipeline
-
-            configuration:
-              bundle.sourcePath: /Workspace/${workspace.file_path}/src
-              framework.sourcePath: /Workspace/${var.framework_source_path}
-              workspace.host: ${workspace.host}
-              bundle.target: ${bundle.target}
-              pipeline.layer: ${var.layer}
-              pipeline.targetTableFiler: <value_target_table>
-              pipeline.dataFlowIdFilter: <value_flow_id>
-              pipeline.flowGroupIdFilter: <value_flow_group_id>
-              pipeline.fileFilter: <value_file_path>
-
-4. **Add Cluster Libraries** *(optional)*:
-
-  If your pipeline requires third-party or in-house Python packages installed on the cluster, add them via ``environment.dependencies`` in your pipeline resource YAML. Refer to the :doc:`feature_python_extensions` section for full details. Sources include:
-
-  - **PyPI** — ``- my_package>=1.0``
-  - **UC Volumes** — ``- /Volumes/catalog/schema/my_pkg.whl``
-  - **Artifact repository** (Artifactory, Nexus) — ``- https://artifactory.example.com/my_pkg.whl``
-  - **Bundle wheel** (wheel stored with the pipeline code) — ``- /Workspace/${workspace.file_path}/src/libraries/my_package.whl``
-
-  For the last case, place the ``.whl`` file in ``src/libraries/``. You may also place loose ``.py`` files or packages there if they need to be on ``sys.path`` without being spec-referenced (e.g. a shared utility imported indirectly).
+For bundle wheels, place the ``.whl`` in ``src/libraries/``. You may also put loose ``.py`` files
+there when they must be on ``sys.path`` without being spec-referenced.

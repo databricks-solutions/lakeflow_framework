@@ -185,6 +185,7 @@ Testing Dependencies Locally
 Before deploying, test that dependencies install correctly:
 
 .. code-block:: bash
+   :class: lf-command-block
 
     # Create a virtual environment
     python -m venv test_env
@@ -237,6 +238,7 @@ If you encounter version conflicts:
 3. Consider pinning specific versions to resolve conflicts
 
 .. code-block:: bash
+   :class: lf-command-block
 
     pip install -r requirements.txt
     pip check  # Shows any dependency conflicts

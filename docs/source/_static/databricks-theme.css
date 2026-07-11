@@ -117,6 +117,28 @@
   color: var(--md-default-fg-color, #1b3139);
 }
 
+/* Home — Why LFF (positioning) between hero blurb and capability cards */
+.md-typeset section:has(> .lf-hero) > h2,
+.md-typeset .lf-hero ~ h2 {
+  max-width: 46rem;
+  margin: 0 auto 1rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.md-typeset section:has(> .lf-hero) > h2 ~ p,
+.md-typeset .lf-hero ~ h2 ~ p {
+  max-width: 46rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.md-typeset section:has(> .lf-hero) > h2 ~ ul,
+.md-typeset .lf-hero ~ h2 ~ ul {
+  max-width: 46rem;
+  margin: 1rem auto 2rem;
+}
+
 /* Landing page — full-width content column (no sidebar gutter) */
 body:has(.lf-hero) .md-main__inner {
   display: block;
@@ -351,6 +373,37 @@ body:has(.lf-hero) .md-content__inner {
   display: none;
 }
 
+/*
+ * Header scroll behaviour (toc.follow): keep "Lakeflow Framework" and the
+ * version selector visible. Theme default hides the first .md-header__topic
+ * (where .md-version is injected) when md-header__title--active is set.
+ */
+.md-header__title,
+.md-header__ellipsis,
+.md-header__topic {
+  overflow: visible;
+}
+
+.md-header__title--active .md-header__topic {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  z-index: 0;
+}
+
+.md-header__title--active .md-header__topic + .md-header__topic {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(1.25rem);
+  z-index: -1;
+}
+
+.md-header__title--active .md-version {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
 .md-header__source,
 .md-source,
 .md-source__repository,
@@ -521,20 +574,32 @@ body:has(.lf-hero) .md-content__inner {
 }
 
 /*
- * Features-style deep trees: no expand/collapse chevrons. Section links
- * navigate to the hub page; only the active path stays open.
+ * Global primary nav: active-path only, no expand/collapse toggles.
  *
- * Immaterial often renders section hubs as plain .md-nav__item with a child
- * .md-nav (no --nested / toggle). Collapse those unless the item is active
- * (ancestors of the current page also get --active).
+ * Nested children show only when an ancestor has .md-nav__item--active.
+ * Do not clip overflow on the active path — the theme draws the red edge as
+ * .md-nav__link--in-viewport::before outside the link (right: 100% + .3rem).
  */
 .md-nav--primary .md-nav__item--nested > .md-nav__container > label.md-nav__link {
-  display: none;
+  display: none !important;
 }
 
 .md-nav--primary .md-nav__item--nested > .md-nav__container > .md-nav__link[href] {
   width: 100%;
   margin-right: 0;
+}
+
+.md-nav--primary .md-nav__item--nested > label.md-nav__link[for] {
+  pointer-events: none;
+  cursor: default;
+}
+
+.md-nav--primary .md-nav__item--nested .md-nav__icon {
+  display: none !important;
+}
+
+.md-nav--primary .md-nav__item--nested > .md-nav__toggle {
+  display: none !important;
 }
 
 .md-nav--primary .md-nav__item:not(.md-nav__item--active) > .md-nav {
@@ -546,11 +611,23 @@ body:has(.lf-hero) .md-content__inner {
 }
 
 .md-nav--primary .md-nav__item--active > .md-nav {
-  display: block;
-  height: auto;
-  max-height: none;
-  overflow: visible;
-  visibility: visible;
+  display: block !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  visibility: visible !important;
+}
+
+/*
+ * Red edge is theme .md-nav__link--in-viewport::before (in-page scroll spy).
+ * Do not draw it on top-level section/nav links (cross-page hrefs) — only on
+ * in-page TOC anchors (#overview, #configuration, …).
+ */
+.md-nav--primary .md-nav__link--in-viewport:not([href^="#"])::before {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  background: none !important;
 }
 
 /*
@@ -1006,7 +1083,12 @@ body:has(.lf-hero) .md-content__inner {
 
 /*
  * Command snippets (Quick Start) — WAF / MkDocs Material-style light panels.
- * Scoped via .lf-command-block; dark Cursor panels stay default elsewhere.
+ * Scoped via .lf-command-block on the code block (explicit in RST/MD):
+ *   RST:  .. code-block:: console
+ *            :class: lf-command-block
+ *   MyST: ```{code-block} console
+ *         :class: lf-command-block
+ * Dark Cursor panels stay default elsewhere.
  */
 .md-typeset div.lf-command-block[class*="highlight-"].notranslate {
   display: block;

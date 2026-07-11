@@ -22,7 +22,7 @@
 
 Run one bundle. Get bronze, silver, and gold pipelines aligned to Databricks Lakeflow Spark Declarative Pipelines — with reusable patterns, data quality, CDC, and materialized views.
 
-New to the framework? Read :doc:`what_is_lakeflow_framework` for a product-level overview.
+New to the framework? Read :doc:`what_is_lakeflow_framework` for a product-level overview, then continue with :doc:`quick_start`.
 
 .. raw:: html
 
@@ -58,7 +58,7 @@ New to the framework? Read :doc:`what_is_lakeflow_framework` for a product-level
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Deploy with Declarative Automation Bundles; no wheels or control tables required.</p>
-       <a class="lf-feature-card__link" href="deploy_framework.html">
+       <a class="lf-feature-card__link" href="deploy.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
          Deploy guide
        </a>

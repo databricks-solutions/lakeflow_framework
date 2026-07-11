@@ -1,4 +1,4 @@
-Configuration management
+Configuration Management
 ========================
 
 Org-wide and pipeline-level defaults and wiring — framework configuration,

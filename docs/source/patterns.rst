@@ -3,36 +3,26 @@ Data Flow and Pipeline Patterns
 
 .. _patterns_overview:
 
-Patterns Overview 
-=================
+Reference patterns for designing data flows and pipelines. These are not the only patterns the framework supports.
 
-Below we summarize a set of core reference patterns used to design and build out data flows and pipelines. These are not the only patterns supported by the framework.
+With the exception of Basic 1:1, the examples lean toward complex streaming (multi-source joins, CDC-driven updates, mixed stream/static topologies).
 
-With the exception of the Basic 1:1 pattern, the examples on this page are primarily aimed at more complex streaming requirements (for example, multi-source joins, CDC-driven updates, and mixed stream/static topologies).
-
-For the underlying Lakeflow Spark Declarative Pipelines concepts (datasets, flows, and pipeline semantics), refer to the Databricks documentation: `What is Lakeflow Spark Declarative Pipelines - Key concepts <https://docs.databricks.com/aws/en/ldp/concepts/#key-concepts>`_.
+* Operating models and modelling paradigms: :doc:`concepts`
+* Multi-source streaming feature: :doc:`feature_multi_source_streaming`
+* Bundle and pipeline scope: :doc:`build_pipeline_bundle_structure`
+* SDP concepts (datasets, flows): `Lakeflow Spark Declarative Pipelines — key concepts <https://docs.databricks.com/aws/en/ldp/concepts/#key-concepts>`_
 
 For Gold-layer workloads, Materialized Views should generally be the first choice for dimensional modelling, batch processing, and aggregation-centric serving tables. Prefer streaming-first Gold patterns when lower-latency or less-aggregated use cases are required.
 
-Choosing patterns by operating model
-------------------------------------
-
-These patterns can be applied across centralized platform teams, domain-aligned ownership models (including data mesh/data products), and hybrid approaches.
-
-When selecting a pattern, start with:
-
-* Your ownership model (centralized, domain-aligned, or hybrid)
-* The target modelling approach (medallion, dimensional, Data Vault, enterprise canonical/3NF, or other enterprise models)
-* Source characteristics (streaming, static, CDC, and key alignment)
-* Latency and change-propagation requirements for downstream consumers
+When selecting a pattern, start with ownership model, modelling approach, source characteristics (streaming, static, CDC), and latency needs.
 
 .. important::
 
-    The documentation for each pattern is accompanied with a data flow example. Please note that:
+    Each pattern page includes a data flow example. Note that:
 
-    * The examples are designed to relay the key differences between the various patterns
-    * The examples demonstrate the changes to the target tables in Append Only, SCD1 and SCD2 scenarios.
-    * The customer address master table only has a few basic columns so that we can keep the example simple.
+    * Examples highlight key differences between patterns
+    * They show Append Only, SCD1, and SCD2 target-table behaviour
+    * The sample customer address table uses a few basic columns for clarity
 
 .. list-table::
    :widths: 30 70
@@ -147,134 +137,26 @@ When selecting a pattern, start with:
 
        * You need to stream multiple sources into a single target table but one or more of the sources are snapshot based.
        * You want to stream only the changes from a snapshot source.
-       
-
-
-Patterns Documentation
-======================
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    Pattern - Basic 1:1 <patterns_streaming_basic_1_1>
    Pattern - Multi-Source Streaming <patterns_streaming_multi_source_streaming>
    Pattern - Stream-Static - Basic <patterns_streaming_stream_static_basic>
    Pattern - Stream-Static - Streaming Data Warehouse <patterns_streaming_stream_static_streaming_dwh>
    Pattern - CDC Stream from Snapshots <patterns_streaming_cdc_stream_from_snapshot>
+
 .. _patterns_mix_and_match:
-
-Multi-Source Streaming and Flow Groups
-======================================
-
-The :doc:`Multi-Source Streaming <feature_multi_source_streaming>` feature allows you to stream multiple flows into a single target.
-
-Per the :doc:`concepts` section of this documentation, Flow Groups are used to logically group flows. This is useful when you have multiple complex sources and makes data flow development and maintenance more manageable.
-
-You can design your pipelines with multiple flow groups, e.g if you have tables from 50 source systems streaming into one target table via a series of different transformations, you would likely design your data flow to have 50 Flow Groups, one for each source.
-
-The diagram below shows a data flow with two flow groups, each with their own flows, and each populating the same target table:
-
-.. image:: images/stream_multi_monolithic.png
-   :target: _images/stream_multi_monolithic.png
-   :alt: Monolithic Pipelines
-
-.. important::
-
-  This applies to all data flows and patterns that use Flow Groups.
-
-.. important::
-
-   Per the :doc:`concepts` section of this documentation, Flow Groups and Flows can be added and removed from a data flow as your requirements and systems evolve. This will not break the existing pipeline and will not require a full refresh of the Pipeline.
 
 Mix and Match
 =============
 
-You can have one or more data flows in a single pipeline, and each of these can be based on a different pattern. 
-
-You can also mix and match patterns in a single data flow, where you have multiple :ref:`Flow Groups <concepts_flows_data_flow>` populating the same target table; as shown below:
+A pipeline can include one or more data flows, each based on a different pattern. Within a single data flow you can also mix patterns across :ref:`Flow Groups <concepts_flows_data_flow>` that populate the same target table:
 
 .. image:: images/mix_and_match.png
    :target: _images/mix_and_match.png
    :alt: Mix and Match Patterns
 
-.. _patterns_scaling_pipelines:
-
-Scaling and Pipeline Scope 
-==========================
-
-When designing your data flows and pipelines, you will need to decide how you will scale and scope your data flows and pipelines to support your business requirements. 
-
-There is no hard and fast rule in determining how to divide up your pipelines, what you choose will depend on your specific requirements and constraints. The following factors will influence your choice:
-
-* Your organizational structure.
-* Your operational practices and your CI/CD processes.
-* The size and complexity of your data e.g. the number of sources, transformations, targets and volumes.
-* Your latency requirements and your SLA's.
-* and many more ...
-
-Ultimately you will need to determine the best way to divide up your pipelines to support your business requirements.
-
-.. important::
-
-   Per the :doc:`concepts` section of this documentation:
-   
-   * A data flow, and its Data Flow Spec, defines the source(s) and logic required to generate a **single target table**.
-   * A Pipeline Bundle can contain multiple Data Flow Specs, and a Pipeline deployed by the bundle may execute the logic for one or more Data Flow Specs.
-   
-   For the above reasons **the smallest possible division for a Pipeline is a single data flow and hence a single target table**.
-
-.. warning::
-
-   Be aware of the current Pipeline and concurrency limits for DLT. These are subject to change and you can check the latest limits at:
-
-   * https://docs.databricks.com/en/resources/limits.html
-   * https://docs.databricks.com/en/delta-live-tables/limitations.html
-
-Pipeline Scope
----------------
-
-The most common strategy is to logically group your target tables as a starting point and then determine your pipeline scope from there. 
-Some of the most common groupings are shown below:
-
-.. list-table::
-   :widths: 30 70
-   :header-rows: 1
-
-   * - Logical Grouping
-     - Description
-   * - Use Case
-     - You may choose to have an end to end pipeline for given Use Cases
-   * - Bronze
-     - * Source System - A Pipeline per Source System or application
-   * - Silver / Enterprise Models
-     - * Subject Area / Sub-Domain - A Pipeline per Subject Area, or Sub-Domain
-       * Use Case - A Pipeline per Use Case
-       * Target Table - A Pipeline per target table, the most granular level for complex data flows
-   * - Gold / Dimensional Models
-     - * Data Mart - A Pipeline per Data Mart
-       * Common Dimensions - A Pipeline for your Common Dimensions
-       * Target Table - A Pipeline for complex Facts or target tables.
-
-Once you have determined the best way to divide up your pipelines, you can then determine the best way to implement them, which will fall into one of the following categories:
-
-Decomposing Pipelines
----------------------
-
-You can break a pipeline down into smaller, more manageable pipelines where natural boundaries exist.
-
-In the below example, we start with a pipeline that has two Flow Groups flowing into a target table, via some staging tables:
-
-.. image:: images/stream_multi_monolithic.png
-   :target: _images/stream_multi_monolithic.png
-   :alt: Atomic Pipelines
-
-Below is the same pipeline decomposed into three pipelines:
-
-* Each Flow Group has been broken out into a separate pipeline, the target table of which is the final staging table.
-* There is a final pipeline that merges the up stream staging tables into the final target table.
-
-.. image:: images/stream_multi_granular.png
-   :target: _images/stream_multi_granular.png
-   :alt: Decomposed Pipelines
-
-
+Flow Groups logically group flows (for example one group per source system). See :doc:`concepts` and :doc:`feature_multi_source_streaming`. Groups and flows can be added or removed over time without a full pipeline refresh.

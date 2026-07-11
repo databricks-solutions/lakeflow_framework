@@ -1,4 +1,4 @@
-Metadata-driven development
+Metadata-Driven Development
 ===========================
 
 Spec-as-code capabilities native to Lakeflow Framework — how you express

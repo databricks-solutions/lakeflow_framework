@@ -21,6 +21,7 @@ Once you have cloned the Lakeflow Framework repository, you'll need to follow th
    <https://docs.python.org/3/tutorial/venv.html>`_ for more details):
 
    .. code-block:: bash
+      :class: lf-command-block
 
       pip install --require-hashes --no-deps -r requirements-dev.lock
 
@@ -32,6 +33,7 @@ Once you have cloned the Lakeflow Framework repository, you'll need to follow th
    regenerate all three lockfiles with the helper script from the repo root:
 
    .. code-block:: bash
+      :class: lf-command-block
 
       ./scripts/generate_lockfiles.sh
 
@@ -43,4 +45,4 @@ Once you have cloned the Lakeflow Framework repository, you'll need to follow th
 
 .. note::
 
-    To deploy the Lakeflow Framework to your Databricks workspace, follow the steps in :doc:`deploy_framework`.
+    To deploy the Lakeflow Framework to your Databricks workspace, follow the steps in :doc:`deploy`.

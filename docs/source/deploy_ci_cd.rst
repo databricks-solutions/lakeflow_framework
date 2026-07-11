@@ -1,121 +1,180 @@
 Setting up CI/CD
-#################
+################
 
+Automate deployment of **Framework Bundles** and **Pipeline Bundles** using the same Databricks Asset Bundle (DAB) CLI pattern in your CI/CD agent.
 
-This section describes the required general steps in a CI/CD pipeline to deploy the framework bundle.
-For specific CI/CD platform example using GitHub Actions, see https://docs.databricks.com/en/dev-tools/bundles/ci-cd-bundles.html
+For deploy order and ownership, see :doc:`deploy_before_you_deploy`.
+For local development deploy, see :doc:`deploy_local`.
+For framework versioning, path layout, and pinning — see :doc:`feature_versioning_framework`.
 
-Prerequisites and Assumptions
------------------------------
-1. You have a Databricks access token for the CI/CD agent to authenticate to your Databricks workspace.
-2. CI/CD agent has python and git installed.
-3. CI/CD agent has access to the framework bundle repository.
+Platform-specific examples (GitHub Actions, etc.): `CI/CD for DABs <https://docs.databricks.com/en/dev-tools/bundles/ci-cd-bundles.html>`_.
 
+Prerequisites
+=============
 
-Main Steps in a CI/CD Pipeline
-------------------------------
-1. Install Databricks CLI
-    If the CI/CD agent you are using is not already using an image which has Databricks CLI installed, you can install it using curl:
+* Databricks access token or service principal for the CI/CD agent
+* Python and Git on the agent
+* Access to the bundle repository (framework or pipeline)
+
+Shared CI/CD steps
+==================
+
+Step 1 — Install the Databricks CLI
+===================================
+
+If the agent image does not include the CLI:
+
+.. code-block:: console
+   :class: lf-command-block
+
+   curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+   databricks --version
+
+Step 2 — Configure authentication
+=================================
+
+.. code-block:: console
+   :class: lf-command-block
+
+   export DATABRICKS_HOST="https://<workspace-url>"
+   export DATABRICKS_TOKEN="<pat-token>"
+
+Or use OAuth service principal:
+
+.. code-block:: console
+   :class: lf-command-block
+
+   export DATABRICKS_CLIENT_ID="<client-id>"
+   export DATABRICKS_CLIENT_SECRET="<client-secret>"
+
+Step 3 — Clone the bundle repository
+====================================
+
+Clone the repo that contains the bundle you are deploying (framework or pipeline).
+
+Step 4 — Install validation dependencies (if required)
+======================================================
+
+For the framework repository:
+
+.. code-block:: console
+   :class: lf-command-block
+
+   pip install -r requirements.txt
+
+Step 5 — Validate the bundle
+============================
+
+.. code-block:: console
+   :class: lf-command-block
+
+   databricks bundle validate
+
+Step 6 — Deploy the bundle
+==========================
+
+.. code-block:: console
+   :class: lf-command-block
+
+   databricks bundle deploy -t $ENVIRONMENT
+
+Pass bundle-specific variables with ``--var`` or ``BUNDLE_VAR_*`` environment variables as needed.
+
+Framework versioning
+====================
+
+.. important::
+
+   Framework versioning, ``framework_source_path``, and upgrade practices are documented in
+   :doc:`feature_versioning_framework`. Read that page before configuring CI/CD for the Framework Bundle
+   or setting version pins on Pipeline Bundles.
+
+Versioned deployment (framework release pipeline)
+-------------------------------------------------
+
+When deploying the **Framework Bundle** in CI/CD, use a **versioned deployment strategy**: deploy each release to **both** ``current`` and the **release version number** (for example ``1.2.3``).
+
+* ``current`` — always points at the latest promoted release
+* ``<version>`` — a fixed copy of that release in workspace files; keeps deploy history and enables pinning
+
+.. code-block:: console
+   :class: lf-command-block
+
+   # Promote latest to current
+   databricks bundle deploy --var="version=current" -t $ENVIRONMENT
+
+   # Deploy the same release under its version number (run in the framework release pipeline)
+   databricks bundle deploy --var="version=1.2.3" -t $ENVIRONMENT
+
+.. note::
+
+   Run both deploys in the **framework release** pipeline only — not on every pipeline-bundle job. Pipeline CI/CD assumes the target environment already has the ``current`` and versioned paths it needs.
+
+Pinning strategies (pipeline bundles)
+-------------------------------------
+
+Each Pipeline Bundle chooses which framework path to use via ``framework_source_path`` (or ``BUNDLE_VAR_framework_source_path`` in CI/CD). The path includes the version segment — ``.../current/...`` or ``.../1.2.3/...``. See :doc:`feature_versioning_framework` for the full path pattern and examples.
+
+.. list-table::
+   :widths: 22 38 40
+   :header-rows: 1
+
+   * - Pin to
+     - When to use
+     - Effect
+   * - ``current``
+     - Default for most pipelines; you want pipelines to pick up framework fixes and features when the platform promotes a new release
+     - Pipelines use the latest promoted framework after each framework deploy to ``current``
+   * - Specific version (for example ``1.2.3``)
+     - Controlled upgrades, gradual rollout, or testing a new framework release with selected pipelines before org-wide promotion
+     - Pipelines stay on that version until you change ``framework_source_path``
+   * - Prior version (for example ``1.2.2``)
+     - A framework update causes a regression; you need to restore service quickly while the platform investigates
+     - Point affected pipeline bundles at the last known-good version path — no framework redeploy required if that version is still in workspace files
+
+Which strategy you use is an organizational choice. Many teams default pipeline bundles to ``current`` in dev and production, pin specific pipelines during phased framework rollouts, and switch to a prior version path only when something breaks. Details and best practices: :doc:`feature_versioning_framework`.
+
+Framework bundle in CI/CD
+=========================
+
+* **Repository:** Fork the upstream ``lakeflow_framework`` OSS repo into your organization; CI/CD deploys from your fork
+* **Release cadence:** Best practice is to **manually select** which upstream version to promote — review releases as they become available and deploy only after your platform team approves (avoid auto-deploy on every upstream tag or merge to main)
+* **Versioned deploy:** each release deploys to ``current`` and to the release version number (for example ``1.2.3``)
+* **Consumers:** pipeline bundles reference ``framework_source_path`` for the env
+
+Pipeline bundle in CI/CD
+========================
+
+* **Repository:** team pipeline bundle
+* **Trigger:** merge / approval to promote across environments
+* **Assumes:** framework already deployed for the target environment
+* **Variables:** set ``framework_source_path`` per target (``current`` or a pinned version) — often from CI variables; see :doc:`feature_versioning_framework`
+
+Example script (framework release)
+==================================
+
+Illustrative bash script for a **framework** release job that validates, deploys ``current``, and deploys the same release under its version number:
 
 .. code-block:: bash
+   :class: lf-command-block
 
-    curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+   #!/bin/bash
+   set -e
 
+   ENVIRONMENT=${1:-dev}
+   RELEASE_VERSION=${2:?Set release version, e.g. 1.2.3}
 
-2. Confirm Databricks CLI is installed
+   if ! command -v databricks &> /dev/null; then
+       curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+   fi
 
-.. code-block:: bash
+   pip install -r requirements.txt
+   databricks bundle validate
 
-    databricks --version
+   echo "Deploying current to $ENVIRONMENT..."
+   databricks bundle deploy --var="version=current" -t "$ENVIRONMENT"
 
+   echo "Deploying version $RELEASE_VERSION to $ENVIRONMENT..."
+   databricks bundle deploy --var="version=$RELEASE_VERSION" -t "$ENVIRONMENT"
 
-3. Configure Databricks CLI
-
-.. code-block:: bash
-
-    export DATABRICKS_HOST="https://<workspace-url>"
-    
-    export DATABRICKS_TOKEN="<pat-token>"
-    or 
-    export DATABRICKS_CLIENT_ID="<databricks-client-id>"
-    export DATABRICKS_CLIENT_SECRET="<databricks-client-secret>"
-
-4. Clone the framework bundle repository
-
-.. code-block:: bash
-
-    git clone https://github.com/databricks/framework-bundle.git
-
-5. Install dependencies for bundle validation
-
-.. code-block:: bash
-
-    pip install -r requirements.txt
-
-6. Validate bundle configuration
-
-.. code-block:: bash
-
-    databricks bundle validate
-
-7. Deploy current version
-
-.. code-block:: bash
-
-    databricks bundle deploy --var="version=current" -t $ENVIRONMENT
-
-8. Deploy specific version for rollback
-
-.. code-block:: bash
-
-    databricks bundle deploy --var="version=[version-number]" -t $ENVIRONMENT
-
-
-Example CI/CD bash script
--------------------------
-Here's an example deployment script that can be used in your CI/CD pipeline:
-
-.. code-block:: bash
-
-    #!/bin/bash
-    set -e
-
-    # Script arguments
-    ENVIRONMENT=${1:-dev}  # Default to dev if not specified
-    FRAMEWORK_VERSION=${2:-1.2.3}  # Default version for rollback if not specified
-
-    # Install Databricks CLI if not already installed
-    if ! command -v databricks &> /dev/null; then
-        echo "Installing Databricks CLI..."
-        curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
-    fi
-
-    # Verify Databricks CLI installation
-    databricks --version
-
-    # Verify required environment variables are set
-    if [ -z "$DATABRICKS_HOST" ] || { [ -z "$DATABRICKS_TOKEN" ] && [ -z "$DATABRICKS_CLIENT_ID" ]; }; then
-        echo "Error: Required environment variables not set"
-        echo "Please set:"
-        echo "  DATABRICKS_HOST"
-        echo "  DATABRICKS_TOKEN or (DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET)"
-        exit 1
-    fi
-
-    # Install dependencies
-    echo "Installing dependencies..."
-    pip install -r requirements.txt
-
-    # Validate bundle configuration
-    echo "Validating bundle configuration..."
-    databricks bundle validate
-
-    # Deploy current version
-    echo "Deploying current version to $ENVIRONMENT..."
-    databricks bundle deploy --var="version=current" -t $ENVIRONMENT
-
-    # Deploy specific version for rollback
-    echo "Deploying version $FRAMEWORK_VERSION to $ENVIRONMENT for rollback..."
-    databricks bundle deploy --var="version=$FRAMEWORK_VERSION" -t $ENVIRONMENT
-
-    echo "Deployment complete!"
+   echo "Deployment complete."

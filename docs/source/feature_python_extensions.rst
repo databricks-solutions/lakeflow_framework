@@ -157,7 +157,7 @@ Cluster Library Installation
 -----------------------------
 
 Cluster libraries are Python packages installed on the Databricks cluster by the
-Databricks Asset Bundle (DAB) `pipeline environments <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_ mechanism; the framework is not involved
+Declarative Automation Bundle(DAB) `pipeline environments <https://docs.databricks.com/aws/en/dev-tools/bundles/resources#pipelineenvironment>`_ mechanism; the framework is not involved
 in installation at all.
 
 You can reference libraries from any source that DAB supports. ``src/libraries/`` is

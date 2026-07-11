@@ -2,6 +2,9 @@
    :hide-navigation:
    :hide-toc:
 
+The Lakeflow Framework
+======================
+
 .. include:: _landing.rst
 
 .. toctree::
@@ -13,15 +16,16 @@
    :maxdepth: 1
    :hidden:
 
-   what_is_lakeflow_framework
    quick_start
+   What is the Lakeflow Framework? <what_is_lakeflow_framework>
 
 .. toctree::
    :maxdepth: 2
    :hidden:
 
-   Concepts <concepts>
-   Features <features>
-   Deploy <deploy_framework>
+   Architecture <concepts>
+   Samples <deploy_samples.md>
    Build <build_pipeline_bundle>
+   Deploy <deploy>
+   Features <features>
    Contributors <contributor>

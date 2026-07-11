@@ -3,6 +3,10 @@ What is the Lakeflow Framework?
 
 The Lakeflow Framework is a metadata-driven framework for building Databricks Lakeflow Spark Declarative Pipelines. It uses a configuration-driven, pattern-based approach to support both batch and streaming workloads across the medallion architecture. Pipelines are deployed with Declarative Automation Bundles, keeping delivery consistent across environments. The framework is designed for simplicity, extensibility, and long-term alignment with the Databricks product roadmap.
 
+.. image:: images/lff-architecture-v1-two-boxes.jpg
+   :alt: Lakeflow Framework architecture — Framework Bundle and Pipeline Bundle on a DABS Foundation
+   :align: center
+
 Why teams use it
 ----------------
 

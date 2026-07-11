@@ -1,13 +1,65 @@
-Build and Deploy Pipelines
-==========================
+Build
+=====
+
+Create pipeline bundles, choose structure and patterns, and author Data Flow Specs.
+
+Browse the guides below. Deploy pipeline bundles in the **Deploy** section (:doc:`deploy`).
+
+.. raw:: html
+
+   <div class="lf-feature-grid lf-hub-grid">
+     <article class="lf-feature-card">
+       <div class="lf-feature-card__header">
+         <h3 class="lf-feature-card__title">Bundle scope and structure</h3>
+       </div>
+       <hr class="lf-feature-card__divider" />
+       <p class="lf-feature-card__body">Decide how to scope Pipeline Bundles, organize <code>src/dataflows</code>, and decompose large pipelines.</p>
+       <a class="lf-feature-card__link" href="build_pipeline_bundle_structure.html">
+         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
+         Open guide
+       </a>
+     </article>
+     <article class="lf-feature-card">
+       <div class="lf-feature-card__header">
+         <h3 class="lf-feature-card__title">Build a pipeline bundle</h3>
+       </div>
+       <hr class="lf-feature-card__divider" />
+       <p class="lf-feature-card__body">Initialize from the template or CLI, add specs, and wire pipeline YAML.</p>
+       <a class="lf-feature-card__link" href="build_pipeline_bundle_steps.html">
+         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
+         Open guide
+       </a>
+     </article>
+     <article class="lf-feature-card">
+       <div class="lf-feature-card__header">
+         <h3 class="lf-feature-card__title">Data Flow Spec reference</h3>
+       </div>
+       <hr class="lf-feature-card__divider" />
+       <p class="lf-feature-card__body">Schema and field reference for standard, flows, and materialized-view specs.</p>
+       <a class="lf-feature-card__link" href="dataflow_spec_reference.html">
+         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
+         Open reference
+       </a>
+     </article>
+     <article class="lf-feature-card">
+       <div class="lf-feature-card__header">
+         <h3 class="lf-feature-card__title">Patterns</h3>
+       </div>
+       <hr class="lf-feature-card__divider" />
+       <p class="lf-feature-card__body">Reference recipes for Basic 1:1, multi-source streaming, stream-static, and CDC-from-snapshot flows.</p>
+       <a class="lf-feature-card__link" href="patterns.html">
+         <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
+         Open patterns
+       </a>
+     </article>
+   </div>
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
+   :hidden:
 
    build_pipeline_bundle_structure
    build_pipeline_bundle_steps
-   deploy_pipeline_bundle
-   pipeline_execution
-   Patterns: Data Flows and Pipelines <patterns>
    Data Flow Spec Reference <dataflow_spec_reference>
-   orchestration
+   Patterns: Data Flows and Pipelines <patterns>
+   pipeline_execution

@@ -64,6 +64,7 @@ To install the documentation dependencies, run the following command from the
 root directory of the repository:
 
 .. code-block:: bash
+   :class: lf-command-block
 
    pip install --require-hashes --no-deps -r requirements-docs.lock
 
@@ -89,6 +90,7 @@ regenerate the lockfile by running the helper script from the root of the
 repository:
 
 .. code-block:: bash
+   :class: lf-command-block
 
    ./scripts/generate_lockfiles.sh
 
@@ -109,12 +111,14 @@ To build the documentation, run the following command in the docs directory:
 * HTML:
 
    .. code-block:: bash
+      :class: lf-command-block
 
       make html
 
 * Markdown:
 
    .. code-block:: bash
+      :class: lf-command-block
 
       make md
 
@@ -131,5 +135,6 @@ Clean the Documentation
 Sometimes it will be necessary to delete the build directory and re-build the documentation. To do this, run the following command in the docs directory:
 
 .. code-block:: bash
+   :class: lf-command-block
 
    make clean

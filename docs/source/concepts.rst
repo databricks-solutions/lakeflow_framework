@@ -1,5 +1,5 @@
-Framework Concepts
-##################
+Architecture
+############
 
 The purpose of the Framework is to provide a standard metadata driven approach to creating Databricks Lakeflow Spark Declarative (SDP) Pipelines.
 
@@ -20,6 +20,9 @@ The Lakeflow Framework is designed to support different organizational and data 
 * Common modelling patterns, including dimensional (facts/dimensions), Data Vault, enterprise canonical/3NF, and other custom enterprise models
 
 These approaches can be implemented using the same Data Flow Spec-driven patterns, deployment process, and framework features documented in this guide.
+
+Framework overview
+==================
 
 The below diagram illustrates some of the key concepts of the Framework, which are explained in more detail in the following sections.
 

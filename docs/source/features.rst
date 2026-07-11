@@ -15,7 +15,7 @@ when you already know the name.
    <div class="lf-feature-grid lf-hub-grid">
      <article class="lf-feature-card">
        <div class="lf-feature-card__header">
-         <h3 class="lf-feature-card__title">Metadata-driven development</h3>
+         <h3 class="lf-feature-card__title">Metadata-Driven Development</h3>
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Spec-as-code — formats, templates, substitutions, and validation.</p>
@@ -37,7 +37,7 @@ when you already know the name.
      </article>
      <article class="lf-feature-card">
        <div class="lf-feature-card__header">
-         <h3 class="lf-feature-card__title">Configuration management</h3>
+         <h3 class="lf-feature-card__title">Configuration Management</h3>
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Org and pipeline defaults — framework config, secrets, Spark conf, operational metadata, logging, and build parallelization.</p>

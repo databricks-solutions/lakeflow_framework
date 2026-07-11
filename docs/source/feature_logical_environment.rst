@@ -79,6 +79,7 @@ The logical environment can be passed in one of three ways at bundle deployment 
 An environment variable can be set prior to executing the ``databricks bundle deploy`` command. For example:
 
 .. code-block:: bash
+   :class: lf-command-block
 
     export BUNDLE_VAR_logical_env=my_logical_env_suffix
 
@@ -90,6 +91,7 @@ Databricks reference: https://docs.databricks.com/en/dev-tools/bundles/variables
 The logical environment can be directly specified via the ``databricks bundle deploy`` command. For example:
 
 .. code-block:: bash
+   :class: lf-command-block
 
     databricks bundle deploy --var="logical_env=my_logical_env_suffix"
 

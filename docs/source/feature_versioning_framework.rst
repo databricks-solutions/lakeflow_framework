@@ -41,12 +41,14 @@ The framework's version is configured in the databricks.yaml file, defaulting to
 To deploy a specific version, override the default using the ``BUNDLE_VAR_version`` environment variable:
 
 .. code-block:: bash
+   :class: lf-command-block
 
     export BUNDLE_VAR_version="1.2.3"
 
 For CI/CD deployments, execute two deployments:
 
 .. code-block:: bash
+   :class: lf-command-block
 
     # First deployment - latest version
     export BUNDLE_VAR_version="current"
@@ -67,6 +69,7 @@ To specify which framework version a pipeline should use, set the ``framework_so
 Set this path using the ``BUNDLE_VAR_framework_source_path`` environment variable during pipeline deployment:
 
 .. code-block:: bash
+   :class: lf-command-block
 
     export BUNDLE_VAR_framework_source_path="/Workspace/Users/[user]/.bundle/[framework_name]/[target]/[version]/files/src"
 
