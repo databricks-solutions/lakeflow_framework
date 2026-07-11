@@ -38,7 +38,7 @@ def load_framework_default_json(
     name: str,
     framework_path: Optional[str] = None,
 ) -> Dict:
-    """Load a framework default JSON config file using Strategy B (disk-first).
+    """Load a framework default JSON config file using Strategy B (Workspace Files-first).
 
     Resolution order:
 
@@ -65,7 +65,7 @@ def load_framework_default_json(
     """
     from lakeflow_framework.utility import deep_merge
 
-    # 1. Disk-first: explicit framework_path takes priority over package data.
+    # 1. Workspace Files-first: explicit framework_path takes priority over package data.
     base: Optional[Dict] = None
     file_path: Optional[str] = None
     if framework_path:

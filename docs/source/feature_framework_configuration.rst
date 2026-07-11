@@ -19,7 +19,7 @@ want to change are needed.
 
 .. note::
 
-   **Default config location (v0.16.0+)**
+   **Default config location (v0.20.0+)**
 
    Framework default files now live inside the installed package at
    ``src/lakeflow_framework/config/default/`` rather than at the top-level

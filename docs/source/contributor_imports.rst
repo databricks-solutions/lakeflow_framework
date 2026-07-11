@@ -25,7 +25,7 @@ Compat shims (do not use in new code)
 --------------------------------------
 
 The old flat-deploy layout placed modules directly under ``src/`` (for example
-``from constants import FrameworkPaths``).  Since v0.16.0, matching
+``from constants import FrameworkPaths``).  Since v0.20.0, matching
 ``src/*.py`` files are thin re-export shims:
 
 .. code-block:: python
@@ -90,7 +90,7 @@ Deprecation timeline
 
    * - Version
      - Change
-   * - v0.16.0
+   * - v0.20.0
      - ``lakeflow_framework`` package introduced; bare ``src/`` imports still
        work via shims.
    * - v1.0.0
@@ -101,7 +101,7 @@ Further reading
 
 - ``docs/decisions/0008-lakeflow-framework-package.md`` — package layout,
   wheel distribution, and shim policy (ADR-0008).
-- ``docs/decisions/0009-strategy-b-disk-first-resolver.md`` — how bundled
+- ``docs/decisions/0009-strategy-b-workspace-files-first-resolver.md`` — how bundled
   config and schemas resolve against workspace files (ADR-0009).
 - :doc:`deploy_wheel` — wheel install and shim guidance for deployers.
 - :doc:`contributor_contrib` — import rules specific to ``contrib/`` modules.

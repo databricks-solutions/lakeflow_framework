@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-23
 **Status:** Accepted
-**PR:** refactor/lakeflow-framework-package (v0.16.0)
+**PR:** refactor/lakeflow-framework-package (v0.20.0)
 
 ---
 
@@ -125,7 +125,7 @@ module is added.
 
 | Version | Action |
 |---------|--------|
-| v0.16.0 | `src/lakeflow_framework/` package introduced; bare `src/` imports still work via shims |
+| v0.20.0 | `src/lakeflow_framework/` package introduced; bare `src/` imports still work via shims |
 | v1.0.0  | Compat shims at old flat `src/*.py` paths removed |
 
 ## Consequences
@@ -136,8 +136,8 @@ module is added.
 - The `lakeflow_framework.*` import namespace is globally unique; no shadow-import
   risk with customer code.
 - Existing flat-deploy customers are unaffected: the `src/` shims preserve
-  backward compatibility, and `framework.sourcePath` + disk-first resolution
-  (ADR-0009) means behaviour is identical to pre-v0.16.0.
+  backward compatibility, and `framework.sourcePath` + Workspace Files-first
+  resolution (ADR-0009) means behaviour is identical to pre-v0.20.0.
 - Editable installs (`pip install -e ".[contrib]"`) are supported for local
   development; the `src/` layout ensures the installed package and the source
   tree are the same directory.

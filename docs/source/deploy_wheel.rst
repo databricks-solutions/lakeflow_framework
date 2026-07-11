@@ -5,9 +5,9 @@ Installing the Framework as a Wheel
    :header-rows: 0
 
    * - **Available From:**
-     - v0.16.0
+     - v0.20.0
 
-From v0.16.0 the Lakeflow Framework ships as a proper Python package
+From v0.20.0 the Lakeflow Framework ships as a proper Python package
 (``lakeflow-framework``) with a ``pyproject.toml``.  For a comparison of all
 deployment modes, see :doc:`deploy_framework_bundle`.
 

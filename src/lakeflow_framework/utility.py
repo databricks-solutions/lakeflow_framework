@@ -15,7 +15,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType
 
-from constants import (
+from lakeflow_framework.constants import (
     SupportedSpecFormat,
     PipelineBundleSuffixesJson,
     PipelineBundleSuffixesYaml,

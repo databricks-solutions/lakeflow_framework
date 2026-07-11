@@ -30,7 +30,6 @@ The suite is layered so local runs and CI stay fast by default:
 
 **Import policy:** all tests use `lakeflow_framework.*` imports. The compat shim layer at `src/*.py` is not exercised — see `docs/source/contributor_imports.rst`.
 
-**Post-merge layout (v0.16+):** root-level `tests/test_bundle_loader.py` and `tests/test_validate_dataflows.py` were removed. Their coverage now lives under `tests/unit/` (isolated module and script-helper tests) and `tests/integration/` (sample-bundle validation and CLI subprocess tests).
 
 ## Layout
 

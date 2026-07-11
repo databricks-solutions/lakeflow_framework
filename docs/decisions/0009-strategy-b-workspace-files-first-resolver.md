@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-23
 **Status:** Accepted
-**PR:** refactor/lakeflow-framework-package (v0.16.0)
+**PR:** refactor/lakeflow-framework-package (v0.20.0)
 
 ---
 
@@ -92,7 +92,7 @@ similar validators.
 - **Zero-change upgrade for flat-deploy customers.** Their `framework.sourcePath`
   points to the deployed `src/` directory in Workspace Files; those files are
   found at step 1 and the wheel is never consulted. Behaviour is identical to
-  pre-v0.16.0.
+  pre-v0.20.0.
 - **Explicit wins.** Setting `framework.sourcePath` is a deliberate act.
   Workspace Files-first honours that intent; package-first would silently override it.
 - **Wheel-install customers get clean defaults from the package.** They do not
@@ -108,7 +108,7 @@ similar validators.
   config and schema reads; call sites that previously used
   `os.path.join(framework_path, FrameworkPaths.CONFIG_PATH, name)` are
   migrated to it.
-- Flat-deploy customers see **no behaviour change** on upgrade to v0.16.0.
+- Flat-deploy customers see **no behaviour change** on upgrade to v0.20.0.
 - Wheel-install customers get defaults from the wheel with no `framework.sourcePath`
   required.
 - The `src/local/config/` sparse overlay (ADR-0006) continues to work in all
