@@ -57,6 +57,7 @@ To open the ``settings.json`` file, you can use the command palette (Ctrl+Shift+
 Add the following code into your ``settings.json`` replacing ``<path to framework folder>`` with the path to the Lakeflow Framework project on your local machine unless you are adding this object directly to the ``settings.json`` in your ``.vscode`` directory in the Lakeflow Framework project in which case you should remove ``<path to framework folder>``.:
 
 .. code-block:: json
+   :linenos:
 
     {
         "json.schemas": [
@@ -90,35 +91,36 @@ Add the following code into your ``settings.json`` replacing ``<path to framewor
 Example ``settings.json`` file:
 
 .. code-block:: json
+   :linenos:
 
-  {
-      "python.analysis.extraPaths": [
-          "src"
-      ],
-      "json.schemas": [
-          {
-              "fileMatch": [
-                  "*flow.json"
-              ],
-              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/flow_group.json"
-          },
-          {
-              "fileMatch": [
-                  "*main.json"
-              ],
-              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/main.json"
-          },
-          {
-              "fileMatch": [
-                  "*_dqe.json"
-              ],
-              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/expectations.json"
-          },
-          {
-              "fileMatch": [
-                  "*_secrets.json"
-              ],
-              "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/secrets.json"
-          }
-      ]
-  } 
+   {
+       "python.analysis.extraPaths": [
+           "src"
+       ],
+       "json.schemas": [
+           {
+               "fileMatch": [
+                   "*flow.json"
+               ],
+               "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/flow_group.json"
+           },
+           {
+               "fileMatch": [
+                   "*main.json"
+               ],
+               "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/main.json"
+           },
+           {
+               "fileMatch": [
+                   "*_dqe.json"
+               ],
+               "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/expectations.json"
+           },
+           {
+               "fileMatch": [
+                   "*_secrets.json"
+               ],
+               "url": "/Users/erik.seefeld/Documents/dev_work/dlt_framework/src/lakeflow_framework/schemas/secrets.json"
+           }
+       ]
+   } 

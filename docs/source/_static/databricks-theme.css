@@ -26,6 +26,13 @@
   --lf-tabs-active-bg: #fff;
   --lf-tabs-active-fg: #eb1600;
   --lf-tabs-active-indicator: #eb1600;
+
+  /* Command snippets (.lf-command-block) */
+  --lf-command-bg: #f5f5f5;
+  --lf-command-fg: #364152;
+  --lf-command-copy: #8b949e;
+  --lf-command-copy-hover-bg: rgba(255, 255, 255, 0.65);
+  --lf-command-copy-hover-fg: #57606a;
 }
 
 [data-md-color-scheme="slate"] {
@@ -49,6 +56,12 @@
   --lf-tabs-active-bg: #243036;
   --lf-tabs-active-fg: #ff5f46;
   --lf-tabs-active-indicator: #ff5f46;
+
+  --lf-command-bg: #2a3438;
+  --lf-command-fg: #e6edf3;
+  --lf-command-copy: #8b949e;
+  --lf-command-copy-hover-bg: rgba(255, 255, 255, 0.08);
+  --lf-command-copy-hover-fg: #e6edf3;
 }
 
 /* Landing hero — WAF-style centered light panel */
@@ -80,7 +93,8 @@
 }
 
 /* Hero subtitle — same colour as lead; larger semibold type */
-.md-typeset .lf-hero p.lf-hero__subtitle {
+.md-typeset .lf-hero p.lf-hero__subtitle,
+.md-typeset .lf-landing-blurb p.lf-hero__subtitle {
   max-width: 46rem;
   margin: 0 auto 1.25rem;
   color: var(--md-default-fg-color, #1b3139);
@@ -92,7 +106,8 @@
   opacity: 0.92;
 }
 
-.md-typeset .lf-hero p.lf-hero__lead {
+.md-typeset .lf-hero p.lf-hero__lead,
+.md-typeset .lf-landing-blurb p.lf-hero__lead {
   max-width: 46rem;
   margin: 0 auto 1.75rem;
   font-size: 1.05rem;
@@ -101,9 +116,196 @@
   opacity: 0.92;
 }
 
-.lf-hero__lead strong {
-  color: inherit;
+.lf-landing-blurb {
+  max-width: 46rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+
+/*
+ * LFF architecture diagram — inline SVG themed for Material light/slate.
+ * Accents stay; surfaces and text follow the docs color scheme.
+ */
+.lf-arch {
+  --lf-arch-fg: #1b3139;
+  --lf-arch-muted: #445861;
+  --lf-arch-card-bg: #ffffff;
+  --lf-arch-fw: #2b7bb9;
+  --lf-arch-fw-header: #e6f2f8;
+  --lf-arch-fw-panel: #f3f9fc;
+  /* Pipeline Bundle — former DABS green */
+  --lf-arch-pl: #3d9a5f;
+  --lf-arch-pl-header: #e8f5ec;
+  --lf-arch-pl-panel: #f2faf5;
+  /* DABS Foundation — Option 1 (CTA red) in light mode */
+  --lf-arch-dabs: #eb1600;
+  --lf-arch-dabs-bg: rgba(235, 22, 0, 0.16);
+  --lf-arch-dabs-border: #eb1600;
+
+  display: block;
+  max-width: 46rem;
+  margin: 0 auto 1.75rem;
+  text-align: center;
+}
+
+[data-md-color-scheme="slate"] .lf-arch {
+  --lf-arch-fg: #e8eef0;
+  --lf-arch-muted: #b0bec3;
+  --lf-arch-card-bg: #1e2629;
+  --lf-arch-fw: #5dade2;
+  --lf-arch-fw-header: rgba(93, 173, 226, 0.22);
+  --lf-arch-fw-panel: rgba(93, 173, 226, 0.1);
+  --lf-arch-pl: #6fcf97;
+  --lf-arch-pl-header: rgba(111, 207, 151, 0.22);
+  --lf-arch-pl-panel: rgba(111, 207, 151, 0.1);
+  /* DABS — Option 4 (slate bump) */
+  --lf-arch-dabs: #eb1600;
+  --lf-arch-dabs-bg: rgba(235, 22, 0, 0.2);
+  --lf-arch-dabs-border: #ff5f46;
+}
+
+.lf-arch__svg {
+  display: block;
+  width: 100%;
+  max-width: 840px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.lf-arch__caption {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--lf-arch-muted);
+}
+
+.lf-arch__title,
+.lf-arch__card-title {
+  font-family: var(--md-text-font, "Roboto"), sans-serif;
   font-weight: 700;
+  fill: var(--lf-arch-fg);
+}
+
+.lf-arch__card-sub {
+  font-family: var(--md-text-font, "Roboto"), sans-serif;
+  font-weight: 400;
+  fill: var(--lf-arch-muted);
+}
+
+.lf-arch__panel--fw {
+  fill: var(--lf-arch-fw-panel);
+  stroke: none;
+}
+
+.lf-arch__panel--pl {
+  fill: var(--lf-arch-pl-panel);
+  stroke: none;
+}
+
+.lf-arch__panel--dabs {
+  fill: var(--lf-arch-dabs-bg);
+  stroke: none;
+}
+
+/* Outer frames drawn last so header fills never cover the border */
+.lf-arch__frame {
+  fill: none;
+  stroke-width: 2.75;
+  pointer-events: none;
+}
+
+.lf-arch__frame--fw {
+  stroke: var(--lf-arch-fw);
+}
+
+.lf-arch__frame--pl {
+  stroke: var(--lf-arch-pl);
+}
+
+.lf-arch__frame--dabs {
+  stroke: var(--lf-arch-dabs-border, var(--lf-arch-dabs));
+}
+
+.lf-arch__header--fw {
+  fill: var(--lf-arch-fw-header);
+}
+
+.lf-arch__header--pl {
+  fill: var(--lf-arch-pl-header);
+}
+
+.lf-arch__card {
+  fill: var(--lf-arch-card-bg);
+  stroke-width: 2;
+}
+
+.lf-arch__card--fw {
+  stroke: var(--lf-arch-fw);
+}
+
+.lf-arch__card--pl {
+  stroke: var(--lf-arch-pl);
+}
+
+.lf-arch__arrow-line {
+  stroke: var(--lf-arch-fw);
+  stroke-width: 2.5;
+}
+
+.lf-arch__arrow-head {
+  fill: var(--lf-arch-fw);
+  stroke: none;
+}
+
+.lf-arch__icon--fw {
+  stroke: var(--lf-arch-fw);
+  color: var(--lf-arch-fw);
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lf-arch__icon--pl {
+  stroke: var(--lf-arch-pl);
+  color: var(--lf-arch-pl);
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lf-arch__icon--dabs {
+  stroke: var(--lf-arch-dabs);
+  color: var(--lf-arch-dabs);
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lf-arch__icon--layers {
+  stroke-width: 2.4;
+}
+
+.lf-arch__icon--package {
+  stroke-width: 2;
+}
+
+.lf-arch__icon--window,
+.lf-arch__icon--flow,
+.lf-arch__icon--doc {
+  stroke-width: 2;
+}
+
+.lf-arch__icon--gear {
+  stroke-width: 1.85;
+}
+
+.lf-arch__icon-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+.lf-arch__icon--databricks {
+  fill: var(--lf-arch-dabs);
+  stroke: none;
 }
 
 /* Secondary blurb below hero, above feature cards */
@@ -607,9 +809,10 @@ body:has(.lf-hero) .md-content__inner {
   margin-right: 0;
 }
 
+/* Hub pages with an in-page TOC render label[for=__toc] + link (no container).
+ * Hide the toggle label so the section title appears once (same as container hubs). */
 .md-nav--primary .md-nav__item--nested > label.md-nav__link[for] {
-  pointer-events: none;
-  cursor: default;
+  display: none !important;
 }
 
 .md-nav--primary .md-nav__item--nested .md-nav__icon {
@@ -1026,6 +1229,8 @@ body:has(.lf-hero) .md-content__inner {
 
 .md-typeset div[class*="highlight-"] pre,
 .md-typeset div[class*="highlight-"] .highlight pre {
+  margin: 0;
+  padding: 0.5em 0.75em;
   font-size: var(--lf-code-font-size, 0.62rem);
   line-height: 1.35;
   background-color: #1a1a1a;
@@ -1116,7 +1321,7 @@ body:has(.lf-hero) .md-content__inner {
   border: none;
   border-radius: 0.2rem;
   overflow: hidden;
-  background-color: #f5f5f5;
+  background-color: var(--lf-command-bg);
   box-shadow: none;
 }
 
@@ -1129,9 +1334,9 @@ body:has(.lf-hero) .md-content__inner {
 .md-typeset div.lf-command-block .highlighttable,
 .md-typeset div.lf-command-block .highlighttable .code {
   --lf-command-font-size: 0.75rem;
-  --md-code-bg-color: #f5f5f5;
-  --md-code-fg-color: #364152;
-  background-color: #f5f5f5 !important;
+  --md-code-bg-color: var(--lf-command-bg);
+  --md-code-fg-color: var(--lf-command-fg);
+  background-color: var(--lf-command-bg) !important;
   font-family: var(--md-code-font, "Roboto Mono"), ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, monospace;
   font-size: var(--lf-command-font-size);
@@ -1144,7 +1349,7 @@ body:has(.lf-hero) .md-content__inner {
   margin: 0;
   border: none;
   border-radius: 0;
-  background-color: #f5f5f5;
+  background-color: var(--lf-command-bg);
 }
 
 .md-typeset div.lf-command-block .highlight .highlighttable tbody,
@@ -1170,7 +1375,7 @@ body:has(.lf-hero) .md-content__inner {
   margin: 0;
   padding: 0;
   background: transparent !important;
-  color: #364152 !important;
+  color: var(--lf-command-fg) !important;
   font-size: var(--lf-command-font-size, 0.75rem);
   line-height: 1.4;
   font-family: inherit;
@@ -1186,7 +1391,7 @@ body:has(.lf-hero) .md-content__inner {
 .md-typeset div.lf-command-block .highlight {
   position: relative;
   margin: 0;
-  background: #f5f5f5 !important;
+  background: var(--lf-command-bg) !important;
   border: none;
   box-shadow: none;
 }
@@ -1207,7 +1412,7 @@ body:has(.lf-hero) .md-content__inner {
   border: none;
   border-radius: 0.2rem;
   background-color: transparent;
-  color: #8b949e;
+  color: var(--lf-command-copy);
   box-shadow: none;
   transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
@@ -1218,8 +1423,8 @@ body:has(.lf-hero) .md-content__inner {
 
 .md-typeset div.lf-command-block .highlight button.copybtn:hover {
   opacity: 1;
-  background-color: rgba(255, 255, 255, 0.65);
-  color: #57606a;
+  background-color: var(--lf-command-copy-hover-bg);
+  color: var(--lf-command-copy-hover-fg);
 }
 
 .md-typeset div.lf-command-block .highlight button.copybtn.success {

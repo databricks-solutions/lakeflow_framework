@@ -68,6 +68,7 @@ An secrets config file has the following structure:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          <secret alias_1>:
            scope: <secret scope>
@@ -100,6 +101,7 @@ For example, assume we want to connect to Kafka and we need to provide a keystor
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "kafka_source_bootstrap_servers_password": {
@@ -111,6 +113,7 @@ For example, assume we want to connect to Kafka and we need to provide a keystor
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          kafka_source_bootstrap_servers_password:
            scope: mySecretScope
@@ -123,6 +126,7 @@ We can then reference the secret in any data flow spec as per the highlighted li
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 12
 
          {
@@ -156,6 +160,7 @@ We can then reference the secret in any data flow spec as per the highlighted li
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 11
 
          dataFlowId: kafka_source_topic_1_staging

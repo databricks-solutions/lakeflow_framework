@@ -20,7 +20,7 @@ Source files live under ``docs/source/``. Top-level navigation is defined in :do
    * - **Home** (:doc:`index`)
      - Landing page with hero and entry cards (`docs/source/_landing.rst`)
    * - **Get Started**
-     - :doc:`quick_start`, :doc:`what_is_lakeflow_framework`
+     - :doc:`get_started` — prose landing with paths to :doc:`what_is_lakeflow_framework` and :doc:`quick_start`
    * - **Architecture**
      - :doc:`concepts` — operating model, bundles, specs
    * - **Samples**
@@ -30,7 +30,7 @@ Source files live under ``docs/source/``. Top-level navigation is defined in :do
    * - **Deploy**
      - :doc:`deploy` hub — before you deploy, :doc:`deploy_framework` subsection, pipeline bundle local deploy, :doc:`deploy_ci_cd`
    * - **Features**
-     - :doc:`features` hub — category sub-hubs and ``feature_*.rst`` pages; :doc:`features_a_z` index
+     - :doc:`features` hub — category sub-hubs and ``feature_*.rst`` pages; :doc:`feature_a_z` index
    * - **Contributors**
      - :doc:`contributor` hub — env, git/releases, workflow, imports, this page
 
@@ -52,7 +52,7 @@ When you add or change framework behavior:
 
 1. Create or update ``docs/source/feature_<name>.rst``
 2. Include the standard metadata table (**Applies To**, **Configuration Scope**, **Databricks Docs** where relevant)
-3. Add the page to the matching **Features** sub-hub toctree (for example ``features_metadata.rst``) and to :doc:`features_a_z`
+3. Add the page to the matching **Features** sub-hub toctree (for example ``feature_metadata.rst``) and to :doc:`feature_a_z`
 4. Update :doc:`dataflow_spec_reference` when the Data Flow Spec schema changes
 
 Deploy and build pages
@@ -72,7 +72,8 @@ Cross-references
 ----------------
 
 * RST: ``:doc:`page_name``` or ``:doc:`Title <page_name>```
-* MyST (``quick_start.md``, ``deploy_samples.md``): ``{doc}`page_name```
+* MyST (``deploy_samples.md``): ``{doc}`page_name```
+* RST: ``:doc:`page_name```
 * Sections: ``:ref:`label-name``` (use unique labels; avoid duplicating labels across spec ref pages)
 
 Styling
@@ -99,7 +100,7 @@ Shell commands use the WAF-style command snippet pattern:
 * **``python``**, **``yaml``**, **``toml``** — language blocks without ``lf-command-block`` unless the block is a shell one-liner
 * Spec and config examples in body text use normal ``.. code-block:: yaml`` / ``json`` as appropriate
 
-Prerequisites checklist items use ``- [ ]`` (MyST task lists are enabled for ``.md`` sources).
+Prerequisites checklists: on ``.md`` use MyST ``- [ ]`` task lists; on ``.rst`` wrap items in sphinx-immaterial ``.. task-list::`` with ``- [ ]`` markers.
 
 Build locally
 =============

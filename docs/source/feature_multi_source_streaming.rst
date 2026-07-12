@@ -1,5 +1,5 @@
-Multi-Source Streaming
-======================
+Multi-Source Streaming (Flows)
+==============================
 
 .. list-table::
    :header-rows: 0
@@ -14,23 +14,31 @@ Multi-Source Streaming
 Overview
 --------
 
-Delta Live Tables supports processing that requires reading data from multiple streaming sources to update a single streaming table via:
+Lakeflow Spark Declarative Pipelines (**SDP**) **flows** support reading from
+multiple streaming sources to update a single streaming table:
 
-* **Append Flows** - Append streams from multiple sources to a single streaming table.
-* **Change Flows** - Process CDC events from multiple sources to a single streaming table, using the CDC API's.
+* **Append flows** — append streams from multiple sources to one streaming table.
+* **Change flows** — process CDC events from multiple sources into one streaming
+  table via the AUTO CDC APIs.
 
-The Lakeflow Framework implements this capability via the Data Flow Spec using the concept of flow groups and flows. 
+A key benefit of the flows model is operational flexibility: you can add or remove
+flow groups and individual flows as requirements evolve, without breaking the
+existing pipeline or requiring a full table refresh.
+
+The Lakeflow Framework exposes SDP flows through the data flow spec using
+``flow_groups`` and ``flows``.
 
 Configuration
 -------------
 
-In a Pipeline Bundle bundle, multi-source streaming is configured in the Data Flow Spec using the ``flow_groups`` and ``flows`` attributes. 
+In a Pipeline Bundle, multi-source streaming is configured in the Data Flow Spec
+using the ``flow_groups`` and ``flows`` attributes.
 This is documented in :ref:`flow-group-configuration <dataflow-spec-flows-flow-groups-configuration>` and :ref:`flow-configuration <dataflow-spec-flows-flow-configuration>`. 
 
 Key Features
 ------------
 - Write to a single streaming table from multiple source streams
-- Add or Remove streaming sources without requiring a full table refresh
+- Evolve flow groups and flows over time without a full table refresh
 - Support for historical backfill
 - Alternative to UNION operations for combining multiple sources
 - Maintain separate checkpoints for each flow

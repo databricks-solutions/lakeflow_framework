@@ -11,7 +11,6 @@ when browsing by category; use this list when you already know the name.
 * :doc:`Data Flow Specification Format <feature_spec_format>` — JSON / YAML spec language and structure
 * :doc:`Data Quality - Expectations <feature_data_quality_expectations>` — SDP expectations in the spec
 * :doc:`Data Quality - Quarantine <feature_data_quality_quarantine>` — quarantine failed records
-* :doc:`Direct Publishing Mode <feature_direct_publishing_mode>` — publish into Unity Catalog schemas
 * :doc:`Framework configuration <feature_framework_configuration>` — global framework config layout
 * :doc:`Liquid Clustering <feature_liquid_clustering>` — liquid clustering on target tables
 * :doc:`Logging <feature_logging>` — framework and pipeline logging
@@ -24,7 +23,8 @@ when browsing by category; use this list when you already know the name.
 * :doc:`Python Dependency Management <feature_python_dependency_management>` — pipeline environment packages
 * :doc:`Python Function Transforms <feature_python_functions>` — Python transform functions
 * :doc:`Python Source <feature_python_source>` — Python as a source type
-* :doc:`Schema Definitions <feature_schemas>` — declare and enforce schemas
+* :doc:`Schema Management <feature_schemas>` — schema files, formats, and spec references
+* :doc:`Schema-related Databricks Features <feature_databricks_schema_features>` — constraints, generated columns, column masks, and SQL data types
 * :doc:`Secrets Management <feature_secrets>` — wire secrets into specs and deployments
 * :doc:`Soft Deletes <feature_soft_deletes>` — soft-delete handling for CDC-style loads
 * :doc:`Spark Configuration <feature_spark_configuration>` — Spark conf via the framework
@@ -33,6 +33,7 @@ when browsing by category; use this list when you already know the name.
 * :doc:`Supported Source Types <feature_source_types>` — sources the framework supports
 * :doc:`Supported Target Types <feature_target_types>` — targets the framework supports
 * :doc:`Table Migration <feature_table_migration>` — migrate existing tables into LFF
+* :doc:`Target Catalog and Schema <feature_target_catalog_schema>` — default SDP publishing to Unity Catalog
 * :doc:`Templates <feature_templates>` — reusable data flow templates
 * :doc:`UI Integration <feature_ui_integration>` — Databricks UI integration points
 * :doc:`Validation <feature_validation>` — validate specs before deploy

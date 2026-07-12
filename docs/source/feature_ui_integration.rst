@@ -20,6 +20,7 @@ Configuration to enable Pipeline Editor UI Integration
 To enable UI Integration, you need to add a root_path configuration to your Pipeline resource file that points to the root directory of the Data Flow specifications for that pipeline as shown below.
 
 .. code-block:: yaml
+   :linenos:
 
     resources:
         pipelines:

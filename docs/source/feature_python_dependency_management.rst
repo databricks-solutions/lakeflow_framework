@@ -73,6 +73,7 @@ Configuring Pipeline Environment
 Add the ``environment`` section to your pipeline resource definition in your Databricks Asset Bundle:
 
 .. code-block:: yaml
+   :linenos:
    :caption: resources/pipeline.yml
    :emphasize-lines: 10-13
 
@@ -111,6 +112,7 @@ For example:
 **Step 2: Reference it in your pipeline environment**
 
 .. code-block:: yaml
+   :linenos:
 
     environment:
       dependencies:
@@ -127,6 +129,7 @@ Inline Dependencies
 For simple cases with few dependencies, you can specify packages inline:
 
 .. code-block:: yaml
+   :linenos:
 
     environment:
       dependencies:
@@ -139,6 +142,7 @@ Installing from Unity Catalog Volumes
 You can also install Python wheel packages stored in Unity Catalog volumes:
 
 .. code-block:: yaml
+   :linenos:
 
     environment:
       dependencies:
@@ -221,6 +225,7 @@ If packages are not being installed:
 3. Ensure the requirements file is included in your bundle deployment
 
 .. code-block:: yaml
+   :linenos:
 
     # Verify correct path substitution
     environment:

@@ -30,6 +30,7 @@ To enable CDF on a target table or staging table, you need to add the ``delta.en
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 6
 
          {
@@ -46,6 +47,7 @@ To enable CDF on a target table or staging table, you need to add the ``delta.en
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 5
 
          targetFormat: delta
@@ -67,6 +69,7 @@ Standard Data Flow Spec example:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 6
 
          {
@@ -81,6 +84,7 @@ Standard Data Flow Spec example:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 5
 
          sourceViewName: v_customer_address
@@ -96,6 +100,7 @@ Flows Data Flow Spec example:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 9
 
          {
@@ -115,6 +120,7 @@ Flows Data Flow Spec example:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 8
 
          views:

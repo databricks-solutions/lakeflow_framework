@@ -49,6 +49,7 @@ A template definition is a JSON file that defines a reusable data flow pattern. 
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "name": "standard_cdc_template",
@@ -85,6 +86,7 @@ A template definition is a JSON file that defines a reusable data flow pattern. 
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          name: standard_cdc_template
          parameters:
@@ -142,6 +144,7 @@ A template data flow specification is a simplified file that references a templa
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "template": "standard_cdc_template",
@@ -164,6 +167,7 @@ A template data flow specification is a simplified file that references a templa
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          template: standard_cdc_template
          parameterSets:
@@ -229,6 +233,7 @@ This example shows a template for basic file source ingestion, from a hypothetic
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "name": "bronze_erp_system_file_ingestion_template",
@@ -276,6 +281,7 @@ This example shows a template for basic file source ingestion, from a hypothetic
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          name: bronze_erp_system_file_ingestion_template
          parameters:
@@ -316,6 +322,7 @@ This example shows a template for basic file source ingestion, from a hypothetic
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "template": "bronze_erp_system_file_ingestion_template",
@@ -344,6 +351,7 @@ This example shows a template for basic file source ingestion, from a hypothetic
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          template: bronze_erp_system_file_ingestion_template
          parameterSets:

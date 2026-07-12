@@ -11,6 +11,7 @@ Canonical imports
 Use absolute imports from the package:
 
 .. code-block:: python
+   :linenos:
 
    from lakeflow_framework.constants import FrameworkPaths
    from lakeflow_framework.bundle_loader import BundleLoader
@@ -29,6 +30,7 @@ The old flat-deploy layout placed modules directly under ``src/`` (for example
 ``src/*.py`` files are thin re-export shims:
 
 .. code-block:: python
+   :linenos:
 
    # src/constants.py — compat shim, remove at v1.0.0
    from lakeflow_framework.constants import FrameworkPaths  # noqa: F401

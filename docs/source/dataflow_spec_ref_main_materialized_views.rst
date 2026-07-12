@@ -14,64 +14,66 @@ The following schema details the configuration for a Materialized View Data Flow
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
-        {
-            "dataFlowId": "feature_materialized_views",
-            "dataFlowGroup": "feature_samples",
-            "dataFlowType": "materialized_view",
-            "materializedViews": {
-                "mv_name": {
-                    "sourceView": {
-                        "sourceViewName": "",
-                        "sourceType": "[delta|python|sql]",
-                        "sourceDetails": {}
-                    },
-                    "sqlPath": "",
-                    "sqlStatement": "",
-                    "tableDetails": {
-                        "database": "",
-                        "schemaPath": "",
-                        "tableProperties": {},
-                        "path": "",
-                        "partitionColumns": [],
-                        "clusterByColumns": []
-                    },
-                    "dataQualityExpectationsEnabled": false,
-                    "dataQualityExpectationsPath": "",
-                    "quarantineMode": "off",
-                    "quarantineTargetDetails": {},
-                    "refreshPolicy": "auto"
-                }
-            }
-        }
+         {
+             "dataFlowId": "feature_materialized_views",
+             "dataFlowGroup": "feature_samples",
+             "dataFlowType": "materialized_view",
+             "materializedViews": {
+                 "mv_name": {
+                     "sourceView": {
+                         "sourceViewName": "",
+                         "sourceType": "[delta|python|sql]",
+                         "sourceDetails": {}
+                     },
+                     "sqlPath": "",
+                     "sqlStatement": "",
+                     "tableDetails": {
+                         "database": "",
+                         "schemaPath": "",
+                         "tableProperties": {},
+                         "path": "",
+                         "partitionColumns": [],
+                         "clusterByColumns": []
+                     },
+                     "dataQualityExpectationsEnabled": false,
+                     "dataQualityExpectationsPath": "",
+                     "quarantineMode": "off",
+                     "quarantineTargetDetails": {},
+                     "refreshPolicy": "auto"
+                 }
+             }
+         }
 
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
-        dataFlowId: feature_materialized_views
-        dataFlowGroup: feature_samples
-        dataFlowType: materialized_view
-        materializedViews:
-          mv_name:
-            sourceView:
-              sourceViewName: ''
-              sourceType: '[delta|python|sql]'
-              sourceDetails: {}
-            sqlPath: ''
-            sqlStatement: ''
-            tableDetails:
-              database: ''
-              schemaPath: ''
-              tableProperties: {}
-              path: ''
-              partitionColumns: []
-              clusterByColumns: []
-            dataQualityExpectationsEnabled: false
-            dataQualityExpectationsPath: ''
-            quarantineMode: 'off'
-            quarantineTargetDetails: {}
-            refreshPolicy: auto
+         dataFlowId: feature_materialized_views
+         dataFlowGroup: feature_samples
+         dataFlowType: materialized_view
+         materializedViews:
+           mv_name:
+             sourceView:
+               sourceViewName: ''
+               sourceType: '[delta|python|sql]'
+               sourceDetails: {}
+             sqlPath: ''
+             sqlStatement: ''
+             tableDetails:
+               database: ''
+               schemaPath: ''
+               tableProperties: {}
+               path: ''
+               partitionColumns: []
+               clusterByColumns: []
+             dataQualityExpectationsEnabled: false
+             dataQualityExpectationsPath: ''
+             quarantineMode: 'off'
+             quarantineTargetDetails: {}
+             refreshPolicy: auto
 
 Example Specification
 ---------------------
@@ -83,99 +85,101 @@ The below sample demonstrates a Materialized View Data Flow Spec:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
-        {
-            "dataFlowId": "feature_materialized_views",
-            "dataFlowGroup": "feature_samples",
-            "dataFlowType": "materialized_view",
-            "materializedViews": {
-                "mv_from_source_view": {
-                    "sourceView": {
-                        "sourceViewName": "v_mv_source_view",
-                        "sourceType": "delta",
-                        "sourceDetails": {
-                            "database": "{staging_schema}",
-                            "table": "customer",
-                            "cdfEnabled": true
-                        }
-                    },
-                    "tableDetails": {
-                        "database": "{gold_schema}",
-                        "tableProperties": {
-                            "delta.autoOptimize.optimizeWrite": "true",
-                            "delta.autoOptimize.autoCompact": "true"
-                        },
-                        "clusterByColumns": ["year", "month"],
-                        "schemaPath": "schemas/customer_metrics_mv.json"
-                    },
-                },
-                "mv_from_sql_path": {
-                    "sqlPath": "./mv_from_sql_path.sql"
-                },
-                "mv_from_sql_statement": {
-                    "sqlStatement": "SELECT * FROM {staging_schema}.customer"
-                },
-                "mv_with_quarantine": {
-                    "sqlStatement": "SELECT * FROM {staging_schema}.customer_address",
-                    "dataQualityExpectationsEnabled": true,
-                    "dataQualityExpectationsPath": "./customer_address_dqe.json",
-                    "quarantineMode": "table",
-                    "quarantineTargetDetails": {
-                        "targetFormat": "delta"
-                    }
-                },
-                "mv_with_refresh_policy": {
-                    "sqlStatement": "SELECT * FROM {staging_schema}.customer",
-                    "refreshPolicy": "incremental_strict",
-                    "tableDetails": {
-                        "configFlags": ["disableOperationalMetadata"]
-                    }
-                }
-            }
-        }
+         {
+             "dataFlowId": "feature_materialized_views",
+             "dataFlowGroup": "feature_samples",
+             "dataFlowType": "materialized_view",
+             "materializedViews": {
+                 "mv_from_source_view": {
+                     "sourceView": {
+                         "sourceViewName": "v_mv_source_view",
+                         "sourceType": "delta",
+                         "sourceDetails": {
+                             "database": "{staging_schema}",
+                             "table": "customer",
+                             "cdfEnabled": true
+                         }
+                     },
+                     "tableDetails": {
+                         "database": "{gold_schema}",
+                         "tableProperties": {
+                             "delta.autoOptimize.optimizeWrite": "true",
+                             "delta.autoOptimize.autoCompact": "true"
+                         },
+                         "clusterByColumns": ["year", "month"],
+                         "schemaPath": "schemas/customer_metrics_mv.json"
+                     },
+                 },
+                 "mv_from_sql_path": {
+                     "sqlPath": "./mv_from_sql_path.sql"
+                 },
+                 "mv_from_sql_statement": {
+                     "sqlStatement": "SELECT * FROM {staging_schema}.customer"
+                 },
+                 "mv_with_quarantine": {
+                     "sqlStatement": "SELECT * FROM {staging_schema}.customer_address",
+                     "dataQualityExpectationsEnabled": true,
+                     "dataQualityExpectationsPath": "./customer_address_dqe.json",
+                     "quarantineMode": "table",
+                     "quarantineTargetDetails": {
+                         "targetFormat": "delta"
+                     }
+                 },
+                 "mv_with_refresh_policy": {
+                     "sqlStatement": "SELECT * FROM {staging_schema}.customer",
+                     "refreshPolicy": "incremental_strict",
+                     "tableDetails": {
+                         "configFlags": ["disableOperationalMetadata"]
+                     }
+                 }
+             }
+         }
 
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
-        dataFlowId: feature_materialized_views
-        dataFlowGroup: feature_samples
-        dataFlowType: materialized_view
-        materializedViews:
-          mv_from_source_view:
-            sourceView:
-              sourceViewName: v_mv_source_view
-              sourceType: delta
-              sourceDetails:
-                database: '{staging_schema}'
-                table: customer
-                cdfEnabled: true
-            tableDetails:
-              database: '{gold_schema}'
-              tableProperties:
-                delta.autoOptimize.optimizeWrite: 'true'
-                delta.autoOptimize.autoCompact: 'true'
-              clusterByColumns:
-                - year
-                - month
-              schemaPath: schemas/customer_metrics_mv.json
-          mv_from_sql_path:
-            sqlPath: ./mv_from_sql_path.sql
-          mv_from_sql_statement:
-            sqlStatement: SELECT * FROM {staging_schema}.customer
-          mv_with_quarantine:
-            sqlStatement: SELECT * FROM {staging_schema}.customer_address
-            dataQualityExpectationsEnabled: true
-            dataQualityExpectationsPath: ./customer_address_dqe.json
-            quarantineMode: table
-            quarantineTargetDetails:
-              targetFormat: delta
-          mv_with_refresh_policy:
-            sqlStatement: SELECT * FROM {staging_schema}.customer
-            refreshPolicy: incremental_strict
-            tableDetails:
-              configFlags:
-                - disableOperationalMetadata
+         dataFlowId: feature_materialized_views
+         dataFlowGroup: feature_samples
+         dataFlowType: materialized_view
+         materializedViews:
+           mv_from_source_view:
+             sourceView:
+               sourceViewName: v_mv_source_view
+               sourceType: delta
+               sourceDetails:
+                 database: '{staging_schema}'
+                 table: customer
+                 cdfEnabled: true
+             tableDetails:
+               database: '{gold_schema}'
+               tableProperties:
+                 delta.autoOptimize.optimizeWrite: 'true'
+                 delta.autoOptimize.autoCompact: 'true'
+               clusterByColumns:
+                 - year
+                 - month
+               schemaPath: schemas/customer_metrics_mv.json
+           mv_from_sql_path:
+             sqlPath: ./mv_from_sql_path.sql
+           mv_from_sql_statement:
+             sqlStatement: SELECT * FROM {staging_schema}.customer
+           mv_with_quarantine:
+             sqlStatement: SELECT * FROM {staging_schema}.customer_address
+             dataQualityExpectationsEnabled: true
+             dataQualityExpectationsPath: ./customer_address_dqe.json
+             quarantineMode: table
+             quarantineTargetDetails:
+               targetFormat: delta
+           mv_with_refresh_policy:
+             sqlStatement: SELECT * FROM {staging_schema}.customer
+             refreshPolicy: incremental_strict
+             tableDetails:
+               configFlags:
+                 - disableOperationalMetadata
 
 The above data flow spec sample contains the following core components:
 

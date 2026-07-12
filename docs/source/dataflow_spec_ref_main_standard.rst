@@ -13,90 +13,92 @@ The below demonstrates a standard Data Flow Spec for a Bronze ingestion use case
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
-        {
-            "dataFlowId": "crm_1",
-            "dataFlowGroup": "crm",
-            "dataFlowType": "standard",
-            "sourceType": "delta",
-            "sourceSystem": "crm",
-            "sourceViewName": "v_customer_address",
-            "sourceDetails": {
-                "database": "source_db",
-                "table": "customer_address",
-                "cdfEnabled": true,
-                "schemaPath": "schemas/customer_address.json"
-            },
-            "mode": "stream",
-            "targetFormat": "delta",
-            "targetDetails": {
-                "table": "customer_address",
-                "tableProperties": {
-                    "delta.autoOptimize.optimizeWrite": "true",
-                    "delta.autoOptimize.autoCompact": "true"
-                },
-                "partitionColumns": ["country_code"],
-                "schemaPath": "schemas/customer_address.json"
-            },
-            "dataQualityExpectationsEnabled": true,
-            "quarantineMode": "table",
-            "quarantineTargetDetails": {
-                "targetFormat": "delta",
-                "table": "customer_address_quarantine",
-                "tableProperties": {}
-            },
-            "cdcSettings": {
-                "keys": ["address_id"],
-                "sequence_by": "updated_timestamp",
-                "scd_type": "2",
-                "where": "",
-                "ignore_null_updates": true,
-                "except_column_list": ["updated_timestamp"],
-                "apply_as_deletes": "DELETE_FLAG = True"
-            }
-        }
+         {
+             "dataFlowId": "crm_1",
+             "dataFlowGroup": "crm",
+             "dataFlowType": "standard",
+             "sourceType": "delta",
+             "sourceSystem": "crm",
+             "sourceViewName": "v_customer_address",
+             "sourceDetails": {
+                 "database": "source_db",
+                 "table": "customer_address",
+                 "cdfEnabled": true,
+                 "schemaPath": "schemas/customer_address.json"
+             },
+             "mode": "stream",
+             "targetFormat": "delta",
+             "targetDetails": {
+                 "table": "customer_address",
+                 "tableProperties": {
+                     "delta.autoOptimize.optimizeWrite": "true",
+                     "delta.autoOptimize.autoCompact": "true"
+                 },
+                 "partitionColumns": ["country_code"],
+                 "schemaPath": "schemas/customer_address.json"
+             },
+             "dataQualityExpectationsEnabled": true,
+             "quarantineMode": "table",
+             "quarantineTargetDetails": {
+                 "targetFormat": "delta",
+                 "table": "customer_address_quarantine",
+                 "tableProperties": {}
+             },
+             "cdcSettings": {
+                 "keys": ["address_id"],
+                 "sequence_by": "updated_timestamp",
+                 "scd_type": "2",
+                 "where": "",
+                 "ignore_null_updates": true,
+                 "except_column_list": ["updated_timestamp"],
+                 "apply_as_deletes": "DELETE_FLAG = True"
+             }
+         }
 
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
-        dataFlowId: crm_1
-        dataFlowGroup: crm
-        dataFlowType: standard
-        sourceType: delta
-        sourceSystem: crm
-        sourceViewName: v_customer_address
-        sourceDetails:
-          database: source_db
-          table: customer_address
-          cdfEnabled: true
-          schemaPath: schemas/customer_address.json
-        mode: stream
-        targetFormat: delta
-        targetDetails:
-          table: customer_address
-          tableProperties:
-            delta.autoOptimize.optimizeWrite: 'true'
-            delta.autoOptimize.autoCompact: 'true'
-          partitionColumns:
-            - country_code
-          schemaPath: schemas/customer_address.json
-        dataQualityExpectationsEnabled: true
-        quarantineMode: table
-        quarantineTargetDetails:
-          targetFormat: delta
-          table: customer_address_quarantine
-          tableProperties: {}
-        cdcSettings:
-          keys:
-            - address_id
-          sequence_by: updated_timestamp
-          scd_type: '2'
-          where: ''
-          ignore_null_updates: true
-          except_column_list:
-            - updated_timestamp
-          apply_as_deletes: DELETE_FLAG = True
+         dataFlowId: crm_1
+         dataFlowGroup: crm
+         dataFlowType: standard
+         sourceType: delta
+         sourceSystem: crm
+         sourceViewName: v_customer_address
+         sourceDetails:
+           database: source_db
+           table: customer_address
+           cdfEnabled: true
+           schemaPath: schemas/customer_address.json
+         mode: stream
+         targetFormat: delta
+         targetDetails:
+           table: customer_address
+           tableProperties:
+             delta.autoOptimize.optimizeWrite: 'true'
+             delta.autoOptimize.autoCompact: 'true'
+           partitionColumns:
+             - country_code
+           schemaPath: schemas/customer_address.json
+         dataQualityExpectationsEnabled: true
+         quarantineMode: table
+         quarantineTargetDetails:
+           targetFormat: delta
+           table: customer_address_quarantine
+           tableProperties: {}
+         cdcSettings:
+           keys:
+             - address_id
+           sequence_by: updated_timestamp
+           scd_type: '2'
+           where: ''
+           ignore_null_updates: true
+           except_column_list:
+             - updated_timestamp
+           apply_as_deletes: DELETE_FLAG = True
 
 The above data flow spec sample contains the following core components:
 

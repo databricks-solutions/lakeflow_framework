@@ -8,15 +8,17 @@ Prerequisites
 
 Before you begin, verify:
 
-- [ ] **Databricks workspace** access with permission to deploy bundles and run Lakeflow Spark Declarative Pipelines
-- [ ] **Databricks CLI** installed — required for local Asset Bundle deployment ([CLI documentation](https://docs.databricks.com/dev-tools/cli/index.html))
-- [ ] **CLI authentication** — run `databricks auth login` for your workspace, or use a configured CLI profile
-- [ ] **The Lakeflow Framework is deployed** — see Step 1 below and :doc:`deploy_before_you_deploy`
-- [ ] **Unity Catalog** enabled in your workspace
-- [ ] **UC catalog** already exists for sample deployment (default `main`, or pass another with `--catalog`) — the deploy scripts create schemas in that catalog, not the catalog itself
-- [ ] Familiarity with [Lakeflow Spark Declarative Pipelines](https://docs.databricks.com/aws/en/ldp/) concepts (helpful, not required)
-- [ ] **The framework concepts are understood** — see :doc:`concepts`
-- [ ] **Autocomplete for Data Flow Specs** is configured — see :doc:`feature_auto_complete`
+.. task-list::
+
+   - [ ] **Databricks workspace** access with permission to deploy bundles and run Lakeflow Spark Declarative Pipelines
+   - [ ] **Databricks CLI** installed — required for local Asset Bundle deployment (`CLI documentation <https://docs.databricks.com/dev-tools/cli/index.html>`_)
+   - [ ] **CLI authentication** — run ``databricks auth login`` for your workspace, or use a configured CLI profile
+   - [ ] **The Lakeflow Framework is deployed** — see Step 1 below and :doc:`deploy_before_you_deploy`
+   - [ ] **Unity Catalog** enabled in your workspace
+   - [ ] **UC catalog** already exists for sample deployment (default ``main``, or pass another with ``--catalog``) — the deploy scripts create schemas in that catalog, not the catalog itself
+   - [ ] Familiarity with `Lakeflow Spark Declarative Pipelines <https://docs.databricks.com/aws/en/ldp/>`_ concepts (helpful, not required)
+   - [ ] **The framework concepts are understood** — see :doc:`concepts`
+   - [ ] **Autocomplete for Data Flow Specs** is configured — see :doc:`feature_auto_complete`
 
 Step 1 — Ensure the Lakeflow Framework is deployed
 ==================================================
@@ -120,6 +122,7 @@ Step 3 — Update ``databricks.yml``
 Adjust ``databricks.yml`` to include configurations similar to:
 
 .. code-block:: yaml
+   :linenos:
 
    bundle:
      name: bundle_name
@@ -302,6 +305,7 @@ Add the base YAML definition
 Replace ``<value>`` placeholders on the highlighted lines:
 
 .. code-block:: yaml
+   :linenos:
    :emphasize-lines: 3, 4
 
    resources:
@@ -353,6 +357,7 @@ filter which flows each pipeline runs:
 Example with filters:
 
 .. code-block:: yaml
+   :linenos:
    :emphasize-lines: 19-22
 
    resources:

@@ -12,10 +12,12 @@ Prerequisites
 
 Before you begin, verify:
 
-- [ ] **Git** installed
-- [ ] **Python 3.10+** installed (see ``requires-python`` in ``pyproject.toml``)
-- [ ] **pip** available in your shell
-- [ ] **IDE (optional)** — VS Code or Cursor recommended for Data Flow Spec IntelliSense and yapf formatting
+.. task-list::
+
+   - [ ] **Git** installed
+   - [ ] **Python 3.10+** installed (see ``requires-python`` in ``pyproject.toml``)
+   - [ ] **pip** available in your shell
+   - [ ] **IDE (optional)** — VS Code or Cursor recommended for Data Flow Spec IntelliSense and yapf formatting
 
 Step 1 — Clone the repository
 ===============================

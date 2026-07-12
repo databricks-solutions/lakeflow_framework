@@ -13,177 +13,179 @@ The below sample demonstrates a flows Data Flow Spec for a Silver multi-source s
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
-        {
-            "dataFlowId": "etp5stg",
-            "dataFlowGroup": "etp5",
-            "dataFlowType": "flow",
-            "targetFormat": "delta",
-            "targetDetails": {
-                "table": "staging_table_mrg_p5",
-                "schemaPath": "",
-                "tableProperties": {
-                    "delta.enableChangeDataFeed": "true"
-                },
-                "partitionColumns": []
-            },
-            "cdcSettings": {
-                "keys": [
-                    "CONTRACT_ID"
-                ],
-                "sequence_by": "EXTRACT_DTTM",
-                "where": "",
-                "ignore_null_updates": true,
-                "except_column_list": [
-                    "__START_AT",
-                    "__END_AT"
-                ],
-                "scd_type": "2",
-                "track_history_column_list": [],
-                "track_history_except_column_list": []
-            },
-            "dataQualityExpectationsEnabled": false,
-            "quarantineMode": "off",
-            "quarantineTargetDetails": {},
-            "flowGroups": [
-                {
-                    "flowGroupId": "et1",
-                    "stagingTables": {
-                        "staging_table_apnd_p5": {
-                            "type": "ST",
-                            "schemaPath": ""
-                        }
-                    },
-                    "flows": {
-                        "f_contract": {
-                            "flowType": "append_view",
-                            "flowDetails": {
-                                "targetTable": "staging_table_apnd_p5",
-                                "sourceView": "v_brz_contract"
-                            },
-                            "views": {
-                                "v_brz_contract": {
-                                    "mode": "stream",
-                                    "sourceType": "delta",
-                                    "sourceDetails": {
-                                        "database": "main.bronze_test_4",
-                                        "table": "contract",
-                                        "cdfEnabled": true,
-                                        "selectExp": [
-                                            "*"
-                                        ],
-                                        "whereClause": []
-                                    }
-                                }
-                            }
-                        },
-                        "f_loan": {
-                            "flowType": "append_view",
-                            "flowDetails": {
-                                "targetTable": "staging_table_apnd_p5",
-                                "sourceView": "v_brz_loan"
-                            },
-                            "views": {
-                                "v_brz_loan": {
-                                    "mode": "stream",
-                                    "sourceType": "delta",
-                                    "sourceDetails": {
-                                        "database": "main.bronze_test_4",
-                                        "table": "loan",
-                                        "cdfEnabled": true,
-                                        "selectExp": [
-                                            "*"
-                                        ],
-                                        "whereClause": []
-                                    }
-                                }
-                            }
-                        },
-                        "f_merge": {
-                            "flowType": "merge",
-                            "flowDetails": {
-                                "targetTable": "staging_table_mrg_p5",
-                                "sourceView": "staging_table_apnd_p5"
-                            }
-                        }
-                    }
-                }
-            ]
-        }
+         {
+             "dataFlowId": "etp5stg",
+             "dataFlowGroup": "etp5",
+             "dataFlowType": "flow",
+             "targetFormat": "delta",
+             "targetDetails": {
+                 "table": "staging_table_mrg_p5",
+                 "schemaPath": "",
+                 "tableProperties": {
+                     "delta.enableChangeDataFeed": "true"
+                 },
+                 "partitionColumns": []
+             },
+             "cdcSettings": {
+                 "keys": [
+                     "CONTRACT_ID"
+                 ],
+                 "sequence_by": "EXTRACT_DTTM",
+                 "where": "",
+                 "ignore_null_updates": true,
+                 "except_column_list": [
+                     "__START_AT",
+                     "__END_AT"
+                 ],
+                 "scd_type": "2",
+                 "track_history_column_list": [],
+                 "track_history_except_column_list": []
+             },
+             "dataQualityExpectationsEnabled": false,
+             "quarantineMode": "off",
+             "quarantineTargetDetails": {},
+             "flowGroups": [
+                 {
+                     "flowGroupId": "et1",
+                     "stagingTables": {
+                         "staging_table_apnd_p5": {
+                             "type": "ST",
+                             "schemaPath": ""
+                         }
+                     },
+                     "flows": {
+                         "f_contract": {
+                             "flowType": "append_view",
+                             "flowDetails": {
+                                 "targetTable": "staging_table_apnd_p5",
+                                 "sourceView": "v_brz_contract"
+                             },
+                             "views": {
+                                 "v_brz_contract": {
+                                     "mode": "stream",
+                                     "sourceType": "delta",
+                                     "sourceDetails": {
+                                         "database": "main.bronze_test_4",
+                                         "table": "contract",
+                                         "cdfEnabled": true,
+                                         "selectExp": [
+                                             "*"
+                                         ],
+                                         "whereClause": []
+                                     }
+                                 }
+                             }
+                         },
+                         "f_loan": {
+                             "flowType": "append_view",
+                             "flowDetails": {
+                                 "targetTable": "staging_table_apnd_p5",
+                                 "sourceView": "v_brz_loan"
+                             },
+                             "views": {
+                                 "v_brz_loan": {
+                                     "mode": "stream",
+                                     "sourceType": "delta",
+                                     "sourceDetails": {
+                                         "database": "main.bronze_test_4",
+                                         "table": "loan",
+                                         "cdfEnabled": true,
+                                         "selectExp": [
+                                             "*"
+                                         ],
+                                         "whereClause": []
+                                     }
+                                 }
+                             }
+                         },
+                         "f_merge": {
+                             "flowType": "merge",
+                             "flowDetails": {
+                                 "targetTable": "staging_table_mrg_p5",
+                                 "sourceView": "staging_table_apnd_p5"
+                             }
+                         }
+                     }
+                 }
+             ]
+         }
 
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
-        dataFlowId: etp5stg
-        dataFlowGroup: etp5
-        dataFlowType: flow
-        targetFormat: delta
-        targetDetails:
-          table: staging_table_mrg_p5
-          schemaPath: ''
-          tableProperties:
-            delta.enableChangeDataFeed: 'true'
-          partitionColumns: []
-        cdcSettings:
-          keys:
-            - CONTRACT_ID
-          sequence_by: EXTRACT_DTTM
-          where: ''
-          ignore_null_updates: true
-          except_column_list:
-            - __START_AT
-            - __END_AT
-          scd_type: '2'
-          track_history_column_list: []
-          track_history_except_column_list: []
-        dataQualityExpectationsEnabled: false
-        quarantineMode: 'off'
-        quarantineTargetDetails: {}
-        flowGroups:
-          - flowGroupId: et1
-            stagingTables:
-              staging_table_apnd_p5:
-                type: ST
-                schemaPath: ''
-            flows:
-              f_contract:
-                flowType: append_view
-                flowDetails:
-                  targetTable: staging_table_apnd_p5
-                  sourceView: v_brz_contract
-                views:
-                  v_brz_contract:
-                    mode: stream
-                    sourceType: delta
-                    sourceDetails:
-                      database: main.bronze_test_4
-                      table: contract
-                      cdfEnabled: true
-                      selectExp:
-                        - '*'
-                      whereClause: []
-              f_loan:
-                flowType: append_view
-                flowDetails:
-                  targetTable: staging_table_apnd_p5
-                  sourceView: v_brz_loan
-                views:
-                  v_brz_loan:
-                    mode: stream
-                    sourceType: delta
-                    sourceDetails:
-                      database: main.bronze_test_4
-                      table: loan
-                      cdfEnabled: true
-                      selectExp:
-                        - '*'
-                      whereClause: []
-              f_merge:
-                flowType: merge
-                flowDetails:
-                  targetTable: staging_table_mrg_p5
-                  sourceView: staging_table_apnd_p5
+         dataFlowId: etp5stg
+         dataFlowGroup: etp5
+         dataFlowType: flow
+         targetFormat: delta
+         targetDetails:
+           table: staging_table_mrg_p5
+           schemaPath: ''
+           tableProperties:
+             delta.enableChangeDataFeed: 'true'
+           partitionColumns: []
+         cdcSettings:
+           keys:
+             - CONTRACT_ID
+           sequence_by: EXTRACT_DTTM
+           where: ''
+           ignore_null_updates: true
+           except_column_list:
+             - __START_AT
+             - __END_AT
+           scd_type: '2'
+           track_history_column_list: []
+           track_history_except_column_list: []
+         dataQualityExpectationsEnabled: false
+         quarantineMode: 'off'
+         quarantineTargetDetails: {}
+         flowGroups:
+           - flowGroupId: et1
+             stagingTables:
+               staging_table_apnd_p5:
+                 type: ST
+                 schemaPath: ''
+             flows:
+               f_contract:
+                 flowType: append_view
+                 flowDetails:
+                   targetTable: staging_table_apnd_p5
+                   sourceView: v_brz_contract
+                 views:
+                   v_brz_contract:
+                     mode: stream
+                     sourceType: delta
+                     sourceDetails:
+                       database: main.bronze_test_4
+                       table: contract
+                       cdfEnabled: true
+                       selectExp:
+                         - '*'
+                       whereClause: []
+               f_loan:
+                 flowType: append_view
+                 flowDetails:
+                   targetTable: staging_table_apnd_p5
+                   sourceView: v_brz_loan
+                 views:
+                   v_brz_loan:
+                     mode: stream
+                     sourceType: delta
+                     sourceDetails:
+                       database: main.bronze_test_4
+                       table: loan
+                       cdfEnabled: true
+                       selectExp:
+                         - '*'
+                       whereClause: []
+               f_merge:
+                 flowType: merge
+                 flowDetails:
+                   targetTable: staging_table_mrg_p5
+                   sourceView: staging_table_apnd_p5
 
 The above data flow spec sample contains the following core components:
 

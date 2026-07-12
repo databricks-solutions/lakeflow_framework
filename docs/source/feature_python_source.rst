@@ -61,6 +61,7 @@ Your module can contain multiple functions. Each function must:
 * Return a DataFrame
 
 .. code-block:: python
+   :linenos:
 
     # src/python/sources.py
     from pyspark.sql import DataFrame, SparkSession
@@ -95,6 +96,7 @@ Use ``pythonModule`` in ``sourceDetails`` to reference your function:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 6,12
 
          {
@@ -123,6 +125,7 @@ Use ``pythonModule`` in ``sourceDetails`` to reference your function:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 6,11
 
          dataFlowId: feature_python_extension_source
@@ -165,6 +168,7 @@ Your file must contain a function called ``get_df`` that:
 * Returns a DataFrame
 
 .. code-block:: python
+   :linenos:
 
     from pyspark.sql import DataFrame, SparkSession
     from pyspark.sql import functions as F
@@ -189,6 +193,7 @@ Your file must contain a function called ``get_df`` that:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 6,12
 
          {
@@ -214,6 +219,7 @@ Your file must contain a function called ``get_df`` that:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 6,11
 
          dataFlowId: feature_python_function_source
@@ -261,6 +267,7 @@ Function Signatures
 The function name can be anything, but it must accept ``spark`` and ``tokens``:
 
 .. code-block:: python
+   :linenos:
 
     def my_source_function(spark: SparkSession, tokens: Dict) -> DataFrame:
         ...
@@ -270,6 +277,7 @@ The function name can be anything, but it must accept ``spark`` and ``tokens``:
 The function must be named ``get_df``:
 
 .. code-block:: python
+   :linenos:
 
     def get_df(spark: SparkSession, tokens: Dict) -> DataFrame:
         ...

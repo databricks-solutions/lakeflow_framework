@@ -47,6 +47,7 @@ Framework-Level Configuration
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "pipeline_bundle_spec_format": {
@@ -58,6 +59,7 @@ Framework-Level Configuration
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          pipeline_bundle_spec_format:
            format: json
@@ -90,6 +92,7 @@ Pipeline-Level Configuration
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "pipeline_bundle_spec_format": {
@@ -100,6 +103,7 @@ Pipeline-Level Configuration
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          pipeline_bundle_spec_format:
            format: yaml
@@ -167,6 +171,7 @@ The following example shows a data flow specification in both JSON and YAML form
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "dataFlowId": "customer_main",
@@ -197,6 +202,7 @@ The following example shows a data flow specification in both JSON and YAML form
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          dataFlowId: customer_main
          dataFlowGroup: customers
@@ -242,6 +248,7 @@ Example 1: Framework Enforces JSON Format
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "pipeline_bundle_spec_format": {
@@ -253,6 +260,7 @@ Example 1: Framework Enforces JSON Format
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          pipeline_bundle_spec_format:
            format: json
@@ -270,6 +278,7 @@ Example 2: Framework Allows Format Flexibility
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "pipeline_bundle_spec_format": {
@@ -281,6 +290,7 @@ Example 2: Framework Allows Format Flexibility
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          pipeline_bundle_spec_format:
            format: json
@@ -293,6 +303,7 @@ Example 2: Framework Allows Format Flexibility
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "pipeline_bundle_spec_format": {
@@ -303,6 +314,7 @@ Example 2: Framework Allows Format Flexibility
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          pipeline_bundle_spec_format:
            format: yaml
@@ -319,6 +331,7 @@ Example 3: Framework Defaults to YAML
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "pipeline_bundle_spec_format": {
@@ -330,6 +343,7 @@ Example 3: Framework Defaults to YAML
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          pipeline_bundle_spec_format:
            format: yaml

@@ -60,6 +60,7 @@ Create your transform functions in the ``src/python/`` directory:
 Your module can contain multiple functions:
 
 .. code-block:: python
+   :linenos:
 
     # src/python/transforms.py
     from pyspark.sql import DataFrame
@@ -99,6 +100,7 @@ Use ``pythonTransform.module`` to reference your function:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 12-14
 
          {
@@ -129,6 +131,7 @@ Use ``pythonTransform.module`` to reference your function:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 11-12
 
          dataFlowId: feature_python_extension_transform
@@ -159,6 +162,7 @@ You can pass configuration tokens to your transform function:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          "pythonTransform": {
              "module": "transforms.customer_aggregation_with_tokens",
@@ -172,6 +176,7 @@ You can pass configuration tokens to your transform function:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          pythonTransform:
            module: transforms.customer_aggregation_with_tokens
@@ -204,6 +209,7 @@ Your file must contain a function called ``apply_transform`` that:
 * Returns a DataFrame
 
 .. code-block:: python
+   :linenos:
 
     from pyspark.sql import DataFrame
     from pyspark.sql import functions as F
@@ -225,6 +231,7 @@ Your file must contain a function called ``apply_transform`` that:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 12-14
 
          {
@@ -252,6 +259,7 @@ Your file must contain a function called ``apply_transform`` that:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 11-12
 
          dataFlowId: feature_python_function_transform

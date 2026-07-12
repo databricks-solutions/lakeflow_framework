@@ -68,6 +68,7 @@ You can ignore validation errors by setting the ``pipeline.ignoreValidationError
 You can do this in the pipeline resource YAML file or via the Databricks UI in the Spark Declarative Pipeline Settings.
 
 .. code-block:: yaml
+   :linenos:
     :emphasize-lines: 21
 
     resources:
@@ -125,6 +126,7 @@ If you are using GitHub Actions for your CI/CD pipelines, you can use the **comp
 **Example workflow**
 
 .. code-block:: yaml
+   :linenos:
 
    jobs:
      validate-dataflows:

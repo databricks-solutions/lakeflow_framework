@@ -13,11 +13,13 @@ Prerequisites
 
 Before you begin, verify:
 
-- [ ] **Databricks workspace** access with permission to deploy bundles and run Lakeflow Spark Declarative Pipelines
-- [ ] **Databricks CLI** installed — required for local Asset Bundle deployment ([CLI documentation](https://docs.databricks.com/dev-tools/cli/index.html))
-- [ ] **CLI authentication** — run ``databricks auth login`` for your workspace, or use a configured CLI profile
-- [ ] **Unity Catalog** enabled in your workspace
-- [ ] **Framework deployed** at a known ``framework_source_path`` in this workspace
+.. task-list::
+
+   - [ ] **Databricks workspace** access with permission to deploy bundles and run Lakeflow Spark Declarative Pipelines
+   - [ ] **Databricks CLI** installed — required for local Asset Bundle deployment (`CLI documentation <https://docs.databricks.com/dev-tools/cli/index.html>`_)
+   - [ ] **CLI authentication** — run ``databricks auth login`` for your workspace, or use a configured CLI profile
+   - [ ] **Unity Catalog** enabled in your workspace
+   - [ ] **Framework deployed** at a known ``framework_source_path`` in this workspace
 
 Step 1 — Authenticate the Databricks CLI
 ========================================

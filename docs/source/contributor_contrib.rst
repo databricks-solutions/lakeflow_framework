@@ -129,6 +129,7 @@ Adding a new contrib module
    easiest pattern is a ``pytest.importorskip`` at the top of the test module:
 
    .. code-block:: python
+      :linenos:
 
       some_dep = pytest.importorskip("some_third_party")
 

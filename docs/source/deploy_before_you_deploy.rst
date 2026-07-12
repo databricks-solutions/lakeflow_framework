@@ -10,7 +10,7 @@ Pipeline bundles depend on a deployed framework at a known ``framework_source_pa
 
 **Framework Bundle** → **Pipeline Bundle(s)** → pipelines run in the workspace.
 
-.. mermaid::
+.. md-mermaid::
 
    flowchart LR
      Fw["1. Framework Bundle"] --> Pipe["2. Pipeline Bundle(s)"]

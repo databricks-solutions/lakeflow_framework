@@ -46,6 +46,7 @@ The Spark configuration section must follow this schema:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          spark_config:
            <configuration_key>: <configuration_value>
@@ -95,6 +96,7 @@ Below is an example of a typical Spark configuration in the `global.json|yaml` f
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "spark_config": {
@@ -108,6 +110,7 @@ Below is an example of a typical Spark configuration in the `global.json|yaml` f
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          spark_config:
            spark.sql.shuffle.partitions: '200'
@@ -141,6 +144,7 @@ Example with environment-specific configurations:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "spark_config": {
@@ -152,6 +156,7 @@ Example with environment-specific configurations:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          spark_config:
            spark.sql.shuffle.partitions: ${SHUFFLE_PARTITIONS}

@@ -50,6 +50,7 @@ When table migration is enabled, you must specify the volume path for checkpoint
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
            "table_migration_state_volume_path": "/Volumes/{catalog}/{schema}/{volume}/checkpoint_state"
@@ -58,6 +59,7 @@ When table migration is enabled, you must specify the volume path for checkpoint
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          table_migration_state_volume_path: /Volumes/{catalog}/{schema}/{volume}/checkpoint_state
 
@@ -77,6 +79,7 @@ When table migration is enabled, you must specify the volume path for checkpoint
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
            "table_migration_state_volume_path": "/Volumes/main/lakeflow_samples_staging/stg_volume/checkpoint_state"
@@ -85,6 +88,7 @@ When table migration is enabled, you must specify the volume path for checkpoint
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          table_migration_state_volume_path: /Volumes/main/lakeflow_samples_staging/stg_volume/checkpoint_state
 

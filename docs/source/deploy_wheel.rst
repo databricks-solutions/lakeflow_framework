@@ -40,6 +40,7 @@ Checking the installed version
 From Python:
 
 .. code-block:: python
+   :linenos:
 
    import lakeflow_framework
    print(lakeflow_framework.__version__)
@@ -76,6 +77,7 @@ overrides, set ``framework.sourcePath`` in your pipeline resource YAML to point
 to a directory that contains ``local/config/``:
 
 .. code-block:: yaml
+   :linenos:
 
    spark_conf:
      framework.sourcePath: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/src

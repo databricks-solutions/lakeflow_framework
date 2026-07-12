@@ -1,5 +1,5 @@
-Schema Definitions
-==================
+Schema Management
+=================
 
 .. list-table::
    :header-rows: 0
@@ -9,12 +9,12 @@ Schema Definitions
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - NA
+     - See :doc:`feature_databricks_schema_features` for Databricks schema-related features exposed through LFF.
 
 Overview
 --------
 
-The Framework supports the definition of schemas in the following ways:
+The Lakeflow Framework supports schema management as part of the data flow spec:
 
 * Schema on Read:
     * A schema can be specified on most sources using JSON StructType format
@@ -72,6 +72,7 @@ Generating the Schema Definition
 If you have your data in Databricks, you can can read your source into a Dataframe and then use the following code to generate the JSON schema format:
 
 .. code-block:: python
+   :linenos:
 
     df.schema.jsonValue()
 
@@ -91,7 +92,8 @@ For Example:
 ~~~~~~~~~~~~
 
 .. code-block:: json
-    :emphasize-lines: 1-3, 40-41
+   :linenos:
+   :emphasize-lines: 1-3, 40-41
 
     {
         "type": "struct",

@@ -81,6 +81,7 @@ The structure of the substitutions config file should be as below:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          tokens:
            <token>: <value>
@@ -117,6 +118,7 @@ Substitutions config:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "tokens": {
@@ -133,6 +135,7 @@ Substitutions config:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          tokens:
            bronze_schema_x: bronze_marketing
@@ -200,6 +203,7 @@ Data Flow Spec input:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          ...
          flows:
@@ -294,6 +298,7 @@ Data Flow Spec output:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          ...
          flows:

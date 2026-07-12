@@ -59,10 +59,13 @@ myst_enable_extensions = [
 ]
 myst_enable_checkboxes = True
 
+# sphinx-immaterial ``.. task-list::`` (RST) — interactive like MyST checkboxes
+clickable_checkbox = True
+
 templates_path = ['_templates', 'source/_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-# Code blocks: line numbers in a Cursor/VS Code-style gutter (table layout).
+# Code blocks: when :linenos: is set, use Cursor/VS Code-style gutter (table layout).
 html_codeblock_linenos_style = 'table'
 
 # Copy button — WAF-style command snippets only (not dark spec/code panels)
@@ -162,8 +165,8 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
     is_home = pagename == master
 
     # Section index pages: non-selectable sidebar title, tab lands on first child.
-    # Architecture / Deploy / Samples / Features / Build / Contributors are real
-    # top-level hub links. Get Started uses Sphinx :caption:.
+    # Architecture / Deploy / Samples / Features / Build / Contributors / Get Started
+    # are real top-level hub links.
     section_index_pages = frozenset({
         "dataflow_spec_reference",
     })
@@ -235,16 +238,20 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
     context["nav"] = nav
 
 
-def _enable_codeblock_linenos(app, doctree):
-    """Show line numbers on syntax-highlighted code blocks (except command snippets)."""
+def _flatten_mermaid_diagrams(app, doctree):
+    """Emit plain diagram source for md-mermaid (no Pygments wrapper inside <pre>)."""
     from docutils import nodes
 
-    for node in doctree.findall(nodes.literal_block):
-        classes = list(node.get('classes', []))
-        if 'lf-command-block' in classes:
-            continue
-        if node.rawsource == node.astext():
-            node['linenos'] = True
+    from sphinx_immaterial.mermaid_diagrams import mermaid_node
+
+    for diagram in doctree.findall(mermaid_node):
+        content = diagram.get('content', '')
+        if not content:
+            for child in diagram.children:
+                if isinstance(child, nodes.literal_block):
+                    content = child.astext()
+                    break
+        diagram.children[:] = [nodes.Text(content)]
 
 
 def _table_column_count(table) -> int:
@@ -302,6 +309,47 @@ def _mark_content_tables(app, doctree, docname=None):
         table['classes'] = classes
 
 
+def _upgrade_mermaid_dist(app, env=None):
+    """Replace theme mermaid (11.12) with vendored 11.16 for treeView-beta support."""
+    from pathlib import Path
+    import shutil
+
+    import sphinx_immaterial
+    from sphinx.builders.html import StandaloneHTMLBuilder
+
+    if not isinstance(app.builder, StandaloneHTMLBuilder):
+        return
+
+    if env is None:
+        env = app.env
+    if not getattr(env, "sphinx_immaterial_copy_mermaid_dist", False):
+        return
+
+    vendor = Path(_here) / "source" / "_static" / "vendor" / "mermaid.min.js"
+    if not vendor.is_file():
+        return
+
+    dst_dir = Path(app.outdir) / "_static" / "mermaid"
+    dst = dst_dir / "mermaid.min.js"
+
+    # Theme copy runs on env-check-consistency (skipped on no-op incremental
+    # builds). Ensure the dist exists before overriding with the vendored build.
+    if not dst.is_file():
+        theme_mermaid = Path(sphinx_immaterial.__file__).parent / "bundles" / "mermaid"
+        if theme_mermaid.is_dir():
+            dst_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(theme_mermaid, dst_dir, dirs_exist_ok=True)
+
+    dst_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(vendor, dst)
+
+
+def _upgrade_mermaid_dist_on_finish(app, exception):
+    if exception is not None:
+        return
+    _upgrade_mermaid_dist(app)
+
+
 def setup(app):
     app.set_translator("markdown", CustomMarkdownTranslator)
 
@@ -312,7 +360,9 @@ def setup(app):
                 domain.data["synopses"] = {}
 
     app.connect("builder-inited", _init_domain_synopses)
-    app.connect("doctree-read", _enable_codeblock_linenos)
+    app.connect("doctree-read", _flatten_mermaid_diagrams)
     app.connect("doctree-read", _mark_content_tables)
+    app.connect("env-check-consistency", _upgrade_mermaid_dist, priority=1000)
+    app.connect("build-finished", _upgrade_mermaid_dist_on_finish, priority=1000)
     app.connect("html-page-context", _patch_landing_nav, priority=999)
     #app.add_builder(MarkdownBuilder)

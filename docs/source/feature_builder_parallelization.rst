@@ -62,6 +62,7 @@ Configure these parameters globally for all pipelines in your ``src/lakeflow_fra
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 7
 
          {
@@ -81,6 +82,7 @@ Configure these parameters globally for all pipelines in your ``src/lakeflow_fra
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 5
 
          spark_config:

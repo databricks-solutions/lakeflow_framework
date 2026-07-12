@@ -199,6 +199,7 @@ must be met to ensure compatibility with both the framework call sites and the
        implementation is acceptable.
 
 .. code-block:: python
+   :linenos:
 
    class MyCustomLogger:
        """Minimal compliant custom logger skeleton."""
@@ -269,6 +270,7 @@ a single-line JSON object, making it compatible with log aggregation tools
 Create ``src/local/libraries/structured_stdout_logger.py``:
 
 .. code-block:: python
+   :linenos:
 
    from __future__ import annotations
 
@@ -380,6 +382,7 @@ Add or update ``src/local/config/logger.json`` in the framework bundle
 (a sparse file is sufficient — only the keys you want to set are needed):
 
 .. code-block:: json
+   :linenos:
 
    {
      "enabled": true,
@@ -400,6 +403,7 @@ Deploy the framework bundle and run a pipeline. Log output in the Databricks
 **Logs** UI should now appear as single-line JSON:
 
 .. code-block:: json
+   :linenos:
 
    {"timestamp": "2026-05-17T00:20:00.123456+00:00", "level": "INFO", "logger": "lakeflowframework", "message": "Initializing Pipeline..."}
    {"timestamp": "2026-05-17T00:20:01.456789+00:00", "level": "ERROR", "logger": "lakeflowframework", "message": "Failed to process Data Flow Spec: schema mismatch", "exc_info": "Traceback (most recent call last):\n  ..."}
@@ -411,6 +415,7 @@ Install the library on the pipeline (wheel or PyPI via ``environment.dependencie
 in the pipeline resource YAML), then add ``pipeline_configs/logger.json``:
 
 .. code-block:: json
+   :linenos:
 
    {
      "enabled": true,
@@ -459,6 +464,7 @@ Using the Logger in Code
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
+   :linenos:
 
    from lakeflow_framework.pipeline_config import get_logger
 
@@ -507,6 +513,7 @@ If the third-party logger uses a different parameter name (e.g. ``log_level``),
 add a thin wrapper (see below) that maps the argument:
 
 .. code-block:: python
+   :linenos:
 
    # src/local/libraries/my_logger_wrapper.py
    from mylib import get_logger as _get_logger
@@ -524,6 +531,7 @@ that are incompatible with the framework's injection. Place a thin wrapper in
 ``logger.json`` points to the wrapper rather than the upstream library:
 
 .. code-block:: python
+   :linenos:
 
    # src/local/libraries/my_logger_wrapper.py
    from my_logger.databricks import get_logger as _get_logger
@@ -533,6 +541,7 @@ that are incompatible with the framework's injection. Place a thin wrapper in
        return _get_logger(dbutils, spark, level=level, log_to_output=False, **factory_args)
 
 .. code-block:: json
+   :linenos:
 
    {
      "enabled": true,
@@ -597,6 +606,7 @@ Error handling:
 Structured stdout logger output (JSON, via ``structured_stdout_logger``):
 
 .. code-block:: json
+   :linenos:
 
    {"timestamp": "2025-02-06T04:05:46.161000+00:00", "level": "INFO", "logger": "lakeflowframework", "message": "Initializing Pipeline..."}
    {"timestamp": "2025-02-06T04:05:48.254000+00:00", "level": "INFO", "logger": "lakeflowframework", "message": "Creating Flow: flow_name"}

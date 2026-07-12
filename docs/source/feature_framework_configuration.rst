@@ -123,6 +123,7 @@ custom override on top of the defaults at runtime:
 Example — change one global setting without touching the rest of ``global.json``:
 
 .. code-block:: json
+   :linenos:
 
    {
      "dataflow_spec_version": "0.0.3"

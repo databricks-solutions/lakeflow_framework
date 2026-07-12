@@ -43,6 +43,7 @@ The mandatory table properties configuration are defined as key-value pairs as f
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          mandatory_table_properties:
            <property_name>: <property_value>
@@ -85,6 +86,7 @@ Here's an example configuration that sets some common table properties:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "mandatory_table_properties": {
@@ -98,6 +100,7 @@ Here's an example configuration that sets some common table properties:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          mandatory_table_properties:
            delta.autoOptimize.optimizeWrite: 'true'

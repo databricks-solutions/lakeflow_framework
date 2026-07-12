@@ -158,6 +158,7 @@ Examples
 The below example illustrates the default configuration for a generic bronze and silver layer deployment. 
 
 .. code-block:: json
+   :linenos:
 
     {
         "type": "struct",
@@ -209,6 +210,7 @@ Use the ``features`` object to disable operational metadata at a data flow spec 
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 5,6,7
 
          {
@@ -223,6 +225,7 @@ Use the ``features`` object to disable operational metadata at a data flow spec 
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          :emphasize-lines: 4,5
 
@@ -282,35 +285,36 @@ Use the ``configFlags`` array to disable operational metadata at a target table 
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
-         :emphasize-lines: 22,23
+          :emphasize-lines: 22,23
         
-        dataFlowId: crm_1
-        dataFlowGroup: crm
-        dataFlowType: standard
-        sourceType: delta
-        sourceSystem: crm
-        sourceViewName: v_customer_address
-        sourceDetails:
-          database: source_db
-          table: customer_address
-          cdfEnabled: true
-          schemaPath: schemas/customer_address.json
-        mode: stream
-        targetFormat: delta
-        targetDetails:
-          table: customer_address
-          tableProperties:
-            delta.autoOptimize.optimizeWrite: 'true'
-            delta.autoOptimize.autoCompact: 'true'
-          partitionColumns:
-            - country_code
-          schemaPath: schemas/customer_address.json
-          configFlags: 
-            - disableOperationalMetadata
-        dataQualityExpectationsEnabled: true
-        quarantineMode: table
-        quarantineTargetDetails:
-          targetFormat: delta
-          table: customer_address_quarantine
-          tableProperties: {}
+         dataFlowId: crm_1
+         dataFlowGroup: crm
+         dataFlowType: standard
+         sourceType: delta
+         sourceSystem: crm
+         sourceViewName: v_customer_address
+         sourceDetails:
+           database: source_db
+           table: customer_address
+           cdfEnabled: true
+           schemaPath: schemas/customer_address.json
+         mode: stream
+         targetFormat: delta
+         targetDetails:
+           table: customer_address
+           tableProperties:
+             delta.autoOptimize.optimizeWrite: 'true'
+             delta.autoOptimize.autoCompact: 'true'
+           partitionColumns:
+             - country_code
+           schemaPath: schemas/customer_address.json
+           configFlags: 
+             - disableOperationalMetadata
+         dataQualityExpectationsEnabled: true
+         quarantineMode: table
+         quarantineTargetDetails:
+           targetFormat: delta
+           table: customer_address_quarantine
+           tableProperties: {}

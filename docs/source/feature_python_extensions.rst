@@ -185,6 +185,7 @@ directory to ``sys.path`` for loose ``.py`` modules or packages that you want
 importable without a full wheel build — this is a secondary, convenience role.
 
 .. code-block:: yaml
+   :linenos:
    :caption: resource.yaml (DAB pipeline definition)
 
    pipelines:
@@ -235,6 +236,7 @@ Python Sources
 Custom code that generates DataFrames for use as data sources.
 
 .. code-block:: python
+   :linenos:
    :caption: src/python/sources.py
 
    from pyspark.sql import DataFrame, SparkSession
@@ -267,6 +269,7 @@ Custom code that generates DataFrames for use as data sources.
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 10
 
          {
@@ -290,6 +293,7 @@ Custom code that generates DataFrames for use as data sources.
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 9
 
          dataFlowId: customer_from_extension
@@ -315,6 +319,7 @@ Custom code that transforms DataFrames after they are read from a source.
 **Function Signatures:**
 
 .. code-block:: python
+   :linenos:
 
     # Without tokens
     def my_transform(df: DataFrame) -> DataFrame:
@@ -327,6 +332,7 @@ Custom code that transforms DataFrames after they are read from a source.
 **Example:**
 
 .. code-block:: python
+   :linenos:
    :caption: src/python/transforms.py
 
     from pyspark.sql import DataFrame
@@ -364,6 +370,7 @@ Custom code that transforms DataFrames after they are read from a source.
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
          :emphasize-lines: 12-14
 
          {
@@ -391,6 +398,7 @@ Custom code that transforms DataFrames after they are read from a source.
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
          :emphasize-lines: 11-12
 
          dataFlowId: customer
@@ -416,6 +424,7 @@ Sinks
 Custom functions for ``foreach_batch_sink`` targets that process micro-batches.
 
 .. code-block:: python
+   :linenos:
    :caption: src/python/sinks.py
 
    from pyspark.sql import DataFrame
@@ -450,6 +459,7 @@ Execution rules
 Use numeric prefixes to fix order: ``01_setup.py``, ``02_register.py``.
 
 .. code-block:: python
+   :linenos:
    :caption: src/init/pre/01_setup.py
 
    """Register a custom Spark config before SDP declarations."""
@@ -459,6 +469,7 @@ Use numeric prefixes to fix order: ``01_setup.py``, ``02_register.py``.
    spark.conf.set("spark.sql.adaptive.enabled", "true")
 
 .. code-block:: python
+   :linenos:
    :caption: src/init/post/01_hooks.py
 
    """Register a pipeline event hook after the SDP graph is assembled."""

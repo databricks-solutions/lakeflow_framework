@@ -46,6 +46,7 @@ Expectations Schema
 --------------------
 
 .. code-block:: json
+   :linenos:
 
     {
         "<expectation_type>": [
@@ -89,6 +90,7 @@ Examples
 --------
 
 .. code-block:: json
+   :linenos:
 
     {
         "expect": [

@@ -12,17 +12,10 @@ The Lakeflow Framework
    :hidden:
 
 .. toctree::
-   :caption: Get Started
-   :maxdepth: 1
-   :hidden:
-
-   quick_start
-   What is the Lakeflow Framework? <what_is_lakeflow_framework>
-
-.. toctree::
    :maxdepth: 2
    :hidden:
 
+   Get Started <get_started>
    Architecture <concepts>
    Samples <deploy_samples.md>
    Build <build_pipeline_bundle>

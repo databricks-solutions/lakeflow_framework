@@ -29,6 +29,7 @@ The logical environment is configured in two places.
 Defined in the variables section:
 
 .. code-block:: yaml
+   :linenos:
 
     variables:
       logical_env:
@@ -43,6 +44,7 @@ The value is passed / retrieved at bundle deployment time. The section :ref:`fea
 To leverage the pipeline resource YAML when deploying a Pipeline, the logical environment must be specified in a pipelines resource YAML file(s) in the ``logicalEnv`` section. For example:
 
 .. code-block:: yaml
+   :linenos:
    :emphasize-lines: 4,17
 
     resources:

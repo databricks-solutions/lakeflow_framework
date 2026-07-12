@@ -32,6 +32,7 @@ Deploy the framework with a specific version
 The framework's version is configured in the databricks.yaml file, defaulting to "current":
 
 .. code-block:: yaml
+   :linenos:
 
     variables:
       version:

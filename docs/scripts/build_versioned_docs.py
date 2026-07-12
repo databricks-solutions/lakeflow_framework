@@ -59,6 +59,31 @@ def _safe_remove(path: Path) -> None:
         shutil.rmtree(path)
 
 
+def _cleanup_docs_worktrees(repo_root: Path, worktrees_root: Path) -> None:
+    """Unregister git worktrees under ``worktrees_root``, then delete the dir.
+
+    ``shutil.rmtree`` alone leaves stale registrations ("missing but already
+    registered") that break the next ``git worktree add``.
+    """
+    if worktrees_root.exists():
+        for child in sorted(worktrees_root.iterdir()):
+            if not child.is_dir():
+                continue
+            subprocess.run(
+                ["git", "worktree", "remove", "--force", str(child)],
+                cwd=repo_root,
+                check=False,
+                capture_output=True,
+            )
+        shutil.rmtree(worktrees_root, ignore_errors=True)
+    subprocess.run(
+        ["git", "worktree", "prune"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+
+
 def _normalize_name(ref: str) -> str:
     return ref.replace("/", "-")
 
@@ -120,7 +145,20 @@ def _ensure_worktree(
     path = worktrees_root / name
     if path.exists():
         return path
-    _run(["git", "worktree", "add", "--detach", str(path), ref], cwd=repo_root)
+    try:
+        _run(["git", "worktree", "add", "--detach", str(path), ref], cwd=repo_root)
+    except subprocess.CalledProcessError:
+        # Recover from a previous run that deleted the dir without unregistering.
+        subprocess.run(
+            ["git", "worktree", "prune"],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+        )
+        _run(
+            ["git", "worktree", "add", "--force", "--detach", str(path), ref],
+            cwd=repo_root,
+        )
     return path
 
 
@@ -232,7 +270,7 @@ def main() -> None:
     versions_file = output_root / "versions.json"
 
     _safe_remove(output_root)
-    _safe_remove(worktrees_root)
+    _cleanup_docs_worktrees(repo_root, worktrees_root)
     output_root.mkdir(parents=True, exist_ok=True)
     worktrees_root.mkdir(parents=True, exist_ok=True)
 
@@ -361,8 +399,7 @@ def main() -> None:
     )
     (output_root / "robots.txt").write_text(robots_txt, encoding="utf-8")
 
-    _safe_remove(worktrees_root)
-    _run(["git", "worktree", "prune"], cwd=repo_root)
+    _cleanup_docs_worktrees(repo_root, worktrees_root)
 
 
 if __name__ == "__main__":

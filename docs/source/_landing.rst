@@ -1,15 +1,15 @@
 .. raw:: html
 
    <div class="lf-hero">
-     <h1 class="lf-hero__title">The Lakeflow Framework</h1>
+     <h1 class="lf-hero__title">The Lakeflow Framework (LFF)</h1>
      <p class="lf-hero__subtitle">Metadata-driven pipelines for Databricks Lakeflow SDP</p>
      <p class="lf-hero__lead">
-       Configure once, deploy everywhere. The Lakeflow Framework accelerates medallion
-       pipelines with pattern-based data flow specs, DABs-native delivery, and
-       support for both centralized and domain-oriented operating models.
+       <B>Configure once. Reuse everywhere.</B> LFF transforms declarative metadata into production-ready 
+       Lakeflow Spark Declarative Pipelines (SDP) using reusable patterns and Databricks 
+       Declarative Automation Bundles (DABs).
      </p>
      <div class="lf-hero-actions">
-        <a class="md-button md-button--primary lf-hero-btn" href="quick_start.html">
+        <a class="md-button md-button--primary lf-hero-btn" href="get_started.html">
          Get Started
          <svg class="lf-btn-icon lf-btn-icon--after" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
        </a>
@@ -20,16 +20,24 @@
      </div>
    </div>
 
-Deploy the framework once, then pipeline bundles shaped to how your organisation runs data — medallion, domain-owned data products, or your own architecture. Author pipelines with patterns and templates for speed and consistency.
+.. raw:: html
 
-.. image:: images/lff-architecture-v1-two-boxes.jpg
-   :alt: Lakeflow Framework architecture — Framework Bundle and Pipeline Bundle on a DABS Foundation
-   :align: center
-   :width: 720px
+   <div class="lf-landing-blurb">
+     <p class="lf-hero__subtitle">One framework. Any operating model.</p>
+     <p class="lf-hero__lead">
+       Built to fit the way your organization delivers data. Whether your 
+       teams operate through a centralized platform, a hybrid model, or 
+       federated domain ownership, LFF adapts to your operating model. 
+       Use consistent implementation patterns to build medallion pipelines, 
+       domain-owned data products, or architectures tailored to your business.
+     </p>
+   </div>
+
+.. include:: _lff_architecture_diagram.rst
 
 .. container:: lf-landing-onboarding
 
-   New to the framework? Read :doc:`what_is_lakeflow_framework` for a product-level overview, then continue with :doc:`quick_start`.
+   New to LFF? Start at :doc:`get_started` — product overview, Quick Start, or straight into the docs.
 
 .. raw:: html
 

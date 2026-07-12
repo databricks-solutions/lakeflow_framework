@@ -338,7 +338,6 @@ Flows Data Flow
 Data Flow Spec Components:
 
 .. code-block:: text
-  :emphasize-lines: 8
 
    Flows Data Flow
    ├── Data Flow Metadata

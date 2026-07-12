@@ -18,6 +18,7 @@ Original Data Flow Spec file (single unsplit file):
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "dataFlowId": "etp5stg",
@@ -120,6 +121,7 @@ Original Data Flow Spec file (single unsplit file):
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          dataFlowId: etp5stg
          dataFlowGroup: etp5
@@ -200,6 +202,7 @@ Main file:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "dataFlowId": "etp5stg",
@@ -237,6 +240,7 @@ Main file:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          dataFlowId: etp5stg
          dataFlowGroup: etp5
@@ -271,6 +275,7 @@ Flow file:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "dataFlowId": "etp5stg",
@@ -339,6 +344,7 @@ Flow file:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          dataFlowId: etp5stg
          flowGroupId: et1

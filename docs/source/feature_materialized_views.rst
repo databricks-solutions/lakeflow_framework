@@ -10,8 +10,8 @@ Materialized Views
      - :bdg-info:`Data Flow Spec`
    * - **Databricks Docs:**
      - - `Materialized Views <https://docs.databricks.com/aws/en/dlt/materialized-views>`_
-       - `Delta Live Tables Python Reference <https://docs.databricks.com/en/delta-live-tables/python-ref.html>`_
-       - `Delta Live Tables SQL Reference <https://docs.databricks.com/en/delta-live-tables/sql-ref.html>`_
+       - `Spark Declarative Pipelines Python Reference <https://docs.databricks.com/en/delta-live-tables/python-ref.html>`_
+       - `Spark Declarative Pipelines SQL Reference <https://docs.databricks.com/en/delta-live-tables/sql-ref.html>`_
        - `Incremental Refresh for Materialized Views <https://docs.databricks.com/aws/en/optimizations/incremental-refresh>`_
 
 Overview
@@ -60,6 +60,7 @@ The following schema details the configuration for a Materialized View Data Flow
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "dataFlowId": "feature_materialized_views",
@@ -94,6 +95,7 @@ The following schema details the configuration for a Materialized View Data Flow
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          dataFlowId: feature_materialized_views
          dataFlowGroup: feature_samples
@@ -134,6 +136,7 @@ Materialized Views can be configured in your Data Flow Spec in three ways:
       .. tab:: JSON
 
          .. code-block:: json
+            :linenos:
 
             {
                 "sourceView": {
@@ -150,6 +153,7 @@ Materialized Views can be configured in your Data Flow Spec in three ways:
       .. tab:: YAML
 
          .. code-block:: yaml
+            :linenos:
 
             sourceView:
               sourceViewName: v_customer
@@ -168,6 +172,7 @@ Materialized Views can be configured in your Data Flow Spec in three ways:
       .. tab:: JSON
 
          .. code-block:: json
+            :linenos:
 
             {
                 "sqlPath": "./customer_mv.sql"
@@ -176,6 +181,7 @@ Materialized Views can be configured in your Data Flow Spec in three ways:
       .. tab:: YAML
 
          .. code-block:: yaml
+            :linenos:
 
             sqlPath: ./customer_mv.sql
 
@@ -188,6 +194,7 @@ Materialized Views can be configured in your Data Flow Spec in three ways:
       .. tab:: JSON
 
          .. code-block:: json
+            :linenos:
 
             {
                 "sqlStatement": "SELECT * FROM {staging_schema}.customer"
@@ -196,6 +203,7 @@ Materialized Views can be configured in your Data Flow Spec in three ways:
       .. tab:: YAML
 
          .. code-block:: yaml
+            :linenos:
 
             sqlStatement: SELECT * FROM {staging_schema}.customer
 
@@ -236,6 +244,7 @@ A complete example of a materialized view configuration:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "dataFlowId": "feature_materialized_views",
@@ -281,6 +290,7 @@ A complete example of a materialized view configuration:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          dataFlowId: feature_materialized_views
          dataFlowGroup: feature_samples

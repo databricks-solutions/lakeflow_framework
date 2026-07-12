@@ -51,6 +51,7 @@ Rename operations change key names while preserving the value and structure. Two
 - **rename_specific**: Renames keys at specific nested paths
 
 .. code-block:: json
+   :linenos:
 
     {
         "global": {
@@ -69,6 +70,7 @@ Move Operations
 Move operations relocate keys and their values to different locations within the specification structure using dot notation for nested paths:
 
 .. code-block:: json
+   :linenos:
 
     {
         "global": {
@@ -85,6 +87,7 @@ Delete Operations
 Delete operations remove keys and their values from the specification:
 
 .. code-block:: json
+   :linenos:
 
     {
         "global": {
@@ -100,6 +103,7 @@ Complete Example
 A comprehensive mapping file combining all operation types:
 
 .. code-block:: json
+   :linenos:
 
     {
         "global": {
@@ -143,6 +147,7 @@ This can be set in your pipeline substitutions file:
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "dataflow_spec_version": "0.1.0"
@@ -151,6 +156,7 @@ This can be set in your pipeline substitutions file:
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          dataflow_spec_version: 0.1.0
 
@@ -166,6 +172,7 @@ Individual data flow specifications can override the global version by setting t
    .. tab:: JSON
 
       .. code-block:: json
+         :linenos:
 
          {
              "dataFlowId": "customer_data_flow",
@@ -184,6 +191,7 @@ Individual data flow specifications can override the global version by setting t
    .. tab:: YAML
 
       .. code-block:: yaml
+         :linenos:
 
          dataFlowId: customer_data_flow
          dataFlowGroup: customers
@@ -264,6 +272,7 @@ Troubleshooting
 Enable debug logging to see transformation application details:
 
 .. code-block:: python
+   :linenos:
 
     # Framework logs will show:
     # "Global Data Flow Spec Mapping Version: [version]"

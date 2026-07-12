@@ -1,11 +1,10 @@
 What is the Lakeflow Framework?
 ===============================
 
-The Lakeflow Framework is a metadata-driven framework for building Databricks Lakeflow Spark Declarative Pipelines. It uses a configuration-driven, pattern-based approach to support both batch and streaming workloads across the medallion architecture. Deploy the **Framework Bundle** once, then **Pipeline Bundles** for your data flows — with Declarative Automation Bundles (DABs) for flat workspace deploy (default) or the ``lakeflow-framework`` PyPI wheel (v0.20.0+). Optional ``contrib`` packages extend the core framework with community integrations. The framework is designed for simplicity, extensibility, and long-term alignment with the Databricks product roadmap.
+The Lakeflow Framework (**LFF**) is a metadata-driven framework for building Databricks Lakeflow Spark Declarative Pipelines. It uses a configuration-driven, pattern-based approach to support both batch and streaming workloads across the medallion architecture. Deploy the **Framework Bundle** once, then **Pipeline Bundles** for your data flows — with Declarative Automation Bundles (DABs) for flat workspace deploy (default) or the ``lakeflow-framework`` PyPI wheel (v0.20.0+). Optional ``contrib`` packages extend the core framework with community integrations. The framework is designed for simplicity, extensibility, and long-term alignment with the Databricks product roadmap.
 
-.. image:: images/lff-architecture-v1-two-boxes.jpg
-   :alt: Lakeflow Framework architecture — Framework Bundle and Pipeline Bundle on a DABS Foundation
-   :align: center
+.. include:: _lff_architecture_diagram.rst
+
 
 Why teams use it
 ----------------
@@ -59,9 +58,4 @@ The framework composes Spark Declarative Pipelines into repeatable, configuratio
 Next steps
 ----------
 
-* Start with :doc:`quick_start`
-* Review architecture in :doc:`concepts`
-* Explore practical implementations in :doc:`patterns`
-* Review spec-level options in :doc:`dataflow_spec_reference`
-* Build pipeline bundles in :doc:`build_pipeline_bundle`
-* Deploy the framework and pipelines via :doc:`deploy` — read :doc:`deploy_before_you_deploy` first for deploy order and ownership
+Back to :doc:`get_started` for the guided path (Quick Start → Concepts → Build / Deploy) or jump straight into Architecture, Samples, Build, Deploy, or Features from the top navigation.
