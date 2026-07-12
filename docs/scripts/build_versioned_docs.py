@@ -4,11 +4,12 @@
 Build strategy:
 - Always build ``main`` as ``current``.
 - Build selected release tags from docs/scripts/select_versions.py.
-- ``current`` and release tags use **main's** ``docs/conf.py`` (and templates)
-  with that ref's ``docs/source``, so the RTD version selector stays available
-  even for tags that predate versioning UI.
+- **Docs IA cutover at v0.21.0:** ``current`` and tags ``>= v0.21.0`` use
+  **main's** ``docs/conf.py`` with that ref's ``docs/source`` (immaterial /
+  section-folder IA). Tags ``<= v0.20.x`` use **v0.20.0's** ``docs/conf.py``
+  (RTD / flat layout) with each tag's own ``docs/source``.
 - ``--preview`` builds the current branch as ``local-branch-preview`` using
-  **that branch's** conf + source (e.g. immaterial rebrand).
+  **that branch's** conf + source (pre-merge IA validation).
 - Write per-version output under docs/build/html/<version>/.
 - Generate docs/build/html/versions.json as a **superset** manifest consumed by
   both sphinx-immaterial (mike fields) and legacy RTD ``versions.html``.
@@ -19,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -31,7 +33,12 @@ if str(_SCRIPTS_DIR) not in sys.path:
 DOCS_BASEURL = "https://databricks-solutions.github.io/lakeflow_framework/"
 PREVIEW_VERSION_NAME = "local-branch-preview"
 MAIN_CONF_WORKTREE = "_conf_main"
+LEGACY_CONF_REF = "v0.20.0"
+LEGACY_CONF_WORKTREE = "_conf_legacy"
+# Tags at or above this semver use main conf; older tags use LEGACY_CONF_REF conf.
+DOCS_CONF_CUTOVER = (0, 21, 0)
 REDIRECT_VERSIONS = frozenset({"current", PREVIEW_VERSION_NAME})
+_TAG_RE = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)$")
 
 
 def _run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
@@ -91,6 +98,27 @@ def _cleanup_docs_worktrees(repo_root: Path, worktrees_root: Path) -> None:
 
 def _normalize_name(ref: str) -> str:
     return ref.replace("/", "-")
+
+
+def _parse_release_tag(tag: str) -> tuple[int, int, int] | None:
+    match = _TAG_RE.match(tag)
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2)), int(match.group(3))
+
+
+def _conf_ref_for(version_name: str) -> str | None:
+    """Git ref for ``docs/conf.py``, or ``None`` for the working tree (preview)."""
+    if version_name == PREVIEW_VERSION_NAME:
+        return None
+    if version_name == "current":
+        return "main"
+    parsed = _parse_release_tag(version_name)
+    if parsed is None:
+        return "main"
+    if parsed >= DOCS_CONF_CUTOVER:
+        return "main"
+    return LEGACY_CONF_REF
 
 
 def _release_date_for_ref(repo_root: Path, ref: str) -> str:
@@ -206,16 +234,16 @@ def _build_ref(
     versions_file: Path,
     ref: str,
     version_name: str,
-    conf_from_main: bool,
+    conf_ref: str | None,
 ) -> None:
     """Build one version folder.
 
-    When ``conf_from_main`` is True, use main's docs conf/templates with this
-    ref's source (keeps the RTD version selector on historical tags).
-    Preview uses the **working tree** conf + source.
+    ``conf_ref`` selects which git ref supplies ``docs/conf.py``:
+    ``main`` (modern IA), ``v0.20.0`` (legacy RTD), or ``None`` (working tree).
+    Source always comes from ``ref`` (except preview, which uses the working tree).
     """
-    if version_name == PREVIEW_VERSION_NAME:
-        # Working tree: pick up local conf.py / theme edits immediately.
+    if conf_ref is None:
+        # Preview: pick up local conf.py / theme / source edits immediately.
         source_wt = repo_root
         conf_dir = repo_root / "docs"
         conf_label = f"{ref} (working tree)"
@@ -226,18 +254,17 @@ def _build_ref(
             name=_normalize_name(version_name),
             ref=ref,
         )
-        if conf_from_main:
-            conf_wt = _ensure_worktree(
-                repo_root=repo_root,
-                worktrees_root=worktrees_root,
-                name=MAIN_CONF_WORKTREE,
-                ref="main",
-            )
-            conf_dir = conf_wt / "docs"
-            conf_label = "main"
-        else:
-            conf_dir = source_wt / "docs"
-            conf_label = ref
+        conf_worktree_name = (
+            MAIN_CONF_WORKTREE if conf_ref == "main" else LEGACY_CONF_WORKTREE
+        )
+        conf_wt = _ensure_worktree(
+            repo_root=repo_root,
+            worktrees_root=worktrees_root,
+            name=conf_worktree_name,
+            ref=conf_ref,
+        )
+        conf_dir = conf_wt / "docs"
+        conf_label = conf_ref
 
     source_dir = source_wt / "docs" / "source"
     print(
@@ -273,7 +300,8 @@ def main() -> None:
         help=(
             "Also build the current git branch as ``local-branch-preview`` "
             "using that branch's own conf/source. "
-            "``current`` and release tags keep main's conf (RTD selector)."
+            "``current`` uses main; tags >= v0.21.0 use main conf; "
+            f"older tags use {LEGACY_CONF_REF} conf."
         ),
     )
     args = parser.parse_args()
@@ -360,7 +388,7 @@ def main() -> None:
             versions_file=versions_file,
             ref=item["ref"],
             version_name=item["name"],
-            conf_from_main=item["name"] != PREVIEW_VERSION_NAME,
+            conf_ref=_conf_ref_for(item["name"]),
         )
 
     # Immaterial's mike client resolves version_json relative to the version
