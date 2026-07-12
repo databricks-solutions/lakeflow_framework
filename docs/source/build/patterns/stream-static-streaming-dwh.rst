@@ -1,3 +1,5 @@
+:tocdepth: 0
+
 Stream-Static - Streaming Data Warehouse
 =========================================
 
@@ -121,7 +123,8 @@ Considerations and Limitations
 Sample
 ------
 - Bundle: ``samples/pattern-samples``
-- Sample: ``samples/pattern-samples/src/dataflows/stream_static_samples/dataflowspec/customer_stream_static_streaming_dwh_main.json``
+- Pipeline: ``Lakeflow Framework - Pattern - Stream Static - Silver``
+- Sample: ``samples/pattern-samples/src/dataflows/stream_static_samples/dataflowspec/silver_customer_stream_static_streaming_dwh_main.json``
 
 Example Data Flow
 ------------------

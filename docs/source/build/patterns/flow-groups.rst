@@ -14,7 +14,7 @@ The diagram below shows a data flow with two flow groups, each with their own fl
 .. md-mermaid::
 
    flowchart TB
-     subgraph pipeline ["DLT Pipeline — one or more target tables"]
+     subgraph pipeline ["SDP Pipeline — one or more target tables"]
        subgraph fg1 ["Flow Group 1"]
          direction LR
          IV1a["Input View:<br/>vw_source_table_1"]

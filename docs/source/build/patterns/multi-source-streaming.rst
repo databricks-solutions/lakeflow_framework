@@ -1,3 +1,5 @@
+:tocdepth: 0
+
 Multi-Source Streaming
 =======================
 
@@ -118,7 +120,10 @@ Considerations and Limitations
 Sample
 ------
 - Bundle: ``samples/pattern-samples``
+- Pipeline: ``Lakeflow Framework - Pattern - Multi Source Streaming Basic - Silver``
 - Sample: ``samples/pattern-samples/src/dataflows/multi_source_streaming_samples/dataflowspec/customer_multi_streaming_basic_main.json``
+
+Decomposed variant (staging and final pipelines): ``customer_multi_streaming_decomposed_staging_main.json`` and ``customer_multi_streaming_decomposed_final_main.json`` in the same directory.
 
 
 Example Data Flow

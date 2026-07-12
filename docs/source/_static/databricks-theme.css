@@ -33,6 +33,11 @@
   --lf-command-copy: #8b949e;
   --lf-command-copy-hover-bg: rgba(255, 255, 255, 0.65);
   --lf-command-copy-hover-fg: #57606a;
+
+  /* Feature metadata strip badges (shared with header search) */
+  --lf-badge-bg: rgba(235, 22, 0, 0.1);
+  --lf-badge-border: rgba(235, 22, 0, 0.22);
+  --lf-badge-fg: #c41200;
 }
 
 [data-md-color-scheme="slate"] {
@@ -62,6 +67,10 @@
   --lf-command-copy: #8b949e;
   --lf-command-copy-hover-bg: rgba(255, 255, 255, 0.08);
   --lf-command-copy-hover-fg: #e6edf3;
+
+  --lf-badge-bg: rgba(255, 95, 70, 0.16);
+  --lf-badge-border: rgba(255, 95, 70, 0.28);
+  --lf-badge-fg: #ff8a75;
 }
 
 /* Landing hero — WAF-style centered light panel */
@@ -705,17 +714,39 @@ body:has(.lf-hero) .md-content__inner {
   color: #fff !important;
 }
 
-.md-search__input {
-  color: #fff;
-  background-color: rgba(0, 0, 0, 0.15);
+/* Search dialog — badge-tint input on red header; results use page colors */
+.md-search[data-md-component="search"] .md-search__input {
+  color: var(--md-default-fg-color, #1b3139);
+  background-color: var(--lf-badge-bg);
+  border: 1px solid var(--lf-badge-border);
 }
 
-.md-search__input::placeholder {
+.md-search[data-md-component="search"] .md-search__input::placeholder {
   color: rgba(255, 255, 255, 0.72);
 }
 
-.md-search__icon {
+.md-search[data-md-component="search"] .md-search__icon {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.md-search[data-md-component="search"] .md-search-result__meta,
+.md-search[data-md-component="search"] .md-search-result__item {
+  color: var(--md-default-fg-color, #1b3139);
+}
+
+[data-md-color-scheme="slate"] .md-search[data-md-component="search"] .md-search__input {
   color: #fff;
+  background-color: var(--lf-badge-bg);
+  border-color: var(--lf-badge-border);
+}
+
+[data-md-color-scheme="slate"] .md-search[data-md-component="search"] .md-search__input::placeholder,
+[data-md-color-scheme="slate"] .md-search[data-md-component="search"] .md-search__icon {
+  color: rgba(255, 255, 255, 0.72);
+}
+[data-md-color-scheme="slate"] .md-search[data-md-component="search"] .md-search-result__meta,
+[data-md-color-scheme="slate"] .md-search[data-md-component="search"] .md-search-result__item {
+  color: var(--md-default-fg-color--lighter, #b0bec5);
 }
 
 /* Primary sidebar — WAF-style: grey links, red active, generous row padding */
@@ -1138,9 +1169,9 @@ body:has(.lf-hero) .md-content__inner {
 /* Soft brand badges — overrides solid Bootstrap info/success; RST :bdg-* unchanged */
 .md-typeset .sd-badge.sd-bg-info,
 .md-typeset .sd-badge.sd-bg-success {
-  background-color: rgba(235, 22, 0, 0.1) !important;
-  color: #c41200 !important;
-  border: 1px solid rgba(235, 22, 0, 0.22);
+  background-color: var(--lf-badge-bg) !important;
+  color: var(--lf-badge-fg) !important;
+  border: 1px solid var(--lf-badge-border);
   border-radius: 0.15rem;
   font-weight: 600;
   padding: 0.28em 0.55em;
@@ -1148,9 +1179,9 @@ body:has(.lf-hero) .md-content__inner {
 
 [data-md-color-scheme="slate"] .md-typeset .sd-badge.sd-bg-info,
 [data-md-color-scheme="slate"] .md-typeset .sd-badge.sd-bg-success {
-  background-color: rgba(255, 95, 70, 0.16) !important;
-  color: #ff8a75 !important;
-  border-color: rgba(255, 95, 70, 0.28);
+  background-color: var(--lf-badge-bg) !important;
+  color: var(--lf-badge-fg) !important;
+  border-color: var(--lf-badge-border);
 }
 
 /* Fenced / highlighted code blocks - Cursor editor panel */
@@ -1570,4 +1601,287 @@ body:has(.lf-hero) .md-content__inner {
   opacity: 1;
   overflow: auto;
   animation: none;
+}
+
+/* Mermaid — lf-arch palette (matches home-page architecture diagram) */
+.md-typeset .mermaid-diagram,
+.lf-mermaid,
+.lf-mermaid-shell,
+.lf-mermaid-dialog__canvas {
+  --lf-mermaid-fg: #1b3139;
+  --lf-mermaid-muted: #445861;
+  --lf-mermaid-card-bg: #ffffff;
+  --lf-mermaid-fw: #2b7bb9;
+  --lf-mermaid-fw-header: #e6f2f8;
+  --lf-mermaid-fw-panel: #f3f9fc;
+  --lf-mermaid-edge: var(--lf-mermaid-fw);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .mermaid-diagram,
+[data-md-color-scheme="slate"] .lf-mermaid,
+[data-md-color-scheme="slate"] .lf-mermaid-shell,
+[data-md-color-scheme="slate"] .lf-mermaid-dialog__canvas {
+  --lf-mermaid-fg: #e8eef0;
+  --lf-mermaid-muted: #b0bec3;
+  --lf-mermaid-card-bg: #1e2629;
+  --lf-mermaid-fw: #5dade2;
+  --lf-mermaid-fw-header: rgba(93, 173, 226, 0.22);
+  --lf-mermaid-fw-panel: rgba(93, 173, 226, 0.1);
+  --lf-mermaid-edge: var(--lf-mermaid-fw);
+}
+
+/* Hide raw source until our renderer produces the SVG */
+.md-typeset .mermaid-diagram > pre.lf-mermaid-src,
+.md-typeset .mermaid-diagram > pre.mermaid {
+  overflow: hidden;
+  visibility: hidden;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.md-typeset .mermaid-diagram:has(> pre.lf-mermaid-src):not(:has(> .lf-mermaid-rendered)),
+.md-typeset .mermaid-diagram:has(> pre.mermaid):not(:has(> div.mermaid)):not(:has(> .lf-mermaid-rendered)) {
+  min-height: 4rem;
+  margin: 1rem 0 1.25rem;
+  border: 2px solid var(--lf-mermaid-fw, #2b7bb9);
+  border-radius: 12px;
+  background: var(--lf-mermaid-fw-panel, #f3f9fc);
+}
+
+.md-typeset .mermaid-diagram:has(> pre.lf-mermaid-src):not(:has(> .lf-mermaid-rendered))::before,
+.md-typeset .mermaid-diagram:has(> pre.mermaid):not(:has(> div.mermaid)):not(:has(> .lf-mermaid-rendered))::before {
+  content: "Loading diagram…";
+  display: block;
+  padding: 1rem 1.1rem;
+  color: var(--lf-mermaid-muted, rgba(27, 49, 57, 0.55));
+  font-size: 0.82rem;
+}
+
+.md-typeset .mermaid-diagram > .lf-mermaid-rendered,
+.md-typeset .mermaid-diagram > div.mermaid {
+  display: block;
+  min-width: min(100%, 48rem);
+}
+
+.md-typeset .lf-mermaid-rendered svg.lf-mermaid-svg {
+  display: block;
+  max-width: none;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* lf-arch SVG shapes — document stylesheet (inherits CSS vars from .mermaid-diagram) */
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .node rect,
+.lf-mermaid svg.lf-mermaid-svg .node rect,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .node polygon,
+.lf-mermaid svg.lf-mermaid-svg .node polygon,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .node path,
+.lf-mermaid svg.lf-mermaid-svg .node path,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .node circle,
+.lf-mermaid svg.lf-mermaid-svg .node circle,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .node ellipse,
+.lf-mermaid svg.lf-mermaid-svg .node ellipse {
+  fill: var(--lf-mermaid-card-bg) !important;
+  stroke: var(--lf-mermaid-fw) !important;
+  stroke-width: 2px !important;
+}
+
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .edgePath .path,
+.lf-mermaid svg.lf-mermaid-svg .edgePath .path,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .flowchart-link,
+.lf-mermaid svg.lf-mermaid-svg .flowchart-link {
+  stroke: var(--lf-mermaid-edge) !important;
+  stroke-width: 2px !important;
+}
+
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .edgePath .arrowheadPath,
+.lf-mermaid svg.lf-mermaid-svg .edgePath .arrowheadPath,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg marker path,
+.lf-mermaid svg.lf-mermaid-svg marker path,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg marker polygon,
+.lf-mermaid svg.lf-mermaid-svg marker polygon {
+  fill: var(--lf-mermaid-edge) !important;
+  stroke: none !important;
+}
+
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .cluster rect,
+.lf-mermaid svg.lf-mermaid-svg .cluster rect {
+  fill: var(--lf-mermaid-fw-panel) !important;
+  stroke: var(--lf-mermaid-fw) !important;
+  stroke-width: 2.75px !important;
+}
+
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .label,
+.lf-mermaid svg.lf-mermaid-svg .label,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .nodeLabel,
+.lf-mermaid svg.lf-mermaid-svg .nodeLabel,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .label div,
+.lf-mermaid svg.lf-mermaid-svg .label div,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .nodeLabel p,
+.lf-mermaid svg.lf-mermaid-svg .nodeLabel p {
+  color: var(--lf-mermaid-fg) !important;
+  fill: var(--lf-mermaid-fg) !important;
+}
+
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .edgeLabel,
+.lf-mermaid svg.lf-mermaid-svg .edgeLabel,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .edgeLabel p,
+.lf-mermaid svg.lf-mermaid-svg .edgeLabel p {
+  color: var(--lf-mermaid-muted) !important;
+  fill: var(--lf-mermaid-muted) !important;
+}
+
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .cluster-label,
+.lf-mermaid svg.lf-mermaid-svg .cluster-label,
+.md-typeset .mermaid-diagram svg.lf-mermaid-svg .cluster .label span,
+.lf-mermaid svg.lf-mermaid-svg .cluster .label span {
+  color: var(--lf-mermaid-fg) !important;
+  fill: var(--lf-mermaid-fg) !important;
+  font-weight: 700 !important;
+}
+
+/* Mermaid — scrollable inline + click-to-expand modal */
+.md-typeset .lf-mermaid-shell {
+  margin: 1rem 0 1.25rem;
+  border: 2px solid var(--lf-mermaid-fw);
+  border-radius: 12px;
+  background: var(--lf-mermaid-fw-panel);
+  overflow: auto;
+  max-width: 100%;
+  cursor: zoom-in;
+}
+
+.md-typeset .lf-mermaid-shell .lf-mermaid-rendered,
+.md-typeset .lf-mermaid-shell .mermaid {
+  display: block;
+  min-width: min(100%, 48rem);
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+.md-typeset .lf-mermaid-shell .lf-mermaid-rendered svg,
+.md-typeset .lf-mermaid-shell .mermaid svg {
+  display: block;
+  max-width: none;
+  height: auto;
+  margin: 0 auto;
+}
+
+.md-typeset .lf-mermaid-hint {
+  margin: 0;
+  padding: 0.45rem 0.85rem;
+  border-top: 1px solid rgba(27, 49, 57, 0.1);
+  color: rgba(27, 49, 57, 0.62);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  cursor: default;
+}
+
+.lf-mermaid-dialog {
+  width: min(96vw, 72rem);
+  max-width: 96vw;
+  max-height: 92vh;
+  padding: 0;
+  border: 1px solid rgba(27, 49, 57, 0.18);
+  border-radius: 10px;
+  box-shadow: 0 18px 48px rgba(27, 49, 57, 0.22);
+}
+
+.lf-mermaid-dialog::backdrop {
+  background: rgba(15, 23, 28, 0.55);
+}
+
+.lf-mermaid-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid rgba(27, 49, 57, 0.12);
+  background: rgba(27, 49, 57, 0.03);
+}
+
+.lf-mermaid-dialog__title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--md-default-fg-color, #1b3139);
+}
+
+.lf-mermaid-dialog__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.lf-mermaid-dialog__btn {
+  border: 1px solid rgba(27, 49, 57, 0.18);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--md-default-fg-color, #1b3139);
+  font-size: 0.78rem;
+  line-height: 1;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+}
+
+.lf-mermaid-dialog__btn:hover {
+  background: rgba(27, 49, 57, 0.05);
+}
+
+.lf-mermaid-dialog__stage {
+  overflow: hidden;
+  height: min(68vh, 44rem);
+  background: #fff;
+  touch-action: none;
+}
+
+.lf-mermaid-dialog__stage--dragging {
+  cursor: grabbing;
+}
+
+.lf-mermaid-dialog__canvas {
+  transform-origin: top left;
+  padding: 1rem;
+  cursor: grab;
+}
+
+.lf-mermaid-dialog__loading {
+  margin: 0;
+  padding: 1.5rem;
+  color: rgba(27, 49, 57, 0.62);
+  font-size: 0.82rem;
+}
+
+.lf-mermaid-dialog__hint {
+  margin: 0;
+  padding: 0.45rem 0.85rem 0.65rem;
+  color: rgba(27, 49, 57, 0.62);
+  font-size: 0.72rem;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .mermaid-diagram:has(> pre.lf-mermaid-src):not(:has(> .lf-mermaid-rendered)),
+[data-md-color-scheme="slate"] .md-typeset .mermaid-diagram:has(> pre.mermaid):not(:has(> div.mermaid)):not(:has(> .lf-mermaid-rendered)) {
+  border-color: var(--lf-mermaid-fw);
+  background: var(--lf-mermaid-fw-panel);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .lf-mermaid-shell {
+  border-color: var(--lf-mermaid-fw);
+  background: var(--lf-mermaid-fw-panel);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .lf-mermaid-hint,
+[data-md-color-scheme="slate"] .lf-mermaid-dialog__hint {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+[data-md-color-scheme="slate"] .lf-mermaid-dialog__btn {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--md-default-fg-color, #fff);
+}
+
+[data-md-color-scheme="slate"] .lf-mermaid-dialog__stage {
+  background: var(--md-default-bg-color, #1b3139);
 }

@@ -1,3 +1,5 @@
+:tocdepth: 0
+
 Construct CDC Stream from Snapshot Source
 ==========================================
 
@@ -89,12 +91,15 @@ Samples
 Construct CDC stream from snapshot source in bronze:
 
 - Bundle: ``samples/pattern-samples``
-- Sample: ``samples/pattern-samples/src/dataflows/base_bronze/dataflowspec/customer_historical_snapshot_datetime_scd1_main.json``
+- Pipeline: ``Lakeflow Framework - Pattern - Snapshot Patterns Pipeline``
+- Samples:
 
-Use CDC stream as input view in silver:
+  - ``samples/pattern-samples/src/dataflows/snapshot_samples/dataflowspec/bronze_customer_table_snapshot_main.json``
+  - ``samples/pattern-samples/src/dataflows/snapshot_samples/dataflowspec/bronze_customer_file_snapshot_main.json``
 
-- Bundle: ``samples/pattern-samples``
-- Sample: ``samples/pattern-samples/src/dataflows/cdc_from_snapshot_sources/dataflowspec/customer_snapshot_source_main.json``
+Use the bronze CDC stream as a silver input:
+
+- Sample: ``samples/pattern-samples/src/dataflows/snapshot_samples/dataflowspec/silver_customer_table_snapshot_main.json``
 
 Example Data Flow
 -----------------

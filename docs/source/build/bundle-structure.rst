@@ -50,38 +50,7 @@ Some of the most common groupings strategies are shown below:
    * - Use Case
      - You may choose to have an end to end pipeline for given Use Cases
 
-.. _patterns_scaling_pipelines:
-
-Scaling and decomposing pipelines
-=================================
-
-There is no single rule for how to divide pipelines. Choices depend on organizational structure, CI/CD practices, data complexity (sources, transforms, volumes), latency and SLAs, and related constraints.
-
-.. warning::
-
-   Be aware of current Pipeline and concurrency limits for Spark Declarative Pipelines. Limits change over time; check:
-
-   * https://docs.databricks.com/en/resources/limits.html
-   * https://docs.databricks.com/en/delta-live-tables/limitations.html
-
-Once you have chosen a logical grouping (table above), you can decompose a large pipeline where natural boundaries exist.
-
-Example: start with one pipeline that has two Flow Groups flowing into a target via staging tables:
-
-.. image:: ../images/stream_multi_monolithic.png
-   :target: _images/stream_multi_monolithic.png
-   :alt: Monolithic pipeline with multiple flow groups
-
-The same design decomposed into three pipelines:
-
-* Each Flow Group is its own pipeline, targeting a final staging table.
-* A final pipeline merges upstream staging tables into the target table.
-
-.. image:: ../images/stream_multi_granular.png
-   :target: _images/stream_multi_granular.png
-   :alt: Decomposed pipelines
-
-For data-flow topology recipes (Basic 1:1, multi-source, stream-static, CDC from snapshot), see :doc:`/build/patterns/index`.
+When a monolithic pipeline outgrows limits or ownership boundaries, see :ref:`Scaling and decomposing pipelines <patterns_scaling_pipelines>` for decomposing pipelines across flow groups and staging tables.
 
 Bundle Structure
 =================

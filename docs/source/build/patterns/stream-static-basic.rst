@@ -1,3 +1,5 @@
+:tocdepth: 0
+
 Stream-Static Basic
 ====================
 
@@ -92,7 +94,8 @@ Considerations and Limitations
 Sample
 ------
 - Bundle: ``samples/pattern-samples``
-- Sample: ``samples/pattern-samples/src/dataflows/stream_static_samples/dataflowspec/customer_stream_static_basic_main.json``
+- Pipeline: ``Lakeflow Framework - Pattern - Stream Static - Silver``
+- Sample: ``samples/pattern-samples/src/dataflows/stream_static_samples/dataflowspec/silver_customer_stream_static_basic_main.json``
 
 Example Data Flow
 -----------------

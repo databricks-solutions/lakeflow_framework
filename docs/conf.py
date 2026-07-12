@@ -105,7 +105,9 @@ html_theme_options = {
         "search.suggest",
         "content.code.copy",
     ],
-    "version_dropdown": True,
+    # Version dropdown needs parent-level versions.json (written by html-multiversion).
+    # Flat ``make html`` builds omit it; fetching a missing manifest breaks search init.
+    "version_dropdown": os.environ.get("DOCS_CURRENT_VERSION") is not None,
     # Parent of each version folder (mike default). Plain "versions.json"
     # resolves inside the version dir and 404s in multiversion layouts.
     "version_json": "../versions.json",
@@ -142,6 +144,9 @@ html_css_files = [
     'databricks-theme.css',
     'custom.css',
 ]
+html_js_files = [
+    'mermaid-zoom.js',
+]
 
 # Suppress generic Sphinx "Last updated" text.
 html_last_updated_fmt = None
@@ -169,7 +174,6 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
     # are real top-level hub links.
     section_index_pages = frozenset({
         "build/spec-reference/index",
-        "build/patterns/index",
         "deploy/framework/index",
         "features/metadata/index",
         "features/authoring/index",
@@ -265,6 +269,38 @@ def _flatten_mermaid_diagrams(app, doctree):
         diagram.children[:] = [nodes.Text(content)]
 
 
+def _embed_mermaid_source_templates(app, doctree):
+    """Persist diagram source beside the rendered host (survives pre→div swap)."""
+    import html
+
+    from docutils import nodes
+
+    from sphinx_immaterial.mermaid_diagrams import mermaid_node
+
+    for diagram in doctree.findall(mermaid_node):
+        content = diagram.get('content') or diagram.astext()
+        if not content:
+            continue
+
+        parent = diagram.parent
+        if parent is None:
+            continue
+
+        if any(
+            isinstance(child, nodes.raw)
+            and 'lf-mermaid-source' in child.astext()
+            for child in parent.children
+        ):
+            continue
+
+        template = nodes.raw(
+            '',
+            f'<template class="lf-mermaid-source">{html.escape(content)}</template>',
+            format='html',
+        )
+        parent.insert(parent.children.index(diagram), template)
+
+
 def _table_column_count(table) -> int:
     from docutils import nodes
 
@@ -333,32 +369,89 @@ def _upgrade_mermaid_dist(app, env=None):
 
     if env is None:
         env = app.env
-    if not getattr(env, "sphinx_immaterial_copy_mermaid_dist", False):
-        return
-
-    vendor = Path(_here) / "source" / "_static" / "vendor" / "mermaid.min.js"
-    if not vendor.is_file():
-        return
-
     dst_dir = Path(app.outdir) / "_static" / "mermaid"
     dst = dst_dir / "mermaid.min.js"
+    theme_mermaid = Path(sphinx_immaterial.__file__).parent / "bundles" / "mermaid"
+
+    needs_mermaid = getattr(env, "sphinx_immaterial_copy_mermaid_dist", False)
+    if not needs_mermaid and not dst.is_file():
+        return
 
     # Theme copy runs on env-check-consistency (skipped on no-op incremental
     # builds). Ensure the dist exists before overriding with the vendored build.
-    if not dst.is_file():
-        theme_mermaid = Path(sphinx_immaterial.__file__).parent / "bundles" / "mermaid"
-        if theme_mermaid.is_dir():
-            dst_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(theme_mermaid, dst_dir, dirs_exist_ok=True)
+    if not dst.is_file() and theme_mermaid.is_dir():
+        dst_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(theme_mermaid, dst_dir, dirs_exist_ok=True)
 
-    dst_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(vendor, dst)
+    vendor = Path(_here) / "source" / "_static" / "vendor" / "mermaid.min.js"
+    if vendor.is_file():
+        dst_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(vendor, dst)
 
 
 def _upgrade_mermaid_dist_on_finish(app, exception):
     if exception is not None:
         return
     _upgrade_mermaid_dist(app)
+
+
+def _fix_language_data_for_immaterial_search(app, exception):
+    """Sphinx 8+ emits stopwords as a Set; immaterial search expects an array."""
+    if exception is not None:
+        return
+
+    from pathlib import Path
+    import re
+
+    path = Path(app.outdir) / "_static" / "language_data.js"
+    if not path.is_file():
+        return
+
+    text = path.read_text(encoding="utf-8")
+    if "new Set(" not in text:
+        return
+
+    updated, count = re.subn(
+        r"const stopwords = new Set\((\[[\s\S]*?\])\);\s*\nwindow\.stopwords = stopwords;",
+        r"var stopwords = \1;\nwindow.stopwords = stopwords;",
+        text,
+        count=1,
+    )
+    if count:
+        path.write_text(updated, encoding="utf-8")
+
+
+def _override_mermaid_pre_class(app):
+    """Use lf-mermaid-src so sphinx-immaterial does not shadow-DOM render diagrams."""
+    from sphinx_immaterial.mermaid_diagrams import (
+        depart_mermaid_node_html,
+        mermaid_node,
+    )
+
+    def visit_mermaid_node_html_lf(self, node):
+        attributes = {'class': 'lf-mermaid-src'}
+        self.body.append(self.starttag(node, 'pre', **attributes))
+
+    app.add_node(
+        mermaid_node,
+        override=True,
+        html=(visit_mermaid_node_html_lf, depart_mermaid_node_html),
+    )
+
+
+def _patch_mermaid_pre_tags(app, exception):
+    """Ensure theme does not shadow-render our diagrams (class lf-mermaid-src)."""
+    if exception is not None:
+        return
+
+    from pathlib import Path
+
+    outdir = Path(app.outdir)
+    for html_path in outdir.rglob('*.html'):
+        text = html_path.read_text(encoding='utf-8')
+        updated = text.replace('<pre class="mermaid">', '<pre class="lf-mermaid-src">')
+        if updated != text:
+            html_path.write_text(updated, encoding='utf-8')
 
 
 def setup(app):
@@ -371,9 +464,13 @@ def setup(app):
                 domain.data["synopses"] = {}
 
     app.connect("builder-inited", _init_domain_synopses)
+    _override_mermaid_pre_class(app)
     app.connect("doctree-read", _flatten_mermaid_diagrams)
+    app.connect("doctree-read", _embed_mermaid_source_templates)
     app.connect("doctree-read", _mark_content_tables)
     app.connect("env-check-consistency", _upgrade_mermaid_dist, priority=1000)
     app.connect("build-finished", _upgrade_mermaid_dist_on_finish, priority=1000)
+    app.connect("build-finished", _fix_language_data_for_immaterial_search)
+    app.connect("build-finished", _patch_mermaid_pre_tags)
     app.connect("html-page-context", _patch_landing_nav, priority=999)
     #app.add_builder(MarkdownBuilder)

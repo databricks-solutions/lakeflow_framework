@@ -27,6 +27,10 @@ redirects:
   to: build/patterns/index.html
 - from: patterns_streaming_basic_1_1.html
   to: build/patterns/basic-1-1.html
+- from: build/patterns/silver-1-1.html
+  to: build/patterns/basic-1-1.html
+- from: build/patterns/common-medallion-path.html
+  to: build/patterns/base-patterns.html
 - from: patterns_streaming_cdc_stream_from_snapshot.html
   to: build/patterns/cdc-stream-from-snapshot.html
 - from: patterns_streaming_flow_groups.html

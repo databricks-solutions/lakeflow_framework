@@ -1,15 +1,30 @@
+:tocdepth: 0
+
 Pattern - Basic 1:1
 ====================
 
 Description
 ------------
-Suitable for ingestion and basic 1:1 loads.
+
+The basic 1:1 pattern is the default building block for most lakehouse pipelines. Use it whenever one streaming source maps to one target table and you only need row-level transforms—no joins, no multi-source merges, no stream-static semantics.
+
+This pattern covers the situations teams hit most often:
+
+- **Bronze / source ingest** — stream or batch load from staging or raw sources into bronze tables using append or auto CDC flows.
+- **Silver / conformed basic entities** — promote one upstream streaming table (typically bronze) into a source-aligned silver entity, or apply light transformation and conformance (schema enforcement, cleansing, typing) before serving downstream gold layers.
+
+The same flow shape repeats at both layers: an input view over a single CDF-enabled stream, an append or auto CDC flow, and one streaming target table defined in the data flow spec. Most new projects implement this pattern many times across bronze and silver before adopting :doc:`Advanced composition </build/patterns/advanced-composition>` patterns.
+
 Use when:
 
 - You are ingesting data or performing one-to-one loads.
-- You only need to perform basic single row transforms.
+- You are promoting one upstream table into a conformed entity table.
+- You need append-only, SCD1, or SCD2 behaviour on the target.
+- You only need basic single-row transforms (data type conversion, formatting, cleansing, data quality).
 
-**Layers:** Generally Bronze
+**Layers:** Bronze and Silver
+
+**Models (silver):** 3NF / ODS, Data Vault hubs and satellites, conformed dimensions
 
 **Data Flow Components:**
 
@@ -29,15 +44,15 @@ Use when:
      - M / O
    * - 1
      - Input View
-     - Input view created over the streaming source table. This view can optionally read from CDF if the source table is CDF enabled.
+     - Input view over the streaming source table (raw/staging at bronze, upstream bronze or silver at silver). Optionally reads CDF when the source has change data feed enabled.
      - M
    * - 2
      - Flow
-     - Append or auto CDC flow to streaming target table.
+     - Append or auto CDC flow to the target streaming table (SCD1/2 via ``cdcSettings`` when required).
      - M
    * - 3
      - Target Table
-     - A streaming table, the schema of which is specified in the dataflowspec.
+     - Streaming table defined in the data flow spec.
      - M
 
 Feature Support
@@ -56,16 +71,32 @@ Feature Support
          * Single row calculations
          * Formatting
 
-       * Cleansing & Data Quality Rules
+       * Schema enforcement, cleansing, and data quality expectations
+       * Quarantine for failed quality checks
      - * Complex transforms
-       * Joins
-       * Multiple streaming sources
+       * Joins across multiple streaming sources (see :doc:`/build/patterns/multi-source-streaming`)
+       * Stream-static joins (see :doc:`/build/patterns/stream-static-basic`)
        * Window By
 
 Sample
 ------
+
+**Bronze**
+
 - Bundle: ``samples/pattern-samples``
-- Sample: ``samples/pattern-samples/src/dataflows/base_bronze/``
+- Pipeline: ``Lakeflow Framework - Pattern - Base Bronze Samples Pipeline``
+- Samples:
+
+  - ``samples/pattern-samples/src/dataflows/base_samples/bronze/dataflowspec/customer_main.json``
+  - ``samples/pattern-samples/src/dataflows/base_samples/bronze/dataflowspec/customer_address_main.json``
+
+**Silver**
+
+- Pipeline: ``Lakeflow Framework - Pattern - Base Silver Samples Pipeline``
+- Samples:
+
+  - ``samples/pattern-samples/src/dataflows/base_samples/silver/dataflowspec/customer_main.json`` (SCD2)
+  - ``samples/pattern-samples/src/dataflows/base_samples/silver/dataflowspec/customer_address_main.json`` (SCD2)
 
 Example Data Flow
 ------------------
