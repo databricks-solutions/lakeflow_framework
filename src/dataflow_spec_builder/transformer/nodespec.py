@@ -50,7 +50,7 @@ _HANDLED = {
     "input_flows", "table", "table_type", "enabled", "once", "name",
     "cdc_settings", "cdc_snapshot_settings",
     "data_quality", "quarantine", "table_migration_details",
-    "sink_type", "sink_config", "sink_options", "table_details", "source_view",
+    "sink_type", "sink_config", "sink_options", "source_view",
 }
 
 
@@ -341,9 +341,8 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     def _mv_spec(self, spec_data: Dict, target: Dict, sources: List[Dict]) -> Dict:
         cfg = target.get("config", {})
         mv = cfg.get("table")
-        # config-level details + table_details (the latter overrides on conflict).
-        details = {"table": mv, "type": TableType.MATERIALIZED_VIEW,
-                   **_camel(cfg, _HANDLED), **_camel(cfg.get("table_details", {}))}
+        # All table settings (including MV-only `private`) live top-level on the config.
+        details = {"table": mv, "type": TableType.MATERIALIZED_VIEW, **_camel(cfg, _HANDLED)}
 
         spec = self._base(spec_data)
         spec.pop("dataFlowVersion", None)  # MV specs do not carry a version

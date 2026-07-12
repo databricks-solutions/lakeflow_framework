@@ -43,9 +43,7 @@
                 "table": "feature_mv_sql_statement",
                 "table_type": "mv",
                 "sql_statement": "SELECT * FROM {staging_schema}.customer",
-                "table_details": {
-                    "private": true
-                }
+                "private": true
             }
         },
         {
@@ -74,11 +72,9 @@
                 "table": "feature_mv_chain_mvs",
                 "table_type": "mv",
                 "sql_statement": "SELECT * FROM live.feature_mv_sql_statement",
-                "table_details": {
-                    "comment": "Test Config",
-                    "spark_conf": {
-                        "spark.sql.session.timeZone": "Australia/Sydney"
-                    }
+                "comment": "Test Config",
+                "spark_conf": {
+                    "spark.sql.session.timeZone": "Australia/Sydney"
                 }
             }
         },
@@ -89,12 +85,10 @@
                 "table": "feature_mv_with_refresh_policy",
                 "table_type": "mv",
                 "sql_statement": "SELECT * FROM {staging_schema}.customer",
-                "refresh_policy": "incremental_strict",
-                "table_details": {
-                    "config_flags": [
-                        "disable_operational_metadata"
-                    ]
-                }
+                "config_flags": [
+                    "disable_operational_metadata"
+                ],
+                "refresh_policy": "incremental_strict"
             }
         }
     ]

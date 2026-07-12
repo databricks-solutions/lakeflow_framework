@@ -325,17 +325,7 @@
                 "sql_path": {"type": "string", "description": "MV only: path to a .sql file defining the view."},
                 "sql_statement": {"type": "string", "description": "MV only: inline SQL defining the view."},
                 "refresh_policy": {"type": "string", "enum": ["auto", "incremental", "incremental_strict", "full"], "description": "MV only: refresh policy."},
-                "table_details": {
-                    "type": "object",
-                    "description": "MV only: additional table details.",
-                    "properties": {
-                        "private": {"type": "boolean"},
-                        "comment": {"type": "string"},
-                        "spark_conf": {"type": "object"},
-                        "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disable_operational_metadata"]}}
-                    },
-                    "additionalProperties": false
-                },
+                "private": {"type": "boolean", "description": "MV only: create the materialized view as private (internal, not published to the catalog)."},
                 "data_quality": {"$ref": "#/$defs/data_quality"},
                 "quarantine": {"$ref": "#/$defs/quarantine"}
             },
@@ -360,7 +350,7 @@
                             "sql_path": false,
                             "sql_statement": false,
                             "refresh_policy": false,
-                            "table_details": false
+                            "private": false
                         }
                     }
                 }

@@ -141,7 +141,7 @@ _CONFIG_ORDER = [
     "select_exp", "where_clause", "schema_path", "reader_options", "python_transform",
     "table_properties", "partition_columns", "cluster_by_columns", "cluster_by_auto",
     "comment", "spark_conf", "row_filter", "config_flags",
-    "refresh_policy", "table_details", "once",
+    "refresh_policy", "private", "once",
     "cdc_settings", "cdc_snapshot_settings", "data_quality", "quarantine",
     "table_migration_details",
     "name", "sink_type", "sink_config", "sink_options",
@@ -285,6 +285,12 @@ def _migrate_nodespec_config(cfg: Dict) -> None:
         if qtd:
             quarantine["target"] = qtd
         cfg["quarantine"] = quarantine
+    # table_details is dropped: its fields (private + comment/spark_conf/config_flags)
+    # move to the config top level.
+    td = cfg.pop("table_details", None)
+    if isinstance(td, dict):
+        for k, v in td.items():
+            cfg.setdefault(k, v)
 
 
 def _migrate_nodespec(spec: Dict) -> Dict:
@@ -540,9 +546,12 @@ def _migrate_materialized_view(spec: Dict) -> Dict:
             if val is not None:
                 target_config[snake] = val
 
+        # Legacy MV tableDetails settings are flattened onto the target config
+        # top-level (nodespec has no separate table_details object; MV-only
+        # `private` is a top-level field).
         table_details = _get(mv_config, "tableDetails", "table_details")
         if table_details:
-            target_config["table_details"] = _rename(table_details, _TARGET_DETAIL_MAP)
+            target_config.update(_rename(table_details, _TARGET_DETAIL_MAP))
 
         _add_target_settings(target_config, mv_config)
 

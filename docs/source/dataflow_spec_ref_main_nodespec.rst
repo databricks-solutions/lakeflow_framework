@@ -359,7 +359,7 @@ Target node configuration
    (``cdc_settings``, ``cdc_snapshot_settings``, ``table_migration_details``,
    ``once``) are only allowed on streaming tables (``table_type`` ``st`` or
    omitted); materialized-view settings (``sql_path``, ``sql_statement``,
-   ``refresh_policy``, ``table_details``) are only allowed on materialized views
+   ``refresh_policy``, ``private``) are only allowed on materialized views
    (``table_type: "mv"``). The schema enforces this, so an editor flags, e.g.,
    ``sql_path`` on a streaming table or ``cdc_settings`` on a materialized view.
 
