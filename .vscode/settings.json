@@ -25,4 +25,22 @@
     ],
     "cursorpyright.analysis.stubPath": ".vscode",
     "python.languageServer": "None",
+    "json.schemas": [
+        {
+            "fileMatch": ["*_main.json"],
+            "url": "./src/schemas/main.json"
+        },
+        {
+            "fileMatch": ["*_flow.json"],
+            "url": "./src/schemas/flow_group.json"
+        },
+        {
+            "fileMatch": ["*_dqe.json"],
+            "url": "./src/schemas/expectations.json"
+        },
+        {
+            "fileMatch": ["*_secrets.json"],
+            "url": "./src/schemas/secrets.json"
+        }
+    ]
 }
