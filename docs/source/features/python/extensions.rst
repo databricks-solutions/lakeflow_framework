@@ -485,8 +485,8 @@ Use numeric prefixes to fix order: ``01_setup.py``, ``02_register.py``.
 Additional Resources
 --------------------
 
-- :doc:`features/python/dependency-management` — managing Python dependencies
-- :doc:`features/python/source` — using Python as a source type
-- :doc:`features/python/functions` — Python transform functions (file path approach)
-- :doc:`build/spec-reference/source-details` — complete source configuration reference
-- :doc:`build/spec-reference/target-details` — complete target configuration reference
+- :doc:`/features/python/dependency-management` — managing Python dependencies
+- :doc:`/features/python/source` — using Python as a source type
+- :doc:`/features/python/functions` — Python transform functions (file path approach)
+- :doc:`/build/spec-reference/source-details` — complete source configuration reference
+- :doc:`/build/spec-reference/target-details` — complete target configuration reference

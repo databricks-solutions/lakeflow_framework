@@ -6,7 +6,7 @@ A standard Data Flow Spec is the most basic type of Data Flow Spec and is suited
 Example Specification
 ---------------------
 
-The below sample demonstrates a flows Data Flow Spec for a Silver multi-source streaming use case (refer to :doc:`patterns/multi-source-streaming` for more information):
+The below sample demonstrates a flows Data Flow Spec for a Silver multi-source streaming use case (refer to :doc:`/build/patterns/multi-source-streaming` for more information):
 
 .. tabs::
 
@@ -245,7 +245,7 @@ These properties define where and how the data will be written:
        If the format is `delta`, additional `targetDetails` must be provided.
    * - **targetDetails**
      - ``object``
-     - See :doc:`spec-reference/target-details`.
+     - See :doc:`/build/spec-reference/target-details`.
 
 .. _dataflow-spec-flows-flow-groups-configuration:
 
@@ -263,7 +263,7 @@ The `flowGroupDetails` object contains the following properties:
      - **Description**
    * - **dataFlowID** (*optional*)
      - ``string``
-     - A unique identifier for the data flow. Only required when data flow specs are split (see :doc:`spec-reference/splitting-dataflow-spec`).
+     - A unique identifier for the data flow. Only required when data flow specs are split (see :doc:`/build/spec-reference/splitting-dataflow-spec`).
    * - **flowGroupId**
      - ``string``
      - A unique identifier for the flow group.
@@ -300,7 +300,7 @@ The `stagingTableDetails` object contains the following properties:
      - An array of partition columns for the staging table. Items: ``string``
    * - **cdcSettings** (*optional*)
      - ``object``
-     - Change data capture (CDC) settings. Object: :doc:`spec-reference/cdc`
+     - Change data capture (CDC) settings. Object: :doc:`/build/spec-reference/cdc`
 
 .. admonition:: Recommendation
    :class: tip
@@ -412,7 +412,7 @@ The `viewDetails` object contains the following properties:
        Items: ``string``
    * - **sourceDetails** (*conditional*)
      - ``object``
-     - See :doc:`spec-reference/source-details`.
+     - See :doc:`/build/spec-reference/source-details`.
 
 
 

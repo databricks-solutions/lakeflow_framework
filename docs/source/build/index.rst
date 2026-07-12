@@ -3,7 +3,7 @@ Build
 
 Create pipeline bundles, choose structure and patterns, and author Data Flow Specs.
 
-Browse the guides below. Deploy pipeline bundles in the **Deploy** section (:doc:`deploy/index`).
+Browse the guides below. Deploy pipeline bundles in the **Deploy** section (:doc:`/deploy/index`).
 
 .. raw:: html
 

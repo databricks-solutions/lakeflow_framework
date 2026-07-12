@@ -3,9 +3,9 @@ Deploy framework from local machine
 
 Deploy the **Lakeflow Framework** (Framework Bundle) to your Databricks workspace from your local machine using the Declarative Automation Bundle (DAB) CLI workflow.
 
-For deployment modes (flat DAB deploy, wheel, wheel + overlay), see :doc:`framework/options`.
-For deploy order and ownership models, see :doc:`before-you-deploy`.
-For automated pipelines, see :doc:`ci-cd`.
+For deployment modes (flat DAB deploy, wheel, wheel + overlay), see :doc:`/deploy/framework/options`.
+For deploy order and ownership models, see :doc:`/deploy/before-you-deploy`.
+For automated pipelines, see :doc:`/deploy/ci-cd`.
 
 Prerequisites
 =============
@@ -78,7 +78,7 @@ To deploy a specific framework version:
 
    databricks bundle deploy -t dev --var="version=1.2.3"
 
-See :doc:`ci-cd` and :doc:`features/environments/versioning-framework` for version pinning in higher environments.
+See :doc:`/deploy/ci-cd` and :doc:`/features/environments/versioning-framework` for version pinning in higher environments.
 
 Step 5 — Verify the deployment
 ==============================
@@ -101,6 +101,6 @@ Example — clone and deploy
 See also
 --------
 
-- :doc:`framework/options` — flat DAB deploy vs wheel install
-- :doc:`framework/wheel` — install ``lakeflow-framework`` as a Python wheel
-- :doc:`pipeline-bundle/local` — deploy a pipeline bundle after the framework is in place
+- :doc:`/deploy/framework/options` — flat DAB deploy vs wheel install
+- :doc:`/deploy/framework/wheel` — install ``lakeflow-framework`` as a Python wheel
+- :doc:`/deploy/pipeline-bundle/local` — deploy a pipeline bundle after the framework is in place

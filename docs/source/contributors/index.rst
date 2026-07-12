@@ -3,7 +3,7 @@ Contributors
 
 Guides for contributing to the Lakeflow Framework — environment setup, workflow, git conventions, import rules, and documentation.
 
-Browse the guides below. For community integrations, see :doc:`contrib` in the sidebar.
+Browse the guides below. For community integrations, see :doc:`/contributors/contrib` in the sidebar.
 
 .. raw:: html
 

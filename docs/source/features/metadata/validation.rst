@@ -21,7 +21,7 @@ The framework uses the Python ``jsonschema`` library to define the schema and va
 
 This provides the following functionality:
 
-- :doc:`features/authoring/auto-complete`
+- :doc:`/features/authoring/auto-complete`
 - Validation in your CI/CD pipelines
 - Validation at Spark Declarative Pipeline initialization time
 
@@ -69,7 +69,7 @@ You can do this in the pipeline resource YAML file or via the Databricks UI in t
 
 .. code-block:: yaml
    :linenos:
-    :emphasize-lines: 21
+   :emphasize-lines: 21
 
     resources:
         pipelines:

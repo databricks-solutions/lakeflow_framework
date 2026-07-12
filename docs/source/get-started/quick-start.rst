@@ -20,7 +20,7 @@ Before you begin, verify:
 
 .. tip::
 
-   **New to Asset Bundles?** The framework ships as a Declarative Automation Bundle (DAB). Authenticate the CLI first, then optionally set the workspace host in ``databricks.yml`` (or leave it unset to use the host from your CLI profile). See :doc:`deploy/index` for the full deploy workflow.
+   **New to Asset Bundles?** The framework ships as a Declarative Automation Bundle (DAB). Authenticate the CLI first, then optionally set the workspace host in ``databricks.yml`` (or leave it unset to use the host from your CLI profile). See :doc:`/deploy/index` for the full deploy workflow.
 
 Step 1 — Clone the repository
 =============================
@@ -53,7 +53,7 @@ Or use an existing named profile (for example after ``databricks auth login --pr
 
 .. note::
 
-   You can set ``targets.dev.workspace.host`` in ``databricks.yml``, or leave the host unset so the CLI uses the host from the selected profile. See :doc:`deploy/framework/local-framework` for details.
+   You can set ``targets.dev.workspace.host`` in ``databricks.yml``, or leave the host unset so the CLI uses the host from the selected profile. See :doc:`/deploy/framework/local-framework` for details.
 
 Step 3 — Deploy the framework
 =============================
@@ -78,7 +78,7 @@ From the **repository root**:
 
    By default the CLI deploys to the ``dev`` target in ``databricks.yml``. Use ``-t <target>`` to deploy elsewhere and ``-p <profile>`` to select a different CLI profile.
 
-**Full reference:** :doc:`deploy/index`
+**Full reference:** :doc:`/deploy/index`
 
 Step 4 — Deploy the samples
 ===========================
@@ -101,7 +101,7 @@ From the ``samples/`` directory:
 Choose either interactive or command-line deploy.
 
 Option A — Interactive
---------------------
+----------------------
 
 Run with no flags and answer the prompts:
 
@@ -223,16 +223,16 @@ Add the framework JSON schemas to your VS Code ``settings.json`` so Data Flow sp
 1. Open **Command Palette** → **Preferences: Open User Settings (JSON)**
 2. Register schemas for ``*_main.json``, ``*_flow.json``, and related spec files
 
-**Full configuration and examples:** :doc:`features/authoring/auto-complete`
+**Full configuration and examples:** :doc:`/features/authoring/auto-complete`
 
 Step 7 — Understand the framework
 =================================
 
-Read :doc:`architecture/index` for architecture and operating models, then browse :doc:`features/index` for what you can configure.
+Read :doc:`/architecture/index` for architecture and operating models, then browse :doc:`/features/index` for what you can configure.
 
 What's next?
 ============
 
-* **Build your first pipeline** — :doc:`build/index` (select a pattern from :doc:`build/patterns/index`, then follow the build steps)
-* **Deploy via CI/CD** — :doc:`deploy/ci-cd`
-* **Data Flow Spec reference** — :doc:`build/spec-reference/index`
+* **Build your first pipeline** — :doc:`/build/index` (select a pattern from :doc:`/build/patterns/index`, then follow the build steps)
+* **Deploy via CI/CD** — :doc:`/deploy/ci-cd`
+* **Data Flow Spec reference** — :doc:`/build/spec-reference/index`

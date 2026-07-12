@@ -3,10 +3,10 @@ Contribution workflow
 
 End-to-end process for contributing features or fixes to the Lakeflow Framework.
 
-**Start with** :doc:`dev-git` for branch naming and manual ``VERSION`` updates in your pull request.
+**Start with** :doc:`/contributors/dev-git` for branch naming and manual ``VERSION`` updates in your pull request.
 
-For environment setup, see :doc:`dev-env`.
-For import rules, see :doc:`imports`.
+For environment setup, see :doc:`/contributors/dev-env`.
+For import rules, see :doc:`/contributors/imports`.
 
 Step 1 — Open an issue
 ======================
@@ -30,14 +30,14 @@ From an up-to-date ``main``:
    git pull origin main
    git checkout -b feature/my-change
 
-See :doc:`dev-git` for branching strategy, naming conventions, and semver guidance.
+See :doc:`/contributors/dev-git` for branching strategy, naming conventions, and semver guidance.
 
 Step 3 — Develop locally
 ========================
 
-* Format Python with **yapf** (install via workspace recommendations in :doc:`dev-env`)
+* Format Python with **yapf** (install via workspace recommendations in :doc:`/contributors/dev-env`)
 * Keep commits atomic with meaningful messages
-* Deploy updated framework to Databricks when behavior affects pipelines (see :doc:`deploy/framework/local-framework`)
+* Deploy updated framework to Databricks when behavior affects pipelines (see :doc:`/deploy/framework/local-framework`)
 * Add tests to the test suite when you change the framework code
 
 Step 4 — Run tests
@@ -68,12 +68,12 @@ Optional coverage: ``--cov=lakeflow_framework --cov-report=term-missing``. See `
    python scripts/validate_dataflows.py samples/tpch_sample/
    python scripts/validate_dataflows.py samples/feature-samples/
 
-When adding a feature, add or extend samples in ``feature-samples`` (isolated demos) or ``pattern-samples`` (medallion patterns) as appropriate. Deploy and run affected pipelines on Databricks — see :doc:`samples/index`.
+When adding a feature, add or extend samples in ``feature-samples`` (isolated demos) or ``pattern-samples`` (medallion patterns) as appropriate. Deploy and run affected pipelines on Databricks — see :doc:`/samples/index`.
 
 Step 5 — Update documentation
 =============================
 
-* Update docs per :doc:`dev-docs` (feature pages, spec reference, cross-links)
+* Update docs per :doc:`/contributors/dev-docs` (feature pages, spec reference, cross-links)
 * Before pushing doc changes:
 
 .. code-block:: console
@@ -88,10 +88,10 @@ Step 6 — Open and merge a pull request
 ======================================
 
 1. Push your branch and open a PR **to ``main``**
-2. Include an updated ``VERSION`` file when the change should ship as a release (see :doc:`dev-git`)
+2. Include an updated ``VERSION`` file when the change should ship as a release (see :doc:`/contributors/dev-git`)
 3. Complete the PR template; link the issue; request reviewers
 4. Address review feedback; ensure **CI passes**
-5. **Squash and merge** to ``main`` (see :doc:`dev-git`)
+5. **Squash and merge** to ``main`` (see :doc:`/contributors/dev-git`)
 6. Delete the branch after merge
 
 Step 7 — Verify after merge
@@ -104,7 +104,7 @@ Step 7 — Verify after merge
 See also
 --------
 
-- :doc:`dev-git` — branching, versioning, and releases
-- :doc:`dev-env` — local setup
-- :doc:`dev-docs` — documentation authoring
-- :doc:`features/environments/versioning-framework` — framework version paths in workspace deploy
+- :doc:`/contributors/dev-git` — branching, versioning, and releases
+- :doc:`/contributors/dev-env` — local setup
+- :doc:`/contributors/dev-docs` — documentation authoring
+- :doc:`/features/environments/versioning-framework` — framework version paths in workspace deploy

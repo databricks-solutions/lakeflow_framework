@@ -7,7 +7,7 @@ specs before deploy.
 
 Substitutions are the parameterization mechanism in the data flow spec (similar to
 bundle variable substitution). Their primary use is environment-specific values;
-see also :doc:`features/environments/logical-environments`.
+see also :doc:`/features/environments/logical-environments`.
 
 .. toctree::
    :maxdepth: 1

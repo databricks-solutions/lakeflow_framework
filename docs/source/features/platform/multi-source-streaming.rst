@@ -54,7 +54,7 @@ Important Considerations
 
 See Also
 --------
-- :doc:`features/sources-targets/source-types`
-- :doc:`features/sources-targets/target-types`
-- :doc:`build/spec-reference/source-details`
-- :doc:`build/spec-reference/target-details`
+- :doc:`/features/sources-targets/source-types`
+- :doc:`/features/sources-targets/target-types`
+- :doc:`/build/spec-reference/source-details`
+- :doc:`/build/spec-reference/target-details`

@@ -21,7 +21,7 @@ This separation allows the framework to maintain its core dependencies independe
 
 .. note::
 
-   This page covers installing Python packages onto the cluster via the DAB **pipeline environment** (``pip install`` style). If you need to install a wheel that travels with your pipeline code or add loose ``.py`` files to ``sys.path``, see :doc:`features/python/extensions` for the ``src/libraries/`` approach.
+   This page covers installing Python packages onto the cluster via the DAB **pipeline environment** (``pip install`` style). If you need to install a wheel that travels with your pipeline code or add loose ``.py`` files to ``sys.path``, see :doc:`/features/python/extensions` for the ``src/libraries/`` approach.
 
 .. important::
 

@@ -28,4 +28,4 @@ If the `quarantineMode` property is set to `table`, the quarantineTargetDetails 
 Configuration
 -------------
 
-Set as an attribute when creating your Data Flow Spec, refer to the :doc:`build/spec-reference/data-quality` documentation for more information.
+Set as an attribute when creating your Data Flow Spec, refer to the :doc:`/build/spec-reference/data-quality` documentation for more information.

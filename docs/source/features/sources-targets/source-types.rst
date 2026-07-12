@@ -64,24 +64,24 @@ Source Types
      -  - Python file-based configuration
         - Functions stored in `python_functions` subdirectory
         - Full Python / PySpark capabilities
-        - Detailed configuration details: :doc:`features/python/source`
+        - Detailed configuration details: :doc:`/features/python/source`
    * - **SQL**
      - Allows using SQL queries as data sources, providing flexibility for complex data transformations.
      -  - SQL file-based configuration
         - Queries stored in `dml` subdirectory
         - Full SQL transformation capabilities
-        - Detailed configuration details: :doc:`features/sources-targets/sql-source`
+        - Detailed configuration details: :doc:`/features/sources-targets/sql-source`
 
 General Data Flow Spec Configuration
 ------------------------------------
 
-Set as an attribute when creating your Data Flow Spec, refer to the :doc:`build/spec-reference/index` documentation for more information:
+Set as an attribute when creating your Data Flow Spec, refer to the :doc:`/build/spec-reference/index` documentation for more information:
 
-* :doc:`build/spec-reference/source-details`
-* :doc:`build/spec-reference/target-details`
+* :doc:`/build/spec-reference/source-details`
+* :doc:`/build/spec-reference/target-details`
 
 Detailed Source Type Configuration Details
 ------------------------------------------
 
-* :doc:`features/python/source`
-* :doc:`features/sources-targets/sql-source`
+* :doc:`/features/python/source`
+* :doc:`/features/sources-targets/sql-source`

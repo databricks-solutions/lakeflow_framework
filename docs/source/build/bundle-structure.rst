@@ -15,7 +15,7 @@ Ultimately you will need to determine the best way to scope your Pipeline Bundle
 
 .. important::
 
-   Per the :doc:`architecture/index` section of this documentation:
+   Per the :doc:`/architecture/index` section of this documentation:
    
    * A data flow, and its Data Flow Spec, defines the source(s) and logic required to generate a **single target table**.
    * A Pipeline Bundle can contain multiple Data Flow Specs, and a Pipeline deployed by the bundle may execute the logic for one or more Data Flow Specs.
@@ -81,7 +81,7 @@ The same design decomposed into three pipelines:
    :target: _images/stream_multi_granular.png
    :alt: Decomposed pipelines
 
-For data-flow topology recipes (Basic 1:1, multi-source, stream-static, CDC from snapshot), see :doc:`patterns/index`.
+For data-flow topology recipes (Basic 1:1, multi-source, stream-static, CDC from snapshot), see :doc:`/build/patterns/index`.
 
 Bundle Structure
 =================
@@ -108,7 +108,7 @@ The high-level structure of a Pipeline Bundle never changes and is as follows:
 
 .. note::
 
-  Refer to the :doc:`architecture/index` section for more details on the different components of a Pipeline Bundle.
+  Refer to the :doc:`/architecture/index` section for more details on the different components of a Pipeline Bundle.
 
 The ``src/`` directories serve distinct purposes:
 
@@ -141,13 +141,13 @@ The ``src/`` directories serve distinct purposes:
 
 .. seealso::
 
-   :doc:`features/python/extensions` — full reference for ``src/libraries/``,
+   :doc:`/features/python/extensions` — full reference for ``src/libraries/``,
    ``src/python/``, ``src/init/``, and ``src/local/config/``, including examples,
    deprecation notices, and the cluster library installation options.
 
 It is the structure of the ``src/dataflows`` directory that is flexible and can be organised in the way that best suits your standards and ways of working. The Framework will:
 
-* Read all the Data Flow Spec files under the ``src/dataflows`` directory, regardless of the folder structure. Filtering of the data flows is done when defining your Pipeline and is discussed in the :doc:`bundle-steps` section.
+* Read all the Data Flow Spec files under the ``src/dataflows`` directory, regardless of the folder structure. Filtering of the data flows is done when defining your Pipeline and is discussed in the :doc:`/build/bundle-steps` section.
 * Expect that the schemas, transforms and expectations related to a Data Flow Spec are located in their respective ``schemas``, ``dml`` and ``expectations`` sub-directories within the Data Flow Spec's home directory.
 
 The most common ways to organize your ``src/dataflows`` directory are:

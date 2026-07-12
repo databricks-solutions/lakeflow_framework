@@ -43,7 +43,7 @@ Understanding both modes is important when writing or using a contrib module.
        because ``src/`` is.  However, any *external* dependencies declared by
        the contrib module still need to be installed separately — they are not
        bundled with the flat deploy.  Install them as cluster libraries or
-       via ``src/local/libraries/`` (see :doc:`features/python/extensions`).
+       via ``src/local/libraries/`` (see :doc:`/features/python/extensions`).
    * - **Wheel + local overlay**
      - Wheel installed, plus ``framework.sourcePath`` set for
        ``src/local/config/`` sparse overrides.
@@ -138,7 +138,7 @@ Adding a new contrib module
 
 5. **Open a pull request**
 
-   Follow the standard PR process in :doc:`dev-steps`.  In the PR
+   Follow the standard PR process in :doc:`/contributors/dev-steps`.  In the PR
    description, note:
 
    * The extra name being added.
@@ -176,5 +176,5 @@ See also
 
 - ``src/lakeflow_framework/contrib/README.rst`` in the repository — the
   in-source support policy document.
-- :doc:`dev-steps` — general contribution workflow.
-- :doc:`dev-env` — development environment setup.
+- :doc:`/contributors/dev-steps` — general contribution workflow.
+- :doc:`/contributors/dev-env` — development environment setup.

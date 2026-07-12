@@ -1,9 +1,9 @@
 Branching, versioning & releases
 ################################
 
-How the Lakeflow Framework repository is branched and versioned. **Read this before** :doc:`dev-steps`.
+How the Lakeflow Framework repository is branched and versioned. **Read this before** :doc:`/contributors/dev-steps`.
 
-For how deployed framework versions are pinned in workspace (``current`` vs ``1.2.3`` paths), see :doc:`features/environments/versioning-framework`.
+For how deployed framework versions are pinned in workspace (``current`` vs ``1.2.3`` paths), see :doc:`/features/environments/versioning-framework`.
 
 Trunk-based development
 =======================
@@ -98,6 +98,6 @@ Pull request expectations
 See also
 --------
 
-- :doc:`dev-steps` — development and pull request workflow
-- :doc:`features/environments/versioning-framework` — ``current`` vs pinned paths in workspace deploy
-- :doc:`deploy/ci-cd` — promoting framework versions through environments
+- :doc:`/contributors/dev-steps` — development and pull request workflow
+- :doc:`/features/environments/versioning-framework` — ``current`` vs pinned paths in workspace deploy
+- :doc:`/deploy/ci-cd` — promoting framework versions through environments

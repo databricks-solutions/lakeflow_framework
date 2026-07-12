@@ -3,7 +3,7 @@ Installing the Framework as a Wheel
 
 From v0.20.0 the Lakeflow Framework ships as a proper Python package
 (``lakeflow-framework``) with a ``pyproject.toml``.  For a comparison of all
-deployment modes, see :doc:`framework/options`.
+deployment modes, see :doc:`/deploy/framework/options`.
 
 Installing
 ----------
@@ -66,7 +66,7 @@ JSON schemas are bundled inside the package and accessed via
 3. **``src/local/config/`` custom override** — deep-merged on top when
    ``framework.sourcePath`` is set and the sparse fragment exists.
 
-See :ref:`config-resolution-order` in :doc:`features/configuration/framework-configuration`
+See :ref:`config-resolution-order` in :doc:`/features/configuration/framework-configuration`
 for the full table.
 
 Using ``src/local/config/`` custom override`` with a wheel
@@ -100,7 +100,7 @@ Backward compatibility
 See also
 --------
 
-- :doc:`framework/options` — deployment modes overview and flat DAB deploy
-- :doc:`framework/local-framework` — deploy the framework via DAB from your laptop
-- :doc:`features/configuration/framework-configuration` — full config resolution reference
-- :doc:`features/environments/versioning-framework` — version pinning and rollback
+- :doc:`/deploy/framework/options` — deployment modes overview and flat DAB deploy
+- :doc:`/deploy/framework/local-framework` — deploy the framework via DAB from your laptop
+- :doc:`/features/configuration/framework-configuration` — full config resolution reference
+- :doc:`/features/environments/versioning-framework` — version pinning and rollback

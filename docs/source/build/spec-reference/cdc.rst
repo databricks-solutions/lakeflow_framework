@@ -12,10 +12,12 @@ The ``cdcSettings`` and ``cdcSnapshotSettings`` enable and pass configuration in
      - **Description**
    * - **cdcSettings**
      - ``object``
-     - See :ref:`cdcSettings <spec-reference/cdc:cdcSettings>` for more information.
+     - See :ref:`cdcSettings` for more information.
    * - **cdcSnapshotSettings**
      - ``object``
-     - See :ref:`cdcSnapshotSettings <spec-reference/cdc:cdcSnapshotSettings>` for more information.
+     - See :ref:`cdcSnapshotSettings` for more information.
+
+.. _cdcSettings:
 
 cdcSettings
 ~~~~~~~~~~~~~~~~~
@@ -54,6 +56,8 @@ The ``cdcSettings`` object contains the following properties:
      - ``list``
      - A subset of output columns to be tracked for history in the target table. Use track_history_column_list to specify the complete list of columns to be tracked. Use track_history_except_column_list to specify the columns to be excluded from tracking.
 
+
+.. _cdcSnapshotSettings:
 
 cdcSnapshotSettings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -8,7 +8,7 @@ extensibility, and quarantine handling. Others cover Databricks Lakeflow
 SDP product features that LFF exposes through the data flow spec, with
 links back to Databricks documentation where useful.
 
-Start with a category below, or jump to the :doc:`complete A–Z index <a-z>`
+Start with a category below, or jump to the :doc:`complete A–Z index </features/a-z>`
 when you already know the feature name.
 
 .. raw:: html
@@ -115,7 +115,7 @@ when you already know the feature name.
      </article>
    </div>
 
-Looking for a specific feature by name? See :doc:`a-z`.
+Looking for a specific feature by name? See :doc:`/features/a-z`.
 
 .. toctree::
    :maxdepth: 3

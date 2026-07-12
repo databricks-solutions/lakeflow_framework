@@ -21,7 +21,7 @@ Both bundle types use the same Databricks CLI workflow — authenticate, validat
 * **Framework Bundle** — framework source under workspace files (for example ``.bundle/.../files/src``)
 * **Pipeline Bundle** — your data flows and Spark Declarative Pipeline definitions; requires the framework already deployed at ``framework_source_path``
 
-When building pipeline bundles, confirm the framework is available first — see :doc:`build/bundle-steps`.
+When building pipeline bundles, confirm the framework is available first — see :doc:`/build/bundle-steps`.
 
 Who deploys what
 ================
@@ -67,6 +67,6 @@ Which path you use is an org choice. The framework is commonly deployed to a sec
 Next steps
 ==========
 
-* :doc:`framework/local-framework` — deploy the framework from your laptop (dev inner loop)
-* :doc:`pipeline-bundle/local` — deploy a pipeline bundle from your laptop
-* :doc:`ci-cd` — automate deploy with CI/CD, including framework versioning
+* :doc:`/deploy/framework/local-framework` — deploy the framework from your laptop (dev inner loop)
+* :doc:`/deploy/pipeline-bundle/local` — deploy a pipeline bundle from your laptop
+* :doc:`/deploy/ci-cd` — automate deploy with CI/CD, including framework versioning

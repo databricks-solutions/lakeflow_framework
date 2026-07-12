@@ -401,7 +401,7 @@ Mixed Format Detection
 
 See Also
 --------
-- :doc:`features/metadata/substitutions` - Using substitutions in specifications
-- :doc:`features/configuration/secrets-management` - Managing secrets in specifications  
-- :doc:`features/metadata/validation` - Specification validation
+- :doc:`/features/metadata/substitutions` - Using substitutions in specifications
+- :doc:`/features/configuration/secrets-management` - Managing secrets in specifications  
+- :doc:`/features/metadata/validation` - Specification validation
 

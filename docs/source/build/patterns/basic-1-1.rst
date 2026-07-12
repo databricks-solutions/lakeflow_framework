@@ -13,9 +13,12 @@ Use when:
 
 **Data Flow Components:**
 
-.. image:: ../../images/basic_1_1.png
-   :target: _images/basic_1_1.png
-   :alt: Basic 1:1
+.. md-mermaid::
+
+   flowchart LR
+     IV["Input View:<br/>readStream()<br/>CDF enabled (optional)"]
+     TT["Streaming Table:<br/>TargetTable"]
+     IV -->|"Append or auto CDC Flow:<br/>append_flow() or create_auto_cdc_flow()"| TT
 
 .. list-table::
    :header-rows: 1
@@ -30,7 +33,7 @@ Use when:
      - M
    * - 2
      - Flow
-     - Append or Change flow to streaming target table.
+     - Append or auto CDC flow to streaming target table.
      - M
    * - 3
      - Target Table
@@ -70,121 +73,121 @@ Example Data Flow
 Day 1 Load
 ~~~~~~~~~~
 
-* **Source Table (Append-Only)**
+Source Table (Append-Only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  CUSTOMER
 
-  .. list-table::
-     :header-rows: 1
+CUSTOMER
 
-     * - customer_id
-       - first_name
-       - last_name
-       - email
-       - load_timestamp
-     * - 1
-       - John
-       - Doe
-       - john.doe@example.com
-       - 2023-01-01 10:00
-     * - 2
-       - Jane
-       - Smith
-       - jane.smith@example.com
-       - 2023-01-01 10:00
 
-* **Target Table**
+.. list-table::
+   :header-rows: 1
 
-  **Append-Only Scenario**
+   * - customer_id
+     - first_name
+     - last_name
+     - email
+     - load_timestamp
+   * - 1
+     - John
+     - Doe
+     - john.doe@example.com
+     - 2023-01-01 10:00
+   * - 2
+     - Jane
+     - Smith
+     - jane.smith@example.com
+     - 2023-01-01 10:00
 
-  .. list-table::
-     :header-rows: 1
+Target Table
+^^^^^^^^^^^^
 
-     * - customer_id
-       - first_name
-       - last_name
-       - email
-       - load_timestamp
-     * - 1
-       - John
-       - Doe
-       - john.doe@example.com
-       - 2023-01-01 10:00
-     * - 2
-       - Jane
-       - Smith
-       - jane.smith@example.com
-       - 2023-01-01 10:00
 
-  **SCD1 Scenario**
+Append-Only Scenario
+""""""""""""""""""""
 
-  .. list-table::
-     :header-rows: 1
 
-     * - customer_id
-       - first_name
-       - last_name
-       - email
-       - load_timestamp
-     * - 1
-       - John
-       - Doe
-       - john.doe@example.com
-       - 2023-01-01 10:00
-     * - 2
-       - Jane
-       - Smith
-       - jane.smith@example.com
-       - 2023-01-01 10:00
+.. list-table::
+   :header-rows: 1
 
-  **SCD2 Scenario**
+   * - customer_id
+     - first_name
+     - last_name
+     - email
+     - load_timestamp
+   * - 1
+     - John
+     - Doe
+     - john.doe@example.com
+     - 2023-01-01 10:00
+   * - 2
+     - Jane
+     - Smith
+     - jane.smith@example.com
+     - 2023-01-01 10:00
 
-  .. list-table::
-     :header-rows: 1
+SCD1 Scenario
+"""""""""""""
 
-     * - customer_id
-       - first_name
-       - last_name
-       - email
-       - _START_AT
-       - _END_AT
-     * - 1
-       - John
-       - Doe
-       - john.doe@example.com
-       - 2023-01-01 10:00
-       - NULL
-     * - 2
-       - Jane
-       - Smith
-       - jane.smith@example.com
-       - 2023-01-01 10:00
-       - NULL
+
+.. list-table::
+   :header-rows: 1
+
+   * - customer_id
+     - first_name
+     - last_name
+     - email
+     - load_timestamp
+   * - 1
+     - John
+     - Doe
+     - john.doe@example.com
+     - 2023-01-01 10:00
+   * - 2
+     - Jane
+     - Smith
+     - jane.smith@example.com
+     - 2023-01-01 10:00
+
+SCD2 Scenario
+"""""""""""""
+
+
+.. list-table::
+   :header-rows: 1
+
+   * - customer_id
+     - first_name
+     - last_name
+     - email
+     - _START_AT
+     - _END_AT
+   * - 1
+     - John
+     - Doe
+     - john.doe@example.com
+     - 2023-01-01 10:00
+     - NULL
+   * - 2
+     - Jane
+     - Smith
+     - jane.smith@example.com
+     - 2023-01-01 10:00
+     - NULL
 
 Day 2 Load
 ~~~~~~~~~~
 
-* **Source Table (Append-Only)**
+Day 2 Source Table (Append-Only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  CUSTOMER
 
-  .. raw:: html
+CUSTOMER
 
-      <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
-      <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
-      <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
-      <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
-      <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
-      <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
-      </table>
 
-* **Target Table**
+.. raw:: html
 
-  **Append-Only Scenario**
-
-  .. raw:: html
-
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
     <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
     <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
     <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
@@ -192,25 +195,47 @@ Day 2 Load
     <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
     </table>
 
-  **SCD1 Scenario**
+Day 2 Target Table
+^^^^^^^^^^^^^^^^^^
 
-  .. raw:: html
 
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
-    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td class="highlight-cell">jdoe@example.com</td> <td>2023-01-01 10:00</td> </tr>
-    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
-    <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
-    <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
-    </table>
+Day 2 Append-Only Scenario
+""""""""""""""""""""""""""
 
-  **SCD2 Scenario**
 
-  .. raw:: html
+.. raw:: html
 
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>_START_AT</th> <th>_END_AT</th> </tr>
-    <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
-    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
-    <tr class="highlight-row">> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
-    <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
-    </table> 
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
+   <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
+   <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
+   <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
+   <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
+   </table>
+
+Day 2 SCD1 Scenario
+"""""""""""""""""""
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td class="highlight-cell">jdoe@example.com</td> <td>2023-01-01 10:00</td> </tr>
+   <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
+   <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
+   <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
+   </table>
+
+Day 2 SCD2 Scenario
+"""""""""""""""""""
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-6"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>_START_AT</th> <th>_END_AT</th> </tr>
+   <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
+   <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
+   <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
+   <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
+   </table>

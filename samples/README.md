@@ -11,7 +11,7 @@ The Framework comes with extensive samples that demonstrate the use of the frame
 
 ## Deploying the Samples
 
-Samples require the framework already deployed to your workspace (see {doc}`deploy` or {doc}`quick_start`).
+Samples require the framework already deployed to your workspace (see {doc}`/deploy/index` or {doc}`/get-started/quick-start`).
 The target **UC catalog must already exist** (default `main`, or pass another with `--catalog`) — the deploy scripts create schemas in that catalog, not the catalog itself.
 
 Scripts in the `samples/` directory:
@@ -24,7 +24,7 @@ Scripts in the `samples/` directory:
 ### Prerequisites
 
 - [ ] Databricks CLI installed and configured
-- [ ] Lakeflow framework already deployed to your workspace (see {doc}`deploy/framework/local-framework` or {doc}`get-started/quick-start`)
+- [ ] Lakeflow framework already deployed to your workspace (see {doc}`/deploy/framework/local-framework` or {doc}`/get-started/quick-start`)
 - [ ] Navigate to the samples directory in the root of the Framework repository:
 
 ```{code-block} console

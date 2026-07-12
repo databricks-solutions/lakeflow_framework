@@ -28,7 +28,7 @@ Core concepts
 -------------
 
 * **Pattern-based pipeline design**: reusable building blocks standardize implementation and reduce duplication.
-* **Framework and Pipeline Bundles**: deploy the Framework Bundle to the workspace first, then one or more Pipeline Bundles that reference it at ``framework_source_path`` (see :doc:`deploy/before-you-deploy`).
+* **Framework and Pipeline Bundles**: deploy the Framework Bundle to the workspace first, then one or more Pipeline Bundles that reference it at ``framework_source_path`` (see :doc:`/deploy/before-you-deploy`).
 * **Two-layer architecture**:
 
   * SDP wrapper components expose Spark Declarative Pipelines APIs directly, keeping behavior explicit and close to the platform.
@@ -58,4 +58,4 @@ The framework composes Spark Declarative Pipelines into repeatable, configuratio
 Next steps
 ----------
 
-Back to :doc:`index` for the guided path (Quick Start → Concepts → Build / Deploy) or jump straight into Architecture, Samples, Build, Deploy, or Features from the top navigation.
+Back to :doc:`/index` for the guided path (Quick Start → Concepts → Build / Deploy) or jump straight into Architecture, Samples, Build, Deploy, or Features from the top navigation.

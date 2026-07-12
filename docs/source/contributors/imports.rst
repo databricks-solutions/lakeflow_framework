@@ -73,7 +73,7 @@ Local development
 -----------------
 
 For IDE resolution and ``pytest``, install the package in editable mode (see
-:doc:`dev-env`):
+:doc:`/contributors/dev-env`):
 
 .. code-block:: console
    :class: lf-command-block
@@ -106,5 +106,5 @@ Further reading
   wheel distribution, and shim policy (ADR-0008).
 - ``docs/decisions/0009-strategy-b-workspace-files-first-resolver.md`` — how bundled
   config and schemas resolve against workspace files (ADR-0009).
-- :doc:`deploy/framework/wheel` — wheel install and shim guidance for deployers.
-- :doc:`contrib` — import rules specific to ``contrib/`` modules.
+- :doc:`/deploy/framework/wheel` — wheel install and shim guidance for deployers.
+- :doc:`/contributors/contrib` — import rules specific to ``contrib/`` modules.

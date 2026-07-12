@@ -60,7 +60,7 @@ To enable CDF on a target table or staging table, you need to add the ``delta.en
 Reading From CDF in a View
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To read from CDF, you need to do so via a view. When specifying a view in your Data Flow Spec, set the ``cdfEnabled`` attribute to ``true``. There are different types of data flow specs and ways to specify a view, refer to the :doc:`build/spec-reference/index` documentation for more information.
+To read from CDF, you need to do so via a view. When specifying a view in your Data Flow Spec, set the ``cdfEnabled`` attribute to ``true``. There are different types of data flow specs and ways to specify a view, refer to the :doc:`/build/spec-reference/index` documentation for more information.
 
 Standard Data Flow Spec example:
 

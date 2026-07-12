@@ -12,7 +12,7 @@ These properties control how data quality issues are handled:
      - **Description**
    * - **dataQualityExpectationsEnabled** (*optional*)
      - ``boolean``
-     - A flag indicating whether data quality expectations are enabled (see :doc:`features/data-quality/quarantine`).
+     - A flag indicating whether data quality expectations are enabled (see :doc:`/features/data-quality/quarantine`).
    * - **dataQualityExpectationsPath** (*optional*)
      - ``string``
      - Either a relative path or filename for the expectations file. Note that the framework automatically calculates all relative paths from the appropriate expectations sub-folder, in the Pipeline Bundle. Examples:

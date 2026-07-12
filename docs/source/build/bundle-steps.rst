@@ -13,12 +13,12 @@ Before you begin, verify:
    - [ ] **Databricks workspace** access with permission to deploy bundles and run Lakeflow Spark Declarative Pipelines
    - [ ] **Databricks CLI** installed — required for local Asset Bundle deployment (`CLI documentation <https://docs.databricks.com/dev-tools/cli/index.html>`_)
    - [ ] **CLI authentication** — run ``databricks auth login`` for your workspace, or use a configured CLI profile
-   - [ ] **The Lakeflow Framework is deployed** — see Step 1 below and :doc:`deploy/before-you-deploy`
+   - [ ] **The Lakeflow Framework is deployed** — see Step 1 below and :doc:`/deploy/before-you-deploy`
    - [ ] **Unity Catalog** enabled in your workspace
    - [ ] **UC catalog** already exists for sample deployment (default ``main``, or pass another with ``--catalog``) — the deploy scripts create schemas in that catalog, not the catalog itself
    - [ ] Familiarity with `Lakeflow Spark Declarative Pipelines <https://docs.databricks.com/aws/en/ldp/>`_ concepts (helpful, not required)
-   - [ ] **The framework concepts are understood** — see :doc:`architecture/index`
-   - [ ] **Autocomplete for Data Flow Specs** is configured — see :doc:`features/authoring/auto-complete`
+   - [ ] **The framework concepts are understood** — see :doc:`/architecture/index`
+   - [ ] **Autocomplete for Data Flow Specs** is configured — see :doc:`/features/authoring/auto-complete`
 
 Step 1 — Ensure the Lakeflow Framework is deployed
 ==================================================
@@ -26,7 +26,7 @@ Step 1 — Ensure the Lakeflow Framework is deployed
 Before creating a Pipeline Bundle, confirm the framework is **available in your target workspace** at a path you can reference as ``framework_source_path``. Either:
 
 * **Central / platform-owned** — the platform team (or federated domain platform) has deployed the Framework Bundle to a shared workspace files location for your environment; obtain the path and version from them.
-* **Developer-owned (local dev / POC)** — you deployed the framework yourself via :doc:`deploy/framework/local-framework`; the default path is under your user ``.bundle/.../files/src``.
+* **Developer-owned (local dev / POC)** — you deployed the framework yourself via :doc:`/deploy/framework/local-framework`; the default path is under your user ``.bundle/.../files/src``.
 
 Checklist:
 
@@ -34,7 +34,7 @@ Checklist:
 * You know the full ``framework_source_path`` (including target and version segment)
 * ``databricks.yml`` in your pipeline bundle will reference that path
 
-See :doc:`deploy/before-you-deploy` for deploy order and ownership. When pinning to a specific version, see :doc:`features/environments/versioning-framework`.
+See :doc:`/deploy/before-you-deploy` for deploy order and ownership. When pinning to a specific version, see :doc:`/features/environments/versioning-framework`.
 
 Step 2 — Create a new Pipeline Bundle
 =====================================
@@ -159,18 +159,18 @@ Adjust ``databricks.yml`` to include configurations similar to:
    * By default the Framework Bundle deploys under the owner's
      ``.bundle/<project name>/<target environment>/<framework_version>/files/src`` path.
    * ``owner`` can be passed on the command line or via CI/CD so the path resolves in each deployment context.
-     See :doc:`deploy/pipeline-bundle/local`.
+     See :doc:`/deploy/pipeline-bundle/local`.
 
 Step 4 — Select your bundle structure
 =====================================
 
 Based on the use case and your org standards, choose a bundle structure.
-See :doc:`bundle-structure`.
+See :doc:`/build/bundle-structure`.
 
 Step 5 — Select your Data Flow Spec format
 ==========================================
 
-Choose the specification language / format for your org. See :doc:`features/metadata/spec-format`.
+Choose the specification language / format for your org. See :doc:`/features/metadata/spec-format`.
 
 Keep in mind:
 
@@ -183,7 +183,7 @@ Step 6 — Set up substitutions (optional)
 ========================================
 
 If you need substitutions and they are not already configured globally, set up your substitutions file.
-See :doc:`features/metadata/substitutions`.
+See :doc:`/features/metadata/substitutions`.
 
 .. note::
 
@@ -201,7 +201,7 @@ Understand the use case
 Decide:
 
 * Data flow type: Standard, Flows or Materialized Views
-* An existing pattern or a new design — see :doc:`patterns/index`
+* An existing pattern or a new design — see :doc:`/build/patterns/index`
 
 Consider:
 
@@ -229,7 +229,7 @@ add ``.py`` scripts to:
 
 Scripts run in sorted filename order. Names starting with ``_`` are skipped.
 Use a numeric prefix (for example ``01_setup.py``) to control order.
-See :doc:`features/python/extensions`.
+See :doc:`/features/python/extensions`.
 
 .. note::
 
@@ -242,7 +242,7 @@ Use the spec format you chose in **Step 5**. Then decide how to author the flow:
 
 **Full Data Flow Spec** — write a complete spec file for this flow. Use when the flow is one-off or does not share structure with others in the bundle.
 
-**Template-based spec** — define a reusable pattern once, then instantiate it with parameter sets when many flows differ only by table names, schemas, or similar parameters. See :doc:`features/metadata/templates`.
+**Template-based spec** — define a reusable pattern once, then instantiate it with parameter sets when many flows differ only by table names, schemas, or similar parameters. See :doc:`/features/metadata/templates`.
 
 **Create a subdirectory** for the flow based on your bundle structure, under ``src/dataflows/`` if needed.
 
@@ -257,10 +257,10 @@ If writing a **full spec**:
 
 Reference material:
 
-* :doc:`spec-reference/index` — how to author the spec
-* :doc:`features/metadata/templates` — template definitions and parameter sets
-* :doc:`patterns/index` — high-level patterns and sample shapes
-* :doc:`samples/index` — deploy samples to inspect working examples
+* :doc:`/build/spec-reference/index` — how to author the spec
+* :doc:`/features/metadata/templates` — template definitions and parameter sets
+* :doc:`/build/patterns/index` — high-level patterns and sample shapes
+* :doc:`/samples/index` — deploy samples to inspect working examples
 
 **Create schema JSON / DDL file(s)** in the ``schemas`` subdirectory of the data flow home folder:
 
@@ -268,17 +268,17 @@ Reference material:
 * Schemas are optional for staging tables
 * Each schema in its own file, referenced from the Data Flow Spec
 
-See :doc:`features/metadata/schema-management` for the schema specification.
+See :doc:`/features/metadata/schema-management` for the schema specification.
 
 **Create SQL transform file(s)** in the ``dml`` subdirectory when the flow uses transforms.
 
 **Create data quality expectations file(s)** in the ``expectations`` subdirectory when needed.
-See :doc:`features/data-quality/expectations`.
+See :doc:`/features/data-quality/expectations`.
 
 **Add pipeline logic modules** *(optional)* — if the spec references custom Python
 (``pythonModule``, ``pythonTransform.module``, or a custom sink), add modules or packages under ``src/python/``.
 The framework adds ``src/python/`` to ``sys.path`` at pipeline initialisation.
-See :doc:`features/python/extensions`.
+See :doc:`/features/python/extensions`.
 
 .. note::
 
@@ -287,7 +287,7 @@ See :doc:`features/python/extensions`.
 Step 8 — Create pipeline definitions
 ====================================
 
-After pipeline definitions are authored, deploy the bundle — see :doc:`deploy/index`.
+After pipeline definitions are authored, deploy the bundle — see :doc:`/deploy/index`.
 
 Define Spark Declarative Pipelines as YAML under ``resources/``. Each pipeline has its own file.
 DABs uses these files to create pipelines in the target workspace.
@@ -387,7 +387,7 @@ Add cluster libraries (optional)
 --------------------------------
 
 Install third-party or in-house packages via ``environment.dependencies`` in the pipeline resource YAML.
-See :doc:`features/python/extensions`. Sources include:
+See :doc:`/features/python/extensions`. Sources include:
 
 * **PyPI** — ``- my_package>=1.0``
 * **UC Volumes** — ``- /Volumes/catalog/schema/my_pkg.whl``

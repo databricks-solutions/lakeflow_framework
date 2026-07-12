@@ -241,7 +241,7 @@ These properties define the source of the data:
        String Pattern: `v_([A-Za-z0-9_]+)`
    * - **sourceDetails**
      - ``object``
-     - See :doc:`spec-reference/source-details` for more information.
+     - See :doc:`/build/spec-reference/source-details` for more information.
 
 .. _dataflow-spec-materialized-view-table-configuration:
 

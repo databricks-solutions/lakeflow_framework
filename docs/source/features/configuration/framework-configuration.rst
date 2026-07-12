@@ -73,10 +73,10 @@ The framework resolves every default config file through a three-step process:
 Under ``src/lakeflow_framework/config/default/`` you normally have:
 
 * exactly one global file: ``global.json``, ``global.yaml``, or ``global.yml``
-* a ``dataflow_spec_mapping/`` directory (see :doc:`features/environments/versioning-dataflow-specs`)
-* optional per-target substitution and secrets files (see :doc:`features/metadata/substitutions`, :doc:`features/configuration/secrets-management`)
-* optional ``operational_metadata_<layer>.json`` (see :doc:`features/configuration/operational-metadata`)
-* optional ``logger.json`` (see :doc:`features/configuration/logging`)
+* a ``dataflow_spec_mapping/`` directory (see :doc:`/features/environments/versioning-dataflow-specs`)
+* optional per-target substitution and secrets files (see :doc:`/features/metadata/substitutions`, :doc:`/features/configuration/secrets-management`)
+* optional ``operational_metadata_<layer>.json`` (see :doc:`/features/configuration/operational-metadata`)
+* optional ``logger.json`` (see :doc:`/features/configuration/logging`)
 
 Mandatory
 ---------
@@ -96,17 +96,17 @@ Inside the global file, all top-level keys are optional. Common ones:
    * - Key
      - See
    * - ``pipeline_bundle_spec_format``
-     - :doc:`features/metadata/spec-format`
+     - :doc:`/features/metadata/spec-format`
    * - ``mandatory_table_properties``
-     - :doc:`features/configuration/mandatory-table-properties`
+     - :doc:`/features/configuration/mandatory-table-properties`
    * - ``spark_config``
-     - :doc:`features/configuration/spark-configuration`
+     - :doc:`/features/configuration/spark-configuration`
    * - ``table_migration_state_volume_path``
-     - :doc:`features/migrations/table-migration`
+     - :doc:`/features/migrations/table-migration`
    * - ``dataflow_spec_version``
-     - :doc:`features/environments/versioning-dataflow-specs`
+     - :doc:`/features/environments/versioning-dataflow-specs`
    * - ``override_max_workers`` / ``pipeline_builder_disable_threading``
-     - :doc:`features/configuration/builder-parallelization`
+     - :doc:`/features/configuration/builder-parallelization`
 
 Local override (``src/local/config/``)
 ---------------------------------------

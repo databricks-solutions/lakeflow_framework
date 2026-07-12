@@ -21,9 +21,14 @@ Use when:
 Data Flow Components:
 ---------------------
 
-.. image:: ../../images/cdc_stream_from_snapshot.png
-   :target: _images/cdc_stream_from_snapshot.png
-   :alt: CDC Stream from Snapshot
+.. md-mermaid::
+
+   flowchart LR
+     IV["Input View:<br/>vw_source_table"]
+     STG["Streaming Table:<br/>Scd1_staging_table<br/>(Must be SCD1)"]
+     CDC["View:<br/>cdc_stream"]
+     IV -->|"AUTO CDC FROM SNAPSHOT:<br/>create_auto_cdc_from_snapshot_flow()"| STG
+     STG -->|"readStream()<br/>CDF enabled"| CDC
 
 .. list-table::
    :header-rows: 1
@@ -38,8 +43,8 @@ Data Flow Components:
      - Input view created over the snapshot source. In incremental mode this is a physical SDP view created over the source that can look different at any given time representing the latest state of the source. In historical mode, this is a logical component as instead it'd be configured to automatically get the next snapshot as the source.
      - M
    * - 2
-     - Change Flow
-     - An SCD1 Change Flow that streams changes from the snapshot source to a staging table. This needs to be an SCD1 to allow for physical deletes in the snapshot source to be propagated to the CDF as a delete operation, SCD2 does not support this.
+     - AUTO CDC flow
+     - An SCD1 auto CDC flow that streams changes from the snapshot source to a staging table. This needs to be an SCD1 to allow for physical deletes in the snapshot source to be propagated to the CDF as a delete operation, SCD2 does not support this.
      - M
    * - 3
      - Staging Table
@@ -47,7 +52,7 @@ Data Flow Components:
      - M
    * - 4
      - View
-     - A view over the staging table that reads a stream from the staging table's CDF. This will be the CDC stream of the snapshot source. This view can now be an input view in any of the :doc:`Multi-Source Streaming <multi-source-streaming>` patterns below.
+     - A view over the staging table that reads a stream from the staging table's CDF. This will be the CDC stream of the snapshot source. This view can now be an input view in any of the :doc:`Multi-Source Streaming </build/patterns/multi-source-streaming>` patterns below.
      - M
 
 \* M / O: Mandatory or Optional.
@@ -77,7 +82,7 @@ Considerations and Limitations
 ------------------------------
 
 .. important::
-   - In historical mode, if there are multiple snapshots processed in the first run, reading stream from the CDF of the staging table will only return the latest snapshot's records as inserts. To get all the changes from all historical snapshots, set startingVersionFromDLTSetup to true when reading the CDF of the staging table, see :doc:`build/spec-reference/source-details`.
+   - In historical mode, if there are multiple snapshots processed in the first run, reading stream from the CDF of the staging table will only return the latest snapshot's records as inserts. To get all the changes from all historical snapshots, set startingVersionFromDLTSetup to true when reading the CDF of the staging table, see :doc:`/build/spec-reference/source-details`.
 
 Samples
 -------
@@ -97,7 +102,7 @@ Example Data Flow
 The sample demonstrates converting a snapshot source into a CDC stream:
 
 1. Source snapshot table "customer" is configured with incremental mode
-2. CDC from Snapshot (Change Flow) detects changes between snapshots
+2. CDC from Snapshot (auto CDC flow) detects changes between snapshots
 3. Changes are written to staging table in SCD1 mode with CDF enabled
 4. Final view reads CDF stream from staging table
 5. CDC stream can now be used as input to other streaming patterns
@@ -105,116 +110,136 @@ The sample demonstrates converting a snapshot source into a CDC stream:
 Day 1 Load
 ~~~~~~~~~~
 
-* **Source Table (Snapshot)**
+Source Table (Snapshot)
+^^^^^^^^^^^^^^^^^^^^^^^
 
-  CUSTOMER
 
-  .. raw:: html
+CUSTOMER
 
-      <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
-      <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
-      <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
-      </table>
 
-* **Staging Table (SCD1)**
+.. raw:: html
 
-  CUSTOMER Staging Table
-
-  .. raw:: html
-
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
     <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
     <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
     </table>
 
-  CDF of CUSTOMER Staging Table
+Staging Table (SCD1)
+^^^^^^^^^^^^^^^^^^^^
 
-  .. raw:: html
 
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> <th>_change_type</th> <th>_commit_version</th> <th>_commit_timestamp</th> </tr>
-    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
-    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
-    </table>
+CUSTOMER Staging Table
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
+   <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
+   </table>
+
+CDF of CUSTOMER Staging Table
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-8"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> <th>_change_type</th> <th>_commit_version</th> <th>_commit_timestamp</th> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
+   <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
+   </table>
 
 Day 2 Load
 ~~~~~~~~~~
 
-* **Source Table (Snapshot)**
+Day 2 Source Table (Snapshot)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  CUSTOMER
 
-  .. raw:: html
+CUSTOMER
 
-      <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
-      <tr> <td>1</td> <td>John</td> <td>Doe</td> <td class="highlight-cell">jdoe@example.com</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
-      <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
-      <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
-      </table>
 
-* **Staging Table (SCD1)**
+.. raw:: html
 
-  CUSTOMER Staging Table
-
-  .. raw:: html
-
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
     <tr> <td>1</td> <td>John</td> <td>Doe</td> <td class="highlight-cell">jdoe@example.com</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
     <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
     <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
     </table>
 
-  
-  CDF of CUSTOMER Staging Table
+Day 2 Staging Table (SCD1)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  .. raw:: html
 
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> <th>_change_type</th> <th>_commit_version</th> <th>_commit_timestamp</th> </tr>
-    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
-    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
-    <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> <td>update</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
-    <tr class="highlight-row"> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-02 10:00</td> <td>delete</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
-    <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> <td>insert</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
-    <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> <td>insert</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
-    </table>
+CUSTOMER Staging Table
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td class="highlight-cell">jdoe@example.com</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
+   <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
+   <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
+   </table>
+
+
+CDF of CUSTOMER Staging Table
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-8"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> <th>_change_type</th> <th>_commit_version</th> <th>_commit_timestamp</th> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
+   <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
+   <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> <td>update</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
+   <tr class="highlight-row"> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-02 10:00</td> <td>delete</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
+   <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> <td>insert</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
+   <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> <td>insert</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
+   </table>
 
 
 Day 3 Load
 ~~~~~~~~~~
 
-* **Source Table (Snapshot)**
+Day 3 Source Table (Snapshot)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  CUSTOMER
 
-  .. raw:: html
+CUSTOMER
 
-      <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
-      <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
-      <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-03 10:00</td> </tr>
-      </table>
 
-* **Staging Table (SCD1)**
+.. raw:: html
 
-  CUSTOMER Staging Table
-
-  .. raw:: html
-
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
     <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
     <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-03 10:00</td> </tr>
     </table>
 
-  
-  CDF of CUSTOMER Staging Table
+Day 3 Staging Table (SCD1)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  .. raw:: html
 
-    <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> <th>_change_type</th> <th>_commit_version</th> <th>_commit_timestamp</th> </tr>
-    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
-    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
-    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> <td>update</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
-    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-02 10:00</td> <td>delete</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
-    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> <td>insert</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
-    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> <td>insert</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
-    <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-03 10:00</td> <td>delete</td> <td>3</td> <td>2023-01-03 18:00</td> </tr>
-    </table>
+CUSTOMER Staging Table
 
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
+   <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-03 10:00</td> </tr>
+   </table>
+
+
+CDF of CUSTOMER Staging Table
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-8"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>updated_timestamp</th> <th>_change_type</th> <th>_commit_version</th> <th>_commit_timestamp</th> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
+   <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> <td>insert</td> <td>1</td> <td>2023-01-01 18:00</td> </tr>
+   <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> <td>update</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
+   <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-02 10:00</td> <td>delete</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
+   <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> <td>insert</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
+   <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> <td>insert</td> <td>2</td> <td>2023-01-02 18:00</td> </tr>
+   <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-03 10:00</td> <td>delete</td> <td>3</td> <td>2023-01-03 18:00</td> </tr>
+   </table>

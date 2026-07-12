@@ -3,9 +3,9 @@ Setting up CI/CD
 
 Automate deployment of **Framework Bundles** and **Pipeline Bundles** using the same Databricks Asset Bundle (DAB) CLI pattern in your CI/CD agent.
 
-For deploy order and ownership, see :doc:`before-you-deploy`.
-For local development deploy, see :doc:`framework/local-framework` and :doc:`pipeline-bundle/local`.
-For framework versioning, path layout, and pinning — see :doc:`features/environments/versioning-framework`.
+For deploy order and ownership, see :doc:`/deploy/before-you-deploy`.
+For local development deploy, see :doc:`/deploy/framework/local-framework` and :doc:`/deploy/pipeline-bundle/local`.
+For framework versioning, path layout, and pinning — see :doc:`/features/environments/versioning-framework`.
 
 Platform-specific examples (GitHub Actions, etc.): `CI/CD for DABs <https://docs.databricks.com/en/dev-tools/bundles/ci-cd-bundles.html>`_.
 
@@ -78,7 +78,7 @@ Framework releases in CI/CD
 .. important::
 
    Framework versioning, ``framework_source_path``, and upgrade practices are documented in
-   :doc:`features/environments/versioning-framework`. Read that page before configuring the Framework Bundle
+   :doc:`/features/environments/versioning-framework`. Read that page before configuring the Framework Bundle
    or setting version pins on Pipeline Bundles.
 
 * **Repository:** Fork the upstream ``lakeflow_framework`` OSS repo into your organization; CI/CD deploys from your fork
@@ -131,17 +131,17 @@ Illustrative bash script for a framework release job:
    echo "Deployment complete."
 
 Pipeline bundles in CI/CD
-=======================
+=========================
 
 * **Repository:** Team pipeline bundle
 * **Trigger:** Merge or approval to promote across environments
 * **Assumes:** Framework already deployed for the target environment (``current`` and any pinned version paths)
-* **Variables:** Set ``framework_source_path`` per target (``current`` or a pinned version) — often from CI variables; see :doc:`features/environments/versioning-framework`
+* **Variables:** Set ``framework_source_path`` per target (``current`` or a pinned version) — often from CI variables; see :doc:`/features/environments/versioning-framework`
 
 Pinning strategies
 ------------------
 
-Each Pipeline Bundle chooses which framework path to use via ``framework_source_path`` (or ``BUNDLE_VAR_framework_source_path`` in CI/CD). Path patterns and examples: :doc:`features/environments/versioning-framework`.
+Each Pipeline Bundle chooses which framework path to use via ``framework_source_path`` (or ``BUNDLE_VAR_framework_source_path`` in CI/CD). Path patterns and examples: :doc:`/features/environments/versioning-framework`.
 
 .. list-table::
    :widths: 22 38 40
@@ -160,4 +160,4 @@ Each Pipeline Bundle chooses which framework path to use via ``framework_source_
      - A framework update causes a regression; you need to restore service quickly while the platform investigates
      - Point affected pipeline bundles at the last known-good version path — no framework redeploy required if that version is still in workspace files
 
-Many teams default pipeline bundles to ``current`` in dev and production, pin specific pipelines during phased framework rollouts, and switch to a prior version path only when something breaks. Details: :doc:`features/environments/versioning-framework`.
+Many teams default pipeline bundles to ``current`` in dev and production, pin specific pipelines during phased framework rollouts, and switch to a prior version path only when something breaks. Details: :doc:`/features/environments/versioning-framework`.

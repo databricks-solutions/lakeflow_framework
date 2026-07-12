@@ -31,4 +31,4 @@ format. Reference that schema file from the relevant source, staging, target, or
 materialized view configuration in the data flow spec.
 
 For file layout, supported schema formats, ``schemaPath`` usage, and examples,
-see :doc:`features/metadata/schema-management`.
+see :doc:`/features/metadata/schema-management`.

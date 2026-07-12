@@ -3,10 +3,10 @@ Deploy pipeline bundle from local machine
 
 Deploy a **Pipeline Bundle** you authored to your Databricks workspace from your local machine using the Declarative Automation Bundle (DAB) CLI workflow.
 
-The **Framework Bundle must already be deployed** in the target workspace — central/platform path or your own dev deploy. See :doc:`before-you-deploy` for deploy order.
+The **Framework Bundle must already be deployed** in the target workspace — central/platform path or your own dev deploy. See :doc:`/deploy/before-you-deploy` for deploy order.
 
-For deploy order and ownership models, see :doc:`before-you-deploy`.
-For automated pipelines, see :doc:`ci-cd`.
+For deploy order and ownership models, see :doc:`/deploy/before-you-deploy`.
+For automated pipelines, see :doc:`/deploy/ci-cd`.
 
 Prerequisites
 =============
@@ -55,12 +55,12 @@ Point your pipeline bundle at the deployed framework version in workspace files.
 
 ``/Workspace/Users/<owner>/.bundle/lakeflow_framework/dev/current/files/src``
 
-If you deployed the framework yourself for local dev, the default path is under your user ``.bundle/.../files/src``. See :doc:`framework/local-framework`.
+If you deployed the framework yourself for local dev, the default path is under your user ``.bundle/.../files/src``. See :doc:`/deploy/framework/local-framework`.
 
 Step 4 — Validate the bundle
 ============================
 
-From **your pipeline bundle** directory (after :doc:`build/bundle-steps`):
+From **your pipeline bundle** directory (after :doc:`/build/bundle-steps`):
 
 .. code-block:: console
    :class: lf-command-block
@@ -89,7 +89,7 @@ When the framework path is not already set in ``databricks.yml``, pass it at dep
    By default the CLI deploys to the ``dev`` target in ``databricks.yml``.
    Use ``-t <target>`` to deploy elsewhere and ``-p <profile>`` to select a different CLI profile.
 
-When pinning to a specific framework version for rollback, see :doc:`features/environments/versioning-framework`.
+When pinning to a specific framework version for rollback, see :doc:`/features/environments/versioning-framework`.
 
 Step 6 — Verify the deployment
 ==============================
@@ -103,6 +103,6 @@ Verify that a Spark Declarative Pipeline was created with the name defined in yo
 See also
 --------
 
-- :doc:`build/bundle-steps` — build a pipeline bundle before deploy
-- :doc:`framework/local-framework` — deploy the framework first
-- :doc:`features/environments/versioning-framework` — version pinning and rollback
+- :doc:`/build/bundle-steps` — build a pipeline bundle before deploy
+- :doc:`/deploy/framework/local-framework` — deploy the framework first
+- :doc:`/features/environments/versioning-framework` — version pinning and rollback

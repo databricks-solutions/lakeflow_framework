@@ -15,8 +15,8 @@ behavior may still be available via the spec or pipeline resources without its
 own page. For the full product picture, start with `Lakeflow Spark Declarative
 Pipelines <https://docs.databricks.com/aws/en/ldp/>`_ in Databricks Docs.
 
-Source and target type catalogs live under :doc:`features/sources-targets/index`.
-Data quality expectations live under :doc:`features/data-quality/index`.
+Source and target type catalogs live under :doc:`/features/sources-targets/index`.
+Data quality expectations live under :doc:`/features/data-quality/index`.
 
 .. toctree::
    :maxdepth: 1

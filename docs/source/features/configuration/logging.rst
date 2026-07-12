@@ -255,7 +255,7 @@ Example — framework-level structured stdout logger (``src/local/``)
    In practice, most teams will want to deliver their custom logger as a
    **Python package** (wheel or PyPI) and install it on each pipeline cluster
    via the standard cluster library mechanisms described in
-   :doc:`features/python/extensions`. That approach decouples the logger from
+   :doc:`/features/python/extensions`. That approach decouples the logger from
    the framework bundle and lets it be versioned and distributed independently.
    Using ``src/local/libraries/`` is best suited for lightweight, org-specific
    customisations that you want to keep co-located with the framework bundle.
@@ -571,7 +571,7 @@ Permissions to View Logs
 
 By default, only the pipeline owner has permission to view logs for a pipeline execution.
 
-To grant other users access, add the following Spark configuration to the framework using the :doc:`features/configuration/spark-configuration` feature:
+To grant other users access, add the following Spark configuration to the framework using the :doc:`/features/configuration/spark-configuration` feature:
 
 .. code-block:: text
 

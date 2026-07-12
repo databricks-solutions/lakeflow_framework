@@ -859,7 +859,9 @@ body:has(.lf-hero) .md-content__inner {
   display: table !important;
   width: 100% !important;
   max-width: 100% !important;
-  margin: 0 0 1.25rem 0;
+  margin: 0 0 1.25rem 0 !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 0.78rem;
@@ -882,6 +884,19 @@ body:has(.lf-hero) .md-content__inner {
   word-break: normal;
 }
 
+/* Pattern sample tables from raw HTML (flat tr/th/td, no thead/tbody). */
+.md-typeset table.lf-content-table > tr:first-child > th {
+  background-color: #f4f6f8;
+  color: var(--md-default-fg-color, #1b3139);
+  font-weight: 700;
+  text-align: left;
+  vertical-align: top;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid rgba(27, 49, 57, 0.14);
+  white-space: normal;
+  word-break: normal;
+}
+
 .md-typeset table.lf-content-table > tbody > tr > td {
   text-align: left;
   vertical-align: top;
@@ -892,7 +907,18 @@ body:has(.lf-hero) .md-content__inner {
   overflow-wrap: break-word;
 }
 
-.md-typeset table.lf-content-table > tbody > tr:hover {
+.md-typeset table.lf-content-table > tr:not(:first-child) > td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5rem 0.85rem;
+  border-top: 1px solid rgba(27, 49, 57, 0.1);
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.md-typeset table.lf-content-table > tbody > tr:hover,
+.md-typeset table.lf-content-table > tr:not(:first-child):hover > td {
   background-color: rgba(27, 49, 57, 0.03);
 }
 
@@ -1026,7 +1052,15 @@ body:has(.lf-hero) .md-content__inner {
   background-color: rgba(255, 255, 255, 0.06);
 }
 
+[data-md-color-scheme="slate"] .md-typeset table.lf-content-table > tr:first-child > th {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
 [data-md-color-scheme="slate"] .md-typeset table.lf-content-table > tbody > tr > td {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table.lf-content-table > tr:not(:first-child) > td {
   border-top-color: rgba(255, 255, 255, 0.1);
 }
 

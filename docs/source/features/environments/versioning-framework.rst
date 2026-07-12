@@ -85,7 +85,7 @@ Set this path using the ``BUNDLE_VAR_framework_source_path`` environment variabl
    optional.  Default configs and schemas are bundled inside the wheel and
    loaded via ``importlib.resources``.  You only need to set
    ``framework.sourcePath`` if you want to apply ``src/local/config/`` sparse
-   overrides on top of the bundled defaults.  See :doc:`deploy/framework/wheel` for
+   overrides on top of the bundled defaults.  See :doc:`/deploy/framework/wheel` for
    details.
 
 Best Practices

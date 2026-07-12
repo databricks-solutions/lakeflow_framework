@@ -1,5 +1,5 @@
 Target Catalog and Schema
-=======================
+=========================
 
 .. list-table::
    :header-rows: 0
@@ -46,5 +46,5 @@ This is configured in two places:
 2. In the pipeline resource file (``catalog`` and ``schema``). See `Configure pipelines <https://docs.databricks.com/aws/en/ldp/configure-pipeline>`_.
 
 
-Refer to the section :doc:`build/bundle-steps` for more information.
+Refer to the section :doc:`/build/bundle-steps` for more information.
 

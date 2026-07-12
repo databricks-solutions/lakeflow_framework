@@ -39,7 +39,7 @@ Target Types
         - Ideal for transformations and aggregations
         - Pre-computation of slow queries
         - Optimization for frequently used computations
-        - Detailed configuration details: :doc:`features/platform/materialized-views`
+        - Detailed configuration details: :doc:`/features/platform/materialized-views`
    * - **Delta Sink**
      - Stream records to a Delta tables.
      -  - Product documentation: https://docs.databricks.com/en/dlt/dlt-sinks
@@ -56,12 +56,12 @@ Target Types
 General Data Flow Spec Configuration
 ------------------------------------
 
-Set as an attribute when creating your Data Flow Spec, refer to the :doc:`build/spec-reference/index` documentation for more information:
+Set as an attribute when creating your Data Flow Spec, refer to the :doc:`/build/spec-reference/index` documentation for more information:
 
-* :doc:`build/spec-reference/source-details`
-* :doc:`build/spec-reference/target-details`
+* :doc:`/build/spec-reference/source-details`
+* :doc:`/build/spec-reference/target-details`
 
 Detailed Target Type Configuration Details
 ------------------------------------------
 
-* :doc:`features/platform/materialized-views`
+* :doc:`/features/platform/materialized-views`

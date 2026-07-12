@@ -3,9 +3,9 @@ Deploy
 
 Deploy the Lakeflow Framework and Pipeline Bundles to a Databricks workspace using Declarative Automation Bundles (DABs) and the Databricks CLI.
 
-Start with :doc:`before-you-deploy` for deploy order, ownership, and workspace paths — then use the guides below for local or CI/CD deployment.
+Start with :doc:`/deploy/before-you-deploy` for deploy order, ownership, and workspace paths — then use the guides below for local or CI/CD deployment.
 
-Browse the guides below, or jump to :doc:`get-started/quick-start` for a combined framework + samples path.
+Browse the guides below, or jump to :doc:`/get-started/quick-start` for a combined framework + samples path.
 
 .. raw:: html
 

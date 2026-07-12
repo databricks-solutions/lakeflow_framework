@@ -6,7 +6,7 @@ A standard Data Flow Spec is the most basic type of Data Flow Spec and is suited
 Example Specification
 ---------------------
 
-The below demonstrates a standard Data Flow Spec for a Bronze ingestion use case (refer to :doc:`patterns/basic-1-1` for more information):
+The below demonstrates a standard Data Flow Spec for a Bronze ingestion use case (refer to :doc:`/build/patterns/basic-1-1` for more information):
 
 .. tabs::
 
@@ -162,7 +162,7 @@ These properties define the source of the data:
        String Pattern: `v_([A-Za-z0-9_]+)`
    * - **sourceDetails**
      - ``object``
-     - See :doc:`spec-reference/source-details` for more information.
+     - See :doc:`/build/spec-reference/source-details` for more information.
 
 .. _dataflow-spec-standard-target-configuration:
 
@@ -188,7 +188,7 @@ These properties define where and how the data will be written:
        If the format is `delta`, additional `targetDetails` must be provided.
    * - **targetDetails**
      - ``object``
-     - See :doc:`spec-reference/target-details`.
+     - See :doc:`/build/spec-reference/target-details`.
 
 .. _dataflow-spec-standard-cdc-configuration:
 

@@ -9,7 +9,7 @@ A Data Flow Spec is a JSON file that defines the structure of a single data flow
    
    * A Data Flow Spec must adhere to the schemas defined by the framework, which is documented in this section.
    * In general a single Data Flow Spec will be contained in one file and must be named with the suffix ``_main.json`` to be picked up by the framework.
-   * In the case of Flows Data Flow Specs, the Data Flow Spec can also be broken up into a main and one or more flow files. The main spec file will contain the main pipeline configuration and the flow spec file will contain the flow groups. This is explained further in the section: :doc:`spec-reference/splitting-dataflow-spec`.
+   * In the case of Flows Data Flow Specs, the Data Flow Spec can also be broken up into a main and one or more flow files. The main spec file will contain the main pipeline configuration and the flow spec file will contain the flow groups. This is explained further in the section: :doc:`/build/spec-reference/splitting-dataflow-spec`.
 
 .. toctree::
    :maxdepth: 1

@@ -3,9 +3,9 @@ Set up your environment
 
 Prepare a local development environment for contributing to the Lakeflow Framework — clone the repo, install dependencies, and configure your editor.
 
-For the full contribution path after setup, see :doc:`dev-steps`.
-For import rules, see :doc:`imports`.
-For documentation lockfiles and ``make html``, see :doc:`dev-docs`.
+For the full contribution path after setup, see :doc:`/contributors/dev-steps`.
+For import rules, see :doc:`/contributors/imports`.
+For documentation lockfiles and ``make html``, see :doc:`/contributors/dev-docs`.
 
 Prerequisites
 =============
@@ -91,7 +91,7 @@ If you missed the prompt:
 * Run **Extensions: Show Recommended Extensions**, or
 * Open the Extensions view and select **Workspace Recommendations**
 
-Install the recommended extensions — including **yapf** for Python formatting used in :doc:`dev-steps`.
+Install the recommended extensions — including **yapf** for Python formatting used in :doc:`/contributors/dev-steps`.
 
 Step 6 — Verify the setup
 =========================
@@ -115,16 +115,16 @@ If you add, remove, or bump a dependency in any ``requirements*.txt`` file, rege
 
    ./scripts/generate_lockfiles.sh
 
-Commit the regenerated ``.lock`` files with your dependency change. See :doc:`dev-docs` for documentation lockfile details.
+Commit the regenerated ``.lock`` files with your dependency change. See :doc:`/contributors/dev-docs` for documentation lockfile details.
 
 .. note::
 
-   To deploy the framework to a Databricks workspace for integration testing, follow :doc:`deploy/framework/local-framework` or :doc:`get-started/quick-start`.
+   To deploy the framework to a Databricks workspace for integration testing, follow :doc:`/deploy/framework/local-framework` or :doc:`/get-started/quick-start`.
 
 See also
 --------
 
-- :doc:`index` — Contributors hub
-- :doc:`dev-steps` — contribution workflow
-- :doc:`imports` — ``lakeflow_framework.*`` import conventions
-- :doc:`dev-docs` — write and build documentation
+- :doc:`/index` — Contributors hub
+- :doc:`/contributors/dev-steps` — contribution workflow
+- :doc:`/contributors/imports` — ``lakeflow_framework.*`` import conventions
+- :doc:`/contributors/dev-docs` — write and build documentation

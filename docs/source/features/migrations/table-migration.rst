@@ -32,7 +32,7 @@ There are two options for table migration, these are explained in detail below:
 Configuration
 -------------
 
-Set as an attribute when creating your Data Flow Spec, refer to the :doc:`build/spec-reference/table-migration` section of the :doc:`build/spec-reference/index` documentation for more information.
+Set as an attribute when creating your Data Flow Spec, refer to the :doc:`/build/spec-reference/table-migration` section of the :doc:`/build/spec-reference/index` documentation for more information.
 
 **Key Configuration Options:**
 

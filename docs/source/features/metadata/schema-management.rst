@@ -9,7 +9,7 @@ Schema Management
    * - **Configuration Scope:**
      - :bdg-success:`Data Flow Spec`
    * - **Databricks Docs:**
-     - See :doc:`features/platform/databricks-schema-features` for Databricks schema-related features exposed through LFF.
+     - See :doc:`/features/platform/databricks-schema-features` for Databricks schema-related features exposed through LFF.
 
 Overview
 --------
@@ -46,12 +46,12 @@ Schema Types
 Schema File Location
 --------------------
 
-Schema definitions must be specified in their own dedicated files and will be located in a schemas folder, dependant on your chosen bundle structure as discussed in the :doc:`build/bundle-structure` section.
+Schema definitions must be specified in their own dedicated files and will be located in a schemas folder, dependant on your chosen bundle structure as discussed in the :doc:`/build/bundle-structure` section.
 
 Data Flow Spec Configuration
 ----------------------------
 
-Schema files are then referenced in the Data Flow Spec configuration for the source, staging table or target table they apply to. Refer to the :doc:`build/spec-reference/flows` section for more information.
+Schema files are then referenced in the Data Flow Spec configuration for the source, staging table or target table they apply to. Refer to the :doc:`/build/spec-reference/flows` section for more information.
 
 
 StructType JSON Format

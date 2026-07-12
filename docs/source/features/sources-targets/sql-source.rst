@@ -51,7 +51,7 @@ You can use CTEs, subqueries, joins, etc.
 **Substitution Variables**
 
 You can use substitution variables in your SQL query by using the ``{var}`` syntax. 
-These will be substituted per the :doc:`features/metadata/substitutions` documentation.
+These will be substituted per the :doc:`/features/metadata/substitutions` documentation.
 
 For example:
 
@@ -62,4 +62,4 @@ For example:
 **Referencing the Python Source in a Data Flow Spec**
 
 To reference the Python source in a Data Flow Spec, you need to specify a Python source type in your Data Flow Spec. 
-Refer to the :doc:`build/spec-reference/source-details` section of the :doc:`build/spec-reference/index` documentation for more information.
+Refer to the :doc:`/build/spec-reference/source-details` section of the :doc:`/build/spec-reference/index` documentation for more information.

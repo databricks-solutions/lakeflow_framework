@@ -37,7 +37,7 @@
 
 .. container:: lf-landing-onboarding
 
-   New to LFF? Start at :doc:`get-started/index` — product overview, Quick Start, or straight into the docs.
+   New to LFF? Start at :doc:`/get-started/index` — product overview, Quick Start, or straight into the docs.
 
 .. raw:: html
 

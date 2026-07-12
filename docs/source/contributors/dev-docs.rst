@@ -3,13 +3,13 @@ Write & build docs
 
 Author and build the Lakeflow Framework documentation — reStructuredText and MyST sources, Sphinx, and the hub-based information architecture.
 
-For local setup, see :doc:`dev-env` (``requirements-dev.lock`` includes docs dependencies).
-For the contribution workflow and doc CI checks, see :doc:`dev-steps`.
+For local setup, see :doc:`/contributors/dev-env` (``requirements-dev.lock`` includes docs dependencies).
+For the contribution workflow and doc CI checks, see :doc:`/contributors/dev-steps`.
 
 Documentation layout
 ====================
 
-Source files live under ``docs/source/``. Top-level navigation is defined in :doc:`index`.
+Source files live under ``docs/source/``. Top-level navigation is defined in :doc:`/index`.
 
 .. list-table::
    :header-rows: 1
@@ -17,22 +17,22 @@ Source files live under ``docs/source/``. Top-level navigation is defined in :do
 
    * - Section
      - Role
-   * - **Home** (:doc:`index`)
+   * - **Home** (:doc:`/index`)
      - Landing page with hero and entry cards (`docs/source/_landing.rst`)
    * - **Get Started**
-     - :doc:`get-started/index` — prose landing with paths to :doc:`get-started/what-is-lakeflow-framework` and :doc:`get-started/quick-start`
+     - :doc:`/get-started/index` — prose landing with paths to :doc:`/get-started/what-is-lakeflow-framework` and :doc:`/get-started/quick-start`
    * - **Architecture**
-     - :doc:`architecture/index` — operating model, bundles, specs
+     - :doc:`/architecture/index` — operating model, bundles, specs
    * - **Samples**
-     - :doc:`samples/index` — feature, pattern, and TPCH samples
+     - :doc:`/samples/index` — feature, pattern, and TPCH samples
    * - **Build**
-     - :doc:`build/index` hub — structure, steps, spec reference, patterns
+     - :doc:`/build/index` hub — structure, steps, spec reference, patterns
    * - **Deploy**
-     - :doc:`deploy/index` hub — before you deploy, :doc:`deploy/framework/index` subsection, pipeline bundle local deploy, :doc:`deploy/ci-cd`
+     - :doc:`/deploy/index` hub — before you deploy, :doc:`/deploy/framework/index` subsection, pipeline bundle local deploy, :doc:`/deploy/ci-cd`
    * - **Features**
-     - :doc:`features/index` hub — category sub-hubs and ``feature_*.rst`` pages; :doc:`features/a-z` index
+     - :doc:`/features/index` hub — category sub-hubs and ``feature_*.rst`` pages; :doc:`/features/a-z` index
    * - **Contributors**
-     - :doc:`contributors/index` hub — env, git/releases, workflow, imports, this page
+     - :doc:`/contributors/index` hub — env, git/releases, workflow, imports, this page
 
 **Folder convention** (site-wide):
 
@@ -61,8 +61,8 @@ When you add or change framework behavior:
 
 1. Create or update ``docs/source/features/{category}/{page-name}.rst`` (kebab-case)
 2. Include the standard metadata table (**Applies To**, **Configuration Scope**, **Databricks Docs** where relevant)
-3. Add the page to the matching category hub ``index.rst`` toctree and to :doc:`features/a-z`
-4. Update :doc:`build/spec-reference/index` when the Data Flow Spec schema changes
+3. Add the page to the matching category hub ``index.rst`` toctree and to :doc:`/features/a-z`
+4. Update :doc:`/build/spec-reference/index` when the Data Flow Spec schema changes
 5. If the page replaces a flat URL already on ``main``, add a redirect in ``docs/redirects/features.yaml``
 
 Deploy and build pages
@@ -70,19 +70,19 @@ Deploy and build pages
 
 Deploy docs are split by audience:
 
-* **Framework** — :doc:`deploy/framework/options`, :doc:`deploy/framework/local-framework`, :doc:`deploy/framework/wheel` under :doc:`deploy/framework/index`
-* **Pipeline bundle** — :doc:`deploy/pipeline-bundle/local`
-* **Shared** — :doc:`deploy/before-you-deploy`, :doc:`deploy/ci-cd`
+* **Framework** — :doc:`/deploy/framework/options`, :doc:`/deploy/framework/local-framework`, :doc:`/deploy/framework/wheel` under :doc:`/deploy/framework/index`
+* **Pipeline bundle** — :doc:`/deploy/pipeline-bundle/local`
+* **Shared** — :doc:`/deploy/before-you-deploy`, :doc:`/deploy/ci-cd`
 
 Add new deploy guides to the appropriate hub toctree under ``docs/source/deploy/`` (for example ``deploy/index.rst`` or ``deploy/framework/index.rst``), and add a hub card when the page is a primary entry point.
 
-Build guides live under the :doc:`build/index` hub.
+Build guides live under the :doc:`/build/index` hub.
 
 Cross-references
 ----------------
 
 * RST: ``:doc:`page_name``` or ``:doc:`Title <page_name>```
-* MyST (``samples/index.md``): ``{doc}`samples/index```
+* MyST (``samples/index.md``): ``{doc}`/samples/index``` or ``{doc}`Title </path/to/page>```
 * Sections: ``:ref:`label-name``` (use unique labels; avoid duplicating labels across spec ref pages)
 
 Styling
@@ -117,7 +117,7 @@ Build locally
 Install dependencies
 --------------------
 
-From the repo root (or use ``requirements-dev.lock`` from :doc:`dev-env`):
+From the repo root (or use ``requirements-dev.lock`` from :doc:`/contributors/dev-env`):
 
 .. code-block:: console
    :class: lf-command-block
@@ -192,12 +192,12 @@ When you change files under ``docs/``, run before pushing:
    bash scripts/ci/docs_spelling_check.sh
    bash scripts/ci/docs_html_check.sh
 
-CI runs these when ``docs/`` changes on pull requests. Keep Sphinx **warnings** below the CI threshold documented in :doc:`dev-steps`.
+CI runs these when ``docs/`` changes on pull requests. Keep Sphinx **warnings** below the CI threshold documented in :doc:`/contributors/dev-steps`.
 
 See also
 --------
 
-- :doc:`contributors/index` — Contributors hub
-- :doc:`dev-steps` — pull request workflow
+- :doc:`/contributors/index` — Contributors hub
+- :doc:`/contributors/dev-steps` — pull request workflow
 - ``docs/README.md`` — multiversion builds and GitHub Pages
 - ``docs/decisions/`` — architecture decisions for docs and packaging

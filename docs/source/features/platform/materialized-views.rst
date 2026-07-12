@@ -48,7 +48,7 @@ A sample is available in:
 Data Flow Spec Configuration
 ----------------------------
 
-Materialized Views are must be configured in the Materialized Views Data Flow Spec Type. This Data Flow Specification is defined in the :doc:`build/spec-reference/materialized-views` documentation.
+Materialized Views are must be configured in the Materialized Views Data Flow Spec Type. This Data Flow Specification is defined in the :doc:`/build/spec-reference/materialized-views` documentation.
 
 Data Flow Spec Configuration Schema
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -322,4 +322,4 @@ A complete example of a materialized view configuration:
                configFlags:
                  - disableOperationalMetadata
 
-For more detailed information about configuration options, refer to the :doc:`build/spec-reference/index` documentation. 
+For more detailed information about configuration options, refer to the :doc:`/build/spec-reference/index` documentation. 

@@ -40,5 +40,5 @@ configuration.
 See also
 --------
 
-- :doc:`framework/local-framework` — flat DAB deploy from your laptop
-- :doc:`framework/wheel` — install ``lakeflow-framework`` as a Python wheel
+- :doc:`/deploy/framework/local-framework` — flat DAB deploy from your laptop
+- :doc:`/deploy/framework/wheel` — install ``lakeflow-framework`` as a Python wheel

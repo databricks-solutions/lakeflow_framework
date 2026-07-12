@@ -26,9 +26,14 @@ Use when:
 Data Flow Components:
 ---------------------
 
-.. image:: ../../images/stream_static_basic.png
-   :target: _images/stream_static_basic.png
-   :alt: Stream Static - Basic
+.. md-mermaid::
+
+   flowchart LR
+     IV["Input View:<br/>vw_source_table"]
+     JV["View:<br/>vw_source1_final_tfm<br/>(SQL Transform with static joins)"]
+     TT["Streaming Table:<br/>TargetTable"]
+     IV -->|"readStream()<br/>CDF enabled"| JV
+     JV -->|"Append or auto CDC Flow:<br/>append_flow() or create_auto_cdc_flow()"| TT
 
 .. list-table::
    :header-rows: 1
@@ -47,8 +52,8 @@ Data Flow Components:
      - A view that defines SQL, joining the input view above to one or more additional source tables.
      - M
    * - 3
-     - Append or Change Flow
-     - An Append Flow (for transactional or fact based target tables) or an SCD1/2 Change Flow that loads the data into the final target table.
+     - Append or auto CDC Flow
+     - An Append Flow (for transactional or fact based target tables) or an SCD1/2 auto CDC flow that loads the data into the final target table.
      - M
    * - 4
      - Target Table
@@ -93,374 +98,422 @@ Example Data Flow
 -----------------
 
 .. important::
-   - The Day 3 load below demonstrates a limitation of this pattern. Updates in any of the static tables will only be loaded once corresponding rows (with the same PK's) in the primary streaming table are updated. This is resolved by the :doc:`Streaming Data Warehouse <patterns/stream-static-streaming-dwh>` pattern below.
+   - The Day 3 load below demonstrates a limitation of this pattern. Updates in any of the static tables will only be loaded once corresponding rows (with the same PK's) in the primary streaming table are updated. This is resolved by the :doc:`Streaming Data Warehouse </build/patterns/stream-static-streaming-dwh>` pattern below.
    
-   Note this behavior may be perfectly acceptable in a given scenario, which is why this pattern remains relevant, as it is a simpler implementation than the :doc:`Streaming Data Warehouse <patterns/stream-static-streaming-dwh>` pattern
+   Note this behavior may be perfectly acceptable in a given scenario, which is why this pattern remains relevant, as it is a simpler implementation than the :doc:`Streaming Data Warehouse </build/patterns/stream-static-streaming-dwh>` pattern
 
 Day 1 Load
 ~~~~~~~~~~
 
-* **Source Tables (Append-Only)**
+Source Tables (Append-Only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  CUSTOMER
 
-  .. list-table::
-     :header-rows: 1
-     :widths: 15 15 15 25 30
+CUSTOMER
 
-     * - customer_id
-       - first_name
-       - last_name
-       - email
-       - load_timestamp
-     * - 1
-       - John
-       - Doe
-       - john.doe@example.com
-       - 2023-01-01 10:00
-     * - 2
-       - Jane
-       - Smith
-       - jane.smith@example.com
-       - 2023-01-01 10:00
 
-  CUSTOMER_ADDRESS
+.. list-table::
+   :header-rows: 1
+   :widths: 15 15 15 25 30
 
-  .. list-table::
-     :header-rows: 1
-     :widths: 15 15 15 30
+   * - customer_id
+     - first_name
+     - last_name
+     - email
+     - load_timestamp
+   * - 1
+     - John
+     - Doe
+     - john.doe@example.com
+     - 2023-01-01 10:00
+   * - 2
+     - Jane
+     - Smith
+     - jane.smith@example.com
+     - 2023-01-01 10:00
 
-     * - customer_id
-       - city
-       - state
-       - load_timestamp
-     * - 1
-       - Melbourne
-       - VIC
-       - 2023-01-01 10:00
-     * - 2
-       - Melbourne
-       - VIC
-       - 2023-01-01 10:00
-     * - 4
-       - Hobart
-       - TAS
-       - 2023-01-01 10:00
+CUSTOMER_ADDRESS
 
-* Target Table
 
-  * **Append-Only Scenario**
+.. list-table::
+   :header-rows: 1
+   :widths: 15 15 15 30
 
-  .. list-table::
-     :header-rows: 1
-     :widths: 15 15 15 15 25 15 15 30
+   * - customer_id
+     - city
+     - state
+     - load_timestamp
+   * - 1
+     - Melbourne
+     - VIC
+     - 2023-01-01 10:00
+   * - 2
+     - Melbourne
+     - VIC
+     - 2023-01-01 10:00
+   * - 4
+     - Hobart
+     - TAS
+     - 2023-01-01 10:00
 
-     * - customer_id
-       - first_name
-       - last_name
-       - full_name
-       - email
-       - city
-       - state
-       - load_timestamp
-     * - 1
-       - John
-       - Doe
-       - John Doe
-       - john.doe@example.com
-       - Melbourne
-       - VIC
-       - 2023-01-01 10:00
-     * - 2
-       - Jane
-       - Smith
-       - Jane Smith
-       - jane.smith@example.com
-       - Melbourne
-       - VIC
-       - 2023-01-01 10:00
+Target Table
+^^^^^^^^^^^^
 
-  * SCD1 Scenario
 
-  .. list-table::
-     :header-rows: 1
-     :widths: 15 15 15 15 25 15 15
+Append-Only Scenario
+""""""""""""""""""""
 
-     * - customer_id
-       - first_name
-       - last_name
-       - full_name
-       - email
-       - city
-       - state
-     * - 1
-       - John
-       - Doe
-       - John Doe
-       - john.doe@example.com
-       - Melbourne
-       - VIC
-     * - 2
-       - Jane
-       - Smith
-       - Jane Smith
-       - jane.smith@example.com
-       - Melbourne
-       - VIC
 
-  * SCD2 Scenario
+.. list-table::
+   :header-rows: 1
+   :widths: 15 15 15 15 25 15 15 30
 
-  .. list-table::
-     :header-rows: 1
-     :widths: 15 15 15 15 25 15 15 25 25
+   * - customer_id
+     - first_name
+     - last_name
+     - full_name
+     - email
+     - city
+     - state
+     - load_timestamp
+   * - 1
+     - John
+     - Doe
+     - John Doe
+     - john.doe@example.com
+     - Melbourne
+     - VIC
+     - 2023-01-01 10:00
+   * - 2
+     - Jane
+     - Smith
+     - Jane Smith
+     - jane.smith@example.com
+     - Melbourne
+     - VIC
+     - 2023-01-01 10:00
 
-     * - customer_id
-       - first_name
-       - last_name
-       - full_name
-       - email
-       - city
-       - state
-       - _START_AT
-       - _END_AT
-     * - 1
-       - John
-       - Doe
-       - John Doe
-       - john.doe@example.com
-       - Melbourne
-       - VIC
-       - 2023-01-01 10:00
-       - NULL
-     * - 2
-       - Jane
-       - Smith
-       - Jane Smith
-       - jane.smith@example.com
-       - Melbourne
-       - VIC
-       - 2023-01-01 10:00
-       - NULL
+SCD1 Scenario
+"""""""""""""
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 15 15 15 25 15 15
+
+   * - customer_id
+     - first_name
+     - last_name
+     - full_name
+     - email
+     - city
+     - state
+   * - 1
+     - John
+     - Doe
+     - John Doe
+     - john.doe@example.com
+     - Melbourne
+     - VIC
+   * - 2
+     - Jane
+     - Smith
+     - Jane Smith
+     - jane.smith@example.com
+     - Melbourne
+     - VIC
+
+SCD2 Scenario
+"""""""""""""
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 15 15 15 25 15 15 25 25
+
+   * - customer_id
+     - first_name
+     - last_name
+     - full_name
+     - email
+     - city
+     - state
+     - _START_AT
+     - _END_AT
+   * - 1
+     - John
+     - Doe
+     - John Doe
+     - john.doe@example.com
+     - Melbourne
+     - VIC
+     - 2023-01-01 10:00
+     - NULL
+   * - 2
+     - Jane
+     - Smith
+     - Jane Smith
+     - jane.smith@example.com
+     - Melbourne
+     - VIC
+     - 2023-01-01 10:00
+     - NULL
 
 Day 2 Load
 ~~~~~~~~~~
 
-* **Source Tables (Append-Only)**
+Day 2 Source Tables (Append-Only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    CUSTOMER
 
-    .. raw:: html
+CUSTOMER
 
-        <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
-        <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
-        <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        </table>
 
-    CUSTOMER_ADDRESS
+.. raw:: html
 
-    .. raw:: html
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
+    <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    </table>
 
-        <table class="docutils align-default"> <tr> <th>customer_id</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
-        <tr> <td>1</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>2</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>4</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-01 10:00</td> </tr>
-        <tr class="highlight-row"> <td>2</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>
-        <tr class="highlight-row"> <td>3</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
-        </table>
+CUSTOMER_ADDRESS
 
-**Target Table**
 
-    - Append-Only Scenario
+.. raw:: html
 
-        .. raw:: html
+   <table class="docutils align-default lf-content-table data lf-table-cols-4"> <tr> <th>customer_id</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>4</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-01 10:00</td> </tr>
+    <tr class="highlight-row"> <td>2</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>3</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
+    </table>
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-            <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> </tr>
-            <tr class="highlight-row"> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>        
-            <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
-            <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> </tr>
-            </table>
+Day 2 Target Table
+^^^^^^^^^^^^^^^^^^
 
-    - SCD1 Scenario
 
-        .. raw:: html
+Day 2 Append-Only Scenario
+""""""""""""""""""""""""""
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td class="highlight-cell">jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td class="highlight-cell">Perth</td> <td class="highlight-cell">WA</td> </tr>
-            <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> </tr>
-            <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> </tr>
-            </table>
 
-    - SCD2 Scenario
+.. raw:: html
 
-        .. raw:: html
+   <table class="docutils align-default lf-content-table data lf-table-cols-8"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>        
+    <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> </tr>
+    </table>
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>_START_AT</th> <th>_END_AT</th> </tr>
-            <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
-            <tr class="highlight-row"> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
-            <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>Alice Green</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
-            <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-            </table>
+Day 2 SCD1 Scenario
+"""""""""""""""""""
 
-        .. note::
 
-            - Customer 1's change of location to Brisbane did not propagate as there was no corresponding new row in the primary Customer table on this Day.
-            - This change in location will only be reflected once a new row for customer 1 is loaded into the Customer source table.
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-7"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td class="highlight-cell">jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td class="highlight-cell">Perth</td> <td class="highlight-cell">WA</td> </tr>
+    <tr class="highlight-row"> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> </tr>
+    <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> </tr>
+    </table>
+
+Day 2 SCD2 Scenario
+"""""""""""""""""""
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-9"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>_START_AT</th> <th>_END_AT</th> </tr>
+    <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td class="highlight-cell">2023-01-02 10:00</td> </tr>
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>Alice Green</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
+    <tr class="highlight-row"> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+    </table>
+
+.. note::
+
+    - Customer 1's change of location to Brisbane did not propagate as there was no corresponding new row in the primary Customer table on this Day.
+    - This change in location will only be reflected once a new row for customer 1 is loaded into the Customer source table.
 
 Day 3 Load
 ~~~~~~~~~~
 
-* **Source Tables (Append-Only)**
+Day 3 Source Tables (Append-Only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    CUSTOMER
 
-    .. raw:: html
+CUSTOMER
 
-        <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
-        <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        </table>
-    
-    CUSTOMER_ADDRESS
 
-    .. raw:: html
+.. raw:: html
 
-        <table class="docutils align-default"> <tr> <th>customer_id</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
-        <tr> <td>1</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>2</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>4</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>2</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>
-        <tr> <td>3</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
-        <tr class="highlight-row"> <td>1</td> <td>Brisbane</td> <td>QLD</td> <td>2023-01-03 10:00</td> </tr>
-        </table>
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    </table>
 
-* **Target Table**
+CUSTOMER_ADDRESS
 
-    - Append-Only Scenario
 
-        .. raw:: html
+.. raw:: html
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>        
-            <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
-            <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> </tr>
-            </table>
+   <table class="docutils align-default lf-content-table data lf-table-cols-4"> <tr> <th>customer_id</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>4</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>3</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>1</td> <td>Brisbane</td> <td>QLD</td> <td>2023-01-03 10:00</td> </tr>
+    </table>
 
-    - SCD1 Scenario
+Day 3 Target Table
+^^^^^^^^^^^^^^^^^^
 
-        .. raw:: html
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> </tr>
-            <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> </tr>
-            <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> </tr>
-            </table>
+Day 3 Append-Only Scenario
+""""""""""""""""""""""""""
 
-    - SCD2 Scenario
 
-        .. raw:: html
+.. raw:: html
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>_START_AT</th> <th>_END_AT</th> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
-            <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>Alice Green</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
-            <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-            </table>
+   <table class="docutils align-default lf-content-table data lf-table-cols-8"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>        
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> </tr>
+    </table>
 
-        .. note::
-            
-            - Customer 1's change of location to Brisbane did not propagate as there was no corresponding new row in the primary Customer table on this Day.
-            - This change in location will only be reflected once a new row for customer 1 is loaded into the Customer source table.
+Day 3 SCD1 Scenario
+"""""""""""""""""""
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-7"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> </tr>
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> </tr>
+    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> </tr>
+    </table>
+
+Day 3 SCD2 Scenario
+"""""""""""""""""""
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-9"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>_START_AT</th> <th>_END_AT</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>Alice Green</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
+    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+    </table>
+
+.. note::
+
+    - Customer 1's change of location to Brisbane did not propagate as there was no corresponding new row in the primary Customer table on this Day.
+    - This change in location will only be reflected once a new row for customer 1 is loaded into the Customer source table.
 
 Day 4 Load
 ~~~~~~~~~~
 
-* **Source Tables (Append-Only)**
+Day 4 Source Tables (Append-Only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    CUSTOMER
 
-    .. raw:: html
+CUSTOMER
 
-        <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
-        <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
-        <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@another.example.com</td> <td>2023-01-04 10:00</td> </tr>
-        </table>
-    
-    CUSTOMER_ADDRESS
 
-    .. raw:: html
+.. raw:: html
 
-        <table class="docutils align-default"> <tr> <th>customer_id</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
-        <tr> <td>1</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>2</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>4</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-01 10:00</td> </tr>
-        <tr> <td>2</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>
-        <tr> <td>3</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
-        <tr> <td>1</td> <td>Brisbane</td> <td>QLD</td> <td>2023-01-03 10:00</td> </tr>
-        </table>
+   <table class="docutils align-default lf-content-table data lf-table-cols-5"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>email</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@example.com</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>jane.smith@example.com</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>jdoe@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>joe.bloggs@example.com</td> <td>2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>john.doe@another.example.com</td> <td>2023-01-04 10:00</td> </tr>
+    </table>
 
-* **Target Table**
+CUSTOMER_ADDRESS
 
-    - Append-Only Scenario
 
-        .. raw:: html
+.. raw:: html
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>        
-            <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
-            <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> </tr>
-            <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@another.example.com</td> <td>Brisbane</td> <td>QLD</td> <td>2023-01-04 10:00</td> </tr>
-            </table>
+   <table class="docutils align-default lf-content-table data lf-table-cols-4"> <tr> <th>customer_id</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>4</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>3</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>1</td> <td>Brisbane</td> <td>QLD</td> <td>2023-01-03 10:00</td> </tr>
+    </table>
 
-    - SCD1 Scenario
+Day 4 Target Table
+^^^^^^^^^^^^^^^^^^
 
-        .. raw:: html
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td class="highlight-cell">john.doe@another.example.com</td> <td class="highlight-cell">Brisbane</td> <td class="highlight-cell">QLD</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> </tr>
-            <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> </tr>
-            <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> </tr>
-            </table>
+Day 4 Append-Only Scenario
+""""""""""""""""""""""""""
 
-    - SCD2 Scenario
 
-        .. raw:: html
+.. raw:: html
 
-            <table class="docutils align-default"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>_START_AT</th> <th>_END_AT</th> </tr>
-            <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@another.example.com</td> <td>Brisbane</td> <td>QLD</td> <td>2023-01-04 10:00</td> <td>NULL</td> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> <td class="highlight-cell">2023-01-04 10:00</td> </tr>
-            <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-            <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
-            <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>Alice Green</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
-            <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
-            </table>
+   <table class="docutils align-default lf-content-table data lf-table-cols-8"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>load_timestamp</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> </tr>        
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> </tr>
+    <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@another.example.com</td> <td>Brisbane</td> <td>QLD</td> <td>2023-01-04 10:00</td> </tr>
+    </table>
 
-        .. note::
+Day 4 SCD1 Scenario
+"""""""""""""""""""
 
-            Both the change of address on day 3 and the change of email on day 4 come through on this load.
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-7"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td class="highlight-cell">john.doe@another.example.com</td> <td class="highlight-cell">Brisbane</td> <td class="highlight-cell">QLD</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> </tr>
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>alice.green@example.com</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> </tr>
+    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> </tr>
+    </table>
+
+Day 4 SCD2 Scenario
+"""""""""""""""""""
+
+
+.. raw:: html
+
+   <table class="docutils align-default lf-content-table data lf-table-cols-9"> <tr> <th>customer_id</th> <th>first_name</th> <th>last_name</th> <th>full_name</th> <th>email</th> <th>city</th> <th>state</th> <th>_START_AT</th> <th>_END_AT</th> </tr>
+    <tr class="highlight-row"> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@another.example.com</td> <td>Brisbane</td> <td>QLD</td> <td>2023-01-04 10:00</td> <td>NULL</td> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>jdoe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-02 10:00</td> <td class="highlight-cell">2023-01-04 10:00</td> </tr>
+    <tr> <td>1</td> <td>John</td> <td>Doe</td> <td>John Doe</td> <td>john.doe@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Perth</td> <td>WA</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+    <tr> <td>2</td> <td>Jane</td> <td>Smith</td> <td>Jane Smith</td> <td>jane.smith@example.com</td> <td>Melbourne</td> <td>VIC</td> <td>2023-01-01 10:00</td> <td>2023-01-02 10:00</td> </tr>
+    <tr> <td>3</td> <td>Alice</td> <td>Green</td> <td>Alice Green</td> <td>alice.green@example.com</td> <td>Sydney</td> <td>NSW</td> <td>2023-01-01 10:00</td> <td>NULL</td> </tr>
+    <tr> <td>4</td> <td>Joe</td> <td>Bloggs</td> <td>Joe Bloggs</td> <td>joe.bloggs@example.com</td> <td>Hobart</td> <td>TAS</td> <td>2023-01-02 10:00</td> <td>NULL</td> </tr>
+    </table>
+
+.. note::
+
+    Both the change of address on day 3 and the change of email on day 4 come through on this load.

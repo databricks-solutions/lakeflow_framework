@@ -285,4 +285,4 @@ The function must be named ``get_df``:
 Additional Resources
 --------------------
 
-Refer to the :doc:`build/spec-reference/source-details` section of the :doc:`build/spec-reference/index` documentation for more information on source configuration.
+Refer to the :doc:`/build/spec-reference/source-details` section of the :doc:`/build/spec-reference/index` documentation for more information on source configuration.

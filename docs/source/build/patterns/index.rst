@@ -7,9 +7,9 @@ Reference patterns for designing data flows and pipelines. These are not the onl
 
 With the exception of Basic 1:1, the examples lean toward complex streaming (multi-source joins, CDC-driven updates, mixed stream/static topologies).
 
-* Operating models and modelling paradigms: :doc:`architecture/index`
-* Multi-source streaming feature: :doc:`features/platform/multi-source-streaming`
-* Bundle and pipeline scope: :doc:`build/bundle-structure`
+* Operating models and modelling paradigms: :doc:`/architecture/index`
+* Multi-source streaming feature: :doc:`/features/platform/multi-source-streaming`
+* Bundle and pipeline scope: :doc:`/build/bundle-structure`
 * SDP concepts (datasets, flows): `Lakeflow Spark Declarative Pipelines — key concepts <https://docs.databricks.com/aws/en/ldp/concepts/#key-concepts>`_
 
 For Gold-layer workloads, Materialized Views should generally be the first choice for dimensional modelling, batch processing, and aggregation-centric serving tables. Prefer streaming-first Gold patterns when lower-latency or less-aggregated use cases are required.
@@ -30,7 +30,7 @@ When selecting a pattern, start with ownership model, modelling approach, source
 
    * - Pattern
      - Description
-   * - :doc:`basic-1-1`
+   * - :doc:`/build/patterns/basic-1-1`
      - **Suitable for:**
        
        Ingestion and basic 1:1 loads.
@@ -45,7 +45,7 @@ When selecting a pattern, start with ownership model, modelling approach, source
        **Layers:**
        
        * Generally Bronze
-   * - :doc:`multi-source-streaming`
+   * - :doc:`/build/patterns/multi-source-streaming`
      - **Suitable for:**
        
        Multi-source streaming and basic transformations.
@@ -71,7 +71,7 @@ When selecting a pattern, start with ownership model, modelling approach, source
        
        * All source tables must share the same business keys. The column names do not need to be the same in the sources, but the keys must be conceptually the same.
        * In SCD 2 scenarios, a new version of a row will be generated any time data changes in any of the source streams. This will be particularly noticeable when you have late arriving records across streams and will lead to more row versions than normally expected.
-   * - :doc:`stream-static-basic`
+   * - :doc:`/build/patterns/stream-static-basic`
      - **Suitable for:**
        
        When you have a streaming table that you need to join to one or many additional static tables to derive your desired target data set.
@@ -99,7 +99,7 @@ When selecting a pattern, start with ownership model, modelling approach, source
        **Considerations & Limitations:**
        
        * Updates in joined tables will not be reflected until a row with matching keys comes through on the driving streaming table.
-   * - :doc:`stream-static-streaming-dwh`
+   * - :doc:`/build/patterns/stream-static-streaming-dwh`
      - **Suitable for:**
        
        When you have a streaming table that you need to join to one or many additional static tables in order to derive your desired target data set, but you also want updates to the static tables to be reflected as they occur.
@@ -126,7 +126,7 @@ When selecting a pattern, start with ownership model, modelling approach, source
        **Considerations & Limitations:**
        
        * More complex to implement than the Stream-Static Basic pattern but allows for true streaming joins.
-   * - :doc:`cdc-stream-from-snapshot`
+   * - :doc:`/build/patterns/cdc-stream-from-snapshot`
      - **Suitable for:**
        
        Constructing a CDC stream from a snapshot source to be used in multi-source streaming or stream-static patterns.
@@ -159,4 +159,4 @@ A pipeline can include one or more data flows, each based on a different pattern
    :target: _images/mix_and_match.png
    :alt: Mix and Match Patterns
 
-Flow Groups logically group flows (for example one group per source system). See :doc:`architecture/index` and :doc:`features/platform/multi-source-streaming`. Groups and flows can be added or removed over time without a full pipeline refresh.
+Flow Groups logically group flows (for example one group per source system). See :doc:`/architecture/index` and :doc:`/features/platform/multi-source-streaming`. Groups and flows can be added or removed over time without a full pipeline refresh.

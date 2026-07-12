@@ -90,7 +90,7 @@ The Framework Bundle is deployed to a given workspace files location from where 
 Framework Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The Framework and most of its features will have configuration settings that can be set in the Framework Bundle ``src/lakeflow_framework/config/default/`` folder. Default values ship with the framework and are resolved automatically; individual keys can be overridden by placing sparse files in ``src/local/config/``. The configuration settings are explained in the section: :doc:`features/index`
+The Framework and most of its features will have configuration settings that can be set in the Framework Bundle ``src/lakeflow_framework/config/default/`` folder. Default values ship with the framework and are resolved automatically; individual keys can be overridden by placing sparse files in ``src/local/config/``. The configuration settings are explained in the section: :doc:`/features/index`
 
 .. admonition:: Setting Precedence
   :class: note
@@ -200,7 +200,7 @@ The resource YAML files are used by DABs to create, update or destroy the Spark 
 Pipeline Bundle Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Certain Framework features can be configured in a Pipeline Bundle, in the ``src/pipeline_configs`` folder. These configuration settings are explained in the section: :doc:`features/index`
+Certain Framework features can be configured in a Pipeline Bundle, in the ``src/pipeline_configs`` folder. These configuration settings are explained in the section: :doc:`/features/index`
 
 .. _concepts_dataflow_types:
 
@@ -278,7 +278,7 @@ In the Lakeflow Framework the following types of data flows can be defined in a 
 
 2. **Flow**
 
-  Flows data flows allow you to create simple or complex data flows, using the different components of a flow as building blocks. They implement the :doc:`features/platform/multi-source-streaming` feature of SDP.
+  Flows data flows allow you to create simple or complex data flows, using the different components of a flow as building blocks. They implement the :doc:`/features/platform/multi-source-streaming` feature of SDP.
   Flows are useful for Silver and Gold scenarios, and where multiple sources and transformations are required.
 
 3. **Materialized Views**
@@ -387,7 +387,7 @@ Data Flow Spec Components:
      - Contains the flow groups for the data flow.
 
        * A flow group can contain one or more flows.
-       * flows implements the :doc:`features/platform/multi-source-streaming` feature of SDP.
+       * flows implements the :doc:`/features/platform/multi-source-streaming` feature of SDP.
 
 
 Flow Groups Explained
@@ -408,7 +408,7 @@ A Flow Group is a logical grouping of related flows and staging tables, which ul
 
 .. important::
 
-  The :doc:`Multi-Source Streaming <features/platform/multi-source-streaming>` feature allows you to stream multiple flows into a single target. 
+  The :doc:`Multi-Source Streaming </features/platform/multi-source-streaming>` feature allows you to stream multiple flows into a single target. 
   
   Core to this functionality is the ability to add and remove Flow Groups and Flows therein, as your requirements and systems evolve. This will not break the existing pipeline and will not require a full refresh of the Pipeline.  
 
@@ -434,7 +434,7 @@ When defining a staging table, you can specify the following:
 Flows Explained
 ~~~~~~~~~~~~~~~
 
-Flows are the building blocks of a Data Flow and they implement the :doc:`features/platform/multi-source-streaming` feature of SDP.
+Flows are the building blocks of a Data Flow and they implement the :doc:`/features/platform/multi-source-streaming` feature of SDP.
 
 Flows can be defined in one of two ways:
 
@@ -457,19 +457,19 @@ Flows can be defined in one of two ways:
 
        * **append_view** - Uses a source view to append data to a staging or target table.
        * **append_sql** - Uses a raw SQL statement to append data to a staging or target table.
-       * **merge** - Uses the :doc:`CDC API's <features/platform/cdc>` to merge data from a source view to a staging or target table.
+       * **merge** - Uses the :doc:`CDC API's </features/platform/cdc>` to merge data from a source view to a staging or target table.
 
    * - :ref:`Flow Details <dataflow-spec-flows-flow-configuration>`
      - Defines the source and target of the flow and any additional properties required for the flow type.
    * - :ref:`Views <dataflow-spec-flows-flow-configuration>` (optional)
      - Views are used to define the source and any additional transformations for a flow. The different types of views are documented in the following sections:
      
-       * :doc:`features/sources-targets/source-types`
+       * :doc:`/features/sources-targets/source-types`
        * :ref:`dataflow-spec-flows-view-configuration`
 
 .. important::
 
-  The :doc:`Multi-Source Streaming <features/platform/multi-source-streaming>` feature allows you to stream multiple flows into a single target. 
+  The :doc:`Multi-Source Streaming </features/platform/multi-source-streaming>` feature allows you to stream multiple flows into a single target. 
   
   Core to this functionality is the ability to add and remove Flow Groups and Flows therein, as your requirements and systems evolve. This will not break the existing pipeline and will not require a full refresh of the Pipeline.  
 
@@ -512,10 +512,10 @@ Data Flow Spec Components:
      - Specifies any additional configuration for the target table, its configuration and properties.
    * - :ref:`Data Quality Expectations (optional) <dataflow-spec-materialized-view-data-quality-configuration>`
      - Enable expectations and specify the location of the expectations file(s).
-   * - :doc:`Quarantine Details (optional) <build/spec-reference/data-quality>`
+   * - :doc:`Quarantine Details (optional) </build/spec-reference/data-quality>`
      - Set the quarantine mode and if the mode is ``table`` the details of the quarantine table.
 
 Patterns
 --------
 
-Detailed documentation on the different patterns that can be used to build out your data flow and Pipelines can be found in the section: :doc:`build/patterns/index`
+Detailed documentation on the different patterns that can be used to build out your data flow and Pipelines can be found in the section: :doc:`/build/patterns/index`
