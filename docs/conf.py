@@ -48,6 +48,10 @@ extensions = [
     'sphinx_copybutton',
     'custom_markdown_builder',
     "sphinxcontrib.spelling",
+    # Theme directives (md-mermaid, task-list) register via html_theme setup,
+    # which does not run for the spelling builder — load them explicitly.
+    "sphinx_immaterial.mermaid_diagrams",
+    "sphinx_immaterial.task_lists",
 ]
 
 autosectionlabel_prefix_document = True
@@ -255,18 +259,44 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
 
 def _flatten_mermaid_diagrams(app, doctree):
     """Emit plain diagram source for md-mermaid (no Pygments wrapper inside <pre>)."""
-    from docutils import nodes
-
     from sphinx_immaterial.mermaid_diagrams import mermaid_node
 
     for diagram in doctree.findall(mermaid_node):
         content = diagram.get('content', '')
         if not content:
             for child in diagram.children:
-                if isinstance(child, nodes.literal_block):
+                if child.tagname == 'literal_block':
                     content = child.astext()
                     break
-        diagram.children[:] = [nodes.Text(content)]
+        if content:
+            diagram['content'] = content
+        # Drop child nodes — content lives on the node attribute. Replacing
+        # children with nodes.Text() without append() orphans text nodes that
+        # the spelling builder treats as prose (<unknown>:None: br, subgraph, …).
+        diagram.children[:] = []
+
+
+def _ignore_spelling_in_nonprose(app, doctree):
+    """Skip diagram markup and raw HTML during sphinxcontrib-spelling checks."""
+    from docutils import nodes
+
+    from sphinx_immaterial.mermaid_diagrams import mermaid_node
+
+    skip_tags = {
+        'literal_block',
+        'raw',
+        'fixed_text_block',
+        'math_block',
+        mermaid_node.__name__,
+    }
+
+    for node in doctree.findall(nodes.Element):
+        classes = set(node.get('classes', []))
+        if node.tagname in skip_tags or classes.intersection(
+            {'mermaid-diagram', 'lf-mermaid-source', 'lf-arch'}
+        ):
+            for text in node.findall(nodes.Text):
+                text.spellingIgnore = True
 
 
 def _embed_mermaid_source_templates(app, doctree):
@@ -466,6 +496,7 @@ def setup(app):
     app.connect("builder-inited", _init_domain_synopses)
     _override_mermaid_pre_class(app)
     app.connect("doctree-read", _flatten_mermaid_diagrams)
+    app.connect("doctree-read", _ignore_spelling_in_nonprose)
     app.connect("doctree-read", _embed_mermaid_source_templates)
     app.connect("doctree-read", _mark_content_tables)
     app.connect("env-check-consistency", _upgrade_mermaid_dist, priority=1000)
