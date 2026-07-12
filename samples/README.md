@@ -23,21 +23,26 @@ Scripts in the `samples/` directory:
 
 ### Prerequisites
 
-* Databricks CLI installed and configured
-* Lakeflow framework already deployed to your workspace (see {doc}`deploy_local_framework` or {doc}`quick_start`)
-
-Choose either interactive or command-line deploy.
-
-### Option A — Interactive deploy
-
-From the **`samples/`** directory:
+- [ ] Databricks CLI installed and configured
+- [ ] Lakeflow framework already deployed to your workspace (see {doc}`deploy/framework/local-framework` or {doc}`get-started/quick-start`)
+- [ ] Navigate to the samples directory in the root of the Framework repository:
 
 ```{code-block} console
 :class: lf-command-block
 cd samples
 ```
 
-Run with no flags and answer the prompts:
+```{admonition} Always set a logical environment when deploying
+:class: warning
+
+Specify a unique logical environment suffix when executing the deploy script so your sample schemas and jobs do not overwrite another user's deployment in a shared workspace.
+
+Suggested naming: your initials (`_jd`), a story ID (`_123456`), a client or team name, or a project name.
+```
+
+### Deployment Option A — Interactive
+
+Run the desired deploy script with no flags and answer the prompts:
 
 ```{code-block} console
 :class: lf-command-block
@@ -60,22 +65,21 @@ Schema namespaces created:
 * `feature-samples`: `{namespace}_feature{logical_env}`
 * `pattern-samples`: `{namespace}_staging{logical_env}`, `{namespace}_bronze{logical_env}`, `{namespace}_silver{logical_env}`, `{namespace}_gold{logical_env}`
 
-```{admonition} Always set a logical environment
-:class: warning
-
-Use a unique logical environment suffix so your sample schemas and jobs do not overwrite another user's deployment in a shared workspace.
-
-Suggested naming: your initials (`_jd`), a story ID (`_123456`), a client or team name, or a project name.
-```
-
-### Option B — Full command-line deploy
+### Deployment Option B — Command-line
 
 Pass all required parameters in one command (no prompts):
 
 ```{code-block} console
 :class: lf-command-block
 
-./deploy.sh -u <databricks_username> -h <workspace_host> [-p <profile>] [-c <compute>] [-l <logical_env>] [--catalog <catalog>] [--schema_namespace <schema_namespace>]
+./deploy.sh \
+  -u <databricks_username> \
+  -h <workspace_host> \
+  [-p <profile>] \
+  [-c <compute>] \
+  [-l <logical_env>] \
+  [--catalog <catalog>] \
+  [--schema_namespace <schema_namespace>]
 ```
 
 | Flag | Purpose | Default |
@@ -96,7 +100,10 @@ Example:
 ./deploy.sh -u jane.doe@company.com -h https://company.cloud.databricks.com -l _jd -c 1
 ```
 
+### Post Deployment
+
 Once deployment is complete, the deployed bundles are under `/Users/<username>/.bundle/`.
+You should see the jobs and pipelines deployed in the UI.
 
 ## Using the Samples
 

@@ -168,7 +168,18 @@ def _patch_landing_nav(app, pagename, templatename, context, doctree):
     # Architecture / Deploy / Samples / Features / Build / Contributors / Get Started
     # are real top-level hub links.
     section_index_pages = frozenset({
-        "dataflow_spec_reference",
+        "build/spec-reference/index",
+        "build/patterns/index",
+        "deploy/framework/index",
+        "features/metadata/index",
+        "features/authoring/index",
+        "features/configuration/index",
+        "features/sources-targets/index",
+        "features/platform/index",
+        "features/python/index",
+        "features/data-quality/index",
+        "features/environments/index",
+        "features/migrations/index",
     })
 
     def _docname_from_url(url):

@@ -9,7 +9,7 @@
        Declarative Automation Bundles (DABs).
      </p>
      <div class="lf-hero-actions">
-        <a class="md-button md-button--primary lf-hero-btn" href="get_started.html">
+        <a class="md-button md-button--primary lf-hero-btn" href="get-started/index.html">
          Get Started
          <svg class="lf-btn-icon lf-btn-icon--after" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
        </a>
@@ -37,7 +37,7 @@
 
 .. container:: lf-landing-onboarding
 
-   New to LFF? Start at :doc:`get_started` — product overview, Quick Start, or straight into the docs.
+   New to LFF? Start at :doc:`get-started/index` — product overview, Quick Start, or straight into the docs.
 
 .. raw:: html
 
@@ -49,7 +49,7 @@
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Operating models, Framework and Pipeline Bundles, data flow specs, and DABs on Lakeflow SDP.</p>
-       <a class="lf-feature-card__link" href="concepts.html">
+       <a class="lf-feature-card__link" href="architecture/index.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
          Explore architecture
        </a>
@@ -61,7 +61,7 @@
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Feature samples, pattern samples, and the end-to-end TPCH reference warehouse.</p>
-       <a class="lf-feature-card__link" href="deploy_samples.html">
+       <a class="lf-feature-card__link" href="samples/index.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
          Browse feature &amp; pattern samples
        </a>
@@ -73,7 +73,7 @@
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Bundle structure, pipeline bundle steps, data flow spec reference, and medallion patterns.</p>
-       <a class="lf-feature-card__link" href="build_pipeline_bundle.html">
+       <a class="lf-feature-card__link" href="build/index.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
          Author pipeline bundles &amp; specs
        </a>
@@ -85,7 +85,7 @@
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Deploy the Framework Bundle and Pipeline Bundles — flat DAB deploy, pip wheel, local CLI, or CI/CD.</p>
-       <a class="lf-feature-card__link" href="deploy.html">
+       <a class="lf-feature-card__link" href="deploy/index.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
          Deploy framework &amp; pipelines
        </a>
@@ -97,7 +97,7 @@
        </div>
        <hr class="lf-feature-card__divider" />
        <p class="lf-feature-card__body">Metadata-driven specs, configuration, Python extensions, data quality, sources and targets, and platform features.</p>
-       <a class="lf-feature-card__link" href="features.html">
+       <a class="lf-feature-card__link" href="features/index.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
          Browse features by category
        </a>

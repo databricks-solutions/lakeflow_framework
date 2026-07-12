@@ -24,9 +24,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+_SCRIPTS_DIR = Path(__file__).resolve().parent
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
 DOCS_BASEURL = "https://databricks-solutions.github.io/lakeflow_framework/"
 PREVIEW_VERSION_NAME = "local-branch-preview"
 MAIN_CONF_WORKTREE = "_conf_main"
+REDIRECT_VERSIONS = frozenset({"current", PREVIEW_VERSION_NAME})
 
 
 def _run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
@@ -239,14 +244,25 @@ def _build_ref(
         f"Building docs for {ref} -> {version_name} (conf={conf_label})",
         file=sys.stderr,
     )
+    out_dir = output_root / version_name
     _sphinx_build(
         repo_root=repo_root,
         conf_dir=conf_dir,
         source_dir=source_dir,
-        out_dir=output_root / version_name,
+        out_dir=out_dir,
         version_name=version_name,
         versions_file=versions_file,
     )
+
+    if version_name in REDIRECT_VERSIONS:
+        from write_redirects import write_redirects
+
+        count = write_redirects(
+            out_dir,
+            version_name=version_name,
+            docs_dir=repo_root / "docs",
+        )
+        print(f"Wrote {count} redirect stub(s) for {version_name}", file=sys.stderr)
 
 
 def main() -> None:
@@ -398,6 +414,12 @@ def main() -> None:
         ]
     )
     (output_root / "robots.txt").write_text(robots_txt, encoding="utf-8")
+
+    from write_redirects import write_root_mirror_redirects
+
+    root_count = write_root_mirror_redirects(output_root, docs_dir=repo_root / "docs")
+    if root_count:
+        print(f"Wrote {root_count} root-level redirect mirror(s)", file=sys.stderr)
 
     _cleanup_docs_worktrees(repo_root, worktrees_root)
 

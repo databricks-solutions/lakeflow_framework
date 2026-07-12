@@ -15,10 +15,10 @@ The Lakeflow Framework
    :maxdepth: 2
    :hidden:
 
-   Get Started <get_started>
-   Architecture <concepts>
-   Samples <deploy_samples.md>
-   Build <build_pipeline_bundle>
-   Deploy <deploy>
-   Features <features>
-   Contributors <contributor>
+   Get Started <get-started/index>
+   Architecture <architecture/index>
+   Samples <samples/index>
+   Build <build/index>
+   Deploy <deploy/index>
+   Features <features/index>
+   Contributors <contributors/index>
