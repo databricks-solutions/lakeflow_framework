@@ -5,6 +5,8 @@ Strategy
 --------
 * For the current release major (highest major present), include the latest
   patch release for the last 5 minor series.
+* For major ``0``, include the latest patch for every minor from the current
+  minor down to ``0.12`` (inclusive), not capped at five minors.
 * Also include the latest available release for each of the last 3 major
   versions.
 
@@ -26,6 +28,9 @@ import subprocess
 import sys
 
 TAG_RE = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)$")
+
+# For 0.x releases, publish docs back to this minor (latest patch per minor).
+MIN_MINOR_MAJOR_0 = 12
 
 
 def _get_tags() -> list[str]:
@@ -75,19 +80,27 @@ def select_versions(tags: list[str]) -> list[str]:
     majors_desc = sorted(best_per_major.keys(), reverse=True)
     current_major = majors_desc[0]
 
-    # Last 5 minor series for current major (latest patch in each minor).
+    # Latest patch for each selected minor in the current major.
     current_major_minors = sorted(
         [minor for (major, minor) in best_per_minor if major == current_major],
         reverse=True,
     )
-    current_major_last_5 = {
-        best_per_minor[(current_major, minor)][1] for minor in current_major_minors[:5]
-    }
+    if current_major == 0:
+        current_major_selected = {
+            best_per_minor[(0, minor)][1]
+            for minor in current_major_minors
+            if minor >= MIN_MINOR_MAJOR_0
+        }
+    else:
+        current_major_selected = {
+            best_per_minor[(current_major, minor)][1]
+            for minor in current_major_minors[:5]
+        }
 
     # Last 3 major versions (latest release per major).
     last_3_major_latest = {best_per_major[major][2] for major in majors_desc[:3]}
 
-    return _sort_tags_desc(current_major_last_5 | last_3_major_latest)
+    return _sort_tags_desc(current_major_selected | last_3_major_latest)
 
 
 def tags_to_regex(tags: list[str]) -> str:

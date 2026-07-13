@@ -1,5 +1,6 @@
 .databricks/
-build/
+/build/
+docs/build/
 dist/
 __pycache__/
 *.egg-info

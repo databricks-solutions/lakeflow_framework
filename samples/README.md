@@ -1,6 +1,6 @@
 # The Samples
 
-The Framework comes with extensive samples that demonstrate the use of the framework and Lakeflow concepts. Samples are organised into the following bundles:
+The Framework comes with extensive samples that demonstrate the use of the framework and Lakeflow concepts. Samples are organized into the following bundles:
 
 | Bundle | Description |
 |--------|-------------|
@@ -11,88 +11,99 @@ The Framework comes with extensive samples that demonstrate the use of the frame
 
 ## Deploying the Samples
 
-The samples can be deployed using the scripts located in the `samples` directory:
+Samples require the framework already deployed to your workspace (see {doc}`/deploy/index` or {doc}`/get-started/quick-start`).
+The target **UC catalog must already exist** (default `main`, or pass another with `--catalog`) — the deploy scripts create schemas in that catalog, not the catalog itself.
 
-* `deploy.sh`: Deploys all the samples (feature-samples + pattern-samples).
+Scripts in the `samples/` directory:
+
+* `deploy.sh`: Deploys all the samples (feature-samples + pattern-samples). Prefer this for a full walkthrough.
 * `deploy_feature_samples.sh`: Deploys only the feature-samples bundle.
 * `deploy_pattern_samples.sh`: Deploys only the pattern-samples bundle.
 * `deploy_tpch.sh`: Deploys only the TPC-H sample.
 
 ### Prerequisites
 
-* Databricks CLI installed and configured
-* Lakeflow framework already deployed to your workspace (see {doc}`deploy_framework`)
+- [ ] Databricks CLI installed and configured
+- [ ] Lakeflow framework already deployed to your workspace (see {doc}`/deploy/framework/local-framework` or {doc}`/get-started/quick-start`)
+- [ ] Navigate to the samples directory in the root of the Framework repository:
 
-### Interactive Deployment
+```{code-block} console
+:class: lf-command-block
+cd samples
+```
 
-1. Navigate to the samples directory in the root of the Framework repository:
+```{admonition} Always set a logical environment when deploying
+:class: warning
 
-   ```console
-   cd samples
-   ```
+Specify a unique logical environment suffix when executing the deploy script so your sample schemas and jobs do not overwrite another user's deployment in a shared workspace.
 
-2. Run the desired deploy script:
+Suggested naming: your initials (`_jd`), a story ID (`_123456`), a client or team name, or a project name.
+```
 
-   ```console
-   ./deploy.sh
-   ```
+### Deployment Option A — Interactive
 
-3. Follow the prompts to deploy the samples.
+Run the desired deploy script with no flags and answer the prompts:
 
-   * **Databricks username**: Your Databricks username e.g. `jane.doe@company.com`.
-   * **Databricks workspace**: The full URL of the workspace e.g. `https://company.cloud.databricks.com`.
-   * **Databricks CLI profile**: The CLI profile to use. Default: `DEFAULT`.
-   * **Select Compute**: Classic/Enhanced or Serverless (0=Enhanced, 1=Serverless). Default: `1`.
-   * **UC Catalog**: The Unity Catalog to deploy into. Default: `main`.
-   * **Schema Namespace**: Prefix for all deployed schemas. Default: `lakeflow_samples`.
-     * `feature-samples` creates: `{namespace}_feature{logical_env}`
-     * `pattern-samples` creates: `{namespace}_staging{logical_env}`, `{namespace}_bronze{logical_env}`, `{namespace}_silver{logical_env}`, `{namespace}_gold{logical_env}`
-   * **Logical environment**: Suffix to isolate your deployment e.g. `_jd`.
+```{code-block} console
+:class: lf-command-block
 
-   > **Important:**
-   >
-   > Always specify a logical environment when deploying the samples. This ensures you don't overwrite anyone else's existing samples in the workspace, as long as the logical environment is unique.
-   >
-   > Suggested naming:
-   >
-   > * Your initials, e.g. Jane Doe → `_jd`
-   > * A Story ID, e.g. `123456` → `_123456`
-   > * Your client name, e.g. Company → `_client`
-   > * Others: business unit, team name, project name, etc.
+./deploy.sh
+```
 
-4. Once deployment is complete, you can find the deployed bundles under `/Users/<username>/.bundle/`
+| Prompt | Purpose | Default / notes |
+| ------ | ------- | --------------- |
+| Databricks username | Your workspace user (e.g. `jane.doe@company.com`) | — |
+| Workspace host | Full workspace URL (e.g. `https://company.cloud.databricks.com`) | — |
+| CLI profile | Named CLI profile | `DEFAULT` |
+| Compute | `0` = classic/enhanced, `1` = serverless | `1` |
+| UC catalog | Existing target catalog | `main` |
+| Schema namespace | Prefix for sample schemas | `lakeflow_samples` |
+| Logical environment | Isolation suffix (e.g. `_jd`) | — |
 
-### Single Command Line Deployment
+Schema namespaces created:
 
-1. Navigate to the samples directory in the root of the Framework repository:
+* `feature-samples`: `{namespace}_feature{logical_env}`
+* `pattern-samples`: `{namespace}_staging{logical_env}`, `{namespace}_bronze{logical_env}`, `{namespace}_silver{logical_env}`, `{namespace}_gold{logical_env}`
 
-   ```console
-   cd samples
-   ```
+### Deployment Option B — Command-line
 
-2. Run the desired deploy script with required parameters:
+Pass all required parameters in one command (no prompts):
 
-   ```console
-   ./deploy.sh -u <databricks_username> -h <workspace_host> [-p <profile>] [-c <compute>] [-l <logical_env>] [--catalog <catalog>] [--schema_namespace <schema_namespace>]
-   ```
+```{code-block} console
+:class: lf-command-block
 
-   Parameters:
+./deploy.sh \
+  -u <databricks_username> \
+  -h <workspace_host> \
+  [-p <profile>] \
+  [-c <compute>] \
+  [-l <logical_env>] \
+  [--catalog <catalog>] \
+  [--schema_namespace <schema_namespace>]
+```
 
-   * `-u, --user`: Your Databricks username (required)
-   * `-h, --host`: Databricks workspace host URL (required)
-   * `-p, --profile`: Databricks CLI profile (optional). Default: `DEFAULT`.
-   * `-c, --compute`: The type of compute to use (0=Enhanced, 1=Serverless). Default: `1`.
-   * `-l, --logical_env`: Logical environment suffix (optional). Default: `_test`.
-   * `--catalog`: Unity Catalog name (optional). Default: `main`.
-   * `--schema_namespace`: Override the schema name prefix (optional). Default: `lakeflow_samples`.
+| Flag | Purpose | Default |
+| ---- | ------- | ------- |
+| `-u` / `--user` | Workspace user (required) | — |
+| `-h` / `--host` | Workspace URL (required) | — |
+| `-p` / `--profile` | CLI profile | `DEFAULT` |
+| `-c` / `--compute` | `0` = classic/enhanced, `1` = serverless | `1` |
+| `-l` / `--logical_env` | Isolation suffix | `_test` |
+| `--catalog` | Existing UC catalog | `main` |
+| `--schema_namespace` | Schema name prefix | `lakeflow_samples` |
 
-   For example:
+Example:
 
-   ```console
-   ./deploy.sh -u jane.doe@company.com -h https://company.cloud.databricks.com -l _jd -c 1
-   ```
+```{code-block} console
+:class: lf-command-block
 
-4. Once deployment is complete, you can find the deployed bundles under `/Users/<username>/.bundle/`
+./deploy.sh -u jane.doe@company.com -h https://company.cloud.databricks.com -l _jd -c 1
+```
+
+### Post Deployment
+
+Once deployment is complete, the deployed bundles are under `/Users/<username>/.bundle/`.
+You should see the jobs and pipelines deployed in the UI.
 
 ## Using the Samples
 
@@ -107,7 +118,7 @@ This will be prefixed with the bundle target and your username, for example:
 
 The job runs in three tiers:
 
-1. **Schema initialisation and staging load** — creates the `{namespace}_feature` schema and loads test data
+1. **Schema initialization and staging load** — creates the `{namespace}_feature` schema and loads test data
 2. **Tier 1 (parallel)** — all independent feature pipelines (general, python, snapshots, data quality, table migration bronze, libraries, templates)
 3. **Tier 2** — DPM pipeline (depends on Tier 1 general + python outputs)
 4. **Tier 3** — table migration silver (depends on Tier 2 DPM output)
@@ -134,7 +145,9 @@ Individual pipelines can also be executed directly — they follow the naming co
 
 To destroy the samples, use the `destroy.sh` script:
 
-```console
+```{code-block} console
+:class: lf-command-block
+
 ./destroy.sh -h <workspace_host> [-p <profile>] [-l <logical_env>]
 ```
 

@@ -1,0 +1,17 @@
+redirects:
+- from: deploy.html
+  to: deploy/index.html
+- from: deploy_before_you_deploy.html
+  to: deploy/before-you-deploy.html
+- from: deploy_ci_cd.html
+  to: deploy/ci-cd.html
+- from: deploy_framework.html
+  to: deploy/framework/index.html
+- from: deploy_framework_options.html
+  to: deploy/framework/options.html
+- from: deploy_local_framework.html
+  to: deploy/framework/local-framework.html
+- from: deploy_local_pipeline_bundle.html
+  to: deploy/pipeline-bundle/local.html
+- from: deploy_wheel.html
+  to: deploy/framework/wheel.html

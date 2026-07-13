@@ -30,7 +30,7 @@ The original framework config mechanism offered a binary choice: use
    resolution like `GLOBAL_CONFIG`).
 
 The `src/local/` fork-safe area introduced in ADR-0001 provides a natural home
-for customer customisations. Config overrides should follow the same pattern.
+for customer customizations. Config overrides should follow the same pattern.
 
 ## Decision
 
@@ -47,7 +47,7 @@ Override detection and deprecation warnings are the **caller's responsibility**.
   active, stores the resolved root in `self._active_config_path`, and passes it
   to `load_framework_config`.  `self._active_config_path` is reused by
   `_setup_operational_metadata` so the override detection only runs once per
-  pipeline initialisation.
+  pipeline initialization.
 
 - **`load_framework_logger_config`** independently checks
   `config/override/logger.json`, emits its own `DeprecationWarning` if active,
@@ -66,7 +66,7 @@ load_framework_config(
 ) -> Dict
 ```
 
-Behaviour:
+Behavior:
 
 1. When `name` is a **sequence** (e.g. `FrameworkPaths.GLOBAL_CONFIG =
    ("global.json", "global.yaml", "global.yml")`):
