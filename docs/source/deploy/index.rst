@@ -68,7 +68,7 @@ Browse the guides below, or jump to :doc:`/get-started/quick-start` for a combin
    :maxdepth: 2
    :hidden:
 
-   Deploy from local machine <pipeline-bundle/local>
+   Deploy Pipeline Bundles <pipeline-bundle/local>
 
 .. toctree::
    :maxdepth: 2

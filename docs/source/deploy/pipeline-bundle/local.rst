@@ -1,5 +1,5 @@
-Deploy pipeline bundle from local machine
-#########################################
+Deploy pipeline bundles from local machine
+###########################################
 
 Deploy a **Pipeline Bundle** you authored to your Databricks workspace from your local machine using the Declarative Automation Bundle (DAB) CLI workflow.
 

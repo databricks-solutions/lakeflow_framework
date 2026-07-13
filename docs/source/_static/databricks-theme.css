@@ -1589,7 +1589,26 @@ body:has(.lf-hero) .md-content__inner {
   border-radius: 0;
 }
 
-/* Version selector: open on click/focus, not hover */
+/*
+ * Version selector: open on click/focus, not hover.
+ *
+ * With navigation.tabs.sticky the tab bar is rendered inside .md-header as a
+ * sibling of .md-header__inner. Theme CSS sets .md-tabs { z-index: 3 } while
+ * the inner bar stays at auto, so the dropdown list paints behind tab labels.
+ */
+.md-header--lifted:has(.md-version:focus-within) .md-header__inner {
+  position: relative;
+  z-index: 4;
+}
+
+.md-header .md-version {
+  position: relative;
+}
+
+.md-header .md-version__list {
+  z-index: 1;
+}
+
 .md-header .md-version:hover .md-version__list {
   max-height: 0;
   opacity: 0;
@@ -1601,6 +1620,33 @@ body:has(.lf-hero) .md-content__inner {
   opacity: 1;
   overflow: auto;
   animation: none;
+}
+
+/* Dropdown links — beat theme accent + browser :visited purple in dark mode */
+.md-header .md-version__link {
+  color: var(--md-default-fg-color);
+}
+
+.md-header .md-version__link:visited {
+  color: var(--md-default-fg-color);
+}
+
+.md-header .md-version__link:hover,
+.md-header .md-version__link:focus {
+  color: var(--md-primary-fg-color, #eb1600);
+  background-color: var(--md-default-fg-color--lightest);
+}
+
+.md-header .md-version__link:visited:hover,
+.md-header .md-version__link:visited:focus {
+  color: var(--md-primary-fg-color, #eb1600);
+}
+
+[data-md-color-scheme="slate"] .md-header .md-version__link:hover,
+[data-md-color-scheme="slate"] .md-header .md-version__link:focus,
+[data-md-color-scheme="slate"] .md-header .md-version__link:visited:hover,
+[data-md-color-scheme="slate"] .md-header .md-version__link:visited:focus {
+  color: var(--md-primary-fg-color--light, #ff5f46);
 }
 
 /* Mermaid — lf-arch palette (matches home-page architecture diagram) */
