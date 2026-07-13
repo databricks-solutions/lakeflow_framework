@@ -50,6 +50,27 @@ def _run_capture(command: list[str], *, cwd: Path | None = None) -> str:
     return result.stdout.strip()
 
 
+def _resolve_git_ref(repo_root: Path, ref: str) -> str:
+    """Return a git ref that exists in the local clone.
+
+    Tag-triggered CI checkouts are often detached HEAD with ``origin/main`` but
+    no local ``main`` branch. Branch-like refs try ``ref`` then ``origin/ref``.
+    """
+    candidates = [ref]
+    if not ref.startswith("refs/") and "/" not in ref:
+        candidates.append(f"origin/{ref}")
+    for candidate in candidates:
+        probe = subprocess.run(
+            ["git", "rev-parse", "--verify", f"{candidate}^{{commit}}"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        if probe.returncode == 0:
+            return candidate
+    return ref
+
+
 def _repo_root(docs_dir: Path) -> Path:
     return docs_dir.parent
 
@@ -123,13 +144,15 @@ def _conf_ref_for(version_name: str) -> str | None:
 
 def _release_date_for_ref(repo_root: Path, ref: str) -> str:
     # ISO-style date (YYYY-MM-DD) for deterministic display in docs headers.
-    return _run_capture(["git", "log", "-1", "--format=%cs", ref], cwd=repo_root)
+    resolved = _resolve_git_ref(repo_root, ref)
+    return _run_capture(["git", "log", "-1", "--format=%cs", resolved], cwd=repo_root)
 
 
 def _version_for_ref(repo_root: Path, ref: str, fallback: str) -> str:
     # Resolve display version from the VERSION file in the selected ref.
+    resolved = _resolve_git_ref(repo_root, ref)
     try:
-        raw = _run_capture(["git", "show", f"{ref}:VERSION"], cwd=repo_root)
+        raw = _run_capture(["git", "show", f"{resolved}:VERSION"], cwd=repo_root)
         value = raw.splitlines()[0].strip().lstrip("v")
         return value or fallback
     except Exception:
@@ -178,8 +201,9 @@ def _ensure_worktree(
     path = worktrees_root / name
     if path.exists():
         return path
+    resolved = _resolve_git_ref(repo_root, ref)
     try:
-        _run(["git", "worktree", "add", "--detach", str(path), ref], cwd=repo_root)
+        _run(["git", "worktree", "add", "--detach", str(path), resolved], cwd=repo_root)
     except subprocess.CalledProcessError:
         # Recover from a previous run that deleted the dir without unregistering.
         subprocess.run(
@@ -189,7 +213,7 @@ def _ensure_worktree(
             capture_output=True,
         )
         _run(
-            ["git", "worktree", "add", "--force", "--detach", str(path), ref],
+            ["git", "worktree", "add", "--force", "--detach", str(path), resolved],
             cwd=repo_root,
         )
     return path
@@ -319,7 +343,8 @@ def main() -> None:
     worktrees_root.mkdir(parents=True, exist_ok=True)
 
     tags = _selected_tags(repo_root)
-    versions: list[dict[str, str]] = [{"name": "current", "ref": "main"}]
+    main_ref = _resolve_git_ref(repo_root, "main")
+    versions: list[dict[str, str]] = [{"name": "current", "ref": main_ref}]
     versions.extend({"name": t, "ref": t} for t in tags)
     if args.preview:
         preview_branch = _current_branch(repo_root)
@@ -415,7 +440,7 @@ def main() -> None:
     (output_root / "index.html").write_text(index_html, encoding="utf-8")
 
     # Basic crawl artifacts for search engines.
-    sitemap_entries: list[tuple[str, str]] = [("", _release_date_for_ref(repo_root, "main"))]
+    sitemap_entries: list[tuple[str, str]] = [("", _release_date_for_ref(repo_root, main_ref))]
     for item in links:
         sitemap_entries.append((f"{item['name']}/index.html", item.get("release_date", "")))
 
