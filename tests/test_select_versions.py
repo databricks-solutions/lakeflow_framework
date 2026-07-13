@@ -2,17 +2,44 @@
 
 from __future__ import annotations
 
+import subprocess
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "docs" / "scripts"))
 
-from build_versioned_docs import _superset_versions
+from build_versioned_docs import _resolve_git_ref, _superset_versions
 from select_versions import MIN_MINOR_MAJOR_0, select_versions
 
 
 def _tags(*versions: str) -> list[str]:
     return [f"v{version}" if not version.startswith("v") else version for version in versions]
+
+
+def test_resolve_git_ref_uses_origin_main_when_local_main_missing(tmp_path):
+    origin = tmp_path / "origin.git"
+    work = tmp_path / "work"
+    work.mkdir()
+    subprocess.run(["git", "init", "--bare", str(origin)], check=True, capture_output=True)
+    subprocess.run(["git", "init"], cwd=work, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=work, check=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=work, check=True)
+    (work / "VERSION").write_text("0.21.0\n", encoding="utf-8")
+    subprocess.run(["git", "add", "VERSION"], cwd=work, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=work, check=True, capture_output=True)
+    subprocess.run(["git", "branch", "-M", "main"], cwd=work, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "remote", "add", "origin", str(origin)],
+        cwd=work,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(["git", "push", "-u", "origin", "main"], cwd=work, check=True, capture_output=True)
+    subprocess.run(["git", "checkout", "--detach", "HEAD"], cwd=work, check=True, capture_output=True)
+    subprocess.run(["git", "branch", "-D", "main"], cwd=work, check=True, capture_output=True)
+
+    assert _resolve_git_ref(work, "main") == "origin/main"
+    assert _resolve_git_ref(work, "v9.9.9") == "v9.9.9"
 
 
 def test_major_0_includes_minors_back_to_0_12_latest_patch_only():
