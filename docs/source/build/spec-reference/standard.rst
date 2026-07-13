@@ -151,7 +151,7 @@ These properties define the source of the data:
      - **Description**
    * - **sourceSystem** (*optional*)
      - ``string``
-     - The source system name. Value is not used to determine or change any behaviour, required if `dataFlowType` is `standard`.
+     - The source system name. Value is not used to determine or change any behavior, required if `dataFlowType` is `standard`.
    * - **sourceType**
      - ``string``
      - The type of source, required if `dataFlowType` is `standard`.  

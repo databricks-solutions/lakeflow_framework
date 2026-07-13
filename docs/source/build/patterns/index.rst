@@ -7,22 +7,22 @@ Reference patterns for designing data flows and pipelines.
 
 Start with :doc:`Base Patterns </build/patterns/base-patterns>` (bronze → silver → gold), then adopt :doc:`Advanced composition </build/patterns/advanced-composition>` patterns when sources, keys, or join semantics require them.
 
-* Operating models and modelling paradigms: :doc:`/architecture/index`
+* Operating models and modeling paradigms: :doc:`/architecture/index`
 * :doc:`/features/platform/multi-source-streaming`
 * :doc:`/build/bundle-structure`
 * :doc:`/build/patterns/scaling-decomposing-pipelines`
 * :doc:`/build/patterns/mix-and-match-patterns`
 * SDP concepts (datasets, flows): `Lakeflow Spark Declarative Pipelines — key concepts <https://docs.databricks.com/aws/en/ldp/concepts/#key-concepts>`_
 
-When selecting a pattern, start with ownership model, modelling approach, source characteristics (streaming, static, CDC), and latency needs.
+When selecting a pattern, start with ownership model, modeling approach, source characteristics (streaming, static, CDC), and latency needs.
 
 .. note::
 
-   These patterns are **not an exhaustive catalog** of everything the Lakeflow Framework supports. They are a curated **starting point** — common building blocks and composition approaches that align with the bundled ``pattern-samples`` and what most teams implement first. Combine, extend, or depart from them as your sources, modelling, and operational constraints require.
+   These patterns are **not an exhaustive catalog** of everything the Lakeflow Framework supports. They are a curated **starting point** — common building blocks and composition approaches that align with the bundled ``pattern-samples`` and what most teams implement first. Combine, extend, or depart from them as your sources, modeling, and operational constraints require.
 
 .. tip::
 
-   **Runnable samples:** End-to-end specs live in ``samples/pattern-samples`` (bronze → silver → gold, multi-source streaming, stream-static joins, CDC from snapshot, gold materialized views, and more). See :doc:`/samples/index` for deploy steps. Each pattern page links to the matching specs in that bundle; advanced pattern pages also include multi-day example data flows for SCD and late-arriving behaviour.
+   **Runnable samples:** End-to-end specs live in ``samples/pattern-samples`` (bronze → silver → gold, multi-source streaming, stream-static joins, CDC from snapshot, gold materialized views, and more). See :doc:`/samples/index` for deploy steps. Each pattern page links to the matching specs in that bundle; advanced pattern pages also include multi-day example data flows for SCD and late-arriving behavior.
 
 .. rubric:: Base Patterns
 

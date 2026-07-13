@@ -91,7 +91,7 @@ Backward compatibility
 
 - **Existing flat-deploy customers** are unaffected.  The workspace files first
   resolution means that if ``framework.sourcePath`` is set and default files
-  are in workspace files, they take priority over the wheel — behaviour is identical to
+  are in workspace files, they take priority over the wheel — behavior is identical to
   earlier releases.
 - **Compat shims** at the old flat ``src/`` import paths (e.g.
   ``from constants import FrameworkPaths``) remain until v1.0.0.  Prefer

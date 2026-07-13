@@ -46,7 +46,7 @@ Schema Types
 Schema File Location
 --------------------
 
-Schema definitions must be specified in their own dedicated files and will be located in a schemas folder, dependant on your chosen bundle structure as discussed in the :doc:`/build/bundle-structure` section.
+Schema definitions must be specified in their own dedicated files and will be located in a schemas folder, dependent on your chosen bundle structure as discussed in the :doc:`/build/bundle-structure` section.
 
 Data Flow Spec Configuration
 ----------------------------

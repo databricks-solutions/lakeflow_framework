@@ -7,7 +7,7 @@ async
 autocomplete
 backfill
 backend
-behaviour
+behavior
 cardinality
 cdc
 CDF
@@ -22,8 +22,8 @@ configs
 contrib
 css
 Ctrl
-customisation
-customisations
+customization
+customizations
 dataflow
 dataFlowId
 Dataframe
@@ -39,7 +39,7 @@ deps
 deployers
 Del
 Demultiplexing
-dependant
+dependent
 Dev
 dev
 discoverable
@@ -55,7 +55,7 @@ hotfixes
 Hotfixes
 Init
 init
-initialisation
+initialization
 Inmon
 IntelliSense
 instantiation
@@ -72,7 +72,7 @@ lockfile
 lockfiles
 macOS
 metastore
-minimise
+minimize
 misconfiguration
 monorepo
 mrg
@@ -84,10 +84,10 @@ nav
 Observability
 OAuth
 openpyxl
-organisation
-organise
-Organise
-organised
+organization
+organize
+Organize
+organized
 parallelize
 parameterization
 pre
@@ -116,7 +116,7 @@ sourceDetails
 Splunk
 sql
 src
-standardise
+standardize
 startingVersion
 startingVersionFromDLTSetup
 stdout
@@ -150,6 +150,6 @@ yapf
 yaml
 yml
 centric
-modelling
+modeling
 roadmap
 topologies

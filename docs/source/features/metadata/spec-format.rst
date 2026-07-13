@@ -227,7 +227,7 @@ The following example shows a data flow specification in both JSON and YAML form
 Best Practices
 --------------
 
-1. **Choose One Format Globally**: While technically possible to mix formats across Bundles, it's recommended to standardise on a single format.
+1. **Choose One Format Globally**: While technically possible to mix formats across Bundles, it's recommended to standardize on a single format.
 
 2. **Version Control Considerations**: YAML may produce cleaner diffs in version control systems due to its more human-readable format and lack of trailing commas.
 

@@ -35,7 +35,7 @@ Using Pipeline Logic Modules (``src/python/``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Place your Python transform functions in ``src/python/`` — the framework adds this directory
-to ``sys.path`` at pipeline initialisation so spec strings resolve without extra configuration.
+to ``sys.path`` at pipeline initialization so spec strings resolve without extra configuration.
 
 .. admonition:: Deprecation Notice
    :class: warning

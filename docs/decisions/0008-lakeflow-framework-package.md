@@ -137,7 +137,7 @@ module is added.
   risk with customer code.
 - Existing flat-deploy customers are unaffected: the `src/` shims preserve
   backward compatibility, and `framework.sourcePath` + Workspace Files-first
-  resolution (ADR-0009) means behaviour is identical to pre-v0.20.0.
+  resolution (ADR-0009) means behavior is identical to pre-v0.20.0.
 - Editable installs (`pip install -e ".[contrib]"`) are supported for local
   development; the `src/` layout ensures the installed package and the source
   tree are the same directory.

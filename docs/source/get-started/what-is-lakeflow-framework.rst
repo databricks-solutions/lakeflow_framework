@@ -11,6 +11,7 @@ Why teams use it
 
 * Faster delivery through reusable pipeline patterns
 * Consistent configuration model across environments
+* **Centralized configuration inheritance** — Pipeline Bundles resolve global settings from the Framework Bundle at runtime (mandatory table properties, Spark defaults, operational metadata, and more). Update framework configuration once and every attached pipeline picks up the change on its next run without redeploying each Pipeline Bundle. That scales for organizations operating hundreds or thousands of pipelines and differs from generated or AI-scaffolded pipelines, where settings are usually embedded per artifact. See :doc:`/features/configuration/framework-configuration`.
 * Native alignment with Declarative Automation Bundles (DABs)
 * Simple, extensible, and long-term alignment with the Databricks product roadmap
 * Lower maintenance overhead as platform features evolve
@@ -21,7 +22,7 @@ Core outcomes
 * Build and deploy reliable Databricks Lakeflow Spark Declarative Pipelines
 * Support Bronze/Silver/Gold medallion workloads
 * Support centralized and domain-oriented operating models, including data mesh and data product approaches
-* Accommodate multiple modelling paradigms (modeling paradigms), including dimensional, Data Vault, and enterprise canonical models
+* Accommodate multiple modeling paradigms, including dimensional, Data Vault, and enterprise canonical models
 * Keep implementation extensible without heavy custom scaffolding
 
 Core concepts
@@ -49,7 +50,7 @@ Medallion pipeline patterns
 The Lakeflow Framework supports common Databricks medallion architecture patterns for both batch and streaming workloads:
 
 * Bronze ingestion pipelines for raw landing
-* Silver refinement pipelines for modelling, quality, and conformance
+* Silver refinement pipelines for modeling, quality, and conformance
 * Gold serving pipelines for consumption-ready datasets
 * Mixed static/streaming and CDC-oriented topologies
 

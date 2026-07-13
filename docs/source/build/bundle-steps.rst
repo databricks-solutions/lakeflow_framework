@@ -277,7 +277,7 @@ See :doc:`/features/data-quality/expectations`.
 
 **Add pipeline logic modules** *(optional)* — if the spec references custom Python
 (``pythonModule``, ``pythonTransform.module``, or a custom sink), add modules or packages under ``src/python/``.
-The framework adds ``src/python/`` to ``sys.path`` at pipeline initialisation.
+The framework adds ``src/python/`` to ``sys.path`` at pipeline initialization.
 See :doc:`/features/python/extensions`.
 
 .. note::

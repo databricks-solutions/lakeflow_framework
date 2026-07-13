@@ -69,7 +69,7 @@ The high-level structure of a Pipeline Bundle never changes and is as follows:
     │   ├── init/
     │   │   ├── pre/                 # Lifecycle scripts — run before SDP declarations (optional)
     │   │   └── post/                # Lifecycle scripts — run after SDP declarations (optional)
-    │   ├── libraries/               # Cluster-install artefacts + sys.path loose .py (optional)
+    │   ├── libraries/               # Cluster-install artifacts + sys.path loose .py (optional)
     │   ├── pipeline_configs/        # Global and env-specific pipeline config (required)
     │   └── python/                  # Spec-referenced Python modules and packages (optional)
     ├── databricks.yml
@@ -89,7 +89,7 @@ The ``src/`` directories serve distinct purposes:
      - Purpose
    * - ``src/dataflows/``
      - All Data Flow Spec files. The framework reads every spec file recursively regardless
-       of sub-folder structure. See below for organisation options.
+       of sub-folder structure. See below for organization options.
    * - ``src/init/pre/`` and ``src/init/post/``
      - **Optional.** Lifecycle ``.py`` scripts executed before and after SDP declarations
        inside ``initialize_pipeline()``. Run in sorted filename order; files starting
@@ -106,7 +106,7 @@ The ``src/`` directories serve distinct purposes:
    * - ``src/python/``
      - **Optional.** All customer Python referenced by Data Flow Specs —
        ``pythonModule``, ``pythonTransform.module``, and custom sinks. Added to
-       ``sys.path`` at pipeline initialisation.
+       ``sys.path`` at pipeline initialization.
 
 .. seealso::
 
@@ -114,7 +114,7 @@ The ``src/`` directories serve distinct purposes:
    ``src/python/``, ``src/init/``, and ``src/local/config/``, including examples,
    deprecation notices, and the cluster library installation options.
 
-It is the structure of the ``src/dataflows`` directory that is flexible and can be organised in the way that best suits your standards and ways of working. The Framework will:
+It is the structure of the ``src/dataflows`` directory that is flexible and can be organized in the way that best suits your standards and ways of working. The Framework will:
 
 * Read all the Data Flow Spec files under the ``src/dataflows`` directory, regardless of the folder structure. Filtering of the data flows is done when defining your Pipeline and is discussed in the :doc:`/build/bundle-steps` section.
 * Expect that the schemas, transforms and expectations related to a Data Flow Spec are located in their respective ``schemas``, ``dml`` and ``expectations`` sub-directories within the Data Flow Spec's home directory.

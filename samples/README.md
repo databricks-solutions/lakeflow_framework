@@ -1,6 +1,6 @@
 # The Samples
 
-The Framework comes with extensive samples that demonstrate the use of the framework and Lakeflow concepts. Samples are organised into the following bundles:
+The Framework comes with extensive samples that demonstrate the use of the framework and Lakeflow concepts. Samples are organized into the following bundles:
 
 | Bundle | Description |
 |--------|-------------|
@@ -118,7 +118,7 @@ This will be prefixed with the bundle target and your username, for example:
 
 The job runs in three tiers:
 
-1. **Schema initialisation and staging load** — creates the `{namespace}_feature` schema and loads test data
+1. **Schema initialization and staging load** — creates the `{namespace}_feature` schema and loads test data
 2. **Tier 1 (parallel)** — all independent feature pipelines (general, python, snapshots, data quality, table migration bronze, libraries, templates)
 3. **Tier 2** — DPM pipeline (depends on Tier 1 general + python outputs)
 4. **Tier 3** — table migration silver (depends on Tier 2 DPM output)

@@ -14,10 +14,10 @@ The Lakeflow Framework is designed to support different organizational and data 
 * Federated domain-aligned teams, including data mesh and data product approaches
 * Hybrid operating models that combine centralized governance with domain ownership
 
-**Modelling paradigms**
+**Modeling paradigms**
 
 * Medallion architecture (Bronze, Silver, Gold)
-* Common modelling patterns, including dimensional (facts/dimensions), Data Vault, enterprise canonical/3NF, and other custom enterprise models
+* Common modeling patterns, including dimensional (facts/dimensions), Data Vault, enterprise canonical/3NF, and other custom enterprise models
 
 These approaches can be implemented using the same Data Flow Spec-driven patterns, deployment process, and framework features documented in this guide.
 

@@ -131,7 +131,7 @@ Example Data Flow
 
 .. note::
 
-   In the below example data flow, customer ID 4 demonstrates the behaviour for late arriving records in streaming sources. This ultimately means you will potentially have more versions for a row in SCD2 scenarios. This needs to be weighed against your requirements and will either be acceptable or not. If this is not acceptable, please refer to the stream-static patterns below.
+   In the below example data flow, customer ID 4 demonstrates the behavior for late arriving records in streaming sources. This ultimately means you will potentially have more versions for a row in SCD2 scenarios. This needs to be weighed against your requirements and will either be acceptable or not. If this is not acceptable, please refer to the stream-static patterns below.
 
 Day 1 Load
 ~~~~~~~~~~

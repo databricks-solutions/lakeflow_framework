@@ -140,7 +140,7 @@ If you are using GitHub Actions for your CI/CD pipelines, you can use the **comp
              # no-mapping: 'false'
              # verbose: 'false'
 
-The ``uses`` line can reference the ``databricks-solutions/lakeflow_framework`` (upstream) or **your organisation's fork/clone** of the Lakeflow Framework repository. The path ``.github/actions/validate-dataflows`` is the same; set the owner and pin ``@<ref>`` to a tag or commit that exists on whichever repository you rely on.
+The ``uses`` line can reference the ``databricks-solutions/lakeflow_framework`` (upstream) or **your organization's fork/clone** of the Lakeflow Framework repository. The path ``.github/actions/validate-dataflows`` is the same; set the owner and pin ``@<ref>`` to a tag or commit that exists on whichever repository you rely on.
 
 Pin to a tag or a commit instead of a moving branch for reproducible CI (e.g., replace @main with @v0.11.0).
 

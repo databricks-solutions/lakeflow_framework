@@ -30,7 +30,7 @@ configuration.
        ``src/local/config/`` sparse overrides are deep-merged on top of the
        bundled defaults.
      - Teams that want pip-managed installs but need per-deployment config
-       customisation.
+       customization.
 
 .. note::
    For wheel based deployments it is your responsibility to provide

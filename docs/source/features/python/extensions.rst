@@ -46,11 +46,11 @@ addresses a different concern and has a dedicated place in both bundle structure
      - ``src/python/``
      - Custom modules and packages written by your team that are referenced directly by
        Data Flow Specs (sources, transforms, sinks). Added to ``sys.path`` at pipeline
-       initialisation so specs can resolve them by module path.
+       initialization so specs can resolve them by module path.
    * - 3
      - **Init scripts**
      - ``src/init/pre/`` and ``src/init/post/``
-     - Lightweight ``.py`` files that run at fixed points in the pipeline initialisation
+     - Lightweight ``.py`` files that run at fixed points in the pipeline initialization
        lifecycle. ``pre/`` scripts run before SDP data flow declarations; ``post/`` scripts
        run after. Use them for Spark configuration, event hook registration, or any
        one-time setup that must happen outside of Data Flow logic.
@@ -72,7 +72,7 @@ The framework operates with two bundles, each of which carries its own ``src/`` 
    * - **Framework bundle**
      - ``framework.sourcePath``
      - Carries framework code. Custom code lives exclusively under ``src/local/`` —
-       the fork-safe area for org-specific customisations that should not be merged
+       the fork-safe area for org-specific customizations that should not be merged
        back upstream.
    * - **Pipeline bundle**
      - ``bundle.sourcePath``
@@ -206,7 +206,7 @@ Pipeline Python Code (``src/python/``)
 
 ``src/python/`` is the **single home for all Python modules and packages referenced by Data Flow
 Specs** — sources, transforms, sinks, and shared utility modules. The framework adds
-this directory to ``sys.path`` at pipeline initialisation so modules are importable
+this directory to ``sys.path`` at pipeline initialization so modules are importable
 as top-level names.
 
 Import layout options

@@ -230,7 +230,7 @@ These properties define the source of the data:
      - **Description**
    * - **sourceSystem** (*optional*)
      - ``string``
-     - The source system name. Value is not used to determine or change any behaviour.
+     - The source system name. Value is not used to determine or change any behavior.
    * - **sourceType**
      - ``string``
      - The type of source.  

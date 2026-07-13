@@ -19,7 +19,7 @@ Use when:
 
 - You are ingesting data or performing one-to-one loads.
 - You are promoting one upstream table into a conformed entity table.
-- You need append-only, SCD1, or SCD2 behaviour on the target.
+- You need append-only, SCD1, or SCD2 behavior on the target.
 - You only need basic single-row transforms (data type conversion, formatting, cleansing, data quality).
 
 **Layers:** Bronze and Silver

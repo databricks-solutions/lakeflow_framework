@@ -258,7 +258,7 @@ Example — framework-level structured stdout logger (``src/local/``)
    :doc:`/features/python/extensions`. That approach decouples the logger from
    the framework bundle and lets it be versioned and distributed independently.
    Using ``src/local/libraries/`` is best suited for lightweight, org-specific
-   customisations that you want to keep co-located with the framework bundle.
+   customizations that you want to keep co-located with the framework bundle.
 
 The following walkthrough sets up a structured JSON stdout logger at the
 framework level using ``src/local/libraries/``. Each log record is emitted as
@@ -481,7 +481,7 @@ Troubleshooting
 Custom logger not loading / pipeline still uses default logger
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The framework always falls back to the default stdout logger on any initialisation
+The framework always falls back to the default stdout logger on any initialization
 error rather than failing the pipeline. Check the pipeline logs for a warning
 beginning with ``Failed to initialize custom logger:`` — the message will contain
 the original exception.
@@ -524,7 +524,7 @@ add a thin wrapper (see below) that maps the argument:
 Third-party logger cannot be called as ``factory(dbutils, spark, **factory_args)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Some loggers require multi-step initialisation, a context manager, or arguments
+Some loggers require multi-step initialization, a context manager, or arguments
 that are incompatible with the framework's injection. Place a thin wrapper in
 ``src/local/libraries/`` (framework bundle) or as a cluster-installed module
 (pipeline bundle). The wrapper's ``get_logger`` handles the adaptation and
