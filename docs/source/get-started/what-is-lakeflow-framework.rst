@@ -10,11 +10,11 @@ Why teams use it
 ----------------
 
 * Faster delivery through reusable pipeline patterns
-* Consistent configuration model across environments
-* **Centralized configuration inheritance** — Pipeline Bundles resolve global settings from the Framework Bundle at runtime (mandatory table properties, Spark defaults, operational metadata, and more). Update framework configuration once and every attached pipeline picks up the change on its next run without redeploying each Pipeline Bundle. That scales for organizations operating hundreds or thousands of pipelines and differs from generated or AI-scaffolded pipelines, where settings are usually embedded per artifact. See :doc:`/features/configuration/framework-configuration`.
-* Native alignment with Declarative Automation Bundles (DABs)
 * Simple, extensible, and long-term alignment with the Databricks product roadmap
 * Lower maintenance overhead as platform features evolve
+* Consistent configuration model across environments
+* Centralized configuration inheritance — pipelines resolve global settings at runtime
+* Native alignment with Declarative Automation Bundles (DABs)
 
 Core outcomes
 -------------
