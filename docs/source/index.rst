@@ -16,8 +16,18 @@ Start with :doc:`what_is_lakeflow_framework` for the full overview, then use the
    
    what_is_lakeflow_framework
    getting_started
-   Concepts <concepts> 
+   Concepts <concepts>
    Features <features>
+
+.. toctree::
+   :maxdepth: 4
+   :titlesonly:
+
+   AI Skills <ai_skills>
+
+.. toctree::
+   :maxdepth: 4
+
    deploy_framework
    deploy_samples.md
    build_pipeline_bundle
