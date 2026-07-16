@@ -1,0 +1,96 @@
+{
+    "name": "flows_multi_source_silver",
+    "parameters": {
+        "dataFlowId": {"type": "string", "required": true},
+        "targetTable": {"type": "string", "required": true},
+        "keyColumns": {"type": "list", "required": true},
+        "sequenceBy": {"type": "string", "required": true},
+        "scdType": {"type": "string", "required": false, "default": "1"},
+        "sourceTable1": {"type": "string", "required": true},
+        "sourceDb1": {"type": "string", "required": true},
+        "sourceTable2": {"type": "string", "required": true},
+        "sourceDb2": {"type": "string", "required": true}
+    },
+    "template": {
+        "dataFlowId": "${param.dataFlowId}",
+        "dataFlowGroup": "silver",
+        "dataFlowType": "flow",
+        "targetFormat": "delta",
+        "targetDetails": {
+            "table": "${param.targetTable}",
+            "tableProperties": {
+                "delta.enableChangeDataFeed": "true"
+            }
+        },
+        "cdcSettings": {
+            "keys": "${param.keyColumns}",
+            "sequence_by": "${param.sequenceBy}",
+            "scd_type": "${param.scdType}",
+            "ignore_null_updates": true,
+            "except_column_list": []
+        },
+        "dataQualityExpectationsEnabled": false,
+        "quarantineMode": "off",
+        "quarantineTargetDetails": {},
+        "flowGroups": [
+            {
+                "flowGroupId": "fg_${param.targetTable}",
+                "stagingTables": {
+                    "staging_${param.targetTable}_apnd": {
+                        "type": "ST",
+                        "schemaPath": ""
+                    }
+                },
+                "flows": {
+                    "f_${param.sourceTable1}": {
+                        "flowType": "append_view",
+                        "flowDetails": {
+                            "targetTable": "staging_${param.targetTable}_apnd",
+                            "sourceView": "v_${param.sourceTable1}"
+                        },
+                        "views": {
+                            "v_${param.sourceTable1}": {
+                                "mode": "stream",
+                                "sourceType": "delta",
+                                "sourceDetails": {
+                                    "database": "${param.sourceDb1}",
+                                    "table": "${param.sourceTable1}",
+                                    "cdfEnabled": true,
+                                    "selectExp": ["*"],
+                                    "whereClause": []
+                                }
+                            }
+                        }
+                    },
+                    "f_${param.sourceTable2}": {
+                        "flowType": "append_view",
+                        "flowDetails": {
+                            "targetTable": "staging_${param.targetTable}_apnd",
+                            "sourceView": "v_${param.sourceTable2}"
+                        },
+                        "views": {
+                            "v_${param.sourceTable2}": {
+                                "mode": "stream",
+                                "sourceType": "delta",
+                                "sourceDetails": {
+                                    "database": "${param.sourceDb2}",
+                                    "table": "${param.sourceTable2}",
+                                    "cdfEnabled": true,
+                                    "selectExp": ["*"],
+                                    "whereClause": []
+                                }
+                            }
+                        }
+                    },
+                    "f_merge": {
+                        "flowType": "merge",
+                        "flowDetails": {
+                            "targetTable": "${param.targetTable}",
+                            "sourceView": "staging_${param.targetTable}_apnd"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

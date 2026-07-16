@@ -1,0 +1,13 @@
+{
+    "type": "struct",
+    "fields": [
+        {"name": "bill_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "customer_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "bill_date", "type": "date", "nullable": true, "metadata": {}},
+        {"name": "due_date", "type": "date", "nullable": true, "metadata": {}},
+        {"name": "amount_aud", "type": {"type": "decimal", "precision": 10, "scale": 2}, "nullable": true, "metadata": {}},
+        {"name": "kwh_consumed", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "payment_status", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "is_duplicate", "type": "boolean", "nullable": true, "metadata": {}}
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "tokens": {
+        "bronze_schema": "CATALOG.bronze_SCHEMA",
+        "silver_schema": "CATALOG.silver_SCHEMA",
+        "gold_schema": "CATALOG.gold_SCHEMA",
+        "landing_path": "/Volumes/CATALOG/SCHEMA/landing",
+        "checkpoint_path": "/Volumes/CATALOG/SCHEMA/checkpoints"
+    },
+    "prefix_suffix": {}
+}

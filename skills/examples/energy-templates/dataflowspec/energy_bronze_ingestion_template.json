@@ -1,0 +1,44 @@
+{
+    "name": "energy_bronze_ingestion_template",
+    "parameters": {
+        "dataFlowId": {"type": "string", "required": true},
+        "sourceTable": {"type": "string", "required": true},
+        "targetTable": {"type": "string", "required": true},
+        "schemaPath": {"type": "string", "required": false, "default": ""},
+        "keyColumns": {"type": "list", "required": true},
+        "sequenceBy": {"type": "string", "required": true}
+    },
+    "template": {
+        "dataFlowId": "${param.dataFlowId}",
+        "dataFlowGroup": "energy_bronze",
+        "dataFlowType": "standard",
+        "sourceType": "delta",
+        "sourceSystem": "smartgrid",
+        "sourceViewName": "v_${param.sourceTable}",
+        "sourceDetails": {
+            "database": "{bronze_schema}",
+            "table": "${param.sourceTable}",
+            "cdfEnabled": true,
+            "schemaPath": "${param.schemaPath}"
+        },
+        "mode": "stream",
+        "targetFormat": "delta",
+        "targetDetails": {
+            "table": "${param.targetTable}",
+            "tableProperties": {
+                "delta.autoOptimize.optimizeWrite": "true",
+                "delta.autoOptimize.autoCompact": "true"
+            }
+        },
+        "cdcSettings": {
+            "keys": "${param.keyColumns}",
+            "sequence_by": "${param.sequenceBy}",
+            "scd_type": "1",
+            "ignore_null_updates": true,
+            "except_column_list": []
+        },
+        "dataQualityExpectationsEnabled": true,
+        "quarantineMode": "off",
+        "quarantineTargetDetails": {}
+    }
+}
