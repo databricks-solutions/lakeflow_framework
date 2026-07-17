@@ -28,19 +28,19 @@
     "json.schemas": [
         {
             "fileMatch": ["*_main.json"],
-            "url": "./src/schemas/main.json"
+            "url": "./src/lakeflow_framework/schemas/main.json"
         },
         {
             "fileMatch": ["*_flow.json"],
-            "url": "./src/schemas/flow_group.json"
+            "url": "./src/lakeflow_framework/schemas/flow_group.json"
         },
         {
             "fileMatch": ["*_dqe.json"],
-            "url": "./src/schemas/expectations.json"
+            "url": "./src/lakeflow_framework/schemas/expectations.json"
         },
         {
             "fileMatch": ["*_secrets.json"],
-            "url": "./src/schemas/secrets.json"
+            "url": "./src/lakeflow_framework/schemas/secrets.json"
         }
     ]
 }

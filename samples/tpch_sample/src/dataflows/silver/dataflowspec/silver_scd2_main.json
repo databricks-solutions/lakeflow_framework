@@ -1,0 +1,122 @@
+{
+    "template": "silver_scd2_template",
+    "parameterSets": [
+        {
+            "dataFlowId": "customer",
+            "sourceDatabase": "{bronze_crm_schema}",
+            "sourceTable": "customer",
+            "sourceViewName": "v_customer",
+            "selectExp": [
+                "customer_id as customer_key",
+                "name as customer_name",
+                "mktseg as market_segment",
+                "acctbal as account_balance",
+                "load_timestamp",
+                "effective_date",
+                "cdc_operation"
+            ],
+            "targetTable": "customer",
+            "schemaPath": "customer_schema.json",
+            "keys": ["customer_key"],
+            "sequenceBy": "effective_date",
+            "exceptColumnList": ["load_timestamp", "effective_date", "cdc_operation"]
+        },
+        {
+            "dataFlowId": "customer_phone",
+            "sourceDatabase": "{bronze_crm_schema}",
+            "sourceTable": "customer_phone",
+            "sourceViewName": "v_customer_phone",
+            "selectExp": [
+                "customer_id as customer_key",
+                "phone",
+                "load_timestamp",
+                "effective_date",
+                "cdc_operation"
+            ],
+            "targetTable": "customer_phone",
+            "schemaPath": "customer_phone_schema.json",
+            "keys": ["customer_key"],
+            "sequenceBy": "effective_date",
+            "exceptColumnList": ["load_timestamp", "effective_date", "cdc_operation"]
+        },
+        {
+            "dataFlowId": "supplier",
+            "sourceDatabase": "{bronze_procurement_schema}",
+            "sourceTable": "supplier",
+            "sourceViewName": "v_supplier",
+            "selectExp": [
+                "supplier_id as supplier_key",
+                "name as supplier_name",
+                "acctbal as account_balance",
+                "comment",
+                "load_timestamp",
+                "effective_date",
+                "cdc_operation"
+            ],
+            "targetTable": "supplier",
+            "schemaPath": "supplier_schema.json",
+            "keys": ["supplier_key"],
+            "sequenceBy": "effective_date",
+            "exceptColumnList": ["load_timestamp", "effective_date", "cdc_operation"]
+        },
+        {
+            "dataFlowId": "supplier_address",
+            "sourceDatabase": "{bronze_vendor_mgmt_schema}",
+            "sourceTable": "supplier_address",
+            "sourceViewName": "v_supplier_address",
+            "selectExp": [
+                "supplier_id as supplier_key",
+                "address",
+                "nat_id as nation_key",
+                "load_timestamp",
+                "cdc_operation"
+            ],
+            "targetTable": "supplier_address",
+            "schemaPath": "supplier_address_schema.json",
+            "keys": ["supplier_key"],
+            "sequenceBy": "load_timestamp",
+            "exceptColumnList": ["load_timestamp", "cdc_operation"]
+        },
+        {
+            "dataFlowId": "supplier_phone",
+            "sourceDatabase": "{bronze_vendor_mgmt_schema}",
+            "sourceTable": "supplier_phone",
+            "sourceViewName": "v_supplier_phone",
+            "selectExp": [
+                "supplier_id as supplier_key",
+                "phone",
+                "load_timestamp",
+                "cdc_operation"
+            ],
+            "targetTable": "supplier_phone",
+            "schemaPath": "supplier_phone_schema.json",
+            "keys": ["supplier_key"],
+            "sequenceBy": "load_timestamp",
+            "exceptColumnList": ["load_timestamp", "cdc_operation"]
+        },
+        {
+            "dataFlowId": "part",
+            "sourceDatabase": "{bronze_product_catalog_schema}",
+            "sourceTable": "part",
+            "sourceViewName": "v_part",
+            "selectExp": [
+                "p_partkey as part_key",
+                "p_name as part_name",
+                "p_mfgr as manufacturer",
+                "p_brand as brand",
+                "p_type as part_type",
+                "p_size as size",
+                "p_container as container",
+                "p_retailprice as retail_price",
+                "p_comment as comment",
+                "load_timestamp",
+                "cdc_operation"
+            ],
+            "targetTable": "part",
+            "schemaPath": "part_schema.json",
+            "keys": ["part_key"],
+            "sequenceBy": "load_timestamp",
+            "exceptColumnList": ["load_timestamp", "cdc_operation"]
+        }
+    ]
+}

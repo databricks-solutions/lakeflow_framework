@@ -22,12 +22,12 @@ The new canonical path (`src/python/`) was introduced in ADR-0001.
 
 ## Decision
 
-| Legacy behaviour | Released? | Action in v0.13.0 | Removed in |
+| Legacy behavior | Released? | Action in v0.13.0 | Removed in |
 |-----------------|-----------|-----------------|------------|
 | Flat `extensions/` on `sys.path` | Yes | Emit `DeprecationWarning` + structured log | **v1.0.0** |
 | `extensions/libraries/` on `sys.path` | No | Drop immediately, no deprecation window | **v0.13.0** (this PR) |
 
-**One-minor deprecation window:** deprecated behaviour is removed in the first minor
+**One-minor deprecation window:** deprecated behavior is removed in the first minor
 version after the deprecation warning lands — giving consumers one release cycle to
 migrate before the path disappears.
 

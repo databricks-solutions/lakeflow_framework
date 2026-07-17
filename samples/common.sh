@@ -19,6 +19,13 @@ compute=""
 profile=""
 catalog=""
 logical_env=""
+# Optional SQL warehouse id (tpch: backs the Genie space). Preserve an inherited value so a
+# parent script (e.g. deploy_tpch_and_test.sh) can resolve it once and pass it to child scripts.
+warehouse_id="${warehouse_id:-}"
+# Set when --warehouse_id was passed explicitly (even as ""), so we don't prompt for it.
+warehouse_id_set=""
+# Sentinel: when set, the optional warehouse prompt is skipped (already resolved by a parent).
+TPCH_WAREHOUSE_RESOLVED="${TPCH_WAREHOUSE_RESOLVED:-}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -64,6 +71,8 @@ parse_common_args() {
             shift ;;
             --schema_namespace) schema_namespace="$2"
             shift ;;
+            --warehouse_id) warehouse_id="$2"; warehouse_id_set=1
+            shift ;;
             *) echo "Unknown parameter: $1"; exit 1 ;;
         esac
         shift
@@ -105,6 +114,93 @@ prompt_common_params() {
     [[ -z "$logical_env" ]] && read -p "Logical environment (should start with '_'): " logical_env
 }
 
+# Optional prompt for a SQL warehouse id that backs the TPC-H Genie space and AI/BI dashboards.
+# These are OPTIONAL: some users don't have access to a SQL warehouse. Leaving the warehouse id
+# blank simply skips Genie-space creation and the Lakeview dashboards; the rest of the sample is
+# unaffected. The prompt is skipped when TPCH_WAREHOUSE_RESOLVED is set (a parent script already
+# resolved it).
+prompt_warehouse_optional() {
+    # Already resolved (and possibly intentionally left blank) by a parent script — don't re-ask.
+    [[ -n "$TPCH_WAREHOUSE_RESOLVED" ]] && return 0
+
+    # Prompt only in an interactive terminal, when no value was supplied and none was passed
+    # explicitly via --warehouse_id. This keeps non-interactive / single-command / CI runs from
+    # blocking on input (they simply skip Genie unless --warehouse_id was given).
+    if [[ -z "$warehouse_id" && -z "$warehouse_id_set" && -t 0 ]]; then
+        echo ""
+        echo "Optional — AI/BI Genie space + Lakeview dashboards:"
+        echo "  This sample can deploy a Genie space over the gold schema for natural-language"
+        echo "  analytics, plus two AI/BI (Lakeview) dashboards (Commercial Overview and Pipeline"
+        echo "  Health & Governance). These require a SQL warehouse id. If you don't have access to"
+        echo "  a SQL warehouse, leave this blank to SKIP the Genie space and dashboards —"
+        echo "  everything else still deploys and runs normally."
+        read -p "SQL warehouse id for Genie + dashboards (optional, blank = skip): " warehouse_id
+    fi
+
+    if [[ -z "$warehouse_id" ]]; then
+        log_info "No SQL warehouse id provided — Genie space and dashboards will be skipped."
+    else
+        log_info "Genie space and dashboards will be deployed against SQL warehouse: $warehouse_id"
+    fi
+
+    # Mark as resolved so any child script we invoke inherits the decision and won't re-prompt.
+    export warehouse_id
+    export TPCH_WAREHOUSE_RESOLVED=1
+}
+
+# Trash any Genie space(s) whose title matches, via the Databricks CLI. Idempotent and
+# best-effort: safe when no space exists, and never aborts the caller (always returns 0).
+# The Genie space is created imperatively (not a bundle resource), so `bundle destroy` cannot
+# remove it — this is how destroy_tpch.sh cleans it up. Args: <title> <profile>.
+trash_genie_spaces_by_title() {
+    local title="$1"
+    local prof="$2"
+
+    if ! command -v databricks >/dev/null 2>&1; then
+        log_warning "databricks CLI not found; skipping Genie space cleanup"
+        return 0
+    fi
+    if ! command -v python3 >/dev/null 2>&1; then
+        log_warning "python3 not found; skipping Genie space cleanup"
+        return 0
+    fi
+
+    log_info "Checking for Genie space to remove: $title"
+    local token="" found=0
+    while :; do
+        local page
+        if [[ -n "$token" ]]; then
+            page=$(databricks genie list-spaces -o json --page-size 100 --page-token "$token" --profile "$prof" 2>/dev/null)
+        else
+            page=$(databricks genie list-spaces -o json --page-size 100 --profile "$prof" 2>/dev/null)
+        fi
+        [[ -z "$page" ]] && break
+
+        local ids
+        ids=$(printf '%s' "$page" | python3 -c 'import sys,json
+d=json.load(sys.stdin)
+for s in (d.get("spaces") or []):
+    if s.get("title")==sys.argv[1]: print(s.get("space_id"))' "$title" 2>/dev/null)
+
+        local id
+        for id in $ids; do
+            if databricks genie trash-space "$id" --profile "$prof" >/dev/null 2>&1; then
+                log_success "Trashed Genie space $id ($title)"
+                found=$((found+1))
+            else
+                log_warning "Failed to trash Genie space $id (trash it manually in the Genie UI)"
+            fi
+        done
+
+        token=$(printf '%s' "$page" | python3 -c 'import sys,json
+print(json.load(sys.stdin).get("next_page_token") or "")' 2>/dev/null)
+        [[ -z "$token" ]] && break
+    done
+
+    [[ "$found" -eq 0 ]] && log_info "No Genie space titled '$title' found — nothing to remove."
+    return 0
+}
+
 # Set up common bundle environment variables
 setup_bundle_env() {
     local bundle_name="$1"
@@ -143,6 +239,13 @@ setup_bundle_env() {
     export BUNDLE_VAR_workspace_host=$host
     echo "  - BUNDLE_VAR_workspace_host: $BUNDLE_VAR_workspace_host"
 
+    # Optional: only export when a warehouse id was supplied. When empty, the bundle's
+    # warehouse_id default ("") is used and the Genie-space step no-ops.
+    if [[ -n "$warehouse_id" ]]; then
+        export BUNDLE_VAR_warehouse_id=$warehouse_id
+        echo "  - BUNDLE_VAR_warehouse_id: $BUNDLE_VAR_warehouse_id"
+    fi
+
     echo ""
 }
 
@@ -167,9 +270,19 @@ deploy_bundle() {
         mkdir -p scratch/resources
         find resources/serverless -name "*.yml" -exec cp {} scratch/resources/ \;
     fi
+
+    # Optional AI/BI (Lakeview) dashboards are warehouse-backed: drop them from the rendered
+    # resource set when no warehouse_id was supplied (mirrors the optional Genie space, which
+    # no-ops in the same case). Everything else still deploys.
+    if [[ -z "${warehouse_id:-}" ]]; then
+        rm -f scratch/resources/*dashboards*.yml 2>/dev/null || true
+        log_info "No warehouse_id supplied — skipping optional AI/BI dashboard resources"
+    fi
     
-    # Deploy the bundle
-    if databricks bundle deploy -t dev --profile "$profile"; then
+    # Deploy the bundle (--auto-approve: non-interactive deploys e.g. from CI/agents)
+    local deploy_args=(-t dev --profile "$profile")
+    [[ -n "${BUNDLE_AUTO_APPROVE:-}" ]] && deploy_args+=(--auto-approve)
+    if databricks bundle deploy "${deploy_args[@]}"; then
         log_success "$bundle_name deployed successfully"
     else
         log_error "Failed to deploy $bundle_name"
@@ -314,6 +427,58 @@ restore_substitutions_file() {
         # Clear the flag
         unset SUBSTITUTIONS_FILE_MODIFIED
     fi
+}
+
+# Function to update substitutions for the TPC-H sample (single-catalog model).
+# The tpch sample keeps every medallion layer in ONE catalog, separated by schema
+# (tpch_sample_<layer>[_<source>]{logical_env}). The schema tokens carry both the catalog
+# prefix ("main.") and the namespace prefix ("tpch_sample") plus the {logical_env}
+# placeholder, which the framework resolves at runtime from the pipeline's logicalEnv config.
+# Only the catalog and/or namespace prefixes are rewritten when non-default values are supplied.
+update_tpch_substitutions_file() {
+    local substitutions_file="$1"
+    local default_namespace="tpch_sample"
+    local default_catalog="$DEFAULT_CATALOG"
+
+    # Both at defaults — values already baked into the file; nothing to rewrite.
+    if [[ "$catalog" == "$default_catalog" && "$schema_namespace" == "$default_namespace" ]]; then
+        return 0
+    fi
+
+    log_info "Updating tpch substitutions file: $substitutions_file"
+    log_info "Using catalog: $catalog (default: $default_catalog), schema namespace: $schema_namespace (default: $default_namespace)"
+
+    if [[ ! -f "$substitutions_file" ]]; then
+        log_error "Substitutions file not found: $substitutions_file"
+        return 1
+    fi
+
+    # Preserve the original master via .backup (same convention as update_substitutions_file)
+    if [[ -f "${substitutions_file}.backup" ]]; then
+        log_warning "Existing backup found from previous run, restoring original before proceeding"
+        cp "${substitutions_file}.backup" "$substitutions_file"
+    else
+        cp "$substitutions_file" "${substitutions_file}.backup"
+        log_info "Created backup: ${substitutions_file}.backup"
+    fi
+
+    # Rewrite the catalog prefix: the leading "main." in schema tokens and the /Volumes/main/ path.
+    if [[ "$catalog" != "$default_catalog" ]]; then
+        perl -i -pe "s|\"${default_catalog}\.|\"${catalog}.|g" "$substitutions_file"
+        perl -i -pe "s|/Volumes/${default_catalog}/|/Volumes/${catalog}/|g" "$substitutions_file"
+    fi
+
+    # Rewrite the namespace prefix across all schema tokens and the volume path.
+    if [[ "$schema_namespace" != "$default_namespace" ]]; then
+        perl -i -pe "s|${default_namespace}|${schema_namespace}|g" "$substitutions_file"
+    fi
+
+    log_success "Successfully updated tpch substitutions file"
+    export SUBSTITUTIONS_FILE_MODIFIED=true
+
+    log_info "Updated substitutions file content:"
+    cat "$substitutions_file"
+    echo ""
 }
 
 # Function to update pipeline bundle global.json|yaml with table_migration_state_volume_path (same catalog/schema rules as substitutions)

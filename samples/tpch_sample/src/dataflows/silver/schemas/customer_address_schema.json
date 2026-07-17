@@ -1,29 +1,10 @@
 {
     "type": "struct",
     "fields": [
-        {
-            "name": "c_custkey",
-            "type": "long",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "c_address",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "c_nationkey",
-            "type": "long",
-            "nullable": true,
-            "metadata": {}
-        },
-        {
-            "name": "load_timestamp",
-            "type": "timestamp",
-            "nullable": false,
-            "metadata": {}
-        }
+        { "name": "customer_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "address", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "nation_key", "type": "long", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} },
+        { "name": "effective_date", "type": "timestamp", "nullable": false, "metadata": {} }
     ]
 }

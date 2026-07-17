@@ -7,7 +7,7 @@ and validates them against the project's JSON schemas.
 
 Usage:
     python scripts/validate_dataflows.py                           # Validate all dataflow files (with version mapping)
-    python scripts/validate_dataflows.py samples/bronze_sample/    # Validate all files in specific directory
+    python scripts/validate_dataflows.py samples/feature-samples/    # Validate all files in specific directory
     python scripts/validate_dataflows.py path/to/file_main.json   # Validate specific file
     python scripts/validate_dataflows.py --no-mapping              # Validate without applying version mappings
     
@@ -15,14 +15,14 @@ Examples:
     # From project root
     python scripts/validate_dataflows.py
     
-    # Validate only bronze samples
-    python scripts/validate_dataflows.py samples/bronze_sample/
+    # Validate only feature samples
+    python scripts/validate_dataflows.py samples/feature-samples/
     
     # Validate without version mapping (strict validation against current schema)
-    python scripts/validate_dataflows.py --no-mapping samples/bronze_sample/
+    python scripts/validate_dataflows.py --no-mapping samples/feature-samples/
     
     # Validate a single file
-    python scripts/validate_dataflows.py samples/bronze_sample/src/dataflows/base_samples/dataflowspec/customer_main.json
+    python scripts/validate_dataflows.py samples/feature-samples/src/dataflows/feature_samples/dataflowspec/append_sql_flow_main.json
 """
 
 import argparse
@@ -59,7 +59,7 @@ def find_project_root() -> Path:
     
     # Go up to find the project root
     while current != current.parent:
-        if (current / "src" / "schemas" / "main.json").exists():
+        if (current / "src" / "lakeflow_framework" / "schemas" / "main.json").exists():
             return current
         current = current.parent
     
@@ -113,7 +113,7 @@ def detect_spec_form(data: Dict) -> str:
 
 def get_schema_path(project_root: Path, form: str) -> Path:
     """Return the schema path for a given spec form."""
-    schemas = project_root / "src" / "schemas"
+    schemas = project_root / "src" / "lakeflow_framework" / "schemas"
     if form == SPEC_FORM_TEMPLATE:
         return schemas / "spec_template.json"
     return schemas / "main.json"
@@ -122,25 +122,43 @@ def get_schema_path(project_root: Path, form: str) -> Path:
 def load_dataflow_spec_mapping(project_root: Path, version: str) -> Optional[Dict]:
     """
     Load the dataflow spec mapping for a specific version.
-    
-    Args:
-        project_root: Root directory of the project
-        version: Version string (e.g., "0.1.0")
-        
-    Returns:
-        Mapping dictionary or None if not found
+
+    Matches framework layout: ``src/lakeflow_framework/config/default/dataflow_spec_mapping/<version>/``,
+    with optional sparse override under ``src/local/config/dataflow_spec_mapping/<version>/``.
+    Falls back to package data when the mapping is not present on disk.
     """
-    mapping_path = project_root / "src" / "config" / "dataflow_spec_mapping" / version / "dataflow_spec_mapping.json"
-    
-    if not mapping_path.exists():
-        return None
-    
+    framework_src = project_root / "src"
+    candidates = (
+        framework_src / "local" / "config" / "dataflow_spec_mapping" / version / "dataflow_spec_mapping.json",
+        framework_src
+        / "lakeflow_framework"
+        / "config"
+        / "default"
+        / "dataflow_spec_mapping"
+        / version
+        / "dataflow_spec_mapping.json",
+    )
+    mapping_path = next((path for path in candidates if path.exists()), None)
+    if mapping_path is not None:
+        try:
+            with open(mapping_path, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"{YELLOW}Warning: Could not load mapping for version {version}: {e}{RESET}")
+            return None
+
     try:
-        with open(mapping_path) as f:
-            return json.load(f)
+        import importlib.resources
+
+        ref = importlib.resources.files("lakeflow_framework").joinpath(
+            f"config/default/dataflow_spec_mapping/{version}/dataflow_spec_mapping.json"
+        )
+        if ref.is_file():
+            return json.loads(ref.read_text(encoding="utf-8"))
     except Exception as e:
         print(f"{YELLOW}Warning: Could not load mapping for version {version}: {e}{RESET}")
-        return None
+
+    return None
 
 
 def apply_rename_all(data: Dict, rename_map: Dict) -> None:
@@ -397,8 +415,8 @@ def main():
         epilog="""
 Examples:
   %(prog)s                                 # Validate all dataflow files
-  %(prog)s samples/bronze_sample/          # Validate specific directory
-  %(prog)s path/to/customer_main.json      # Validate single file
+  %(prog)s samples/feature-samples/          # Validate specific directory
+  %(prog)s samples/feature-samples/src/dataflows/feature_samples/dataflowspec/append_sql_flow_main.json  # Validate single file
         """
     )
     parser.add_argument(

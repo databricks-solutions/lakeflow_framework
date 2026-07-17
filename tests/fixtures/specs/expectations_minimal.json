@@ -1,0 +1,26 @@
+{
+  "expect": [
+    {
+      "name": "id_not_null",
+      "constraint": "id IS NOT NULL",
+      "enabled": true
+    },
+    {
+      "name": "tagged_rule",
+      "constraint": "status = 'active'",
+      "tag": "prod",
+      "enabled": true
+    },
+    {
+      "name": "disabled_rule",
+      "constraint": "1 = 0",
+      "enabled": false
+    }
+  ],
+  "expect_or_drop": [
+    {
+      "name": "drop_bad_rows",
+      "constraint": "amount > 0"
+    }
+  ]
+}

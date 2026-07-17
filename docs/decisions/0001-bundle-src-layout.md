@@ -13,7 +13,7 @@ modules and lifecycle scripts. This caused:
 
 - No separation between "code that gets installed on the cluster" and "code that spec
   references by module path".
-- No clear, fork-safe area for customer customisation.
+- No clear, fork-safe area for customer customization.
 - Ambiguity between `extensions/` (sys.path) and `extensions/libraries/` (a variant
   that was never released to `main`).
 
@@ -69,6 +69,6 @@ user-facing documentation to avoid confusion with callback-registration APIs.
   code. It is **not** required if libraries are sourced from PyPI, UC Volumes, or an
   artifact repository.
 - New bundles should place spec-referenced Python in `src/python/` and cluster-install
-  artefacts in `src/libraries/` (if bundled).
+  artifacts in `src/libraries/` (if bundled).
 - The `pipeline_bundle_template/` and samples are migrated to this layout in this PR.
 - Existing bundles using `extensions/` continue to work until `v1.0.0` (see ADR-0002).

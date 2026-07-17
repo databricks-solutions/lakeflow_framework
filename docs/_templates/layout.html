@@ -1,10 +1,18 @@
 {% extends "!layout.html" %}
 
-{% block content %}
-<div class="documenting">
-    {% if last_updated %}
-    <p class="last-updated">Last updated: {{ last_updated }}</p>
-    {% endif %}
-    {{ super() }}
-</div>
+{% block extrahead %}
+  {{ super() }}
+  {%- set _base = (html_baseurl or '').rstrip('/') %}
+  {%- set _version = docs_current_version|default('current') %}
+  {%- set _page = pagename ~ '.html' %}
+  {%- set _canonical = _base ~ '/' ~ _version ~ '/' ~ _page %}
+  <link rel="canonical" href="{{ _canonical }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Lakeflow Framework" />
+  <meta property="og:title" content="{{ title|striptags|e }}" />
+  <meta property="og:url" content="{{ _canonical }}" />
+  <meta property="og:description" content="Metadata-driven framework for Databricks Lakeflow Spark Declarative Pipelines." />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ title|striptags|e }}" />
+  <meta name="twitter:description" content="Metadata-driven framework for Databricks Lakeflow Spark Declarative Pipelines." />
 {% endblock %}

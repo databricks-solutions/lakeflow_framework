@@ -1,0 +1,7 @@
+redirects:
+- from: get_started.html
+  to: get-started/index.html
+- from: quick_start.html
+  to: get-started/quick-start.html
+- from: what_is_lakeflow_framework.html
+  to: get-started/what-is-lakeflow-framework.html

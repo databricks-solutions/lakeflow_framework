@@ -1,65 +1,15 @@
 {
     "type": "struct",
     "fields": [
-        {
-            "name": "o_orderkey",
-            "type": "long",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "o_custkey",
-            "type": "long",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "o_orderstatus",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "o_totalprice",
-            "type": "decimal(18,2)",
-            "nullable": true,
-            "metadata": {}
-        },
-        {
-            "name": "o_orderdate",
-            "type": "date",
-            "nullable": true,
-            "metadata": {}
-        },
-        {
-            "name": "o_orderpriority",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "o_clerk",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "o_shippriority",
-            "type": "integer",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "o_comment",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "load_timestamp",
-            "type": "timestamp",
-            "nullable": false,
-            "metadata": {}
-        }
+        { "name": "order_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "customer_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "order_status", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "total_price", "type": "decimal(18,2)", "nullable": true, "metadata": {} },
+        { "name": "order_date", "type": "date", "nullable": true, "metadata": {} },
+        { "name": "order_priority", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "clerk", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "ship_priority", "type": "integer", "nullable": false, "metadata": {} },
+        { "name": "comment", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} }
     ]
 }

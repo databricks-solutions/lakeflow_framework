@@ -32,10 +32,19 @@
     max-width: 1000px; 
 }
 
-.last-updated {
-    font-style: italic;
-    color: #888;
-    font-size: 0.9em;
+.docs-current-badge {
+    display: inline-block;
+    margin-left: 0.35em;
+    padding: 0.12em 0.5em;
+    border: 1px solid #e1e4e5;
+    border-radius: 3px;
+    background-color: #f3f6f6;
+    color: #404040;
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 1.15;
+    text-transform: none;
+    vertical-align: baseline;
 }
 
 /* markdown styles for raw html */
@@ -44,31 +53,24 @@
     color: white !important;
 }
 
-/* Custom styling for sphinx-tabs */
+/* Custom styling for sphinx-tabs — layout/structure only; colours in databricks-theme.css */
 .sphinx-tabs {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .sphinx-tabs-tab {
-    background-color: #f3f6f6;
-    color: #404040;
-    padding: 0.5rem 1rem;
-    border: 1px solid #e1e4e5;
+    padding: 0.35rem 0.75rem;
     border-bottom: none;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    line-height: 1.25;
 }
 
 .sphinx-tabs-tab[aria-selected="true"] {
-    background-color: #fff;
-    color: #2980b9;
-    border-bottom: 2px solid #2980b9;
+    margin: 0;
 }
 
 .sphinx-tabs-panel {
-    background-color: #f8f8f8 !important;
-    border: 1px solid #e1e4e5;
-    border-top: none;
     padding: 0;
     margin-bottom: 0;
 }
@@ -123,8 +125,4 @@
 
 .sphinx-tabs-panel .highlight:last-child {
     margin-bottom: 0;
-}
-
-.sphinx-tabs-panel .highlight pre {
-    padding-bottom: 12px;
 }
