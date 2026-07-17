@@ -36,8 +36,8 @@ therefore a target-node construct.
 
 **Field order.** Within a node's ``config``, fields are written in a consistent
 order — identity (``table``/``database``), then table/structural details, then
-feature blocks (``cdc_settings``, ``data_quality``, ``quarantine``,
-``table_migration_details``), and finally ``input_flows``. The order is
+feature blocks (``cdc_settings``, ``data_quality`` — with quarantine nested
+inside it — ``table_migration_details``), and finally ``input_flows``. The order is
 conventional only; it does not affect behaviour.
 
 Example: simple data flow
@@ -337,13 +337,13 @@ Target node configuration
      - CDC / snapshot-CDC settings for this target.
    * - **data_quality** (*optional*)
      - ``object``
-     - Data quality expectations: ``{ "expectations_path": <path> }``. Presence
-       enables expectations (there is no separate enabled flag).
-   * - **quarantine** (*optional*)
-     - ``object``
-     - Quarantine for rows failing expectations: ``{ "mode": "flag" | "table",
-       "target": { ... } }``. Omit for no quarantine; ``target`` is the quarantine
-       table config, required when ``mode`` is ``table``.
+     - Data quality expectations:
+       ``{ "enabled": true, "expectations_path": <path>, "quarantine": { ... } }``.
+       ``enabled`` defaults to ``true`` when the object is present. Quarantine for
+       rows failing expectations nests under ``quarantine``:
+       ``{ "mode": "flag" | "table", "target_details": { ... } }`` — omit
+       ``quarantine`` for none; ``target_details`` is the quarantine table config,
+       required when ``mode`` is ``table``.
    * - **table_migration_details** (*optional*)
      - ``object``
      - Table migration configuration.

@@ -79,6 +79,31 @@ All target-specific settings are configured directly on target nodes:
 }
 ```
 
+**Example with data quality + quarantine on a target** (nodespec `snake_case` input):
+
+```json
+{
+    "name": "target_customer",
+    "node_type": "target",
+    "config": {
+        "table": "customer_final",
+        "data_quality": {
+            "enabled": true,
+            "expectations_path": "./customer_dqe.json",
+            "quarantine": {
+                "mode": "table",
+                "target_details": { "target_format": "delta" }
+            }
+        }
+    }
+}
+```
+
+Quarantine now nests **inside** `data_quality` (with `enabled` and
+`target_details`); the transformer maps these to `dataQualityExpectationsEnabled`,
+`dataQualityExpectationsPath`, `quarantineMode`, and `quarantineTargetDetails` on
+the produced flow spec.
+
 ### Main Target Selection
 
 When multiple targets exist, the transformer needs to identify the "main" target:
