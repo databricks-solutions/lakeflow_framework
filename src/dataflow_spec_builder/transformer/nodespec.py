@@ -49,7 +49,7 @@ _KEYS = {
 _HANDLED = {
     "input_flows", "table", "table_type", "enabled", "once", "name",
     "cdc_settings", "cdc_snapshot_settings",
-    "data_quality", "quarantine", "table_migration_details",
+    "data_quality", "table_migration_details",
     "sink_type", "sink_config", "sink_options", "source_view",
 }
 
@@ -197,17 +197,19 @@ class NodespecSpecTransformer(BaseSpecTransformer):
             if cfg.get("cdc_snapshot_settings"):
                 dst["cdcSnapshotSettings"] = _deep_camel(cfg["cdc_snapshot_settings"])
         dq = cfg.get("data_quality") or {}
-        if dq_default:
+        if "enabled" in dq:
+            dst["dataQualityExpectationsEnabled"] = dq["enabled"]
+        elif dq_default:
             dst["dataQualityExpectationsEnabled"] = bool(dq)
         elif dq:
             dst["dataQualityExpectationsEnabled"] = True
         if dq.get("expectations_path"):
             dst["dataQualityExpectationsPath"] = dq["expectations_path"]
-        quarantine = cfg.get("quarantine") or {}
+        quarantine = dq.get("quarantine") or {}
         if quarantine.get("mode"):
             dst["quarantineMode"] = quarantine["mode"]
-        if quarantine.get("target"):
-            dst["quarantineTargetDetails"] = quarantine["target"]
+        if quarantine.get("target_details"):
+            dst["quarantineTargetDetails"] = quarantine["target_details"]
         if migration and cfg.get("table_migration_details"):
             dst["tableMigrationDetails"] = _deep_camel(cfg["table_migration_details"])
 

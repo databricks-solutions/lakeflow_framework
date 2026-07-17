@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "https://dlt-framework/schemas/spec_nodespec.json",
     "title": "Nodespec Dataflow Specification",
-    "description": "Node-based dataflow spec (snake_case). A node's `config` is discriminated by node_type + source_type/target_type/table_type so editors offer only the fields valid for that node. Feature bundles (cdc, snapshot, data_quality, quarantine, migration) are single nested objects. Targets declare their inputs via `input_flows`. Sink targets keep their current flat form for now (sink redesign deferred).",
+    "description": "Node-based dataflow spec (snake_case). A node's `config` is discriminated by node_type + source_type/target_type/table_type so editors offer only the fields valid for that node. Feature bundles (cdc, snapshot, data_quality, migration) are single nested objects; quarantine nests under data_quality. Targets declare their inputs via `input_flows`. Sink targets keep their current flat form for now (sink redesign deferred).",
     "$comment": "A node's `config` is discriminated at the node level via allOf/if-then keyed on node_type + source_type/target_type/table_type; each `then` selects one closed config $def, so editors offer only the fields valid for that node. Nested blobs are typed objects with descriptions. Sink targets keep their current flat form (sink_type/sink_config/sink_options) pending the sink redesign. Legacy definitions_sources.json / definitions_targets.json are camelCase; nodespec is snake_case, so source/target detail shapes are re-declared here. Literal Spark option keys (cloudFiles.*, kafka.*) are preserved verbatim.",
     "$defs": {
         "nodespec_spec": {
@@ -326,8 +326,7 @@
                 "sql_statement": {"type": "string", "description": "MV only: inline SQL defining the view."},
                 "refresh_policy": {"type": "string", "enum": ["auto", "incremental", "incremental_strict", "full"], "description": "MV only: refresh policy."},
                 "private": {"type": "boolean", "description": "MV only: create the materialized view as private (internal, not published to the catalog)."},
-                "data_quality": {"$ref": "#/$defs/data_quality"},
-                "quarantine": {"$ref": "#/$defs/quarantine"}
+                "data_quality": {"$ref": "#/$defs/data_quality"}
             },
             "required": ["table"],
             "additionalProperties": false,
@@ -391,9 +390,11 @@
 
         "data_quality": {
             "type": "object",
-            "description": "Data quality expectations. Presence enables expectations (no separate enabled flag).",
+            "description": "Data quality expectations for this target. Quarantine for failing rows is configured under the nested `quarantine` object.",
             "properties": {
-                "expectations_path": {"type": "string", "description": "Path to the expectations file."}
+                "enabled": {"type": "boolean", "default": true, "description": "Whether data quality expectations are enforced. Defaults to true when the data_quality object is present."},
+                "expectations_path": {"type": "string", "description": "Path to the expectations file."},
+                "quarantine": {"$ref": "#/$defs/quarantine"}
             },
             "required": ["expectations_path"],
             "additionalProperties": false
@@ -404,12 +405,12 @@
             "description": "Quarantine for rows failing expectations. Omit the whole object for no quarantine.",
             "properties": {
                 "mode": {"type": "string", "enum": ["flag", "table"], "description": "flag: mark rows in place; table: route bad rows to a side table."},
-                "target": {"$ref": "#/$defs/quarantine_target", "description": "Quarantine table config (required when mode=table)."}
+                "target_details": {"$ref": "#/$defs/quarantine_target", "description": "Quarantine table config (required when mode=table)."}
             },
             "required": ["mode"],
             "additionalProperties": false,
             "if": {"properties": {"mode": {"const": "table"}}, "required": ["mode"]},
-            "then": {"required": ["target"]}
+            "then": {"required": ["target_details"]}
         },
 
         "quarantine_target": {

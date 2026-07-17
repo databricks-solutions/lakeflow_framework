@@ -33,10 +33,11 @@
                 },
                 "cluster_by_auto": true,
                 "data_quality": {
-                    "expectations_path": "customer_staging_dqe.json"
-                },
-                "quarantine": {
-                    "mode": "flag"
+                    "enabled": true,
+                    "expectations_path": "customer_staging_dqe.json",
+                    "quarantine": {
+                        "mode": "flag"
+                    }
                 },
                 "input_flows": [
                     {
@@ -76,13 +77,14 @@
                     "ignore_null_updates": true
                 },
                 "data_quality": {
-                    "expectations_path": "customer_final_dqe.json"
-                },
-                "quarantine": {
-                    "mode": "table",
-                    "target": {
-                        "target_format": "delta",
-                        "table": "customer_final_node_quarantine"
+                    "enabled": true,
+                    "expectations_path": "customer_final_dqe.json",
+                    "quarantine": {
+                        "mode": "table",
+                        "target_details": {
+                            "target_format": "delta",
+                            "table": "customer_final_node_quarantine"
+                        }
                     }
                 },
                 "input_flows": [

@@ -21,10 +21,11 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "data_quality": {
-                    "expectations_path": "./customer_address_dqe.json"
-                },
-                "quarantine": {
-                    "mode": "flag"
+                    "enabled": true,
+                    "expectations_path": "./customer_address_dqe.json",
+                    "quarantine": {
+                        "mode": "flag"
+                    }
                 },
                 "input_flows": [
                     {
