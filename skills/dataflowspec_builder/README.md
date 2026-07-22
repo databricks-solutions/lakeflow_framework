@@ -179,7 +179,3 @@ See [docs/tested-medallion-example.md](docs/tested-medallion-example.md) for ful
 - [Framework Documentation](https://databricks-solutions.github.io/lakeflow_framework/) — official docs
 - [Databricks Asset Bundles](https://docs.databricks.com/dev-tools/bundles/index.html) — DABs reference
 - [Spark Declarative Pipelines](https://docs.databricks.com/en/delta-live-tables/index.html) — SDP/DLT docs
-
-## License
-
-This project is provided as-is for educational and workshop purposes.
