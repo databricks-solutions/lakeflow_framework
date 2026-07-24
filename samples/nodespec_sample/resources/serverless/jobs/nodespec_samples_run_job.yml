@@ -59,5 +59,17 @@ resources:
             pipeline_id: ${resources.pipelines.lakeflow_samples_nodespec_feature_materialized_views_pipeline.id}
             full_refresh: true
 
+        - task_key: nodespec_feature_libraries
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodespec_feature_libraries_pipeline.id}
+            full_refresh: true
+
+        # Template samples read snapshot CSVs staged by pattern-samples run 1
+        # (same staging volume as the other nodespec feature pipelines).
+        - task_key: nodespec_template_samples
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodespec_template_samples_pipeline.id}
+            full_refresh: true
+
       queue:
         enabled: true

@@ -42,14 +42,14 @@ _KEYS = {
     "datetime_format": "datetimeFormat", "deduplicate_mode": "deduplicateMode",
     "recursive_file_lookup": "recursiveFileLookup",
     "catalog_type": "catalogType", "auto_starting_versions_enabled": "autoStartingVersionsEnabled",
-    "source_details": "sourceDetails", "table_name": "tableName",
+    "table_name": "tableName",
 }
 
 # Keys a target config handles specially, so they are NOT copied into details.
 _HANDLED = {
     "input_flows", "table", "table_type", "enabled", "once", "name",
     "cdc_settings", "cdc_snapshot_settings",
-    "data_quality", "table_migration_details",
+    "data_quality", "table_migration",
     "sink_type", "sink_config", "sink_options", "source_view",
 }
 
@@ -208,10 +208,15 @@ class NodespecSpecTransformer(BaseSpecTransformer):
         quarantine = dq.get("quarantine") or {}
         if quarantine.get("mode"):
             dst["quarantineMode"] = quarantine["mode"]
-        if quarantine.get("target_details"):
-            dst["quarantineTargetDetails"] = quarantine["target_details"]
-        if migration and cfg.get("table_migration_details"):
-            dst["tableMigrationDetails"] = _deep_camel(cfg["table_migration_details"])
+        if quarantine.get("target"):
+            dst["quarantineTargetDetails"] = quarantine["target"]
+        if migration and cfg.get("table_migration"):
+            # Nested `source` maps to backend `sourceDetails` (not via global
+            # _KEYS — that would also rename cdc_snapshot_settings.source).
+            tm = _deep_camel(cfg["table_migration"])
+            if "source" in tm:
+                tm["sourceDetails"] = tm.pop("source")
+            dst["tableMigrationDetails"] = tm
 
     def _base(self, spec_data: Dict) -> Dict:
         base = {k: spec_data.get(c) for k, c in
@@ -391,11 +396,26 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     def _view_name(self, name: str) -> str:
         return name if name.startswith(self.VIEW_PREFIX) else f"{self.VIEW_PREFIX}{name}"
 
+    # Config keys on an internal delta source that require a real view (they
+    # reshape the stream — a bare table read cannot express them).
+    _INTERNAL_VIEW_KEYS = ("python_transform", "select_exp", "cdf_change_type_override",
+                           "reader_options", "where_clause")
+
     def _views_for(self, view: str) -> Tuple[Optional[str], Dict]:
         """Resolve an input to (source_view_name, views). A transformation also pulls
         in every source node so SDP can resolve its references."""
-        if view in self.internal:  # internal source reads the produced table directly
-            return self.internal[view], {}
+        if view in self.internal:  # source reading a table produced by a sibling target
+            node = self.lookup.get(view, {})
+            cfg = node.get("config", {})
+            # A plain internal read can reference the produced table directly. But
+            # if the source reshapes the stream (python_transform, select_exp, …),
+            # it needs a real view reading that table from `live`, or the transform
+            # would be silently dropped.
+            if not any(cfg.get(k) for k in self._INTERNAL_VIEW_KEYS):
+                return self.internal[view], {}
+            name = node.get("output_view_name") or self._view_name(view)
+            live_node = {**node, "config": {**cfg, "database": "live", "table": self.internal[view]}}
+            return name, {name: self._source_view(live_node)}
         node = self.lookup.get(view)
         if not node:
             return self._view_name(view), {}

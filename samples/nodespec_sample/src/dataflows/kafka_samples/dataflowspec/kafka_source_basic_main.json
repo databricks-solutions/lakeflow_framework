@@ -1,0 +1,35 @@
+{
+    "data_flow_id": "kafka_source_basic",
+    "data_flow_group": "nodespec_kafka_samples",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_topic_1",
+            "node_type": "source",
+            "source_type": "kafka",
+            "config": {
+                "mode": "stream",
+                "reader_options": {
+                    "kafka.bootstrap.servers": "${secret.kafka_source_bootstrap_servers}",
+                    "kafka.security.protocol": "SSL",
+                    "subscribe": "{kafka_source_topic}",
+                    "startingOffsets": "earliest"
+                }
+            }
+        },
+        {
+            "name": "target_topic_1_staging",
+            "node_type": "target",
+            "config": {
+                "database": "{feature_schema}",
+                "table": "topic_1_staging",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "input_flows": [
+                    "v_topic_1"
+                ]
+            }
+        }
+    ]
+}

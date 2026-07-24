@@ -1,0 +1,47 @@
+{
+    "data_flow_id": "kafka_sink",
+    "data_flow_group": "nodespec_kafka_samples",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_kafka_sink_sample_source",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "src_kafka_sink_sample_source",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_final_transform",
+            "node_type": "source",
+            "source_type": "sql",
+            "config": {
+                "mode": "stream",
+                "sql_path": "./tfm_final.sql"
+            }
+        },
+        {
+            "name": "target_my_kafka_sink",
+            "node_type": "target",
+            "target_type": "kafka_sink",
+            "config": {
+                "name": "my_kafka_sink",
+                "sink_options": {
+                    "topic": "{kafka_sink_topic}",
+                    "kafka.bootstrap.servers": "{kafka_servers}",
+                    "kafka.security.protocol": "SSL",
+                    "kafka.ssl.keystore.secretRetrieval": {
+                        "scope": "{kafka_keystore_password_secret_scope_name}",
+                        "key": "{kafka_keystore_password_access_key_name}"
+                    }
+                },
+                "input_flows": [
+                    "v_final_transform"
+                ]
+            }
+        }
+    ]
+}

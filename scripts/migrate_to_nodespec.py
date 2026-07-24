@@ -3,7 +3,11 @@
 Migrate Lakeflow Framework dataflow specs to Nodespec format.
 
 Converts standard, flow, and materialized_view specs into the node-based
-Nodespec specification format.
+Nodespec specification format. Template specs (a ``template`` name +
+``parameterSets``) are first expanded against their template definition — one
+concrete spec per parameter set — and each expansion is then migrated to
+nodespec, so a single template spec yields one nodespec file per parameter set
+(named ``<data_flow_id>_main.json``).
 
 Nodespec specs are snake_case throughout, so this script converts the
 camelCase field names used by the standard/flow/materialized_view formats
@@ -34,6 +38,7 @@ Examples:
 import argparse
 import json
 import os
+import re
 import sys
 from typing import Dict, List, Optional, Any, Tuple
 
@@ -96,11 +101,11 @@ _QUARANTINE_MAP = {
 _TABLE_MIGRATION_MAP = {
     "catalogType": "catalog_type",
     "autoStartingVersionsEnabled": "auto_starting_versions_enabled",
-    "sourceDetails": "source_details",
+    "sourceDetails": "source",
     "tableName": "table_name",
 }
 
-# Inner keys of table_migration_details.source_details (a delta source shape).
+# Inner keys of table_migration.source (a delta source shape).
 _MIGRATION_SOURCE_MAP = {
     "selectExp": "select_exp",
     "whereClause": "where_clause",
@@ -143,7 +148,7 @@ _CONFIG_ORDER = [
     "comment", "spark_conf", "row_filter", "config_flags",
     "refresh_policy", "private", "once",
     "cdc_settings", "cdc_snapshot_settings", "data_quality", "quarantine",
-    "table_migration_details",
+    "table_migration",
     "name", "sink_type", "sink_config", "sink_options",
     "input_flows",
 ]
@@ -243,12 +248,16 @@ def _add_target_settings(config: Dict, src: Dict) -> None:
             quarantine["target"] = _rename(quarantine_details, _QUARANTINE_MAP)
         config["quarantine"] = quarantine
 
-    table_migration = _get(src, "tableMigrationDetails", "table_migration_details")
+    table_migration = (_get(src, "tableMigrationDetails", "table_migration")
+                       or src.get("table_migration_details"))
     if table_migration:
         tm = _rename(table_migration, _TABLE_MIGRATION_MAP)
-        if isinstance(tm.get("source_details"), dict):
-            tm["source_details"] = _rename(tm["source_details"], _MIGRATION_SOURCE_MAP)
-        config["table_migration_details"] = tm
+        # Accept legacy source_details key from partially migrated specs.
+        if "source_details" in tm and "source" not in tm:
+            tm["source"] = tm.pop("source_details")
+        if isinstance(tm.get("source"), dict):
+            tm["source"] = _rename(tm["source"], _MIGRATION_SOURCE_MAP)
+        config["table_migration"] = tm
 
 
 def _result_envelope(spec: Dict, nodes: List[Dict]) -> Dict:
@@ -285,6 +294,20 @@ def _migrate_nodespec_config(cfg: Dict) -> None:
         if qtd:
             quarantine["target"] = qtd
         cfg["quarantine"] = quarantine
+    # Drop `_details` suffixes on nested feature keys.
+    dq = cfg.get("data_quality")
+    if isinstance(dq, dict):
+        q = dq.get("quarantine")
+        if isinstance(q, dict) and "target_details" in q and "target" not in q:
+            q["target"] = q.pop("target_details")
+    q = cfg.get("quarantine")
+    if isinstance(q, dict) and "target_details" in q and "target" not in q:
+        q["target"] = q.pop("target_details")
+    if "table_migration_details" in cfg and "table_migration" not in cfg:
+        cfg["table_migration"] = cfg.pop("table_migration_details")
+    tm = cfg.get("table_migration")
+    if isinstance(tm, dict) and "source_details" in tm and "source" not in tm:
+        tm["source"] = tm.pop("source_details")
     # table_details is dropped: its fields (private + comment/spark_conf/config_flags)
     # move to the config top level.
     td = cfg.pop("table_details", None)
@@ -320,6 +343,91 @@ def migrate_spec(spec: Dict) -> Dict:
     else:
         print(f"  Warning: Unknown dataFlowType '{spec_type}', treating as standard")
         return _migrate_standard(spec)
+
+
+# ─── Template Spec Expansion ──────────────────────────────────────────────────
+# A template spec (``template`` name + ``parameterSets``) is not a dataflow spec
+# on its own: it references a separate template definition file whose ``template``
+# body carries ``${param.X}`` placeholders. Each parameter set expands the body
+# into one concrete standard/flow/materialized_view spec, which then migrates to
+# nodespec through the normal path. One input template spec therefore yields one
+# nodespec spec per parameter set.
+
+_PARAM_PATTERN = re.compile(r"\$\{param\.([^}]+)\}")
+
+
+def is_template_spec(spec: Dict) -> bool:
+    """A template spec references a template by name and supplies parameter sets."""
+    return isinstance(spec.get("template"), str) and "parameterSets" in spec
+
+
+def _find_templates_dir(spec_path: str, override: Optional[str] = None) -> Optional[str]:
+    """Locate the ``templates`` directory, walking up from the spec file.
+
+    Mirrors the framework, which resolves templates at ``<bundle>/templates``.
+    """
+    if override:
+        return override
+    d = os.path.dirname(os.path.abspath(spec_path))
+    for _ in range(10):
+        candidate = os.path.join(d, "templates")
+        if os.path.isdir(candidate):
+            return candidate
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    return None
+
+
+def _load_template_definition(template_name: str, templates_dir: str) -> Dict:
+    """Load a template definition file (``<templates_dir>/<name>.json``)."""
+    path = os.path.join(templates_dir, f"{template_name}.json")
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"Template definition not found: {path}")
+    with open(path, "r") as f:
+        return json.load(f)
+
+
+def _substitute_params(obj: Any, params: Dict) -> Any:
+    """Recursively replace ``${param.X}`` placeholders using a parameter set.
+
+    A string that is exactly one placeholder is replaced by the raw parameter
+    value (preserving lists/objects); embedded placeholders are stringified.
+    """
+    if isinstance(obj, dict):
+        return {_substitute_params(k, params): _substitute_params(v, params)
+                for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_substitute_params(i, params) for i in obj]
+    if isinstance(obj, str):
+        full = _PARAM_PATTERN.fullmatch(obj)
+        if full:
+            return _template_param(full.group(1), params)
+        if _PARAM_PATTERN.search(obj):
+            return _PARAM_PATTERN.sub(
+                lambda m: str(_template_param(m.group(1), params)), obj)
+        return obj
+    return obj
+
+
+def _template_param(name: str, params: Dict):
+    if name not in params:
+        raise KeyError(f"Template parameter '{name}' not provided in parameter set")
+    return params[name]
+
+
+def expand_template_spec(spec: Dict, templates_dir: str) -> List[Tuple[str, Dict]]:
+    """Expand a template spec into (data_flow_id, concrete_spec) pairs."""
+    template_name = spec["template"]
+    template_def = _load_template_definition(template_name, templates_dir)
+    body = template_def.get("template", {})
+    expanded: List[Tuple[str, Dict]] = []
+    for params in spec.get("parameterSets", []):
+        concrete = _substitute_params(body, params)
+        data_flow_id = params.get("dataFlowId") or concrete.get("dataFlowId")
+        expanded.append((data_flow_id, concrete))
+    return expanded
 
 
 # ─── Standard Spec Migration ─────────────────────────────────────────────────
@@ -577,21 +685,61 @@ def _migrate_materialized_view(spec: Dict) -> Dict:
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
 
-def process_file(input_path: str, output_path: Optional[str] = None) -> str:
-    """Process a single spec file."""
-    with open(input_path, "r") as f:
-        spec = json.load(f)
-
-    result = migrate_spec(spec)
-
-    if output_path is None:
-        output_path = input_path
-
+def _write_spec(result: Dict, output_path: str) -> None:
     with open(output_path, "w") as f:
         json.dump(result, f, indent=4)
         f.write("\n")
 
-    return output_path
+
+def _apply_group_prefix(spec: Dict, prefix: Optional[str]) -> Dict:
+    """Prefix ``data_flow_group`` (e.g. ``nodespec_``) unless already present.
+
+    Nodespec samples live in their own bundle and namespace their pipeline
+    groups with a ``nodespec_`` prefix so a group filter targets the nodespec
+    copies without colliding with the legacy feature-samples groups. Applied to
+    the migrated (snake_case) spec, so it also works for template expansions.
+    """
+    if not prefix:
+        return spec
+    group = spec.get("data_flow_group")
+    if isinstance(group, str) and group and not group.startswith(prefix):
+        spec["data_flow_group"] = f"{prefix}{group}"
+    return spec
+
+
+def process_file(input_path: str, output_path: Optional[str] = None,
+                 templates_dir: Optional[str] = None,
+                 group_prefix: Optional[str] = None) -> List[str]:
+    """Process a single spec file. Returns the list of output paths written.
+
+    A template spec fans out into one nodespec file per parameter set, named
+    ``<data_flow_id>_main.json`` alongside the requested output.
+    """
+    with open(input_path, "r") as f:
+        spec = json.load(f)
+
+    if output_path is None:
+        output_path = input_path
+
+    if is_template_spec(spec):
+        tdir = _find_templates_dir(input_path, templates_dir)
+        if not tdir:
+            raise FileNotFoundError(
+                "Could not locate a 'templates' directory for template spec "
+                f"{input_path}; pass --templates-dir")
+        out_dir = os.path.dirname(output_path) or "."
+        os.makedirs(out_dir, exist_ok=True)
+        written: List[str] = []
+        for data_flow_id, concrete in expand_template_spec(spec, tdir):
+            result = _apply_group_prefix(migrate_spec(concrete), group_prefix)
+            spec_path = os.path.join(out_dir, f"{data_flow_id}_main.json")
+            _write_spec(result, spec_path)
+            written.append(spec_path)
+        return written
+
+    result = _apply_group_prefix(migrate_spec(spec), group_prefix)
+    _write_spec(result, output_path)
+    return [output_path]
 
 
 def main():
@@ -603,6 +751,12 @@ def main():
     parser.add_argument("--output-dir", "-d", help="Output directory (for directory mode)")
     parser.add_argument("--recursive", "-r", action="store_true",
                         help="Process directories recursively")
+    parser.add_argument("--templates-dir", "-t",
+                        help="Directory holding template definition files "
+                             "(auto-detected by walking up to a 'templates' dir)")
+    parser.add_argument("--group-prefix", "-g",
+                        help="Prefix to prepend to each spec's data_flow_group "
+                             "(e.g. 'nodespec_'); skipped if already present")
     parser.add_argument("--dry-run", action="store_true",
                         help="Show what would be done without writing files")
 
@@ -613,8 +767,10 @@ def main():
         if args.dry_run:
             print(f"Would convert: {args.input} → {output}")
         else:
-            result = process_file(args.input, output)
-            print(f"Converted: {args.input} → {result}")
+            results = process_file(args.input, output, args.templates_dir,
+                                   args.group_prefix)
+            for result in results:
+                print(f"Converted: {args.input} → {result}")
 
     elif os.path.isdir(args.input):
         output_dir = args.output_dir or args.input
@@ -633,9 +789,12 @@ def main():
                         print(f"Would convert: {input_path} → {output_path}")
                     else:
                         try:
-                            process_file(input_path, output_path)
-                            print(f"  ✓ {fname}")
-                            count += 1
+                            written = process_file(input_path, output_path,
+                                                   args.templates_dir,
+                                                   args.group_prefix)
+                            for out in written:
+                                print(f"  ✓ {os.path.basename(out)}")
+                            count += len(written)
                         except Exception as e:
                             print(f"  ✗ {fname}: {e}")
 

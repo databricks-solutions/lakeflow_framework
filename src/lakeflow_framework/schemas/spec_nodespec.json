@@ -320,8 +320,8 @@
                 "config_flags": {"type": "array", "items": {"type": "string", "enum": ["disable_operational_metadata"]}},
                 "once": {"type": "boolean", "default": false, "description": "Run the flow to this target once (batch), then stop."},
                 "cdc_settings": {"$ref": "./definitions_main.json#/definitions/cdcSettings"},
-                "cdc_snapshot_settings": {"$ref": "#/$defs/snapshot_cdc_config"},
-                "table_migration_details": {"$ref": "#/$defs/table_migration_details"},
+                "cdc_snapshot_settings": {"$ref": "#/$defs/cdc_snapshot_config"},
+                "table_migration": {"$ref": "#/$defs/table_migration"},
                 "sql_path": {"type": "string", "description": "MV only: path to a .sql file defining the view."},
                 "sql_statement": {"type": "string", "description": "MV only: inline SQL defining the view."},
                 "refresh_policy": {"type": "string", "enum": ["auto", "incremental", "incremental_strict", "full"], "description": "MV only: refresh policy."},
@@ -339,7 +339,7 @@
                         "properties": {
                             "cdc_settings": false,
                             "cdc_snapshot_settings": false,
-                            "table_migration_details": false,
+                            "table_migration": false,
                             "once": false
                         }
                     },
@@ -405,12 +405,12 @@
             "description": "Quarantine for rows failing expectations. Omit the whole object for no quarantine.",
             "properties": {
                 "mode": {"type": "string", "enum": ["flag", "table"], "description": "flag: mark rows in place; table: route bad rows to a side table."},
-                "target_details": {"$ref": "#/$defs/quarantine_target", "description": "Quarantine table config (required when mode=table)."}
+                "target": {"$ref": "#/$defs/quarantine_target", "description": "Quarantine table config (required when mode=table)."}
             },
             "required": ["mode"],
             "additionalProperties": false,
             "if": {"properties": {"mode": {"const": "table"}}, "required": ["mode"]},
-            "then": {"required": ["target_details"]}
+            "then": {"required": ["target"]}
         },
 
         "quarantine_target": {
@@ -428,14 +428,14 @@
             "additionalProperties": false
         },
 
-        "table_migration_details": {
+        "table_migration": {
             "type": "object",
             "description": "One-time migration of an existing table into this pipeline.",
             "properties": {
                 "enabled": {"type": "boolean"},
                 "auto_starting_versions_enabled": {"type": "boolean", "default": true},
                 "catalog_type": {"type": "string", "enum": ["hms", "uc"]},
-                "source_details": {
+                "source": {
                     "type": "object",
                     "properties": {
                         "database": {"type": "string"},
@@ -448,13 +448,13 @@
                     "additionalProperties": false
                 }
             },
-            "required": ["enabled", "catalog_type", "source_details"],
+            "required": ["enabled", "catalog_type", "source"],
             "additionalProperties": false
         },
 
-        "snapshot_cdc_config": {
+        "cdc_snapshot_config": {
             "type": "object",
-            "description": "Snapshot CDC config for a target. Historical snapshots read files/tables directly (no source node); periodic snapshots read from an upstream source.",
+            "description": "CDC snapshot config for a target. Historical snapshots read files/tables directly (no source node); periodic snapshots read from an upstream source.",
             "properties": {
                 "keys": {"type": "array", "items": {"type": "string"}},
                 "scd_type": {"type": ["string", "integer"]},

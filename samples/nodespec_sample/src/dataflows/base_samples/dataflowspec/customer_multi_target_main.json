@@ -81,7 +81,7 @@
                     "expectations_path": "customer_final_dqe.json",
                     "quarantine": {
                         "mode": "table",
-                        "target_details": {
+                        "target": {
                             "target_format": "delta",
                             "table": "customer_final_node_quarantine"
                         }

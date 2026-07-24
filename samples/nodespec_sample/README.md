@@ -92,7 +92,7 @@ All target-specific settings are configured directly on target nodes:
             "expectations_path": "./customer_dqe.json",
             "quarantine": {
                 "mode": "table",
-                "target_details": { "target_format": "delta" }
+                "target": { "target_format": "delta" }
             }
         }
     }
@@ -100,7 +100,7 @@ All target-specific settings are configured directly on target nodes:
 ```
 
 Quarantine now nests **inside** `data_quality` (with `enabled` and
-`target_details`); the transformer maps these to `dataQualityExpectationsEnabled`,
+`quarantine.target`); the transformer maps these to `dataQualityExpectationsEnabled`,
 `dataQualityExpectationsPath`, `quarantineMode`, and `quarantineTargetDetails` on
 the produced flow spec.
 
@@ -212,6 +212,56 @@ Edit `src/pipeline_configs/dev_substitutions.json` to add your own substitution 
 4. Create a pipeline resource file in `resources/classic/` and `resources/serverless/`
 
 The Nodespec specs are automatically converted to flow specs at runtime, so all framework features (CDC, data quality, secrets, etc.) work seamlessly.
+
+### Regenerating Specs From `feature-samples`
+
+Every nodespec spec in this sample is produced **only** by the migration
+script — none are hand-edited. To (re)generate them from the legacy
+`feature-samples` specs, run `scripts/migrate_to_nodespec.py` with
+`--group-prefix nodespec_` so the `data_flow_group` matches the pipeline
+`dataFlowGroupFilter`s used here:
+
+```bash
+# Feature samples (standard/flow/materialized_view specs)
+python scripts/migrate_to_nodespec.py \
+  samples/feature-samples/src/dataflows/feature_samples/dataflowspec \
+  -d samples/nodespec_sample/src/dataflows/feature_samples/dataflowspec \
+  --group-prefix nodespec_
+
+# Kafka samples
+python scripts/migrate_to_nodespec.py \
+  samples/feature-samples/src/dataflows/kafka_samples/dataflowspec \
+  -d samples/nodespec_sample/src/dataflows/kafka_samples/dataflowspec \
+  --group-prefix nodespec_
+
+# Template samples — the script expands the template definition + parameterSets
+# into one nodespec file per parameter set (template_customer_main.json, …).
+python scripts/migrate_to_nodespec.py \
+  samples/feature-samples/src/dataflows/template_samples/dataflowspec/template_samples_main.json \
+  -o samples/nodespec_sample/src/dataflows/template_samples/dataflowspec/template_samples_main.json \
+  --group-prefix nodespec_
+```
+
+Supporting files a spec references (`schemas/`, `dml/`, `python_functions/`,
+plus `src/python/` modules and `src/libraries/` wheels) are data assets, not
+specs, and are copied over alongside the generated JSON.
+
+### Additional Sample Groups
+
+Beyond `base_samples` and `feature_samples`, this bundle also carries:
+
+| Group | `dataFlowGroup` | Runs in `nodespec_samples_run_job`? |
+|-------|-----------------|-------------------------------------|
+| Libraries (cluster-installed wheel → MV) | `nodespec_feature_samples_libraries` | ✅ yes |
+| Template (CDC-from-snapshot, expanded) | `nodespec_template_samples` | ✅ yes |
+| Kafka (source + sink) | `nodespec_kafka_samples` | ❌ no — needs a live broker |
+
+The **kafka** pipeline is deployed but wired to its own opt-in
+`nodespec_kafka_samples_run_job`; it is intentionally left out of the main run
+job (and `deploy_and_test`) because the source/sink require a real Kafka broker
+(servers/secrets in `dev_substitutions.json` / `dev_secrets.json` are
+placeholders). The **template** and **libraries** pipelines read data staged by
+the `pattern-samples` run and run as part of the main job.
 
 ## Backend Behavior Notes
 

@@ -1,0 +1,16 @@
+resources:
+  jobs:
+    nodespec_kafka_samples_run_job:
+      # Separate, opt-in job: the kafka source/sink specs need a live Kafka
+      # broker (servers/secrets are placeholders), so this is NOT wired into
+      # nodespec_samples_run_job and is not exercised by deploy_and_test.
+      # It deploys the kafka pipeline for manual runs against a real broker.
+      name: Lakeflow Framework - Nodespec Kafka Samples - Run (${var.logical_env})
+      tasks:
+        - task_key: nodespec_kafka_samples_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_nodespec_kafka_samples_pipeline.id}
+            full_refresh: true
+
+      queue:
+        enabled: true

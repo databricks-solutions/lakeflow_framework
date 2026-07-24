@@ -37,7 +37,7 @@ therefore a target-node construct.
 **Field order.** Within a node's ``config``, fields are written in a consistent
 order — identity (``table``/``database``), then table/structural details, then
 feature blocks (``cdc_settings``, ``data_quality`` — with quarantine nested
-inside it — ``table_migration_details``), and finally ``input_flows``. The order is
+inside it — ``table_migration``), and finally ``input_flows``. The order is
 conventional only; it does not affect behaviour.
 
 Example: simple data flow
@@ -341,10 +341,10 @@ Target node configuration
        ``{ "enabled": true, "expectations_path": <path>, "quarantine": { ... } }``.
        ``enabled`` defaults to ``true`` when the object is present. Quarantine for
        rows failing expectations nests under ``quarantine``:
-       ``{ "mode": "flag" | "table", "target_details": { ... } }`` — omit
-       ``quarantine`` for none; ``target_details`` is the quarantine table config,
+       ``{ "mode": "flag" | "table", "target": { ... } }`` — omit
+       ``quarantine`` for none; ``target`` is the quarantine table config,
        required when ``mode`` is ``table``.
-   * - **table_migration_details** (*optional*)
+   * - **table_migration** (*optional*)
      - ``object``
      - Table migration configuration.
    * - **input_flows**
@@ -356,7 +356,7 @@ Target node configuration
 
 .. note::
    Which fields are valid depends on ``table_type``. Streaming-table settings
-   (``cdc_settings``, ``cdc_snapshot_settings``, ``table_migration_details``,
+   (``cdc_settings``, ``cdc_snapshot_settings``, ``table_migration``,
    ``once``) are only allowed on streaming tables (``table_type`` ``st`` or
    omitted); materialized-view settings (``sql_path``, ``sql_statement``,
    ``refresh_policy``, ``private``) are only allowed on materialized views

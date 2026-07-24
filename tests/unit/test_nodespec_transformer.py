@@ -4,7 +4,7 @@ Focus areas:
 - basic source -> target streaming transformation
 - the data_quality block with quarantine nested inside it
   (``data_quality.enabled`` / ``data_quality.quarantine.mode`` /
-  ``data_quality.quarantine.target_details``)
+  ``data_quality.quarantine.target``)
 - materialized-view expansion
 - factory registration of the ``nodespec`` type
 """
@@ -77,7 +77,7 @@ class TestNodespecDataQuality:
             "expectations_path": "./customer_dqe.json",
             "quarantine": {
                 "mode": "table",
-                "target_details": {"target_format": "delta"},
+                "target": {"target_format": "delta"},
             },
         })
         result = NodespecSpecTransformer().transform(spec)
@@ -99,7 +99,7 @@ class TestNodespecDataQuality:
         result = NodespecSpecTransformer().transform(spec)
         assert result["dataQualityExpectationsEnabled"] is True
 
-    def test_quarantine_flag_mode_has_no_target_details(self, pipeline_context):
+    def test_quarantine_flag_mode_has_no_target(self, pipeline_context):
         spec = self._dq_target({
             "enabled": True,
             "expectations_path": "./customer_dqe.json",
@@ -109,7 +109,7 @@ class TestNodespecDataQuality:
         assert result["quarantineMode"] == "flag"
         assert "quarantineTargetDetails" not in result
 
-    def test_data_quality_not_leaked_into_target_details(self, pipeline_context):
+    def test_data_quality_not_leaked_into_target(self, pipeline_context):
         spec = self._dq_target({
             "enabled": True,
             "expectations_path": "./customer_dqe.json",

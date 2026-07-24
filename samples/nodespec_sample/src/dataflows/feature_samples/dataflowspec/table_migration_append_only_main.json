@@ -29,11 +29,11 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "table_migration_details": {
+                "table_migration": {
                     "catalog_type": "uc",
                     "enabled": true,
                     "auto_starting_versions_enabled": true,
-                    "source_details": {
+                    "source": {
                         "database": "{bronze_schema}",
                         "table": "table_to_migrate_scd0"
                     }

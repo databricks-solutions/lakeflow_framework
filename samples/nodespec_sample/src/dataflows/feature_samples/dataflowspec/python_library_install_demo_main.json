@@ -1,0 +1,28 @@
+{
+    "data_flow_id": "feature_library_cluster_install",
+    "data_flow_group": "nodespec_feature_samples_libraries",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_library_cluster_install",
+            "node_type": "source",
+            "source_type": "python",
+            "config": {
+                "mode": "batch",
+                "python_module": "library_demo_source.get_phone_demo",
+                "tokens": {}
+            }
+        },
+        {
+            "name": "target_mv_library_cluster_install",
+            "node_type": "target",
+            "config": {
+                "table": "mv_library_cluster_install",
+                "table_type": "mv",
+                "input_flows": [
+                    "v_library_cluster_install"
+                ]
+            }
+        }
+    ]
+}
