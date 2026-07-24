@@ -17,3 +17,4 @@ A Data Flow Spec is a JSON file that defines the structure of a single data flow
    standard
    flows
    materialized-views
+   nodespec

@@ -2,7 +2,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Tuple, Optional, Any
 
-from lakeflow_framework.config_resolver import resolve_framework_config_dir
+from lakeflow_framework.config_resolver import resolve_framework_config_dir, resolve_framework_config_path
 from lakeflow_framework.constants import FrameworkPaths
 import lakeflow_framework.pipeline_config as pipeline_config
 import lakeflow_framework.utility as utility
@@ -45,6 +45,7 @@ class SpecMapper:
             max_workers: Maximum parallel workers for processing
         """
         self.framework_path = framework_path
+        self._framework_config_path = resolve_framework_config_path(framework_path)
         self.max_workers = max_workers
         self._mapping_cache: Dict[str, Dict] = {}
         

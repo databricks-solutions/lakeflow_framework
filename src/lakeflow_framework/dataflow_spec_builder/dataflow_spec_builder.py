@@ -46,6 +46,10 @@ class DataflowSpecBuilder:
         build(): Build dataflow specifications.
     """
     
+    # The default spec type used when a spec omits data_flow_type. nodespec is
+    # the framework's unified spec format.
+    DEFAULT_DATA_FLOW_TYPE = "nodespec"
+
     class Keys:
         """Constants for dictionary keys for the dataflow spec JSON files, and final dataflow spec format"""
         # Core dataflow specification keys
@@ -203,8 +207,31 @@ class DataflowSpecBuilder:
         main_specs = {}
         flow_specs = {}
         
+        # Map of snake_case → camelCase for core metadata keys.
+        # Specs may use either convention; we normalise to camelCase in-place
+        # so downstream processing (filtering, validation, transformation) works uniformly.
+        _METADATA_SNAKE_TO_CAMEL = {
+            "data_flow_id": self.Keys.DATA_FLOW_ID,
+            "data_flow_group": self.Keys.DATA_FLOW_GROUP,
+            "data_flow_type": self.Keys.DATA_FLOW_TYPE,
+            "data_flow_version": self.Keys.DATA_FLOW_VERSION,
+        }
+
+        def _normalise_spec_metadata(spec: Dict) -> None:
+            """Normalise snake_case metadata keys to camelCase in-place."""
+            for snake, camel in _METADATA_SNAKE_TO_CAMEL.items():
+                if snake in spec and camel not in spec:
+                    spec[camel] = spec.pop(snake)
+
         def _extract_spec(spec: Dict) -> Dict:
             """Extract metadata from a dataflow specification."""
+            _normalise_spec_metadata(spec)
+            # nodespec is the default/unified spec type, so data_flow_type may be
+            # omitted. Default it here (in-place) so type selection, metadata
+            # validation, schema validation, and transformation all treat a
+            # type-less spec as nodespec.
+            if not spec.get(self.Keys.DATA_FLOW_TYPE):
+                spec[self.Keys.DATA_FLOW_TYPE] = self.DEFAULT_DATA_FLOW_TYPE
             return {
                 "fileType": "main",
                 self.Keys.DATA_FLOW_ID: spec.get(self.Keys.DATA_FLOW_ID, None),
@@ -421,7 +448,30 @@ class DataflowSpecBuilder:
             spec_path, spec_payload = spec_item
             file_type = spec_payload.get("fileType", "main")
             json_data = spec_payload.get(self.Keys.DATA)
-            if file_type == "main":
+            spec_type = spec_payload.get(self.Keys.DATA_FLOW_TYPE, "")
+
+            # Nodespec specs use their own schema directly — the main.json
+            # if/else chain doesn't route cleanly for non-standard types.
+            if spec_type == "nodespec":
+                nodespec_schema_path = os.path.join(self.framework_path, "schemas", "spec_nodespec.json")
+                if os.path.exists(nodespec_schema_path):
+                    nodespec_validator = utility.JSONValidator(nodespec_schema_path)
+                    # Nodespec field names are snake_case. The metadata keys were
+                    # normalised to camelCase at read time for uniform downstream
+                    # processing, so present them as snake_case for validation.
+                    camel_to_snake = {
+                        self.Keys.DATA_FLOW_ID: "data_flow_id",
+                        self.Keys.DATA_FLOW_GROUP: "data_flow_group",
+                        self.Keys.DATA_FLOW_TYPE: "data_flow_type",
+                        self.Keys.DATA_FLOW_VERSION: "data_flow_version",
+                    }
+                    validation_data = {
+                        camel_to_snake.get(k, k): v for k, v in json_data.items()
+                    }
+                    errors = nodespec_validator.validate(validation_data)
+                else:
+                    errors = []
+            elif file_type == "main":
                 errors = self.main_validator.validate(json_data)
             else:
                 errors = self.flow_validator.validate(json_data)
@@ -698,6 +748,12 @@ class DataflowSpecBuilder:
     def _get_expectations(self, dataflow_spec: Dict, base_path: str) -> Dict:
         """Set the expectation validator path in the dataflow specification."""
         dqe_validator_path = os.path.join(self.framework_path,FrameworkPaths.EXPECTATIONS_SPEC_SCHEMA_PATH)
+        dqe_builder = DataQualityExpectationBuilder(
+            self.logger,
+            dqe_validator_path,
+            self.spec_file_format
+        )
+
         if dataflow_spec.get(self.Keys.DATA_QUALITY_EXPECTATIONS_ENABLED, False):
             dqe_path = dataflow_spec.get(self.Keys.DATA_QUALITY_EXPECTATIONS_PATH, None)
             if dqe_path is None or dqe_path.strip() == "":
@@ -705,10 +761,21 @@ class DataflowSpecBuilder:
 
             dqe_path = f"{base_path}/{PipelineBundlePaths.DQE_PATH}/{dqe_path}"
             dataflow_spec[self.Keys.DATA_QUALITY_EXPECTATIONS] = (
-                DataQualityExpectationBuilder(
-                    self.logger,
-                    dqe_validator_path,
-                    self.spec_file_format
-                ).get_expectations(dqe_path).__dict__)
+                dqe_builder.get_expectations(dqe_path).__dict__)
+
+        # Also load DQ expectations for staging tables within flow groups
+        for flow_group in dataflow_spec.get(self.Keys.FLOW_GROUPS, []):
+            staging_tables = flow_group.get("stagingTables", {})
+            for staging_config in staging_tables.values():
+                if staging_config.get(self.Keys.DATA_QUALITY_EXPECTATIONS_ENABLED, False):
+                    staging_dqe_path = staging_config.get(self.Keys.DATA_QUALITY_EXPECTATIONS_PATH, None)
+                    if staging_dqe_path is None or staging_dqe_path.strip() == "":
+                        self.logger.warning(
+                            "DQ expectations enabled for staging table but no path specified"
+                        )
+                        continue
+                    full_staging_dqe_path = f"{base_path}/{PipelineBundlePaths.DQE_PATH}/{staging_dqe_path}"
+                    staging_config[self.Keys.DATA_QUALITY_EXPECTATIONS] = (
+                        dqe_builder.get_expectations(full_staging_dqe_path).__dict__)
 
         return dataflow_spec

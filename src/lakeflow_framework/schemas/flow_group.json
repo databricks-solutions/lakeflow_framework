@@ -50,6 +50,10 @@
                                     "clusterByAuto": {"type": "boolean"},
                                     "cdcSettings": {"$ref": "./definitions_main.json#/definitions/cdcSettings"},
                                     "cdcSnapshotSettings": {"$ref": "./definitions_main.json#/definitions/cdcSnapshotSettings"},
+                                    "dataQualityExpectationsEnabled": {"type": "boolean", "default": false},
+                                    "dataQualityExpectationsPath": {"type": "string"},
+                                    "quarantineMode": {"type": "string", "enum": ["off", "flag", "table"], "default": "off"},
+                                    "quarantineTargetDetails": {"$ref": "./definitions_main.json#/definitions/quarantineTargetDetails"},
                                     "configFlags": {"$ref": "./definitions_targets.json#/$defs/configFlags"}
                                 },
                                 "additionalProperties": false

@@ -1,0 +1,43 @@
+{
+    "data_flow_id": "feature_python_function_transform_transform",
+    "data_flow_group": "nodespec_feature_samples_python",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_source_python_function_transform",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "customer",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_transform_python_function",
+            "node_type": "transformation",
+            "transformation_type": "python",
+            "config": {
+                "function_path": "feature_python_function_transform.py"
+            }
+        },
+        {
+            "name": "target_feature_python_function_transform",
+            "node_type": "target",
+            "config": {
+                "table": "feature_python_function_transform",
+                "schema_path": "target/feature_python_function_transform_schema.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "input_flows": [
+                    {
+                        "view": "v_transform_python_function",
+                        "flow": "f_transform_python_function"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,6 @@
+{
+    "logLevel": "INFO",
+    "specFileFormat": "json",
+    "table_migration_state_volume_path": "/Volumes/main/lakeflow_samples_staging{logical_env}/stg_volume/checkpoint_state"
+}
+

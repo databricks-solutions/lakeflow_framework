@@ -1,0 +1,92 @@
+{
+    "data_flow_id": "template_customer",
+    "data_flow_group": "nodespec_template_samples",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_stg_template_customer_customer",
+            "node_type": "target",
+            "config": {
+                "table": "stg_template_customer_customer",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "config_flags": [
+                    "disable_operational_metadata"
+                ],
+                "cdc_snapshot_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "1",
+                    "snapshot_type": "historical",
+                    "source_type": "file",
+                    "source": {
+                        "format": "csv",
+                        "path": "{sample_file_location}/template_samples/snapshot_customer/customer_{version}.csv",
+                        "reader_options": {
+                            "header": "true"
+                        },
+                        "version_type": "timestamp",
+                        "datetime_format": "%Y_%m_%d",
+                        "schema_path": "customer_schema.json",
+                        "select_exp": [
+                            "* EXCEPT(LOAD_TIMESTAMP)",
+                            "TO_TIMESTAMP(LOAD_TIMESTAMP, 'yyyy-MM-dd HH:mm:ss') AS LOAD_TIMESTAMP",
+                            "_metadata AS meta_file_metadata"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "name": "v_stg_template_customer_customer",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "live",
+                "table": "stg_template_customer_customer",
+                "cdf_enabled": true,
+                "cdf_change_type_override": [
+                    "insert",
+                    "update_postimage",
+                    "delete"
+                ],
+                "starting_version_from_dlt_setup": true,
+                "select_exp": [
+                    "*"
+                ],
+                "python_transform": {
+                    "function_path": "explode_deletes_function_transform.py"
+                }
+            }
+        },
+        {
+            "name": "target_tgt_customer_template",
+            "node_type": "target",
+            "config": {
+                "table": "tgt_customer_template",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "except_column_list": [
+                        "LOAD_TIMESTAMP",
+                        "is_delete"
+                    ],
+                    "ignore_null_updates": false,
+                    "apply_as_deletes": "is_delete = 1"
+                },
+                "input_flows": [
+                    "v_stg_template_customer_customer"
+                ]
+            }
+        }
+    ]
+}

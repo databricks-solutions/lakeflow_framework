@@ -19,6 +19,13 @@ The framework uses JSON Schema-based IntelliSense when creating or editing Data 
 - Validation (checking for errors based on the schema)
 - Quick Fixes (where applicable)
 
+The ``*_main.json`` mapping covers **all** Data Flow Spec types — standard,
+flow, materialized view, and :doc:`nodespec </build/spec-reference/nodespec>`.
+``main.json`` inspects the ``data_flow_type`` / ``dataFlowType`` field and routes
+to the matching schema automatically, so a single mapping enables IntelliSense
+for every spec type. Nodespec specs are authored in ``snake_case`` and the schema
+validates them as written.
+
 Autocomplete Example
 ~~~~~~~~~~~~~~~~~~~~
 *Suggesting keys*

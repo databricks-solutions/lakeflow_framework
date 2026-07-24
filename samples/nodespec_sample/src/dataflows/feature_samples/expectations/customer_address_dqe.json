@@ -1,0 +1,15 @@
+{
+    "expect_or_drop": [
+        {
+            "name": "PK not null",
+            "constraint": "CUSTOMER_ID IS NOT NULL",
+            "tag": "Validity"
+        },
+        {
+            "name": "enabledTest",
+            "constraint": "CUSTOMER_ID = 1",
+            "tag": "Validity",
+            "enabled": false
+        }
+    ]
+}

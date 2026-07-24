@@ -1,0 +1,42 @@
+{
+    "data_flow_id": "feature_historical_files_snapshot_datetime_recursive_and_partitioned",
+    "data_flow_group": "nodespec_feature_samples_snapshots",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_feature_historical_snapshot_files_datetime_recursive_and_partitioned",
+            "node_type": "target",
+            "config": {
+                "table": "feature_historical_snapshot_files_datetime_recursive_and_partitioned",
+                "schema_path": "target/customer_schema.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "config_flags": [
+                    "disable_operational_metadata"
+                ],
+                "cdc_snapshot_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "snapshot_type": "historical",
+                    "source_type": "file",
+                    "source": {
+                        "format": "csv",
+                        "path": "{sample_file_location}/snapshot_customer_partitioned/{version}/customer.csv",
+                        "reader_options": {
+                            "header": "true"
+                        },
+                        "version_type": "timestamp",
+                        "datetime_format": "YEAR=%Y/MONTH=%m/DAY=%d",
+                        "recursive_file_lookup": true
+                    },
+                    "track_history_except_column_list": [
+                        "LOAD_TIMESTAMP"
+                    ]
+                }
+            }
+        }
+    ]
+}

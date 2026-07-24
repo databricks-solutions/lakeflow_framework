@@ -1,0 +1,14 @@
+{
+    "expect_or_drop": [
+        {
+            "name": "customer_id_not_null",
+            "constraint": "CUSTOMER_ID IS NOT NULL",
+            "tag": "Validity"
+        },
+        {
+            "name": "email_not_empty",
+            "constraint": "EMAIL IS NOT NULL AND LENGTH(EMAIL) > 0",
+            "tag": "Completeness"
+        }
+    ]
+}
