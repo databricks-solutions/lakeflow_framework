@@ -1,0 +1,33 @@
+{
+    "name": "materialized_view_gold",
+    "parameters": {
+        "dataFlowId": {"type": "string", "required": true},
+        "mvName": {"type": "string", "required": true},
+        "sqlStatement": {"type": "string", "required": true},
+        "clusterByColumns": {"type": "list", "required": false, "default": []},
+        "targetDatabase": {"type": "string", "required": false, "default": ""},
+        "dqEnabled": {"type": "boolean", "required": false, "default": false},
+        "comment": {"type": "string", "required": false, "default": ""}
+    },
+    "template": {
+        "dataFlowId": "${param.dataFlowId}",
+        "dataFlowGroup": "gold",
+        "dataFlowType": "materialized_view",
+        "materializedViews": {
+            "${param.mvName}": {
+                "sqlStatement": "${param.sqlStatement}",
+                "tableDetails": {
+                    "database": "${param.targetDatabase}",
+                    "clusterByColumns": "${param.clusterByColumns}",
+                    "tableProperties": {
+                        "delta.autoOptimize.optimizeWrite": "true"
+                    },
+                    "comment": "${param.comment}"
+                },
+                "dataQualityExpectationsEnabled": "${param.dqEnabled}",
+                "quarantineMode": "off",
+                "quarantineTargetDetails": {}
+            }
+        }
+    }
+}

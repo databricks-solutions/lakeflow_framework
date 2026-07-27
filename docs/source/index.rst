@@ -17,4 +17,5 @@ The Lakeflow Framework
    Build <build/index>
    Deploy <deploy/index>
    Features <features/index>
+   AI Skills <ai_skills>
    Contributors <contributors/index>

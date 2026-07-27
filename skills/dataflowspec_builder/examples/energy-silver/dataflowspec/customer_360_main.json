@@ -1,0 +1,110 @@
+{
+    "dataFlowId": "customer_360",
+    "dataFlowGroup": "energy_silver",
+    "dataFlowType": "flow",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "table": "silver_customer_360",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true"
+        },
+        "clusterByColumns": ["customer_id"]
+    },
+    "cdcSettings": {
+        "keys": ["customer_id"],
+        "sequence_by": "last_updated",
+        "scd_type": "2",
+        "ignore_null_updates": true,
+        "except_column_list": ["__START_AT", "__END_AT"]
+    },
+    "dataQualityExpectationsEnabled": true,
+    "dataQualityExpectationsPath": "silver_customer_360_dqe.json",
+    "quarantineMode": "flag",
+    "quarantineTargetDetails": {},
+    "flowGroups": [
+        {
+            "flowGroupId": "fg_customer_billing",
+            "stagingTables": {
+                "staging_customer_billing": {
+                    "type": "ST",
+                    "schemaPath": ""
+                }
+            },
+            "flows": {
+                "f_customers": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "staging_customer_billing",
+                        "sourceView": "v_bronze_customers"
+                    },
+                    "views": {
+                        "v_bronze_customers": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "bronze_customers",
+                                "cdfEnabled": true,
+                                "selectExp": [
+                                    "customer_id",
+                                    "name",
+                                    "email",
+                                    "state",
+                                    "customer_type",
+                                    "rate_plan",
+                                    "has_solar",
+                                    "has_ev",
+                                    "signup_date",
+                                    "latitude",
+                                    "longitude",
+                                    "current_timestamp() AS last_updated"
+                                ],
+                                "whereClause": []
+                            }
+                        }
+                    }
+                },
+                "f_billing_summary": {
+                    "flowType": "append_view",
+                    "flowDetails": {
+                        "targetTable": "staging_customer_billing",
+                        "sourceView": "v_billing_agg"
+                    },
+                    "views": {
+                        "v_billing_agg": {
+                            "mode": "stream",
+                            "sourceType": "delta",
+                            "sourceDetails": {
+                                "database": "{bronze_schema}",
+                                "table": "bronze_billing",
+                                "cdfEnabled": true,
+                                "selectExp": [
+                                    "customer_id",
+                                    "CAST(NULL AS STRING) AS name",
+                                    "CAST(NULL AS STRING) AS email",
+                                    "CAST(NULL AS STRING) AS state",
+                                    "CAST(NULL AS STRING) AS customer_type",
+                                    "CAST(NULL AS STRING) AS rate_plan",
+                                    "CAST(NULL AS BOOLEAN) AS has_solar",
+                                    "CAST(NULL AS BOOLEAN) AS has_ev",
+                                    "CAST(NULL AS DATE) AS signup_date",
+                                    "CAST(NULL AS DOUBLE) AS latitude",
+                                    "CAST(NULL AS DOUBLE) AS longitude",
+                                    "current_timestamp() AS last_updated"
+                                ],
+                                "whereClause": ["is_duplicate = false OR is_duplicate IS NULL"]
+                            }
+                        }
+                    }
+                },
+                "f_merge_customer_360": {
+                    "flowType": "merge",
+                    "flowDetails": {
+                        "targetTable": "silver_customer_360",
+                        "sourceView": "staging_customer_billing"
+                    }
+                }
+            }
+        }
+    ]
+}

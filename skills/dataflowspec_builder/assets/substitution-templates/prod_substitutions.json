@@ -1,0 +1,14 @@
+{
+    "tokens": {
+        "bronze_schema": "CATALOG.bronze_SCHEMA_prod",
+        "silver_schema": "CATALOG.silver_SCHEMA_prod",
+        "gold_schema": "CATALOG.gold_SCHEMA_prod",
+        "landing_path": "/Volumes/CATALOG/SCHEMA_prod/landing",
+        "checkpoint_path": "/Volumes/CATALOG/SCHEMA_prod/checkpoints"
+    },
+    "prefix_suffix": {
+        "database": {
+            "suffix": "_{workspace_env}"
+        }
+    }
+}

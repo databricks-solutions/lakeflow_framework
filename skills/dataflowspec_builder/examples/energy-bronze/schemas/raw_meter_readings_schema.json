@@ -1,0 +1,11 @@
+{
+    "type": "struct",
+    "fields": [
+        {"name": "meter_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "customer_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "reading_timestamp", "type": "timestamp", "nullable": false, "metadata": {}},
+        {"name": "kwh_used", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "voltage", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "power_factor", "type": "double", "nullable": true, "metadata": {}}
+    ]
+}

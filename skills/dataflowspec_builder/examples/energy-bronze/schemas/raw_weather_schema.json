@@ -1,0 +1,12 @@
+{
+    "type": "struct",
+    "fields": [
+        {"name": "state", "type": "string", "nullable": false, "metadata": {}},
+        {"name": "date", "type": "date", "nullable": false, "metadata": {}},
+        {"name": "temp_high_c", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "temp_low_c", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "humidity_pct", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "wind_speed_kmh", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "precipitation_mm", "type": "double", "nullable": true, "metadata": {}}
+    ]
+}

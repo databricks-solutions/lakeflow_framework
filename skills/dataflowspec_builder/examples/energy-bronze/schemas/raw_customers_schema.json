@@ -1,0 +1,20 @@
+{
+    "type": "struct",
+    "fields": [
+        {"name": "customer_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "name", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "email", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "phone", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "address", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "city", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "state", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "postcode", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "customer_type", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "rate_plan", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "has_solar", "type": "boolean", "nullable": true, "metadata": {}},
+        {"name": "has_ev", "type": "boolean", "nullable": true, "metadata": {}},
+        {"name": "signup_date", "type": "date", "nullable": true, "metadata": {}},
+        {"name": "latitude", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "longitude", "type": "double", "nullable": true, "metadata": {}}
+    ]
+}
