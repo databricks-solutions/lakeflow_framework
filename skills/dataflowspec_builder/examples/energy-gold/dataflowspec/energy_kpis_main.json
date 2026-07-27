@@ -1,0 +1,65 @@
+{
+    "dataFlowId": "energy_gold_kpis",
+    "dataFlowGroup": "energy_gold",
+    "dataFlowType": "materialized_view",
+    "materializedViews": {
+        "mv_revenue_by_state": {
+            "sqlStatement": "SELECT c.state, DATE_TRUNC('month', b.bill_date) AS month, COUNT(DISTINCT b.customer_id) AS active_customers, SUM(b.amount_aud) AS total_revenue_aud, AVG(b.amount_aud) AS avg_bill_aud, SUM(b.kwh_consumed) AS total_kwh FROM {silver_schema}.silver_customer_360 c INNER JOIN {bronze_schema}.bronze_billing b ON c.customer_id = b.customer_id WHERE b.is_duplicate = false OR b.is_duplicate IS NULL GROUP BY c.state, DATE_TRUNC('month', b.bill_date)",
+            "tableDetails": {
+                "database": "{gold_schema}",
+                "clusterByColumns": ["state", "month"],
+                "tableProperties": {
+                    "delta.autoOptimize.optimizeWrite": "true"
+                },
+                "comment": "Monthly revenue and consumption metrics by Australian state"
+            },
+            "dataQualityExpectationsEnabled": false,
+            "quarantineMode": "off",
+            "quarantineTargetDetails": {}
+        },
+        "mv_grid_reliability": {
+            "sqlStatement": "SELECT state, cause, COUNT(*) AS outage_count, AVG(duration_minutes) AS avg_duration_minutes, SUM(affected_meters) AS total_affected_meters, ROUND(SUM(duration_minutes * affected_meters) / 50000.0, 4) AS saidi_contribution FROM {bronze_schema}.bronze_outages WHERE start_time <= current_timestamp() GROUP BY state, cause",
+            "tableDetails": {
+                "database": "{gold_schema}",
+                "clusterByColumns": ["state"],
+                "comment": "Grid reliability metrics — outages by state and cause with SAIDI contribution"
+            },
+            "dataQualityExpectationsEnabled": false,
+            "quarantineMode": "off",
+            "quarantineTargetDetails": {}
+        },
+        "mv_demand_response_effectiveness": {
+            "sqlStatement": "SELECT dr.event_type, c.state, c.customer_type, COUNT(*) AS total_events, SUM(CASE WHEN dr.participated THEN 1 ELSE 0 END) AS participated_count, ROUND(SUM(CASE WHEN dr.participated THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS participation_rate_pct, SUM(dr.kwh_reduced) AS total_kwh_reduced, SUM(dr.incentive_aud) AS total_incentive_aud, ROUND(SUM(dr.incentive_aud) / NULLIF(SUM(dr.kwh_reduced), 0), 4) AS cost_per_kwh_aud FROM {bronze_schema}.bronze_demand_response dr INNER JOIN {silver_schema}.silver_customer_360 c ON dr.customer_id = c.customer_id GROUP BY dr.event_type, c.state, c.customer_type",
+            "tableDetails": {
+                "database": "{gold_schema}",
+                "clusterByColumns": ["event_type", "state"],
+                "comment": "Demand response program effectiveness by event type, state, and customer segment"
+            },
+            "dataQualityExpectationsEnabled": false,
+            "quarantineMode": "off",
+            "quarantineTargetDetails": {}
+        },
+        "mv_equipment_risk_score": {
+            "sqlStatement": "SELECT e.equipment_id, e.equipment_type, e.state, e.install_date, e.last_maintenance_date, e.condition_score, e.failure_count, DATEDIFF(current_date(), e.install_date) AS age_days, DATEDIFF(current_date(), e.last_maintenance_date) AS days_since_maintenance, ROUND((e.failure_count * 0.3) + ((1 - e.condition_score) * 0.4) + (DATEDIFF(current_date(), e.last_maintenance_date) / 365.0 * 0.3), 4) AS risk_score, e.latitude, e.longitude FROM {bronze_schema}.bronze_equipment e",
+            "tableDetails": {
+                "database": "{gold_schema}",
+                "clusterByColumns": ["state", "equipment_type"],
+                "comment": "Equipment risk scores based on age, condition, failure history, and maintenance recency"
+            },
+            "dataQualityExpectationsEnabled": false,
+            "quarantineMode": "off",
+            "quarantineTargetDetails": {}
+        },
+        "mv_solar_ev_adoption": {
+            "sqlStatement": "SELECT c.state, c.customer_type, COUNT(*) AS total_customers, SUM(CASE WHEN c.has_solar THEN 1 ELSE 0 END) AS solar_customers, SUM(CASE WHEN c.has_ev THEN 1 ELSE 0 END) AS ev_customers, SUM(CASE WHEN c.has_solar AND c.has_ev THEN 1 ELSE 0 END) AS solar_and_ev_customers, ROUND(SUM(CASE WHEN c.has_solar THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS solar_adoption_pct, ROUND(SUM(CASE WHEN c.has_ev THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS ev_adoption_pct FROM {silver_schema}.silver_customer_360 c GROUP BY c.state, c.customer_type",
+            "tableDetails": {
+                "database": "{gold_schema}",
+                "clusterByColumns": ["state"],
+                "comment": "Solar and EV adoption rates by state and customer type for sustainability reporting"
+            },
+            "dataQualityExpectationsEnabled": false,
+            "quarantineMode": "off",
+            "quarantineTargetDetails": {}
+        }
+    }
+}

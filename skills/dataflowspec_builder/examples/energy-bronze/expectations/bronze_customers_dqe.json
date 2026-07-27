@@ -1,0 +1,12 @@
+{
+    "expect": [
+        {"name": "customer_id_not_null", "constraint": "customer_id IS NOT NULL", "tag": "completeness", "enabled": true},
+        {"name": "valid_state", "constraint": "state IN ('NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS')", "tag": "validity", "enabled": true},
+        {"name": "valid_email", "constraint": "email LIKE '%@%.%'", "tag": "format", "enabled": true},
+        {"name": "valid_customer_type", "constraint": "customer_type IN ('residential', 'commercial', 'industrial')", "tag": "validity", "enabled": true}
+    ],
+    "expect_or_drop": [
+        {"name": "valid_rate_plan", "constraint": "rate_plan IN ('basic', 'time_of_use', 'demand', 'solar_feed_in')", "tag": "validity", "enabled": true}
+    ],
+    "expect_or_fail": []
+}

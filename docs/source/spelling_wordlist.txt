@@ -153,3 +153,16 @@ centric
 modeling
 roadmap
 topologies
+deltaJoin
+cloudFiles
+cdfEnabled
+kafka
+flowGroups
+materializedViews
+sqlPath
+CSV
+kwh
+switchgear
+EV
+subfolder
+frontmatter

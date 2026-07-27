@@ -1,0 +1,12 @@
+{
+    "type": "struct",
+    "fields": [
+        {"name": "event_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "customer_id", "type": "integer", "nullable": false, "metadata": {}},
+        {"name": "event_date", "type": "date", "nullable": true, "metadata": {}},
+        {"name": "event_type", "type": "string", "nullable": true, "metadata": {}},
+        {"name": "participated", "type": "boolean", "nullable": true, "metadata": {}},
+        {"name": "kwh_reduced", "type": "double", "nullable": true, "metadata": {}},
+        {"name": "incentive_aud", "type": {"type": "decimal", "precision": 8, "scale": 2}, "nullable": true, "metadata": {}}
+    ]
+}

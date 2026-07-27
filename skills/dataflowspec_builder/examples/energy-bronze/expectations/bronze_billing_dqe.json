@@ -1,0 +1,12 @@
+{
+    "expect": [
+        {"name": "bill_id_not_null", "constraint": "bill_id IS NOT NULL", "tag": "completeness", "enabled": true},
+        {"name": "customer_id_not_null", "constraint": "customer_id IS NOT NULL", "tag": "completeness", "enabled": true},
+        {"name": "positive_amount", "constraint": "amount_aud > 0", "tag": "range", "enabled": true},
+        {"name": "valid_payment_status", "constraint": "payment_status IN ('paid', 'pending', 'overdue', 'delinquent')", "tag": "validity", "enabled": true}
+    ],
+    "expect_or_drop": [
+        {"name": "not_duplicate", "constraint": "is_duplicate = false OR is_duplicate IS NULL", "tag": "dedup", "enabled": true}
+    ],
+    "expect_or_fail": []
+}

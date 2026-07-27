@@ -1,0 +1,11 @@
+{
+    "expect": [
+        {"name": "outage_id_not_null", "constraint": "outage_id IS NOT NULL", "tag": "completeness", "enabled": true},
+        {"name": "valid_cause", "constraint": "cause IN ('storm', 'equipment_failure', 'vegetation', 'animal', 'overload', 'planned')", "tag": "validity", "enabled": true},
+        {"name": "positive_duration", "constraint": "duration_minutes > 0", "tag": "range", "enabled": true}
+    ],
+    "expect_or_drop": [
+        {"name": "not_future_dated", "constraint": "start_time <= current_timestamp()", "tag": "timeliness", "enabled": true}
+    ],
+    "expect_or_fail": []
+}

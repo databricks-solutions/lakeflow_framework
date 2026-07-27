@@ -1,0 +1,78 @@
+{
+    "name": "flows_stream_static_join",
+    "parameters": {
+        "dataFlowId": {"type": "string", "required": true},
+        "targetTable": {"type": "string", "required": true},
+        "keyColumns": {"type": "list", "required": true},
+        "sequenceBy": {"type": "string", "required": true},
+        "factTable": {"type": "string", "required": true},
+        "factDb": {"type": "string", "required": true},
+        "dimTable": {"type": "string", "required": true},
+        "dimDb": {"type": "string", "required": true},
+        "joinCondition": {"type": "string", "required": true},
+        "selectExp": {"type": "list", "required": false, "default": ["a.*", "b.*"]}
+    },
+    "template": {
+        "dataFlowId": "${param.dataFlowId}",
+        "dataFlowGroup": "silver",
+        "dataFlowType": "flow",
+        "targetFormat": "delta",
+        "targetDetails": {
+            "table": "${param.targetTable}",
+            "tableProperties": {
+                "delta.enableChangeDataFeed": "true"
+            }
+        },
+        "cdcSettings": {
+            "keys": "${param.keyColumns}",
+            "sequence_by": "${param.sequenceBy}",
+            "scd_type": "1",
+            "ignore_null_updates": true,
+            "except_column_list": []
+        },
+        "dataQualityExpectationsEnabled": false,
+        "quarantineMode": "off",
+        "quarantineTargetDetails": {},
+        "flowGroups": [
+            {
+                "flowGroupId": "fg_${param.targetTable}",
+                "stagingTables": {},
+                "flows": {
+                    "f_join": {
+                        "flowType": "merge",
+                        "flowDetails": {
+                            "targetTable": "${param.targetTable}",
+                            "sourceView": "v_joined"
+                        },
+                        "views": {
+                            "v_joined": {
+                                "mode": "stream",
+                                "sourceType": "deltaJoin",
+                                "sourceDetails": {
+                                    "sources": [
+                                        {
+                                            "alias": "a",
+                                            "database": "${param.factDb}",
+                                            "table": "${param.factTable}",
+                                            "mode": "stream",
+                                            "cdfEnabled": true
+                                        },
+                                        {
+                                            "alias": "b",
+                                            "database": "${param.dimDb}",
+                                            "table": "${param.dimTable}",
+                                            "mode": "static"
+                                        }
+                                    ],
+                                    "joinType": "left",
+                                    "joinCondition": "${param.joinCondition}",
+                                    "selectExp": "${param.selectExp}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

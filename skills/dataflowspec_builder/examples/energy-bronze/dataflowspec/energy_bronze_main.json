@@ -1,0 +1,61 @@
+{
+    "template": "energy_bronze_ingestion_template",
+    "parameterSets": [
+        {
+            "dataFlowId": "customers_bronze",
+            "sourceTable": "raw_customers",
+            "targetTable": "bronze_customers",
+            "schemaPath": "schemas/raw_customers_schema.json",
+            "keyColumns": ["customer_id"],
+            "sequenceBy": "signup_date"
+        },
+        {
+            "dataFlowId": "meter_readings_bronze",
+            "sourceTable": "raw_meter_readings",
+            "targetTable": "bronze_meter_readings",
+            "schemaPath": "schemas/raw_meter_readings_schema.json",
+            "keyColumns": ["meter_id", "reading_timestamp"],
+            "sequenceBy": "reading_timestamp"
+        },
+        {
+            "dataFlowId": "billing_bronze",
+            "sourceTable": "raw_billing",
+            "targetTable": "bronze_billing",
+            "schemaPath": "schemas/raw_billing_schema.json",
+            "keyColumns": ["bill_id"],
+            "sequenceBy": "bill_date"
+        },
+        {
+            "dataFlowId": "outages_bronze",
+            "sourceTable": "raw_outages",
+            "targetTable": "bronze_outages",
+            "schemaPath": "schemas/raw_outages_schema.json",
+            "keyColumns": ["outage_id"],
+            "sequenceBy": "start_time"
+        },
+        {
+            "dataFlowId": "weather_bronze",
+            "sourceTable": "raw_weather",
+            "targetTable": "bronze_weather",
+            "schemaPath": "schemas/raw_weather_schema.json",
+            "keyColumns": ["state", "date"],
+            "sequenceBy": "date"
+        },
+        {
+            "dataFlowId": "equipment_bronze",
+            "sourceTable": "raw_equipment",
+            "targetTable": "bronze_equipment",
+            "schemaPath": "schemas/raw_equipment_schema.json",
+            "keyColumns": ["equipment_id"],
+            "sequenceBy": "last_maintenance_date"
+        },
+        {
+            "dataFlowId": "demand_response_bronze",
+            "sourceTable": "raw_demand_response",
+            "targetTable": "bronze_demand_response",
+            "schemaPath": "schemas/raw_demand_response_schema.json",
+            "keyColumns": ["event_id"],
+            "sequenceBy": "event_date"
+        }
+    ]
+}
