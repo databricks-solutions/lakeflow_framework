@@ -2,7 +2,7 @@
 
 A comprehensive [Databricks Genie Code](https://docs.databricks.com/en/notebooks/genie-code.html) Agent Skill that generates production-ready pipeline bundles using the [Data Flow Spec Framework](https://github.com/databricks-solutions/lakeflow_framework) (`databricks-solutions/lakeflow_framework`) from natural language prompts.
 
-> **Important:** This skill generates pipelines using the **Data Flow Spec Framework** — a metadata-driven wrapper around Spark Declarative Pipelines (SDP). It is **not** the same as native Lakeflow Declarative Pipelines (DLT). The Data Flow Spec Framework uses JSON/YAML configuration files to define pipelines declaratively, without writing `@dlt.table` decorators or `CREATE STREAMING TABLE` SQL.
+> **Important:** This skill generates pipelines using the **Data Flow Spec Framework** — a metadata-driven wrapper around Spark Declarative Pipelines (SDP). It is **not** the same as native Lakeflow Declarative Pipelines (DLT). The Data Flow Spec Framework uses JSON/YAML configuration files to define pipelines without writing `@dlt.table` decorators or `CREATE STREAMING TABLE` SQL.
 
 ## What It Does
 

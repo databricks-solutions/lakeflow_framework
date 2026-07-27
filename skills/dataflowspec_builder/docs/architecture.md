@@ -97,7 +97,7 @@ Source B ──[append_view]──┘                               (with CDC)
 
 ### Materialized Views
 
-SQL-defined precomputed views. Best for gold KPIs.
+SQL-defined pre-computed views. Best for gold KPIs.
 
 ```
 Source Tables ──[SQL query]──> Materialized View

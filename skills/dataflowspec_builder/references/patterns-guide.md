@@ -10,7 +10,7 @@
 | Joining a streaming fact with a static dimension | Stream-Static | `flow` | Silver |
 | Merging multiple sources into one target | Multi-Source Streaming | `flow` | Silver |
 | Building a full streaming data warehouse | Stream-Static DWH | `flow` | Silver/Gold |
-| Creating precomputed KPI aggregations | Materialized Views | `materialized_view` | Gold |
+| Creating pre-computed KPI aggregations | Materialized Views | `materialized_view` | Gold |
 
 ---
 
@@ -145,7 +145,7 @@ Flow structure:
 
 ## Pattern 6: Materialized Views (Gold KPIs)
 
-**Use when:** Building precomputed aggregations, KPIs, or reporting tables.
+**Use when:** Building pre-computed aggregations, KPIs, or reporting tables.
 
 ```
 Source Table(s) ──▶ [SQL Query / View] ──▶ Materialized View

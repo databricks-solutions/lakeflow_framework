@@ -103,5 +103,5 @@ To add support for a new pattern:
 - **Be specific in SKILL.md** — Include complete JSON schemas, not just descriptions
 - **Include working examples** — Genie Code learns from examples in the skill directory
 - **Use unique trigger phrases** — Avoid terms that overlap with built-in Databricks features
-- **Add a "When NOT to Use" section** — Helps Genie Code avoid false positive activations
+- **Add a "When NOT to Use" section** — Helps Genie Code avoid false positives
 - **Keep the skill focused** — One skill per framework/pattern, not a catch-all
