@@ -1,5 +1,5 @@
 Mix and Match Patterns
-####################
+######################
 
 .. _patterns_mix_and_match:
 

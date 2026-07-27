@@ -140,7 +140,7 @@ Ensure CDC keys and SQL queries match actual table column names. The framework c
 
 ### Additional Properties
 
-The framework uses `additionalProperties: false` in its JSON Schema — do not add fields that aren't in the schema definition. Keep specs clean.
+The framework uses `additionalProperties: false` in its JSON Schema — do not add fields that are not in the schema definition. Keep specs clean.
 
 ### Operational Metadata
 

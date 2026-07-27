@@ -94,7 +94,7 @@ If Genie Code generates `@dlt.table` decorators or `CREATE STREAMING TABLE` SQL,
 
 ### Framework bundle not found
 
-Ensure you've deployed the framework:
+Ensure you have deployed the framework:
 ```bash
 cd lakeflow_framework
 databricks bundle deploy -t dev
