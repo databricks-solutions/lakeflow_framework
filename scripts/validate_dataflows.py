@@ -59,7 +59,7 @@ def find_project_root() -> Path:
     
     # Go up to find the project root
     while current != current.parent:
-        if (current / "src" / "schemas" / "main.json").exists():
+        if (current / "src" / "lakeflow_framework" / "schemas" / "main.json").exists():
             return current
         current = current.parent
     
@@ -113,7 +113,7 @@ def detect_spec_form(data: Dict) -> str:
 
 def get_schema_path(project_root: Path, form: str) -> Path:
     """Return the schema path for a given spec form."""
-    schemas = project_root / "src" / "schemas"
+    schemas = project_root / "src" / "lakeflow_framework" / "schemas"
     if form == SPEC_FORM_TEMPLATE:
         return schemas / "spec_template.json"
     return schemas / "main.json"
@@ -123,24 +123,42 @@ def load_dataflow_spec_mapping(project_root: Path, version: str) -> Optional[Dic
     """
     Load the dataflow spec mapping for a specific version.
 
-    Matches framework layout: ``src/config/default/dataflow_spec_mapping/<version>/``,
-    with optional override under ``src/local/config/dataflow_spec_mapping/<version>/``.
+    Matches framework layout: ``src/lakeflow_framework/config/default/dataflow_spec_mapping/<version>/``,
+    with optional sparse override under ``src/local/config/dataflow_spec_mapping/<version>/``.
+    Falls back to package data when the mapping is not present on disk.
     """
     framework_src = project_root / "src"
     candidates = (
         framework_src / "local" / "config" / "dataflow_spec_mapping" / version / "dataflow_spec_mapping.json",
-        framework_src / "config" / "default" / "dataflow_spec_mapping" / version / "dataflow_spec_mapping.json",
+        framework_src
+        / "lakeflow_framework"
+        / "config"
+        / "default"
+        / "dataflow_spec_mapping"
+        / version
+        / "dataflow_spec_mapping.json",
     )
     mapping_path = next((path for path in candidates if path.exists()), None)
-    if mapping_path is None:
-        return None
+    if mapping_path is not None:
+        try:
+            with open(mapping_path, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"{YELLOW}Warning: Could not load mapping for version {version}: {e}{RESET}")
+            return None
 
     try:
-        with open(mapping_path, encoding="utf-8") as f:
-            return json.load(f)
+        import importlib.resources
+
+        ref = importlib.resources.files("lakeflow_framework").joinpath(
+            f"config/default/dataflow_spec_mapping/{version}/dataflow_spec_mapping.json"
+        )
+        if ref.is_file():
+            return json.loads(ref.read_text(encoding="utf-8"))
     except Exception as e:
         print(f"{YELLOW}Warning: Could not load mapping for version {version}: {e}{RESET}")
-        return None
+
+    return None
 
 
 def apply_rename_all(data: Dict, rename_map: Dict) -> None:

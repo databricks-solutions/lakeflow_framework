@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from dataflow_spec_builder.expectations_builder import DataQualityExpectationBuilder
+from lakeflow_framework.dataflow_spec_builder.expectations_builder import DataQualityExpectationBuilder
 
 
 @pytest.fixture
-def expectations_builder(pipeline_context, framework_src_path):
-    schema = str(framework_src_path / "schemas" / "expectations.json")
+def expectations_builder(pipeline_context, framework_package_path):
+    schema = str(framework_package_path / "schemas" / "expectations.json")
     return DataQualityExpectationBuilder(
         pipeline_context["logger"],
         schema,
@@ -21,8 +21,8 @@ def expectations_builder(pipeline_context, framework_src_path):
 
 
 class TestDataQualityExpectationBuilderInit:
-    def test_raises_for_invalid_spec_format(self, pipeline_context, framework_src_path):
-        schema = str(framework_src_path / "schemas" / "expectations.json")
+    def test_raises_for_invalid_spec_format(self, pipeline_context, framework_package_path):
+        schema = str(framework_package_path / "schemas" / "expectations.json")
         with pytest.raises(ValueError, match="Invalid spec file format"):
             DataQualityExpectationBuilder(
                 pipeline_context["logger"], schema, spec_file_format="xml"

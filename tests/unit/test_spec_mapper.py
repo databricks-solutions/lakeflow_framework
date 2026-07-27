@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from dataflow_spec_builder.spec_mapper import SpecMapper
+from lakeflow_framework.dataflow_spec_builder.spec_mapper import SpecMapper
 
 
 def _standard_spec_payload(data: dict) -> dict:

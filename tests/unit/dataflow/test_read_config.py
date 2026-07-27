@@ -5,10 +5,10 @@ from __future__ import annotations
 import pyspark.sql.types as T
 import pytest
 
-from dataflow.cdc import CDCSettings
-from dataflow.dataflow_config import DataFlowConfig
-from dataflow.features import Features
-from dataflow.sources.base import ReadConfig
+from lakeflow_framework.dataflow.cdc import CDCSettings
+from lakeflow_framework.dataflow.dataflow_config import DataFlowConfig
+from lakeflow_framework.dataflow.features import Features
+from lakeflow_framework.dataflow.sources.base import ReadConfig
 
 
 class TestReadConfig:

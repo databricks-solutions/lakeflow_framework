@@ -17,6 +17,7 @@ from helpers import make_tree
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 FRAMEWORK_SRC = PROJECT_ROOT / "src"
+FRAMEWORK_PACKAGE = FRAMEWORK_SRC / "lakeflow_framework"
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 
 _PIPELINE_CONFIG_ATTRS = (
@@ -32,13 +33,13 @@ _PIPELINE_CONFIG_ATTRS = (
 
 
 def _snapshot_pipeline_config() -> dict[str, Any]:
-    import pipeline_config as pc
+    import lakeflow_framework.pipeline_config as pc
 
     return {attr: getattr(pc, attr, None) for attr in _PIPELINE_CONFIG_ATTRS}
 
 
 def _restore_pipeline_config(snapshot: dict[str, Any]) -> None:
-    import pipeline_config as pc
+    import lakeflow_framework.pipeline_config as pc
 
     for attr, value in snapshot.items():
         setattr(pc, attr, value)
@@ -51,8 +52,14 @@ def project_root() -> Path:
 
 @pytest.fixture
 def framework_src_path() -> Path:
-    """Live framework ``src/`` tree (schemas, config)."""
+    """Live framework ``src/`` tree (``framework.sourcePath`` in flat deploy)."""
     return FRAMEWORK_SRC
+
+
+@pytest.fixture
+def framework_package_path() -> Path:
+    """Canonical ``lakeflow_framework`` package tree under ``src/``."""
+    return FRAMEWORK_PACKAGE
 
 
 @pytest.fixture
@@ -65,14 +72,14 @@ def pipeline_context(tmp_path: Path):
     """
     Bootstrap ``pipeline_config`` singletons with mocks; restore after test.
     """
-    from pipeline_config import (
+    from lakeflow_framework.pipeline_config import (
         initialize_core,
         initialize_mandatory_table_properties,
         initialize_pipeline_details,
         initialize_substitution_manager,
     )
-    from pipeline_details import PipelineDetails
-    from substitution_manager import SubstitutionManager
+    from lakeflow_framework.pipeline_details import PipelineDetails
+    from lakeflow_framework.substitution_manager import SubstitutionManager
 
     snapshot = _snapshot_pipeline_config()
 
@@ -116,16 +123,18 @@ def pipeline_context(tmp_path: Path):
 
 
 @pytest.fixture
-def minimal_framework_tree(tmp_path: Path, framework_src_path: Path) -> Path:
+def minimal_framework_tree(tmp_path: Path, framework_package_path: Path) -> Path:
     """
-    Minimal framework bundle under *tmp_path* with schemas and default config.
+    Minimal framework bundle under *tmp_path* with default config from the package.
     """
     import shutil
 
     fw = tmp_path / "framework"
     fw.mkdir()
-    shutil.copytree(framework_src_path / "schemas", fw / "schemas")
-    shutil.copytree(framework_src_path / "config" / "default", fw / "config" / "default")
+    shutil.copytree(
+        framework_package_path / "config" / "default",
+        fw / "lakeflow_framework" / "config" / "default",
+    )
     (fw / "VERSION").write_text("0.4.0-test\n")
     return fw
 
@@ -145,8 +154,8 @@ def minimal_bundle_tree(tmp_path: Path) -> Path:
 @pytest.fixture
 def substitution_manager(tmp_path: Path, pipeline_context):
     """SubstitutionManager with framework + pipeline token files."""
-    from pipeline_config import initialize_substitution_manager
-    from substitution_manager import SubstitutionManager
+    from lakeflow_framework.pipeline_config import initialize_substitution_manager
+    from lakeflow_framework.substitution_manager import SubstitutionManager
 
     fw = tmp_path / "framework_substitutions.json"
     pl = tmp_path / "pipeline_substitutions.json"
@@ -162,11 +171,11 @@ def substitution_manager(tmp_path: Path, pipeline_context):
 
 
 @pytest.fixture
-def secrets_manager(tmp_path: Path, pipeline_context, framework_src_path):
+def secrets_manager(tmp_path: Path, pipeline_context, framework_package_path):
     """SecretsManager with empty validated secrets config."""
-    from secrets_manager import SecretsManager
+    from lakeflow_framework.secrets_manager import SecretsManager
 
-    schema = str(framework_src_path / "schemas" / "secrets.json")
+    schema = str(framework_package_path / "schemas" / "secrets.json")
     fw = tmp_path / "framework_secrets.json"
     pl = tmp_path / "pipeline_secrets.json"
     fw.write_text("{}")

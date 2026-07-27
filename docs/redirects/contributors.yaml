@@ -1,0 +1,15 @@
+redirects:
+- from: contributor.html
+  to: contributors/index.html
+- from: contributor_contrib.html
+  to: contributors/contrib.html
+- from: contributor_dev_docs.html
+  to: contributors/dev-docs.html
+- from: contributor_dev_env.html
+  to: contributors/dev-env.html
+- from: contributor_dev_git.html
+  to: contributors/dev-git.html
+- from: contributor_dev_steps.html
+  to: contributors/dev-steps.html
+- from: contributor_imports.html
+  to: contributors/imports.html

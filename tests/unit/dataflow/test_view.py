@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from dataflow.enums import SourceType
-from dataflow.sources import SourceDelta
-from dataflow.view import View
+from lakeflow_framework.dataflow.enums import SourceType
+from lakeflow_framework.dataflow.sources import SourceDelta
+from lakeflow_framework.dataflow.view import View
 
 
 class TestView:

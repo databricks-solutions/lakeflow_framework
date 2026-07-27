@@ -6,12 +6,12 @@ import json
 
 import pytest
 
-from dataflow.dataflow_spec import DataflowSpec
-from dataflow.enums import SourceType
-from dataflow.expectations import DataQualityExpectations
-from dataflow.features import Features
-from dataflow.targets import TargetDeltaStreamingTable
-from dataflow.view import View
+from lakeflow_framework.dataflow.dataflow_spec import DataflowSpec
+from lakeflow_framework.dataflow.enums import SourceType
+from lakeflow_framework.dataflow.expectations import DataQualityExpectations
+from lakeflow_framework.dataflow.features import Features
+from lakeflow_framework.dataflow.targets import TargetDeltaStreamingTable
+from lakeflow_framework.dataflow.view import View
 
 
 def _minimal_spec(**overrides) -> DataflowSpec:

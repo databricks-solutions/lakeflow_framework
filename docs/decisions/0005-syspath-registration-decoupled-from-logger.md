@@ -1,4 +1,4 @@
-# ADR-0005: `sys.path` registration decoupled from logger initialisation
+# ADR-0005: `sys.path` registration decoupled from logger initialization
 
 **Date:** 2026-05-17
 **Status:** Accepted

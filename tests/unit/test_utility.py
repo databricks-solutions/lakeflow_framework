@@ -10,8 +10,8 @@ import logging
 import pytest
 import yaml
 
-from constants import SupportedSpecFormat
-import utility
+from lakeflow_framework.constants import SupportedSpecFormat
+import lakeflow_framework.utility as utility
 
 
 class TestGetFormatSuffixes:
@@ -113,14 +113,14 @@ class TestLoadConfigFiles:
 
 
 class TestJSONValidator:
-    def test_validates_against_schema(self, framework_src_path: Path, fixtures_dir: Path):
-        schema = framework_src_path / "schemas" / "secrets.json"
+    def test_validates_against_schema(self, framework_package_path: Path, fixtures_dir: Path):
+        schema = framework_package_path / "schemas" / "secrets.json"
         validator = utility.JSONValidator(str(schema))
         payload = json.loads((fixtures_dir / "specs" / "framework_secrets.json").read_text())
         assert validator.validate(payload) == []
 
-    def test_returns_errors_for_invalid_payload(self, framework_src_path: Path):
-        schema = framework_src_path / "schemas" / "secrets.json"
+    def test_returns_errors_for_invalid_payload(self, framework_package_path: Path):
+        schema = framework_package_path / "schemas" / "secrets.json"
         validator = utility.JSONValidator(str(schema))
         errors = validator.validate({"bad_entry": {"scope": 123}})
         assert errors

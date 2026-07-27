@@ -1,6 +1,6 @@
 """Unit tests for constants.py."""
 
-from constants import (
+from lakeflow_framework.constants import (
     FrameworkPaths,
     PipelineBundlePaths,
     PipelineBundleSuffixesJson,
@@ -11,7 +11,7 @@ from constants import (
 
 class TestFrameworkPaths:
     def test_config_paths_use_expected_segments(self):
-        assert FrameworkPaths.CONFIG_PATH == "./config/default"
+        assert FrameworkPaths.CONFIG_PATH == "./lakeflow_framework/config/default"
         assert FrameworkPaths.LOCAL_CONFIG_PATH == "./local/config"
 
     def test_schema_paths_are_under_schemas_directory(self):
@@ -35,7 +35,7 @@ class TestSupportedSpecFormat:
 
 class TestSuffixConstants:
     def test_json_main_spec_suffix_is_usable_by_get_format_suffixes(self):
-        from utility import get_format_suffixes
+        from lakeflow_framework.utility import get_format_suffixes
 
         # Dataclass stores a parenthesized string, not a 1-tuple — use get_format_suffixes.
         assert get_format_suffixes("json", "main_spec") == ["_main.json"]

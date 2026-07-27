@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from dataclasses import dataclass
 
-from dataflow.sql import SqlMixin
+from lakeflow_framework.dataflow.sql import SqlMixin
 
 
 @dataclass

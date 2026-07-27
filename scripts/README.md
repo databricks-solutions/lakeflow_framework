@@ -27,13 +27,13 @@ python scripts/validate_dataflows.py -v
 ```
 
 **What it validates:**
-- Searches for all `*_main.json` files in `dataflows/**/dataflowspec/` directories
-- Validates against `src/schemas/main.json` (which routes to appropriate sub-schemas)
+- Searches for all `*_main.json` files under `dataflows/` (including `dataflowspec/` subdirectories and flat `dataflows/*_main.json` layouts)
+- Validates against `src/lakeflow_framework/schemas/main.json` (which routes to appropriate sub-schemas)
 - Reports validation errors with clear messages
 
 **Version Mapping (enabled by default):**
 - Automatically detects `dataFlowVersion` property in spec files
-- Applies version-specific transformations from `src/config/default/dataflow_spec_mapping/{version}/`
+- Applies version-specific transformations from `src/lakeflow_framework/config/default/dataflow_spec_mapping/{version}/`
 - Transforms old property names to current schema (e.g., `cdcApplyChanges` → `cdcSettings`)
 - Useful for validating legacy spec files against the current schema
 - Shows which files had mappings applied with a version indicator `[v0.1.0]`

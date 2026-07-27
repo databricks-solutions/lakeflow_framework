@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+# Compat shim — kept until v1.0.0.
+# Use: from lakeflow_framework import utility  or  from lakeflow_framework.utility import ...
+from lakeflow_framework import utility  # noqa: F401
+from lakeflow_framework.utility import *  # noqa: F401, F403
+=======
 import concurrent.futures
 import importlib.util
 import inspect
@@ -547,3 +553,4 @@ def deep_merge(base: Dict, overlay: Dict) -> Dict:
         else:
             result[key] = val
     return result
+>>>>>>> origin/main

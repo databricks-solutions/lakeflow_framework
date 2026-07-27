@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 
-from dataflow_spec_builder.spec_mapper import SpecMapper
-from dataflow_spec_builder.template_processor import TemplateProcessor
+from lakeflow_framework.dataflow_spec_builder.spec_mapper import SpecMapper
+from lakeflow_framework.dataflow_spec_builder.template_processor import TemplateProcessor
 
 
 def _load_json(fixtures_dir, *parts):

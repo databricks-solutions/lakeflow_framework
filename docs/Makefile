@@ -35,7 +35,7 @@ spelling:
 html-multiversion:
 	@./scripts/build_versioned_docs.sh
 
-# Local preview build including all local branches.
+# Local preview build: current branch as local-branch-preview (current stays main).
 html-multiversion-preview:
 	@./scripts/build_versioned_docs.sh --preview
 

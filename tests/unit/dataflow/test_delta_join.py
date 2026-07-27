@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataflow.sources.delta_join import DeltaJoin
+from lakeflow_framework.dataflow.sources.delta_join import DeltaJoin
 
 
 class TestDeltaJoin:

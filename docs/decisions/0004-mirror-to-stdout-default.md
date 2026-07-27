@@ -62,7 +62,7 @@ default logger is returned unchanged.
 - The `lakeflowframework` `logging.Logger` instance is modified in-place when
   silenced. Any code that obtained a direct `logging.getLogger("lakeflowframework")`
   reference before logger resolution will stop producing output — this is the
-  intended behaviour.
+  intended behavior.
 - `mirror_to_stdout: false` is the breaking change relative to the previous
   hard-coded stdout logger. Teams relying on plain-text stdout output and also
   enabling a custom logger must set `mirror_to_stdout: true` explicitly.

@@ -1,4 +1,4 @@
-"""Schema contract tests — fixtures must validate against src/schemas/."""
+"""Schema contract tests — fixtures must validate against package schemas."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from constants import FrameworkPaths
-import utility
+from lakeflow_framework.constants import FrameworkPaths
+import lakeflow_framework.utility as utility
 
 
 @pytest.fixture

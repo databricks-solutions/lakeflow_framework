@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from logger import (
+from lakeflow_framework.logger import (
     CompositeLogger,
     CustomLoggerConfigWarning,
     create_default_logger,

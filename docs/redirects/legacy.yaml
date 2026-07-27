@@ -1,0 +1,17 @@
+redirects:
+- from: deploy_framework_bundle.html
+  to: deploy/framework/index.html
+- from: deploy_framework_overview.html
+  to: deploy/framework/options.html
+- from: deploy_pipeline_bundle.html
+  to: deploy/pipeline-bundle/local.html
+- from: feature_direct_publishing_mode.html
+  to: features/platform/target-catalog-schema.html
+- from: getting_started.html
+  to: get-started/index.html
+- from: home.html
+  to: index.html
+- from: orchestration.html
+  to: build/index.html
+- from: pipeline_execution.html
+  to: build/index.html

@@ -82,12 +82,12 @@ def feature_samples_bundle_path() -> Path:
 
 
 @pytest.fixture
-def feature_samples_secrets_manager(feature_samples_bundle_path, framework_src_path, pipeline_context):
+def feature_samples_secrets_manager(feature_samples_bundle_path, framework_package_path, pipeline_context):
     """SecretsManager wired to feature-samples pipeline config."""
-    from secrets_manager import SecretsManager
+    from lakeflow_framework.secrets_manager import SecretsManager
 
     bundle = feature_samples_bundle_path
-    framework = framework_src_path
+    framework = framework_package_path
     framework_secrets = framework / "config" / "default" / "secrets.json"
     framework_paths = [str(framework_secrets)] if framework_secrets.exists() else []
     pipeline_secrets = bundle / "pipeline_configs" / "dev_secrets.json"
@@ -101,8 +101,8 @@ def feature_samples_secrets_manager(feature_samples_bundle_path, framework_src_p
 @pytest.fixture
 def feature_samples_substitution_manager(feature_samples_bundle_path, pipeline_context):
     """SubstitutionManager using feature-samples dev substitutions."""
-    from pipeline_config import initialize_substitution_manager
-    from substitution_manager import SubstitutionManager
+    from lakeflow_framework.pipeline_config import initialize_substitution_manager
+    from lakeflow_framework.substitution_manager import SubstitutionManager
 
     bundle = feature_samples_bundle_path
     dev_subs = bundle / "pipeline_configs" / "dev_substitutions.json"

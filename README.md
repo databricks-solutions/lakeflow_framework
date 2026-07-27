@@ -23,33 +23,41 @@ The framework supports centralized and domain-oriented operating models, and acc
 - Support for batch and streaming pipelines across Bronze/Silver/Gold, aligned to your chosen modelling pattern
 - Flexible for centralized and domain-oriented operating models
 
+## Prerequisites
+
+- Access to a Databricks workspace
+- Databricks CLI installed and authenticated (`databricks auth login` for your workspace, or a configured CLI profile)
+- Familiarity with Databricks Lakeflow Spark Declarative Pipelines concepts
+
 ## Quick start
+
+Deploy the framework:
 
 ```bash
 git clone https://github.com/databricks-solutions/lakeflow_framework.git
 cd lakeflow_framework
-pip install -r requirements-dev.txt
+databricks bundle deploy -t dev
 ```
 
-Then:
+Deploy samples (requires the framework above): see [samples/README.md](samples/README.md) for bundle descriptions and deploy scripts (`deploy.sh`, `deploy_feature_samples.sh`, `deploy_tpch.sh`, and others).
 
-1. Open the hosted docs: https://databricks-solutions.github.io/lakeflow_framework/
-2. Deploy the framework using the `Deploy Framework` guide
-3. Deploy samples from `samples/` using the documentation walkthroughs
-4. Build your first pipeline bundle using the `Build a Pipeline Bundle` guide
+```bash
+cd samples
+./deploy.sh
+```
 
-## Prerequisites
-
-- Access to a Databricks workspace
-- Databricks CLI installed and configured
-- Python environment with project dependencies installed
-- Familiarity with Databricks Lakeflow Spark Declarative Pipelines concepts
+Full deployment steps, configuration options, and walkthroughs are in the public docs [Getting Started](https://databricks-solutions.github.io/lakeflow_framework/current/getting_started.html) section.
 
 ## Repository structure
 
-- `docs/` - Sphinx documentation and versioned docs build tooling
-- `samples/` - example framework and pipeline bundles
-- `src/` - framework source code and runtime components
+- `docs/` — Sphinx documentation and versioned docs build tooling
+- `samples/` — example framework and pipeline bundles
+- `src/` — framework bundle root deployed to the workspace (`framework.sourcePath` in DAB)
+  - `lakeflow_framework/` — canonical Python package: runtime code, bundled default config (`config/default/`), and JSON schemas (`schemas/`). Prefer `from lakeflow_framework...` imports in new code.
+  - `*.py` at `src/` root — backward-compatibility shims for legacy bare imports (e.g. `from constants import ...`); removed at v1.0.0
+  - `local/` — customer-owned sparse config and extensions; never overwritten by upstream upgrades ([src/local/README.md](src/local/README.md))
+
+See [Import conventions](https://databricks-solutions.github.io/lakeflow_framework/contributor_imports.html)
 
 ## Version compatibility
 
@@ -69,10 +77,33 @@ The framework is actively maintained. Databricks support does not cover this rep
 Please refer to the [documentation](https://databricks-solutions.github.io/lakeflow_framework/) for further details and an explanation of the samples.
 The documentation needs to be deployed as HTML or Markdown within your org before it can be used.
 
-### Local docs development (optional)
+### Local development quick start (contributors)
+
+Clone the repository, then set up a Python 3.12 environment. This is a minimal local quick start — full contributor guidance (VS Code setup, lockfiles, deployment, and PR workflow) is in the documentation under **Framework Development & Contributors**.
 
 ```bash
-pip install -r requirements-docs.txt
+git clone https://github.com/databricks-solutions/lakeflow_framework.git
+cd lakeflow_framework
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install --require-hashes --no-deps -r requirements-dev.lock
+```
+
+For editable installs and IDE auto-complete: `pip install -e ".[contrib]"` (see [Development Environment Setup](https://databricks-solutions.github.io/lakeflow_framework/contributor_dev_env.html)).
+
+Run unit tests:
+
+```bash
+pytest tests/ -m "not integration and not spark"
+```
+
+See also `tests/README.md` and `docs/source/contributor_imports.rst` in the repository.
+
+### Local docs development (optional)
+
+Requires dev dependencies from `requirements-dev.lock`:
+
+```bash
 make -C docs html
 ```
 

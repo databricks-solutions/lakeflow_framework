@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from substitution_manager import SubstitutionManager
+from lakeflow_framework.substitution_manager import SubstitutionManager
 
 
 class TestSubstitutionManager:
