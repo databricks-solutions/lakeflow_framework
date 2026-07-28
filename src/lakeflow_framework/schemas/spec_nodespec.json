@@ -27,92 +27,118 @@
         },
 
         "node": {
+            "$comment": "A node is discriminated by node_type into one of three closed variants. Each variant declares ONLY the discriminator field valid for that kind (source_type / transformation_type / target_type), so editors offer just that field — never all three at once. additionalProperties:false on each variant then rejects the discriminators that belong to the other kinds.",
             "type": "object",
+            "required": ["name", "node_type"],
+            "oneOf": [
+                {"$ref": "#/$defs/source_node"},
+                {"$ref": "#/$defs/transformation_node"},
+                {"$ref": "#/$defs/target_node"}
+            ]
+        },
+
+        "source_node": {
+            "type": "object",
+            "description": "A source node reads data into a view. Carries source_type (not target_type/transformation_type).",
             "properties": {
-                "name": {"type": "string", "description": "Unique node name within the pipeline. Also the emitted view name for source/transformation nodes unless output_view_name is set."},
-                "node_type": {
-                    "type": "string",
-                    "enum": ["source", "transformation", "target"],
-                    "description": "source (reads data) | transformation (reshapes a view) | target (writes an output)."
-                },
+                "name": {"type": "string", "description": "Unique node name within the pipeline. Also the emitted view name unless output_view_name is set."},
+                "node_type": {"const": "source", "description": "source: reads data into a view."},
                 "source_type": {
                     "type": "string",
                     "enum": ["batch_files", "cloud_files", "delta", "delta_join", "kafka", "python", "sql"],
-                    "description": "Kind of source. Required when node_type=source; selects which config fields apply."
+                    "description": "Kind of source. Selects which config fields apply."
                 },
+                "output_view_name": {"type": "string", "description": "Overrides the emitted view name. Defaults to the node name."},
+                "enabled": {"type": "boolean", "default": true, "description": "Whether this node is included in the pipeline."},
+                "config": {"type": "object", "description": "Source configuration. Its valid fields are determined by source_type."}
+            },
+            "required": ["name", "node_type", "source_type"],
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {"properties": {"source_type": {"const": "delta"}}, "required": ["source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_delta_config"}}}
+                },
+                {
+                    "if": {"properties": {"source_type": {"const": "cloud_files"}}, "required": ["source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_cloud_files_config"}}}
+                },
+                {
+                    "if": {"properties": {"source_type": {"const": "batch_files"}}, "required": ["source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_batch_files_config"}}}
+                },
+                {
+                    "if": {"properties": {"source_type": {"const": "kafka"}}, "required": ["source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_kafka_config"}}}
+                },
+                {
+                    "if": {"properties": {"source_type": {"const": "delta_join"}}, "required": ["source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/source_delta_join_config"}}}
+                },
+                {
+                    "if": {"properties": {"source_type": {"const": "python"}}, "required": ["source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/python_logic_config"}}}
+                },
+                {
+                    "if": {"properties": {"source_type": {"const": "sql"}}, "required": ["source_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sql_logic_config"}}}
+                }
+            ]
+        },
+
+        "transformation_node": {
+            "type": "object",
+            "description": "A transformation node reshapes an upstream view. Carries transformation_type (not source_type/target_type).",
+            "properties": {
+                "name": {"type": "string", "description": "Unique node name within the pipeline. Also the emitted view name unless output_view_name is set."},
+                "node_type": {"const": "transformation", "description": "transformation: reshapes an upstream view."},
                 "transformation_type": {
                     "type": "string",
                     "enum": ["sql", "python"],
-                    "description": "Kind of transformation. Required when node_type=transformation."
+                    "description": "Kind of transformation. Selects which config fields apply."
                 },
+                "output_view_name": {"type": "string", "description": "Overrides the emitted view name. Defaults to the node name."},
+                "enabled": {"type": "boolean", "default": true, "description": "Whether this node is included in the pipeline."},
+                "config": {"type": "object", "description": "Transformation configuration. Its valid fields are determined by transformation_type."}
+            },
+            "required": ["name", "node_type", "transformation_type"],
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {"properties": {"transformation_type": {"const": "sql"}}, "required": ["transformation_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/sql_logic_config"}}}
+                },
+                {
+                    "if": {"properties": {"transformation_type": {"const": "python"}}, "required": ["transformation_type"]},
+                    "then": {"properties": {"config": {"$ref": "#/$defs/python_logic_config"}}}
+                }
+            ]
+        },
+
+        "target_node": {
+            "type": "object",
+            "description": "A target node writes an output. Carries target_type (not source_type/transformation_type) and has no output_view_name.",
+            "properties": {
+                "name": {"type": "string", "description": "Unique node name within the pipeline."},
+                "node_type": {"const": "target", "description": "target: writes an output (table or sink)."},
                 "target_type": {
                     "type": "string",
                     "enum": ["delta", "delta_sink", "foreach_batch_sink", "custom_python_sink", "kafka_sink"],
                     "default": "delta",
                     "description": "Output format for a target. Default: delta (a managed table). The *_sink values write to external sinks."
                 },
-                "output_view_name": {
-                    "type": "string",
-                    "description": "Overrides the emitted view name (source/transformation nodes). Defaults to the node name."
-                },
                 "enabled": {"type": "boolean", "default": true, "description": "Whether this node is included in the pipeline."},
-                "config": {"type": "object", "description": "Node configuration. Its valid fields are determined by node_type and the type field above."}
+                "config": {"type": "object", "description": "Target configuration. Its valid fields are determined by target_type."}
             },
             "required": ["name", "node_type"],
             "additionalProperties": false,
             "allOf": [
                 {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "delta"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/source_delta_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "cloud_files"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/source_cloud_files_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "batch_files"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/source_batch_files_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "kafka"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/source_kafka_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "delta_join"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/source_delta_join_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "python"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/python_logic_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "source"}, "source_type": {"const": "sql"}}, "required": ["node_type", "source_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sql_logic_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "source"}}, "required": ["node_type"]},
-                    "then": {"required": ["source_type"]}
-                },
-
-                {
-                    "if": {"properties": {"node_type": {"const": "transformation"}, "transformation_type": {"const": "sql"}}, "required": ["node_type", "transformation_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/sql_logic_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "transformation"}, "transformation_type": {"const": "python"}}, "required": ["node_type", "transformation_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/python_logic_config"}}}
-                },
-                {
-                    "if": {"properties": {"node_type": {"const": "transformation"}}, "required": ["node_type"]},
-                    "then": {"required": ["transformation_type"]}
-                },
-
-                {
-                    "if": {"properties": {"node_type": {"const": "target"}, "target_type": {"const": "delta"}}, "required": ["node_type"]},
+                    "if": {"properties": {"target_type": {"const": "delta"}}},
                     "then": {"properties": {"config": {"$ref": "#/$defs/target_delta_config"}}}
                 },
                 {
-                    "if": {"properties": {"node_type": {"const": "target"}, "target_type": {"enum": ["delta_sink", "kafka_sink", "foreach_batch_sink", "custom_python_sink"]}}, "required": ["node_type", "target_type"]},
+                    "if": {"properties": {"target_type": {"enum": ["delta_sink", "kafka_sink", "foreach_batch_sink", "custom_python_sink"]}}, "required": ["target_type"]},
                     "then": {"properties": {"config": {"$ref": "#/$defs/target_sink_config"}}}
                 }
             ]
