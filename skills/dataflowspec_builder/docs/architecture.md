@@ -1,8 +1,8 @@
 # Architecture
 
-## How the Data Flow Spec Framework Works
+## How the Lakeflow Framework Works
 
-The Data Flow Spec Framework (`databricks-solutions/lakeflow_framework`) is a metadata-driven data engineering framework that sits on top of Databricks Spark Declarative Pipelines (SDP, formerly DLT). Instead of writing Python/SQL pipeline code directly, engineers define pipelines through JSON/YAML configuration files called **Data Flow Specs**.
+The **Lakeflow Framework** (`databricks-solutions/lakeflow_framework`) is a metadata-driven data engineering framework that sits on top of Databricks Spark Declarative Pipelines (SDP, formerly DLT). Instead of writing Python/SQL pipeline code directly, engineers define pipelines through JSON/YAML configuration files called **Data Flow Specs**.
 
 ```
 ┌─────────────────────────────────────────────────────────┐

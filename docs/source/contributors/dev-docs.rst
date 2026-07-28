@@ -31,6 +31,8 @@ Source files live under ``docs/source/``. Top-level navigation is defined in :do
      - :doc:`/deploy/index` hub — before you deploy, :doc:`/deploy/framework/index` subsection, pipeline bundle local deploy, :doc:`/deploy/ci-cd`
    * - **Features**
      - :doc:`/features/index` hub — category sub-hubs and ``feature_*.rst`` pages; :doc:`/features/a-z` index
+   * - **Agent Skills**
+     - :doc:`/ai-skills/index` hub — skill overview pages (self-contained packages under ``skills/``)
    * - **Contributors**
      - :doc:`/contributors/index` hub — env, git/releases, workflow, imports, this page
 
@@ -78,11 +80,23 @@ Add new deploy guides to the appropriate hub toctree under ``docs/source/deploy/
 
 Build guides live under the :doc:`/build/index` hub.
 
+Agent Skills (docs site)
+------------------------
+
+Skills are **self-contained packages** under ``skills/<name>/`` in the repository (``SKILL.md``, ``docs/``, ``references/``, ``assets/``, ``examples/``, ``scripts/``). The docs site does **not** mirror the full skill tree.
+
+**Option B (current):** One sidebar entry per skill — symlink ``docs/source/ai-skills/<skill>/index.md`` to ``skills/<skill>/README.md``. Optionally symlink ``docs/*.md`` guides; ``docs/conf.py`` marks them ``:orphan:`` and rewrites ``docs/*.md`` links to ``{doc}`` roles (symlinks resolve against ``skills/``, not the docs tree). Do **not** publish ``references/`` (agent-only); redirect old URLs in ``docs/redirects/ai-skills.yaml`` to :doc:`/build/patterns/index` / :doc:`/build/spec-reference/index` where applicable.
+
+**Option A (simpler):** Hub + skill README only — remove ``docs/`` symlinks and orphan handling; all detail stays in the installed skill folder.
+
+Register new skills in ``docs/source/ai-skills/index.rst`` (hub card + hidden toctree with a single skill index entry). See ``skills/README.md``.
+
 Cross-references
 ----------------
 
 * RST: ``:doc:`page_name``` or ``:doc:`Title <page_name>```
 * MyST (``samples/index.md``): ``{doc}`/samples/index``` or ``{doc}`Title </path/to/page>```
+* Agent Skills hub: ``:doc:`/ai-skills/index``` and ``:doc:`/ai-skills/dataflowspec-builder/index```
 * Sections: ``:ref:`label-name``` (use unique labels; avoid duplicating labels across spec ref pages)
 
 Styling

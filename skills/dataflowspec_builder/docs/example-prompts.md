@@ -1,8 +1,8 @@
 # Example Prompts
 
-A comprehensive list of example prompts you can use with the Data Flow Spec Builder skill in Genie Code. Each section includes the prompt, what gets generated, and when to use it.
+A comprehensive list of example prompts you can use with the Data Flow Spec Builder skill in Cursor, Claude Code, Genie Code, or other Agent Skills-compatible assistants. Each section includes the prompt, what gets generated, and when to use it.
 
-> **Tip:** Always include "Data Flow Spec" or "dataflow-spec-builder" in your prompt to ensure Genie Code routes to this skill rather than native Lakeflow Declarative Pipelines.
+> **Tip:** Always include "Data Flow Spec" or "dataflow-spec-builder" in your prompt so the assistant routes to this skill rather than native Lakeflow Declarative Pipelines.
 
 ---
 
@@ -310,7 +310,7 @@ Explain the difference between standard and flows Data Flow Spec types.
 ```
 
 ```
-What quarantine modes are available in the Data Flow Spec Framework?
+What quarantine modes are available in the Lakeflow Framework?
 ```
 
 ```

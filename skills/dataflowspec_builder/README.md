@@ -1,8 +1,12 @@
-# Data Flow Spec Builder — Genie Code Agent Skill for the Lakeflow Framework
+# Data Flow Spec Builder — Agent Skill for the Lakeflow Framework
 
-A comprehensive [Databricks Genie Code](https://docs.databricks.com/en/notebooks/genie-code.html) Agent Skill that generates production-ready pipeline bundles using the [Data Flow Spec Framework](https://github.com/databricks-solutions/lakeflow_framework) (`databricks-solutions/lakeflow_framework`) from natural language prompts.
+An [Agent Skill](https://agentskills.io/specification) that generates production-ready pipeline bundles with the [Lakeflow Framework](https://github.com/databricks-solutions/lakeflow_framework) (`databricks-solutions/lakeflow_framework`) — metadata-driven pipelines defined by **Data Flow Spec** JSON/YAML — from natural language prompts.
 
-> **Important:** This skill generates pipelines using the **Data Flow Spec Framework** — a metadata-driven wrapper around Spark Declarative Pipelines (SDP). It is **not** the same as native Lakeflow Declarative Pipelines (DLT). The Data Flow Spec Framework uses JSON/YAML configuration files to define pipelines without writing `@dlt.table` decorators or `CREATE STREAMING TABLE` SQL.
+Use it with **Cursor**, **Claude Code**, **Databricks Genie Code**, or any other assistant that supports the Agent Skills standard.
+
+> **Self-contained skill package.** The full skill lives in `skills/dataflowspec_builder/` in the repository — `SKILL.md`, `docs/`, `references/`, `assets/`, `examples/`, and `scripts/`. **Install that folder** into your assistant's skills directory. This docs page is an overview; guides linked below are convenience copies for browsing. Agent reference files under `references/` are not published here (they ship with the skill for the agent to read on demand).
+
+> **Important:** This skill uses the **Lakeflow Framework** with **Data Flow Spec** configuration files — a metadata-driven wrapper around Spark Declarative Pipelines (SDP). It is **not** native Lakeflow Spark Declarative Pipelines (DLT/SDP): no `@dlt.table` decorators or `CREATE STREAMING TABLE` SQL.
 
 ## What It Does
 
@@ -10,7 +14,7 @@ From a prompt like:
 
 > "Use the dataflow-spec-builder to create bronze Data Flow Specs for ingesting customer and billing tables with SCD1 CDC and data quality checks"
 
-Genie Code generates a **complete, deployable pipeline bundle**:
+Your coding assistant generates a **complete, deployable pipeline bundle**:
 
 - Data Flow Spec JSON files (standard, flows, or materialized views)
 - StructType schema JSON files
@@ -51,24 +55,18 @@ databricks bundle deploy -t dev
 
 ### 2. Install the Skill
 
-Upload this skill folder to your workspace's `.assistant/skills/` directory:
+Upload this skill folder to your assistant's skills directory. See [Getting Started](docs/getting-started.md) for Cursor, Claude Code, and Genie Code paths.
 
-```bash
-databricks workspace import-dir \
-  ./skills/dataflowspec_builder \
-  "/Workspace/Users/<your-email>/.assistant/skills/dataflow-spec-builder"
-```
+### 3. Use with your agent
 
-### 3. Use in Genie Code
-
-Open a notebook, enter Genie Code Agent mode, and ask:
+Open your assistant (Cursor, Claude Code, Genie Code, etc.) and ask:
 
 ```
 Use the dataflow-spec-builder to create a bronze Data Flow Spec for ingesting
 raw_customers from main.my_schema with SCD Type 1 CDC.
 ```
 
-See [docs/example-prompts.md](docs/example-prompts.md) for 30+ tested prompts.
+See [Example Prompts](docs/example-prompts.md) for 30+ tested prompts.
 
 ## Example Prompts
 
@@ -81,7 +79,7 @@ See [docs/example-prompts.md](docs/example-prompts.md) for 30+ tested prompts.
 | "Generate a stream-static join Data Flow Spec for meter + weather" | Flows spec with deltaJoin |
 | "Set up dev/staging/prod substitutions for different catalogs" | 3 environment config files |
 
-> **Tip:** Always include "Data Flow Spec" or "dataflow-spec-builder" in your prompt to ensure Genie Code routes to this skill instead of native Lakeflow Declarative Pipelines.
+> **Tip:** Always include "Data Flow Spec" or "dataflow-spec-builder" in your prompt so the assistant routes to this skill instead of native Lakeflow Declarative Pipelines.
 
 ## Repository Structure
 
@@ -148,12 +146,21 @@ This skill was tested end-to-end on a live Databricks workspace with:
 
 - **Bronze pipeline:** 7 streaming tables ingesting 10.7M+ rows with SCD1 CDC and operational metadata
 - **Gold pipeline:** 3 materialized views with SQL aggregations (revenue by state, grid reliability, equipment risk)
-- **Framework:** Data Flow Spec Framework v0.4.0 deployed via DABs
+- **Framework:** Lakeflow Framework deployed via DABs
 - **Compute:** Serverless pipelines on Unity Catalog
 
-See [docs/tested-medallion-example.md](docs/tested-medallion-example.md) for full details and results.
+See [Tested Example](docs/tested-medallion-example.md) for full details and results.
+
+## Prerequisites
+
+See [Getting Started](docs/getting-started.md) for workspace, CLI, Python, and framework deployment steps.
+
+- An Agent Skills-compatible coding assistant (Cursor, Claude Code, Genie Code, etc.)
+- **Lakeflow Framework** deployed to your workspace before generating pipelines
 
 ## Documentation
+
+Human guides (in this skill folder and linked below on the docs site). Full framework documentation: [Lakeflow Framework](https://databricks-solutions.github.io/lakeflow_framework/). Pattern and schema reference: [Build → Patterns](https://databricks-solutions.github.io/lakeflow_framework/build/patterns/index.html) and [Build → Spec reference](https://databricks-solutions.github.io/lakeflow_framework/build/spec-reference/index.html).
 
 | Document | Description |
 |----------|-------------|
@@ -162,20 +169,5 @@ See [docs/tested-medallion-example.md](docs/tested-medallion-example.md) for ful
 | [Architecture](docs/architecture.md) | How the framework and skill work together |
 | [Tested Example](docs/tested-medallion-example.md) | Verified medallion architecture with real results |
 | [Skill Development](docs/skill-development.md) | How to customize for your domain |
-| [Patterns Guide](references/patterns-guide.md) | Quick reference for selecting the right pattern |
-| [Schema Reference](references/dataflow-spec-schema-reference.md) | Complete field reference for all spec types |
-
-## Prerequisites
-
-- Databricks workspace with Unity Catalog enabled
-- Databricks CLI installed and configured
-- Genie Code enabled on the workspace
-- Data Flow Spec Framework v0.4.0+ deployed ([instructions](docs/getting-started.md#step-1-deploy-the-data-flow-spec-framework))
-- Python 3.9+ (for scaffolding and validation scripts)
-
-## Related
-
-- [Data Flow Spec Framework](https://github.com/databricks-solutions/lakeflow_framework) — the underlying framework
-- [Framework Documentation](https://databricks-solutions.github.io/lakeflow_framework/) — official docs
-- [Databricks Asset Bundles](https://docs.databricks.com/dev-tools/bundles/index.html) — DABs reference
-- [Spark Declarative Pipelines](https://docs.databricks.com/en/delta-live-tables/index.html) — SDP/DLT docs
+| [Patterns Guide](https://databricks-solutions.github.io/lakeflow_framework/build/patterns/index.html) | Framework pipeline patterns (formal docs); agent copy in `references/patterns-guide.md` |
+| [Schema Reference](https://databricks-solutions.github.io/lakeflow_framework/build/spec-reference/index.html) | Data Flow Spec field reference (formal docs); agent copy in `references/dataflow-spec-schema-reference.md` |

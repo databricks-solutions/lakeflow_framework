@@ -1,0 +1,27 @@
+redirects:
+- from: ai_skills.html
+  to: ai-skills/index.html
+- from: dataflowspec_builder/README.html
+  to: ai-skills/dataflowspec-builder/index.html
+- from: dataflowspec_builder/docs/getting-started.html
+  to: ai-skills/dataflowspec-builder/docs/getting-started.html
+- from: dataflowspec_builder/docs/example-prompts.html
+  to: ai-skills/dataflowspec-builder/docs/example-prompts.html
+- from: dataflowspec_builder/docs/architecture.html
+  to: ai-skills/dataflowspec-builder/docs/architecture.html
+- from: dataflowspec_builder/docs/tested-medallion-example.html
+  to: ai-skills/dataflowspec-builder/docs/tested-medallion-example.html
+- from: dataflowspec_builder/docs/skill-development.html
+  to: ai-skills/dataflowspec-builder/docs/skill-development.html
+- from: dataflowspec_builder/references/patterns-guide.html
+  to: build/patterns/index.html
+- from: dataflowspec_builder/references/dataflow-spec-schema-reference.html
+  to: build/spec-reference/index.html
+- from: dataflowspec_builder/references/energy-domain-mapping.html
+  to: ai-skills/dataflowspec-builder/index.html
+- from: ai-skills/dataflowspec-builder/references/patterns-guide.html
+  to: build/patterns/index.html
+- from: ai-skills/dataflowspec-builder/references/dataflow-spec-schema-reference.html
+  to: build/spec-reference/index.html
+- from: ai-skills/dataflowspec-builder/references/energy-domain-mapping.html
+  to: ai-skills/dataflowspec-builder/index.html

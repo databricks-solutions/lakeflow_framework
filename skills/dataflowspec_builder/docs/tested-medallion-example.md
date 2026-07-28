@@ -1,6 +1,6 @@
 # Tested Medallion Architecture Example
 
-This document describes a complete end-to-end medallion architecture that was tested and verified on a live Databricks workspace (`e2-demo-west.cloud.databricks.com`) using the Data Flow Spec Framework.
+This document describes a complete end-to-end medallion architecture that was tested and verified on a live Databricks workspace (`e2-demo-west.cloud.databricks.com`) using the Lakeflow Framework.
 
 ## Dataset — SmartGrid Analytics Platform (Australia)
 

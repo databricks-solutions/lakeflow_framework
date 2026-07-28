@@ -105,13 +105,13 @@
      <article class="lf-feature-card">
        <div class="lf-feature-card__header">
          <svg class="lf-feature-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a1 1 0 0 1 1 1v1.07a7 7 0 0 1 5.93 5.93H20a1 1 0 1 1 0 2h-1.07A7 7 0 0 1 13 17.93V19a1 1 0 1 1-2 0v-1.07A7 7 0 0 1 5.07 12H4a1 1 0 1 1 0-2h1.07A7 7 0 0 1 11 4.07V3a1 1 0 0 1 1-1m0 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10m0 3a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
-         <h3 class="lf-feature-card__title">AI Skills</h3>
+         <h3 class="lf-feature-card__title">Agent Skills</h3>
        </div>
        <hr class="lf-feature-card__divider" />
-       <p class="lf-feature-card__body">Agent Skills for end users — generate production-ready data flow spec pipeline bundles from natural language.</p>
-       <a class="lf-feature-card__link" href="ai_skills.html">
+       <p class="lf-feature-card__body">Agent Skills for Cursor, Claude Code, Genie Code, and more — generate production-ready data flow spec pipeline bundles from natural language.</p>
+       <a class="lf-feature-card__link" href="ai-skills/index.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
-         Build specs with AI Skills
+         Build specs with agent skills
        </a>
      </article>
    </div>

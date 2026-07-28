@@ -4,18 +4,18 @@ How to extend or customize this skill for your own use cases.
 
 ## Skill Structure
 
-Genie Code Agent Skills follow a convention:
+Agent Skills follow a convention:
 
 ```
 skill-directory/
-├── SKILL.md          # Required — the skill definition Genie Code reads
+├── SKILL.md          # Required — the skill definition the agent reads
 ├── assets/           # Optional — templates, configs, reference files
 ├── references/       # Optional — domain docs, schema references
 ├── scripts/          # Optional — automation scripts
-└── examples/         # Optional — working examples for Genie Code to reference
+└── examples/         # Optional — working examples for the agent to reference
 ```
 
-The `SKILL.md` file is the core. Genie Code reads it to understand:
+The `SKILL.md` file is the core. The agent reads it to understand:
 - **When** to activate the skill (trigger phrases)
 - **What** to generate (schemas, templates, examples)
 - **How** to generate it (workflow steps, constraints)
@@ -90,10 +90,9 @@ To add support for a new pattern:
 
 ## Testing Your Skill
 
-1. Upload the skill to `.assistant/skills/` on your workspace
-2. Open a new notebook
-3. Enter Genie Code Agent mode
-4. Test with progressively complex prompts:
+1. Install the skill in your assistant's skills directory (see [Getting Started](getting-started.md))
+2. Open a new chat or notebook session
+3. Test with progressively complex prompts:
    - Start with: "What patterns does the dataflow-spec-builder support?"
    - Then: "Generate a simple bronze Data Flow Spec for my_table"
    - Then: "Create a complete medallion pipeline with templates and DQ"
@@ -101,7 +100,7 @@ To add support for a new pattern:
 ## Tips for Effective Skills
 
 - **Be specific in SKILL.md** — Include complete JSON schemas, not just descriptions
-- **Include working examples** — Genie Code learns from examples in the skill directory
+- **Include working examples** — Agents learn from examples in the skill directory
 - **Use unique trigger phrases** — Avoid terms that overlap with built-in Databricks features
-- **Add a "When NOT to Use" section** — Helps Genie Code avoid false positives
+- **Add a "When NOT to Use" section** — Helps the agent avoid false positives
 - **Keep the skill focused** — One skill per framework/pattern, not a catch-all
