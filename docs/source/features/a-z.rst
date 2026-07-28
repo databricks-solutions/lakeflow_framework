@@ -9,6 +9,7 @@ when browsing by category; use this list when you already know the name.
 * :doc:`Change Data Capture (CDC) </features/platform/cdc>` — apply CDC merges via the data flow spec
 * :doc:`Change Data Feed (CDF) </features/platform/cdf>` — consume Delta change data feed
 * :doc:`Data Flow Specification Format </features/metadata/spec-format>` — JSON / YAML spec language and structure
+* :doc:`Data Flow Spec Builder (Agent Skills) </ai-skills/dataflowspec-builder/index>` — generate pipeline bundles from natural language with Cursor, Claude Code, or Genie Code
 * :doc:`Data Quality - Expectations </features/data-quality/expectations>` — SDP expectations in the spec
 * :doc:`Data Quality - Quarantine </features/data-quality/quarantine>` — quarantine failed records
 * :doc:`Framework configuration </features/configuration/framework-configuration>` — global framework config layout

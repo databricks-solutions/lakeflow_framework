@@ -1,17 +1,17 @@
 # Getting Started
 
-This guide walks you through setting up the Data Flow Spec Builder skill with Databricks Genie Code.
+This guide walks you through deploying the **Lakeflow Framework** and installing the Data Flow Spec Builder skill for use with **Cursor**, **Claude Code**, **Databricks Genie Code**, and other Agent Skills-compatible assistants.
 
 ## Prerequisites
 
 - A Databricks workspace with Unity Catalog enabled
 - Databricks CLI installed and configured (`databricks auth login`)
-- Genie Code enabled on your workspace (ask your admin)
-- Python 3.9+
+- Python 3.9+ (for skill scaffolding and validation scripts)
+- An Agent Skills-compatible coding assistant (see Step 2)
 
-## Step 1: Deploy the Data Flow Spec Framework
+## Step 1: Deploy the Lakeflow Framework
 
-The framework engine must be deployed to your workspace before the skill can generate working pipelines.
+The Lakeflow Framework engine must be deployed to your workspace before the skill can generate working pipelines.
 
 ```bash
 # Clone the framework
@@ -32,30 +32,55 @@ After deployment, the framework code will be at:
 
 ## Step 2: Install the Skill
 
-### Option A: Copy to `.assistant/skills/` (recommended)
+Copy or symlink the `skills/dataflowspec_builder/` folder into the skills directory for your assistant.
 
-Upload the skill directory to your workspace's `.assistant/skills/` folder. Genie Code automatically discovers skills in this location.
+### Cursor
+
+Personal (all projects):
+
+```bash
+mkdir -p ~/.cursor/skills
+cp -R skills/dataflowspec_builder ~/.cursor/skills/dataflow-spec-builder
+```
+
+Or add to a single repo: `.cursor/skills/dataflow-spec-builder/` (copy the skill folder there).
+
+See [Cursor Agent Skills](https://cursor.com/docs/context/skills) for the latest paths and discovery rules.
+
+### Claude Code
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R skills/dataflowspec_builder ~/.claude/skills/dataflow-spec-builder
+```
+
+Claude Code discovers skills from `~/.claude/skills/` and project `.claude/skills/`. See [Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills).
+
+### Databricks Genie Code
+
+Upload the skill to your workspace `.assistant/skills/` folder (workspace-wide or user scope):
 
 ```bash
 databricks workspace import-dir \
-  ./path-to-this-repo \
+  ./skills/dataflowspec_builder \
   "/Workspace/Users/<your-email>/.assistant/skills/dataflow-spec-builder"
 ```
 
-### Option B: Manual skill path
+Alternatively, open Genie Code settings in a notebook and add the skill path manually. See [Extend Genie Code with agent skills](https://docs.databricks.com/aws/en/genie-code/skills).
 
-In your notebook, open Genie Code settings (gear icon in the Genie Code panel) and add the skill path manually:
-```
-/Workspace/Users/<your-email>/skills/dataflow-spec-builder
-```
+### Other assistants
+
+If your tool supports the [Agent Skills](https://agentskills.io/specification) layout, install the folder so the assistant can read `SKILL.md` at the skill root. Each skill is a directory with a required `SKILL.md` file.
 
 ## Step 3: Verify the Skill
 
-Open any Python notebook on your workspace and enter Genie Code Agent mode. Ask:
+Ask your assistant:
 
 > "What Data Flow Spec patterns are available?"
 
-If the skill is loaded correctly, Genie Code will respond with the pattern list from the skill definition.
+If the skill is loaded correctly, the response should include the pattern list from the skill definition.
+
+In **Genie Code**, use Agent mode in a notebook. In **Cursor** or **Claude Code**, invoke the skill explicitly if needed (for example `@dataflow-spec-builder` or by naming the skill in your prompt).
 
 ## Step 4: Generate Your First Pipeline
 
@@ -63,7 +88,8 @@ Try this prompt:
 
 > "Use the dataflow-spec-builder to create a bronze Data Flow Spec that ingests the `raw_customers` table from `main.my_schema` with SCD Type 1 CDC"
 
-Genie Code should generate:
+The assistant should generate:
+
 1. A `customers_main.json` Data Flow Spec file
 2. A pipeline resource YAML
 3. A `databricks.yml` configuration
@@ -81,13 +107,14 @@ databricks bundle run -t dev <pipeline_name>
 
 ### Skill not being picked up
 
-- Ensure the `SKILL.md` file is in the root of the skill directory
-- Check that the directory is under `.assistant/skills/` in your workspace
-- Try mentioning "dataflow-spec-builder" or "Data Flow Spec" explicitly in your prompt
+- Ensure `SKILL.md` is in the root of the skill directory
+- Confirm the skill is in the correct directory for your assistant (see Step 2)
+- Try mentioning `dataflow-spec-builder` or `Data Flow Spec` explicitly in your prompt
 
-### Genie Code generates native DLT instead
+### Assistant generates native DLT instead
 
-If Genie Code generates `@dlt.table` decorators or `CREATE STREAMING TABLE` SQL, it's using native Lakeflow Declarative Pipelines instead of this skill. Use these trigger phrases:
+If the assistant generates `@dlt.table` decorators or `CREATE STREAMING TABLE` SQL, it may be using native Lakeflow Declarative Pipelines instead of this skill. Use these trigger phrases:
+
 - "Use the **dataflow-spec-builder** skill..."
 - "Generate a **Data Flow Spec** for..."
 - "Create a pipeline using the **metadata-driven framework**..."
@@ -95,12 +122,14 @@ If Genie Code generates `@dlt.table` decorators or `CREATE STREAMING TABLE` SQL,
 ### Framework bundle not found
 
 Ensure you have deployed the framework:
+
 ```bash
 cd lakeflow_framework
 databricks bundle deploy -t dev
 ```
 
 Verify the deployment:
+
 ```bash
 databricks workspace list "/Workspace/Users/<your-email>/.bundle/lakeflow_framework/dev/current/files/src"
 ```

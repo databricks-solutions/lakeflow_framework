@@ -126,6 +126,8 @@ subdirectory
 subqueries
 subpackage
 subpackages
+symlink
+symlinks
 tableMigrationDetails
 tableProperties
 targetFormat

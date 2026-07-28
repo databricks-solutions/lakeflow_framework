@@ -484,6 +484,46 @@ def _patch_mermaid_pre_tags(app, exception):
             html_path.write_text(updated, encoding='utf-8')
 
 
+_SKILL_ORPHAN_PREFIX = "```{eval-rst}\n:orphan:\n```\n\n"
+_SKILL_DOC_ROOT = "ai-skills/dataflowspec-builder"
+
+
+def _rewrite_ai_skills_doc_links(app, docname, source):
+    """Prepare symlinked skill sources for Option B docs layout.
+
+    Sidebar shows the skill overview (README) only. Human guides under ``docs/``
+    are orphan pages — linkable from the README, not in the nav. ``references/``
+    are agent-only and are not published on the docs site.
+
+    README and guides are symlinked from ``skills/``; MyST resolves relative
+    markdown paths against the real path. Rewrite intra-skill links to ``{doc}`` roles.
+    """
+    if not docname.startswith(_SKILL_DOC_ROOT):
+        return
+    import re
+
+    text = source[0]
+    guide_names = (
+        "getting-started|example-prompts|architecture|"
+        "tested-medallion-example|skill-development"
+    )
+    if docname.startswith(f"{_SKILL_DOC_ROOT}/docs/"):
+        if ":orphan:" not in text[:120]:
+            text = _SKILL_ORPHAN_PREFIX + text
+        text = re.sub(
+            rf"\[([^\]]+)\]\(({guide_names})\.md(#[^)]+)?\)",
+            rf"{{doc}}`\1 </{_SKILL_DOC_ROOT}/docs/\2>\3`",
+            text,
+        )
+    elif docname == f"{_SKILL_DOC_ROOT}/index":
+        text = re.sub(
+            r"\[([^\]]+)\]\(docs/([^)]+?)\.md(#[^)]+)?\)",
+            rf"{{doc}}`\1 </{_SKILL_DOC_ROOT}/docs/\2>\3`",
+            text,
+        )
+    source[0] = text
+
+
 def setup(app):
     app.set_translator("markdown", CustomMarkdownTranslator)
 
@@ -494,6 +534,7 @@ def setup(app):
                 domain.data["synopses"] = {}
 
     app.connect("builder-inited", _init_domain_synopses)
+    app.connect("source-read", _rewrite_ai_skills_doc_links)
     _override_mermaid_pre_class(app)
     app.connect("doctree-read", _flatten_mermaid_diagrams)
     app.connect("doctree-read", _ignore_spelling_in_nonprose)

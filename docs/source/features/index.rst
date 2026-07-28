@@ -30,7 +30,7 @@ when you already know the feature name.
          <h3 class="lf-feature-card__title">Authoring and Tooling</h3>
        </div>
        <hr class="lf-feature-card__divider" />
-       <p class="lf-feature-card__body">Editor and UI support — IntelliSense and Databricks UI integration.</p>
+       <p class="lf-feature-card__body">Editor, UI, and Agent Skills — IntelliSense, Databricks UI integration, and AI-assisted spec generation.</p>
        <a class="lf-feature-card__link" href="authoring/index.html">
          <svg class="lf-feature-card__link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 11v2h12l-5.5 5.5 1.42 1.42L20.84 12l-8.92-8.92L10.5 4.5 16 10H4z"/></svg>
          Open section
