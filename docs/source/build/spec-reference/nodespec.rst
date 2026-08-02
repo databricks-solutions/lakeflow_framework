@@ -38,7 +38,7 @@ therefore a target-node construct.
 order — identity (``table``/``database``), then table/structural details, then
 feature blocks (``cdc_settings``, ``data_quality`` — with quarantine nested
 inside it — ``table_migration``), and finally ``input_flows``. The order is
-conventional only; it does not affect behaviour.
+conventional only; it does not affect behavior.
 
 Example: simple data flow
 =========================
@@ -429,7 +429,7 @@ For historical snapshots the ``source`` object fields depend on ``source_type``:
      - Schema file applied when reading the snapshot files.
    * - **recursiveFileLookup**
      - ``file``
-     - Recurse into subdirectories when discovering snapshot files.
+     - Discover snapshot files recursively within each source folder.
    * - **table**
      - ``table``
      - Source table, e.g. ``{schema}.snapshot_source``.

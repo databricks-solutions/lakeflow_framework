@@ -1,29 +1,29 @@
-# Metadata
-dataFlowId: base_customer_address
-dataFlowGroup: yaml_samples
-dataFlowType: standard
-
-# Source Configuration
-sourceSystem: testSystem
-sourceType: delta
-sourceViewName: v_customer_address
-sourceDetails:
-  database: '{staging_schema}'
-  table: customer_address
-  cdfEnabled: true
-mode: stream
-
-# Target Configuration
-targetFormat: delta
-targetDetails:
-  table: customer_address
-  tableProperties:
-    delta.enableChangeDataFeed: 'true'
-  schemaPath: customer_address_schema.json
-
-# Data Quality and Quarantine Configuration
-dataQualityExpectationsEnabled: true
-dataQualityExpectationsPath: ./customer_address_dqe.yaml
-quarantineMode: table
-quarantineTargetDetails:
-  targetFormat: delta
+data_flow_id: base_customer_address
+data_flow_group: yaml_samples
+data_flow_type: nodespec
+nodes:
+- name: v_customer_address
+  node_type: source
+  source_type: delta
+  config:
+    mode: stream
+    database: '{staging_schema}'
+    table: customer_address
+    cdf_enabled: true
+- name: target_customer_address
+  node_type: target
+  config:
+    table: customer_address
+    table_properties:
+      delta.enableChangeDataFeed: 'true'
+    schema_path: customer_address_schema.json
+    data_quality:
+      enabled: true
+      expectations_path: ./customer_address_dqe.yaml
+      quarantine:
+        mode: table
+        target:
+          target_format: delta
+    input_flows:
+    - view: v_customer_address
+      flow: f_v_customer_address
