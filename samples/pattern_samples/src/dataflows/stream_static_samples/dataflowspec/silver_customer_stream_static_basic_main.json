@@ -1,0 +1,76 @@
+{
+    "data_flow_id": "stream_static_basic",
+    "data_flow_group": "stream_static_silver",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_stream_static_customer_basic",
+            "node_type": "source",
+            "source_type": "delta_join",
+            "config": {
+                "mode": "stream",
+                "sources": [
+                    {
+                        "database": "{bronze_schema}",
+                        "table": "base_customer_append",
+                        "cdf_enabled": true,
+                        "alias": "c",
+                        "join_mode": "stream"
+                    },
+                    {
+                        "database": "{bronze_schema}",
+                        "table": "base_customer_address_append",
+                        "cdf_enabled": false,
+                        "alias": "ca",
+                        "join_mode": "static"
+                    }
+                ],
+                "joins": [
+                    {
+                        "join_type": "left",
+                        "condition": "c.CUSTOMER_ID = ca.CUSTOMER_ID"
+                    }
+                ],
+                "select_exp": [
+                    "c.CUSTOMER_ID",
+                    "c.FIRST_NAME",
+                    "c.LAST_NAME",
+                    "c.EMAIL",
+                    "c.DELETE_FLAG",
+                    "ca.CITY",
+                    "ca.STATE",
+                    "c.LOAD_TIMESTAMP"
+                ]
+            }
+        },
+        {
+            "name": "target_stream_static_customer_basic",
+            "node_type": "target",
+            "config": {
+                "database": "{silver_schema}",
+                "table": "stream_static_customer_basic",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "except_column_list": [
+                        "LOAD_TIMESTAMP"
+                    ],
+                    "ignore_null_updates": false,
+                    "apply_as_deletes": "DELETE_FLAG = 1"
+                },
+                "input_flows": [
+                    {
+                        "view": "v_stream_static_customer_basic",
+                        "flow": "f_stream_static_customer_basic"
+                    }
+                ]
+            }
+        }
+    ]
+}

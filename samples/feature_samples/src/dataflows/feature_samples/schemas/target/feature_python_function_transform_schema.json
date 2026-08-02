@@ -1,0 +1,17 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "CUSTOMER_ID",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "COUNT",
+            "type": "long",
+            "nullable": true,
+            "metadata": {}
+        }
+    ]
+}

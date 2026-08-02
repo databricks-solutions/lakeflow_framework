@@ -1,0 +1,52 @@
+{
+    "dataFlowId": "fct_aggregate_metrics",
+    "dataFlowGroup": "tpch_gold",
+    "dataFlowType": "materialized_view",
+    "materializedViews": {
+        "fct_sales_by_month_segment": {
+            "sqlPath": "fct_sales_by_month_segment.sql",
+            "tableDetails": {
+                "comment": "Pre-aggregated sales by month x market segment x region for dashboards/Genie.",
+                "tableProperties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        },
+        "fct_fulfillment_sla_monthly": {
+            "sqlPath": "fct_fulfillment_sla_monthly.sql",
+            "tableDetails": {
+                "comment": "Fulfillment SLA / OTIF by month x supplier-nation x ship mode: on-time rate, lead time, transit time.",
+                "tableProperties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        },
+        "fct_product_performance": {
+            "sqlPath": "fct_product_performance.sql",
+            "tableDetails": {
+                "comment": "Product performance by month x brand x part type: units, gross/net sales, avg selling price, return rate.",
+                "tableProperties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        },
+        "fct_customer_segment_value": {
+            "sqlPath": "fct_customer_segment_value.sql",
+            "tableDetails": {
+                "comment": "Customer value by month x market segment x region: active customers, orders, net sales, AOV, orders/customer, weighted discount.",
+                "tableProperties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        },
+        "fct_supplier_scorecard": {
+            "sqlPath": "fct_supplier_scorecard.sql",
+            "tableDetails": {
+                "comment": "Supplier scorecard by month x supplier: net sales supplied, units, on-time rate, return rate, estimated gross margin (net sales - qty*supply_cost).",
+                "tableProperties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        }
+    }
+}

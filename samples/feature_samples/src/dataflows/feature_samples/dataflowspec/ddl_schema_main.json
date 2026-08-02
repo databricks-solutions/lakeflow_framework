@@ -1,0 +1,36 @@
+{
+    "data_flow_id": "feature_constraints",
+    "data_flow_group": "feature_samples_general",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_feature_constraints",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{feature_schema}",
+                "table": "src_customer",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_tgt_constraints",
+            "node_type": "target",
+            "config": {
+                "database": "{feature_schema}",
+                "table": "tgt_constraints",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "schema_path": "target/feature_ddl_schema.ddl",
+                "input_flows": [
+                    {
+                        "view": "v_feature_constraints",
+                        "flow": "f_feature_constraints"
+                    }
+                ]
+            }
+        }
+    ]
+}

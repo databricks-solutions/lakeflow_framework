@@ -43,6 +43,8 @@ _KEYS = {
     "recursive_file_lookup": "recursiveFileLookup",
     "catalog_type": "catalogType", "auto_starting_versions_enabled": "autoStartingVersionsEnabled",
     "table_name": "tableName",
+    # delta_join nested source/join keys
+    "join_mode": "joinMode", "join_type": "joinType",
 }
 
 # Keys a target config handles specially, so they are NOT copied into details.
@@ -306,10 +308,27 @@ class NodespecSpecTransformer(BaseSpecTransformer):
         enabled = target.get("enabled", True)
         inputs = self._inputs(target)
 
+        # A flow's targetTable must match the target as the runtime resolves it.
+        # When the target config carries a `database`, the runtime folds it into
+        # the qualified table name (`database.table`), and is_target / staging
+        # lookups compare against that qualified name — so the flow's targetTable
+        # must be qualified too. Staging targets (no database) stay unqualified.
+        target_ref = f"{cfg['database']}.{table}" if cfg.get("database") else table
+
         if not inputs:  # only valid for snapshot CDC targets (snapshot reads its source directly)
-            if cfg.get("cdc_snapshot_settings"):
-                group["flows"][f"{self.FLOW_PREFIX}{name}_{counter}"] = {
-                    "flowType": FlowType.MERGE, "flowDetails": {"targetTable": table}, "enabled": enabled}
+            snap = cfg.get("cdc_snapshot_settings") or {}
+            if snap:
+                # A historical snapshot reads its files/table directly (no input
+                # flow). Name the flow to match the legacy standard transformer
+                # (`f_historical_snapshot_for_<qualified target>`) so the SDP
+                # flow — and its checkpoint — stay stable across migration.
+                # Periodic snapshots keep the auto-generated per-target name.
+                if snap.get("snapshot_type") == "historical":
+                    flow_key = f"{self.FLOW_PREFIX}historical_snapshot_for_{target_ref}"
+                else:
+                    flow_key = f"{self.FLOW_PREFIX}{name}_{counter}"
+                group["flows"][flow_key] = {
+                    "flowType": FlowType.MERGE, "flowDetails": {"targetTable": target_ref}, "enabled": enabled}
                 counter += 1
             else:
                 self.logger.warning(f"Target '{name}' has no inputs, skipping")
@@ -324,14 +343,14 @@ class NodespecSpecTransformer(BaseSpecTransformer):
             counter += 1
 
             if ftype == FlowType.APPEND_SQL:
-                flow = {"flowType": ftype, "flowDetails": {"targetTable": table}, "enabled": enabled}
+                flow = {"flowType": ftype, "flowDetails": {"targetTable": target_ref}, "enabled": enabled}
                 flow["flowDetails"].update(_first(node.get("config", {}), "sql_statement", "sql_path"))
             else:
                 source_view, views = self._views_for(view)
                 if not source_view:
                     self.logger.warning(f"Could not determine source view for target '{name}' input '{view}'")
                     continue
-                flow = {"flowType": ftype, "flowDetails": {"sourceView": source_view, "targetTable": table},
+                flow = {"flowType": ftype, "flowDetails": {"sourceView": source_view, "targetTable": target_ref},
                         "enabled": enabled}
                 fresh = {k: v for k, v in views.items() if k not in registered}
                 if fresh:
@@ -378,28 +397,41 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     # -- views / internal sources --
 
     def _internal_sources(self, sources: List[Dict], targets: List[Dict]) -> Dict[str, str]:
-        """Delta sources reading a table produced by a target here (referenced directly, no view)."""
-        produced = {t["config"]["table"]: (t["config"].get("database") or None)
-                    for t in targets if t.get("config", {}).get("table")}
+        """Delta sources that read a table produced by a sibling target here.
+
+        These are tagged to be read via ``live.<table>``, a legacy DLT
+        carry-over. Modern SDP resolves an unqualified name against the
+        pipeline's catalog/schema and auto-detects the dependency, so ``live.``
+        is no longer required; it is kept only because it is harmless, and
+        dropping it is a separate change.
+
+        Only tag a source with no ``database`` — an omitted database means "the
+        table this pipeline produces". An explicit ``database`` is authoritative
+        (e.g. a silver flow reading ``{bronze_schema}.part`` while this pipeline
+        also produces ``part``) and must never be rewritten to ``live.``.
+        """
+        produced = {t["config"]["table"] for t in targets if t.get("config", {}).get("table")}
         internal = {}
         for s in sources:
             if s.get("source_type", "delta") != "delta":
                 continue
             cfg = s.get("config", {})
+            if cfg.get("database"):  # explicit database is authoritative — never rewrite
+                continue
             table = cfg.get("table", "")
             if table in produced:
-                sdb, tdb = cfg.get("database") or None, produced[table]
-                if not sdb or not tdb or sdb == tdb:
-                    internal[s.get("name")] = table
+                internal[s.get("name")] = table
         return internal
 
     def _view_name(self, name: str) -> str:
         return name if name.startswith(self.VIEW_PREFIX) else f"{self.VIEW_PREFIX}{name}"
 
-    # Config keys on an internal delta source that require a real view (they
-    # reshape the stream — a bare table read cannot express them).
+    # Config keys on an internal delta source that require a real view: either
+    # they reshape the stream (python_transform, select_exp, …) or they change
+    # how the table is read (cdf_enabled) — a bare table read cannot express
+    # them, so they need a `live.`-reading view built via `_source_view`.
     _INTERNAL_VIEW_KEYS = ("python_transform", "select_exp", "cdf_change_type_override",
-                           "reader_options", "where_clause")
+                           "reader_options", "where_clause", "cdf_enabled")
 
     def _views_for(self, view: str) -> Tuple[Optional[str], Dict]:
         """Resolve an input to (source_view_name, views). A transformation also pulls
@@ -427,8 +459,14 @@ class NodespecSpecTransformer(BaseSpecTransformer):
             views[name] = self._source_view(node)
         elif ntype == self.TRANSFORMATION:
             views[name] = self._transform_view(node)
-            for n2, node2 in self.lookup.items():  # register all sources for SDP resolution
+            for n2, node2 in self.lookup.items():  # register sources so SDP can resolve refs
                 if node2.get("node_type", "").lower() != self.SOURCE:
+                    continue
+                # `as_view: false` sources are not materialized as views — they
+                # feed another target by reading a table directly (e.g. an
+                # ST->ST CDF chain). Registering them here would add a spurious
+                # view and alter lineage, so skip them.
+                if node2.get("config", {}).get("as_view") is False:
                     continue
                 vn = node2.get("output_view_name") or self._view_name(n2)
                 if vn in views:
@@ -441,9 +479,19 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     def _source_view(self, node: Dict) -> Dict:
         st = node.get("source_type", "delta")
         cfg = node.get("config", {})
-        details = _camel(cfg, drop={"mode", "python_transform"})
+        # `as_view` is a transformer directive (materialize as a view or read
+        # inline), not a runtime source-read option, so it never reaches details.
+        details = _camel(cfg, drop={"mode", "python_transform", "as_view"})
         if st == "delta":
             details.setdefault("cdfEnabled", False)
+        if st == "delta_join":
+            # delta_join carries nested `sources`/`joins` arrays whose per-item
+            # keys (join_mode, cdf_enabled, join_type, ...) are snake_case in
+            # nodespec but consumed by camelCase dataclasses (DeltaTable /
+            # DeltaJoin) at runtime; deep-convert them like other nested blobs.
+            for key in ("sources", "joins"):
+                if key in details:
+                    details[key] = _deep_camel(details[key])
         if cfg.get("python_transform"):
             details["pythonTransform"] = self._py_transform(cfg["python_transform"])
         return {"mode": cfg.get("mode", Mode.STREAM), "sourceType": st, "sourceDetails": details}

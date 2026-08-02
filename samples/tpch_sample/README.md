@@ -14,8 +14,8 @@ seasonality, and skew.
 - **AI/BI Genie space** *(optional)* - natural-language analytics over the gold schema.
 - **AI/BI Lakeview dashboards** *(optional)* - a commercial overview + a pipeline-health / governance view.
 
-It is the most comprehensive sample in the framework: where `feature-samples` shows each feature in isolation and
-`pattern-samples` shows the core medallion patterns, `tpch_sample` ties everything together on a
+It is the most comprehensive sample in the framework: where `feature_samples` shows each feature in isolation and
+`pattern_samples` shows the core medallion patterns, `tpch_sample` ties everything together on a
 realistic dataset at scale.
 
 > **Looking for more than the fast path?** Background, architecture, and the design rationale

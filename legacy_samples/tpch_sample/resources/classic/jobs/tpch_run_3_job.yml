@@ -1,0 +1,40 @@
+resources:
+  jobs:
+    lakeflow_samples_tpch_run_3_job:
+      name: Lakeflow Framework - TPCH Samples - 3 - Run 3 - Facts + Out-of-Order Dim Fix (${var.logical_env})
+      queue:
+        enabled: true
+      job_clusters:
+        - job_cluster_key: ${var.job_cluster_name}
+          new_cluster: ${var.job_cluster_config}
+      tasks:
+        # Append more facts + an out-of-order customer_address correction, then process incrementally.
+        - task_key: run_3_staging_load
+          job_cluster_key: ${var.job_cluster_name}
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/notebooks/run_3_staging_load
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+
+        - task_key: bronze_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_bronze_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: run_3_staging_load
+
+        - task_key: silver_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_silver_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: bronze_pipeline
+
+        - task_key: gold_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_gold_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: silver_pipeline

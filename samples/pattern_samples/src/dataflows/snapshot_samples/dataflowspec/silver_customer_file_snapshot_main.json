@@ -1,0 +1,58 @@
+{
+    "data_flow_id": "cdc_from_bronze_file_snapshot",
+    "data_flow_group": "snapshot_patterns",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_customer_file_snapshot_source",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{bronze_schema}",
+                "table": "snapshot_pattern_customer_from_file_scd1",
+                "cdf_enabled": true,
+                "select_exp": [
+                    "*",
+                    "_change_type as cdc_change_type",
+                    "_commit_timestamp as cdc_commit_timestamp"
+                ],
+                "cdf_change_type_override": [
+                    "insert",
+                    "update_postimage",
+                    "delete"
+                ]
+            }
+        },
+        {
+            "name": "target_snapshot_pattern_customer_from_scd1_file_source",
+            "node_type": "target",
+            "config": {
+                "database": "{silver_schema}",
+                "table": "snapshot_pattern_customer_from_scd1_file_source",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "except_column_list": [
+                        "cdc_change_type",
+                        "cdc_commit_timestamp"
+                    ],
+                    "apply_as_deletes": "cdc_change_type = 'delete'",
+                    "ignore_null_updates": false
+                },
+                "input_flows": [
+                    {
+                        "view": "v_customer_file_snapshot_source",
+                        "flow": "f_customer_file_snapshot_source"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "data_flow_id": "base_gold_materialized_views",
+    "data_flow_group": "base_gold_samples",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_base_dim_customer_mv",
+            "node_type": "target",
+            "config": {
+                "table": "base_dim_customer_mv",
+                "table_type": "mv",
+                "sql_statement": "SELECT * FROM {silver_schema}.base_customer_scd2",
+                "comment": "Gold materialized view of silver customer table"
+            }
+        },
+        {
+            "name": "target_base_dim_customer_mv_incremental",
+            "node_type": "target",
+            "config": {
+                "table": "base_dim_customer_mv_incremental",
+                "table_type": "mv",
+                "sql_statement": "SELECT c.CUSTOMER_ID, c.FIRST_NAME, c.LAST_NAME, c.EMAIL, ca.CITY, ca.STATE FROM {silver_schema}.base_customer_scd2 c INNER JOIN {silver_schema}.base_customer_address_scd2 ca ON c.CUSTOMER_ID = ca.CUSTOMER_ID",
+                "refresh_policy": "incremental_strict",
+                "config_flags": [
+                    "disable_operational_metadata"
+                ]
+            }
+        },
+        {
+            "name": "target_base_dim_customer_mv_chained",
+            "node_type": "target",
+            "config": {
+                "table": "base_dim_customer_mv_chained",
+                "table_type": "mv",
+                "sql_statement": "SELECT * FROM live.base_dim_customer_mv_incremental WHERE STATE IS NOT NULL",
+                "comment": "Chained MV filtering non-null states from base_dim_customer_mv_incremental"
+            }
+        }
+    ]
+}

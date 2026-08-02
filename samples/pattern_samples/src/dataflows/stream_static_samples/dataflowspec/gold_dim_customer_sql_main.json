@@ -1,0 +1,137 @@
+{
+    "data_flow_id": "dim_customer_stream_static_sql",
+    "data_flow_group": "stream_static_gold",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_stream_static_stg_customer_sql_appnd_keys",
+            "node_type": "target",
+            "config": {
+                "table": "stream_static_stg_customer_sql_appnd_keys",
+                "input_flows": [
+                    {
+                        "view": "v_stream_static_dim_customer_sql",
+                        "flow": "f_stream_static_dim_customer_sql"
+                    },
+                    {
+                        "view": "v_stream_static_dim_customer_address_sql",
+                        "flow": "f_stream_static_dim_customer_address_sql"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "target_stream_static_stg_customer_sql_dedupe_keys",
+            "node_type": "target",
+            "config": {
+                "table": "stream_static_stg_customer_sql_dedupe_keys",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "__START_AT",
+                    "except_column_list": [
+                        "__START_AT"
+                    ]
+                },
+                "input_flows": [
+                    {
+                        "view": "v_stream_static_stg_customer_sql_appnd_keys",
+                        "flow": "f_stream_static_stg_customer_sql_appnd_keys"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "v_stream_static_dim_customer_sql",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{silver_schema}",
+                "table": "base_customer_scd2",
+                "cdf_enabled": true,
+                "select_exp": [
+                    "CUSTOMER_ID",
+                    "__START_AT"
+                ]
+            }
+        },
+        {
+            "name": "v_stream_static_dim_customer_address_sql",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{silver_schema}",
+                "table": "base_customer_address_scd2",
+                "cdf_enabled": true,
+                "select_exp": [
+                    "CUSTOMER_ID",
+                    "__START_AT"
+                ]
+            }
+        },
+        {
+            "name": "v_stream_static_stg_customer_sql_appnd_keys",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "table": "stream_static_stg_customer_sql_appnd_keys"
+            }
+        },
+        {
+            "name": "v_stream_static_dim_customer_sql_final_cdf_feed",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "live",
+                "table": "stream_static_stg_customer_sql_dedupe_keys",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_stream_static_dim_customer_sql_transform",
+            "node_type": "transformation",
+            "transformation_type": "sql",
+            "config": {
+                "sql_path": "dim_customer.sql"
+            }
+        },
+        {
+            "name": "target_stream_static_dim_customer_sql_sample",
+            "node_type": "target",
+            "config": {
+                "database": "{gold_schema}",
+                "table": "stream_static_dim_customer_sql_sample",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "__START_AT",
+                    "except_column_list": [
+                        "__START_AT"
+                    ],
+                    "ignore_null_updates": true,
+                    "apply_as_deletes": "DELETE_FLAG = 1"
+                },
+                "input_flows": [
+                    {
+                        "view": "v_stream_static_dim_customer_sql_transform",
+                        "flow": "f_stream_static_dim_customer_sql_transform"
+                    }
+                ]
+            }
+        }
+    ]
+}

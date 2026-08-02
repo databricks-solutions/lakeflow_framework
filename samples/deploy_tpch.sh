@@ -34,7 +34,7 @@ fi
 setup_bundle_env "$BUNDLE_NAME"
 
 # Single catalog, schema-per-layer. Derive the per-pipeline default schema names from the
-# namespace + logical environment (mirrors how feature-samples derives its single schema).
+# namespace + logical environment (mirrors how feature_samples derives its single schema).
 export BUNDLE_VAR_bronze_schema="${schema_namespace}_bronze_reference_data${logical_env}"
 export BUNDLE_VAR_silver_schema="${schema_namespace}_silver${logical_env}"
 export BUNDLE_VAR_gold_schema="${schema_namespace}_gold${logical_env}"

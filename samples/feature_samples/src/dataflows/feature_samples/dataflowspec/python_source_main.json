@@ -1,0 +1,37 @@
+{
+    "data_flow_id": "feature_python_function_source",
+    "data_flow_group": "feature_samples_python",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_python_function_source",
+            "node_type": "source",
+            "source_type": "python",
+            "config": {
+                "mode": "stream",
+                "tokens": {
+                    "sourceTable": "{feature_schema}.src_customer"
+                },
+                "function_path": "feature_python_function_source.py"
+            }
+        },
+        {
+            "name": "target_tgt_python_function_source",
+            "node_type": "target",
+            "config": {
+                "database": "{feature_schema}",
+                "table": "tgt_python_function_source",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "schema_path": "target/feature_python_function_source_schema.json",
+                "input_flows": [
+                    {
+                        "view": "v_python_function_source",
+                        "flow": "f_python_function_source"
+                    }
+                ]
+            }
+        }
+    ]
+}

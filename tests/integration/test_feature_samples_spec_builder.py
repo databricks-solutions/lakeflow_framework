@@ -1,4 +1,4 @@
-"""Integration test: DataflowSpecBuilder against the feature-samples bundle."""
+"""Integration test: DataflowSpecBuilder against the feature_samples bundle."""
 
 from __future__ import annotations
 
@@ -32,10 +32,10 @@ class TestFeatureSamplesSpecBuilder:
         spec = specs[0]
         assert spec.dataFlowId == "append_sql_flow"
         assert spec.dataFlowGroup == "feature_samples_general"
-        assert spec.dataFlowType == "flow"
+        assert spec.dataFlowType == "nodespec"
         assert spec.targetFormat == "delta"
         assert len(spec.flowGroups) == 1
-        assert spec.flowGroups[0]["flowGroupId"] == "main"
+        assert spec.flowGroups[0]["flowGroupId"] == "nodespec_main"
         assert spec.dataQualityExpectationsEnabled is True
         assert spec.quarantineMode == "flag"
 

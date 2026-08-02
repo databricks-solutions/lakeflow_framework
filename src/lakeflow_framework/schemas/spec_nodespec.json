@@ -188,7 +188,8 @@
                 "where_clause": {"type": "array", "items": {"type": "string"}},
                 "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "reader_options": {"type": "object", "additionalProperties": true},
-                "python_transform": {"$ref": "#/$defs/python_transform"}
+                "python_transform": {"$ref": "#/$defs/python_transform"},
+                "as_view": {"type": "boolean", "default": true, "description": "Whether this source is materialized as a standalone SDP view. Default: true. Set false to read the table directly into the consuming flow (no separate view) — e.g. to chain a downstream streaming table off this table's CDF without introducing an intermediate view that would alter lineage."}
             },
             "required": ["table"],
             "additionalProperties": false

@@ -1,0 +1,83 @@
+resources:
+  jobs:
+    pattern_samples_run_4_job:
+      name: Lakeflow Framework - Pattern Samples - Run 4 - Load (${var.logical_env})
+      job_clusters:
+        - job_cluster_key: ${var.job_cluster_name}
+          new_cluster: ${var.job_cluster_config}
+      tasks:
+        - task_key: staging_load
+          job_cluster_key: ${var.job_cluster_name}
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/notebooks/run_4_staging_load
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+
+        - task_key: bronze_base_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_base_bronze_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: staging_load
+
+
+        - task_key: silver_base_samples_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_base_silver_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: bronze_base_pipeline
+
+        - task_key: silver_multi_source_streaming_basic_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_multi_source_streaming_basic_silver_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: bronze_base_pipeline
+
+        - task_key: silver_multi_source_streaming_decomp_staging_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_multi_source_streaming_decomp_staging_silver_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: bronze_base_pipeline
+
+        - task_key: silver_multi_source_streaming_decomp_final_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_multi_source_streaming_decomp_final_silver_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: silver_multi_source_streaming_decomp_staging_pipeline
+
+        - task_key: snapshot_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_snapshot_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: staging_load
+
+        - task_key: silver_stream_static_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_stream_static_silver_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: bronze_base_pipeline
+
+        - task_key: gold_stream_static_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_stream_static_gold_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: silver_base_samples_pipeline
+
+        - task_key: gold_materialized_views_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pattern_base_gold_pipeline.id}
+            full_refresh: false
+          depends_on:
+            - task_key: silver_base_samples_pipeline
+
+      queue:
+        enabled: true

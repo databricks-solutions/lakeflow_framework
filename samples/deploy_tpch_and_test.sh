@@ -3,7 +3,7 @@
 ##########
 # TPCH Sample Deployment and Test Script (single-catalog UC model)
 #
-# Separate from deploy_and_test.sh (which covers feature-samples + pattern-samples).
+# Separate from deploy_and_test.sh (which covers feature_samples + pattern_samples).
 # Leverages common.sh for shared logic; everything tpch-specialist lives here.
 #
 # Deploys the tpch_sample bundle (via deploy_tpch.sh), then runs the TPCH jobs in order:

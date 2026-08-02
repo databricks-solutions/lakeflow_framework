@@ -371,7 +371,7 @@ update_substitutions_file() {
         # Update dpm_schema (if present)
         perl -i -pe "s|dpm_schema:.*|dpm_schema: $catalog.${schema_namespace}_dpm${logical_env}|" "$substitutions_file"
 
-        # Update feature_schema (if present — feature-samples bundle)
+        # Update feature_schema (if present — feature_samples bundle)
         perl -i -pe "s|feature_schema:.*|feature_schema: $catalog.${schema_namespace}_feature${logical_env}|" "$substitutions_file"
 
         # Update sample_file_location — handles both _staging and _feature volume paths
@@ -396,7 +396,7 @@ update_substitutions_file() {
         # Update dpm_schema (if present)
         perl -i -pe "s|\"dpm_schema\": \"[^\"]*\"|\"dpm_schema\": \"$catalog.${schema_namespace}_dpm${logical_env}\"|" "$substitutions_file"
 
-        # Update feature_schema (if present — feature-samples bundle)
+        # Update feature_schema (if present — feature_samples bundle)
         perl -i -pe "s|\"feature_schema\": \"[^\"]*\"|\"feature_schema\": \"$catalog.${schema_namespace}_feature${logical_env}\"|" "$substitutions_file"
 
         # Update sample_file_location — handles both _staging and _feature volume paths

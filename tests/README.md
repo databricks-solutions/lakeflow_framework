@@ -10,7 +10,7 @@ From the repository root (after `pip install --require-hashes --no-deps -r requi
 # Unit tests (default local/CI command)
 pytest tests/ -m "not integration and not spark"
 
-# Integration tests (samples layout, validate_dataflows script, feature-samples builder)
+# Integration tests (samples layout, validate_dataflows script, feature_samples builder)
 pytest tests/ -m integration
 
 # Optional coverage report

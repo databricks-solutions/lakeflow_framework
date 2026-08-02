@@ -1,0 +1,20 @@
+resources:
+  pipelines:
+    pattern_stream_static_gold_pipeline:
+      name: Lakeflow Framework - Pattern - Stream Static - Gold (${var.logical_env})
+      channel: CURRENT
+      serverless: true
+      catalog: ${var.catalog}
+      schema: ${var.gold_schema}
+      libraries:
+        - notebook:
+            path: ${var.framework_source_path}/dlt_pipeline
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
+        bundle.target: ${bundle.target}
+        framework.sourcePath: ${var.framework_source_path}
+        workspace.host: ${var.workspace_host}
+        pipeline.layer: gold
+        logicalEnv: ${var.logical_env}
+        pipeline.dataFlowGroupFilter: stream_static_gold
+      root_path: ${workspace.file_path}/src

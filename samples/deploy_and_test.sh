@@ -3,8 +3,8 @@
 ##########
 # Lakeflow Framework Deployment and Test Script
 #
-# Deploys feature-samples and pattern-samples (via deploy.sh), then runs
-# feature_samples_run_job and the pattern-samples orchestrator jobs (4-day load).
+# Deploys feature_samples and pattern_samples (via deploy.sh), then runs
+# feature_samples_run_job and the pattern_samples orchestrator jobs (4-day load).
 ##########
 
 # Source common library and configuration
@@ -63,7 +63,7 @@ echo "  - Run Feature Samples Job: yes"
 echo "  - Number of Pattern Runs: $num_runs"
 echo ""
 
-# Step 1: Deploy using deploy.sh (feature-samples + pattern-samples)
+# Step 1: Deploy using deploy.sh (feature_samples + pattern_samples)
 log_info "Starting deployment..."
 if ! ./deploy.sh -u "$user" -h "$host" -p "$profile" -c "$compute" -l "$logical_env" --catalog "$catalog" --schema_namespace "$schema_namespace"; then
     log_error "Deployment failed. Exiting."
@@ -73,7 +73,7 @@ fi
 log_success "Deployment completed successfully"
 echo ""
 
-# Step 2: Execute feature-samples run job
+# Step 2: Execute feature_samples run job
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Executing Feature Samples Run Job"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -82,8 +82,8 @@ echo ""
 feature_schema="${schema_namespace}_feature${logical_env}"
 setup_bundle_env "Feature Samples Test Run" "$feature_schema"
 
-cd "$SCRIPT_DIR/feature-samples" || {
-    log_error "Failed to change directory to feature-samples"
+cd "$SCRIPT_DIR/feature_samples" || {
+    log_error "Failed to change directory to feature_samples"
     exit 1
 }
 
@@ -98,25 +98,25 @@ fi
 cd "$SCRIPT_DIR" || exit 1
 echo ""
 
-# Step 3: Execute pattern-samples run jobs sequentially
+# Step 3: Execute pattern_samples run jobs sequentially
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Executing Pattern Samples Run Jobs"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Bundle vars for pattern-samples (same as deploy_pattern_samples.sh)
+# Bundle vars for pattern_samples (same as deploy_pattern_samples.sh)
 setup_bundle_env "Pattern Samples Test Run" ""
 unset BUNDLE_VAR_schema
 export BUNDLE_VAR_bronze_schema="${schema_namespace}_bronze${logical_env}"
 export BUNDLE_VAR_silver_schema="${schema_namespace}_silver${logical_env}"
 export BUNDLE_VAR_gold_schema="${schema_namespace}_gold${logical_env}"
 
-cd "$SCRIPT_DIR/pattern-samples" || {
-    log_error "Failed to change directory to pattern-samples"
+cd "$SCRIPT_DIR/pattern_samples" || {
+    log_error "Failed to change directory to pattern_samples"
     exit 1
 }
 
-# Job resource keys (see pattern-samples/resources/*/jobs/pattern_samples_run_*_job.yml)
+# Job resource keys (see pattern_samples/resources/*/jobs/pattern_samples_run_*_job.yml)
 declare -a job_keys=(
     "pattern_samples_run_1_job"
     "pattern_samples_run_2_job"
@@ -143,31 +143,6 @@ for ((i=1; i<=num_runs; i++)); do
 
     echo ""
 done
-
-cd "$SCRIPT_DIR" || exit 1
-
-# Step 4: Execute nodespec samples run job (reads from staging/bronze created by pattern run 1)
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Executing Nodespec Samples Run Job"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-nodespec_schema="${schema_namespace}_silver${logical_env}"
-setup_bundle_env "Nodespec Samples Test Run" "$nodespec_schema"
-
-cd "$SCRIPT_DIR/nodespec_sample" || {
-    log_error "Failed to change directory to nodespec_sample"
-    exit 1
-}
-
-log_info "Running nodespec_samples_run_job..."
-if databricks bundle run nodespec_samples_run_job -t dev --profile "$profile" 2>&1; then
-    log_success "Nodespec samples run completed successfully"
-else
-    log_error "Nodespec samples run failed"
-    exit 1
-fi
 
 cd "$SCRIPT_DIR" || exit 1
 unset MSYS_NO_PATHCONV

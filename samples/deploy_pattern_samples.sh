@@ -31,13 +31,13 @@ echo "  - BUNDLE_VAR_silver_schema: $BUNDLE_VAR_silver_schema"
 echo "  - BUNDLE_VAR_gold_schema:   $BUNDLE_VAR_gold_schema"
 
 # Update substitutions file with catalog and schema namespace
-if ! update_substitutions_file "pattern-samples/src/pipeline_configs/dev_substitutions.json"; then
+if ! update_substitutions_file "pattern_samples/src/pipeline_configs/dev_substitutions.json"; then
     log_error "Failed to update substitutions file. Exiting."
     exit 1
 fi
 
-# Change to pattern-samples directory for deployment
-cd pattern-samples
+# Change to pattern_samples directory for deployment
+cd pattern_samples
 
 # Deploy the bundle
 deploy_bundle "$BUNDLE_NAME"
@@ -46,4 +46,4 @@ deploy_bundle "$BUNDLE_NAME"
 cd ..
 
 # Restore original substitutions file
-restore_substitutions_file "pattern-samples/src/pipeline_configs/dev_substitutions.json"
+restore_substitutions_file "pattern_samples/src/pipeline_configs/dev_substitutions.json"

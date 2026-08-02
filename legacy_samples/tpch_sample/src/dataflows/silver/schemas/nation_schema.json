@@ -1,0 +1,9 @@
+{
+    "type": "struct",
+    "fields": [
+        { "name": "nation_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "nation_name", "type": "string", "nullable": false, "metadata": {} },
+        { "name": "region_key", "type": "long", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} }
+    ]
+}
