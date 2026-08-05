@@ -53,6 +53,50 @@
     color: white !important;
 }
 
+/* Embedded animated demos (self-contained HTML in _static/animations, shown via iframe) */
+.lf-demo {
+    margin: 1.5rem 0 2rem;
+}
+
+.lf-demo__caption {
+    font-size: 0.8rem;
+    color: #6b7684;
+    margin: 0.5rem 0 0;
+    text-align: center;
+}
+
+.lf-demo__frame {
+    width: 100%;
+    border: 1px solid #e1e4e5;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(27, 49, 57, 0.12);
+    background: #1B3139;
+    display: block;
+}
+
+.lf-demo__frame iframe {
+    width: 100%;
+    display: block;
+    border: 0;
+}
+
+/* Screen demo is a 1120x660 stage that scales to width => ~0.589 aspect ratio */
+.lf-demo--screen .lf-demo__frame {
+    aspect-ratio: 1120 / 660;
+    background: #1B3139;
+}
+
+/* Architecture animation: 1600x650 canvas + ~51px of controls/gap below => ~701 tall */
+.lf-demo--architecture .lf-demo__frame {
+    aspect-ratio: 1600 / 701;
+    background: #EBEEF0;
+}
+
+.lf-demo__frame iframe {
+    height: 100%;
+}
+
 /* Custom styling for sphinx-tabs — layout/structure only; colours in databricks-theme.css */
 .sphinx-tabs {
     margin-bottom: 0.75rem;

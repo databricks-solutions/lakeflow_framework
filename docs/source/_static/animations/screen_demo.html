@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lakeflow Framework — How It Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#1B3139;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-direction:column}
+  /* fit the fixed 1120px stage to the (iframe) viewport width */
+  #fit{transform-origin:top center}
+  .sico{width:16px;height:16px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+  .sico svg{width:14px;height:14px}
+
+  .desktop{width:1120px;height:624px;position:relative;overflow:hidden;background:linear-gradient(145deg,#0B2026 0%,#112830 100%);border-radius:14px 14px 0 0;box-shadow:0 30px 100px rgba(0,0,0,.7)}
+
+  /* windows */
+  .win{position:absolute;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.45),0 0 0 1px rgba(0,0,0,.12);opacity:0;transform:translateY(14px) scale(.97);transition:opacity .18s ease,transform .22s cubic-bezier(.22,1,.36,1);overflow:hidden}
+  .win.show{opacity:1;transform:translateY(0) scale(1)}
+  .win.out{opacity:0;transform:translateY(-8px) scale(1.01)}
+  .win.expand{transition:opacity .18s ease,transform .22s cubic-bezier(.22,1,.36,1),width .85s cubic-bezier(.22,1,.36,1),height .85s cubic-bezier(.22,1,.36,1),left .85s cubic-bezier(.22,1,.36,1),right .85s cubic-bezier(.22,1,.36,1),top .85s cubic-bezier(.22,1,.36,1)}
+
+  .wbar{height:32px;display:flex;align-items:center;padding:0 12px;gap:7px}
+  .wd{width:10px;height:10px;border-radius:50%}
+  .wd.r{background:#FF5F57}.wd.y{background:#FEBC2E}.wd.g{background:#28C840}
+  .wbar .wt{flex:1;text-align:center;font-size:11px}
+
+  /* terminal */
+  .term{background:#0D0D0D}
+  .term .wbar{background:#1A1A1A;border-bottom:1px solid #2A2A2A}
+  .term .wbar .wt{font-family:'DM Mono',monospace;color:#777}
+  .term-b{padding:10px 14px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.7;color:#C0C0C0;overflow:hidden}
+  .term-b .pr{color:#28C840}.term-b .cm{color:#E0E0E0}
+  .term-b .ok{color:#28C840}.term-b .wa{color:#FDD835}.term-b .re{color:#FF3621}.term-b .pt{color:#AB47BC}
+  .tl{opacity:0;transform:translateY(2px);transition:opacity .2s,transform .2s;min-height:19px}
+  .tl.show{opacity:1;transform:translateY(0)}
+  .tc{display:inline-block;width:6px;height:13px;background:#C0C0C0;vertical-align:text-bottom;animation:bk .8s step-end infinite}
+  @keyframes bk{0%,100%{opacity:1}50%{opacity:0}}
+
+  /* ide */
+  .ide{background:#1E1E1E}
+  .ide .wbar{background:#323233;border-bottom:1px solid #252525}
+  .ide .wbar .wt{color:#999}
+  .ide-lay{display:flex;height:calc(100% - 32px)}
+  .ide-s{width:190px;background:#181818;border-right:1px solid #2A2A2A;padding:5px 0;font-family:'DM Mono',monospace;font-size:10px}
+  .ide-sh{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#666;padding:4px 10px;font-family:'Inter',sans-serif;font-weight:600}
+  .sf{padding:2px 10px;color:#888;display:flex;align-items:center;gap:4px}
+  .sf.dir{color:#666}.sf.i1{padding-left:20px}.sf.i2{padding-left:32px}.sf.i3{padding-left:44px}
+  .sf.on{background:#2A2D2E;color:#ddd}
+  .sf .ic{font-size:9px;flex-shrink:0}
+  .ide-m{flex:1;display:flex;flex-direction:column;position:relative}
+  .ide-tabs{height:30px;background:#181818;display:flex;border-bottom:1px solid #2A2A2A}
+  .ide-tab{padding:0 11px;display:flex;align-items:center;gap:4px;font-size:10px;color:#888;border-right:1px solid #2A2A2A;font-family:'DM Mono',monospace;position:relative}
+  .ide-tab.on{background:#1E1E1E;color:#ddd}
+  .ide-tab.on::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:#FF3621}
+  .ide-tab .td{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+  .ide-ed{flex:1;padding:5px 0;font-family:'DM Mono',monospace;font-size:10px;line-height:1.32;overflow:hidden}
+  .el{display:flex;opacity:0;transition:opacity .1s,background .3s}
+  .el.show{opacity:1}
+  .el .ln{width:34px;text-align:right;color:#444;padding-right:10px;flex-shrink:0;user-select:none;font-size:10px}
+  .el .code{white-space:pre}
+  .el .k{color:#9CDCFE}.el .s{color:#CE9178}.el .p{color:#666}.el .c{color:#6A9955}
+  .el .vr{color:#C586C0}.el .bl{color:#569CD6}.el .nm{color:#B5CEA8}
+  .el.hlp{background:rgba(139,92,246,.07);border-left:2px solid #8B5CF6}
+  .el.hlg{background:rgba(0,169,114,.06);border-left:2px solid #00A972}
+  /* section highlights for the nodespec spec — light block background + colored left bar */
+  .el.hl-yel{background:rgba(234,179,8,.05);box-shadow:inset 3px 0 #EAB308}
+  .el.hl-blu{background:rgba(21,112,239,.045);box-shadow:inset 3px 0 #1570EF}
+  .el.hl-pur{background:rgba(139,92,246,.05);box-shadow:inset 3px 0 #8B5CF6}
+  .el.hl-grn{background:rgba(0,169,114,.045);box-shadow:inset 3px 0 #00A972}
+
+  /* annotation tooltip pinned to right of editor, vertically aligned to a line */
+  .ann{position:absolute;right:14px;font-size:9.5px;font-weight:500;padding:4px 10px;border-radius:5px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  .ann.show{opacity:1}
+  .ann b{font-weight:700}
+  .ann.pur{background:rgba(139,92,246,.12);color:#B8A2F0;border:1px solid rgba(139,92,246,.2)}
+  .ann.grn{background:rgba(0,169,114,.1);color:#5ECFA0;border:1px solid rgba(0,169,114,.15)}
+  .ann.yel{background:rgba(234,179,8,.14);color:#E6C34A;border:1px solid rgba(234,179,8,.24)}
+  .ann.blu{background:rgba(21,112,239,.13);color:#7FB0F5;border:1px solid rgba(21,112,239,.22)}
+
+  /* databricks light */
+  .dbx{background:#fff}
+  .dbx .wbar{background:#fff;border-bottom:1px solid #E8E8E8}
+  .dbx-url{flex:1;margin:0 10px;background:#F5F5F5;border-radius:6px;padding:3px 10px;font-size:10px;color:#888;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:4px;border:1px solid #E8E8E8}
+  .dbx-url .lock{color:#28C840;font-size:9px}
+  .dbx-body{display:flex;height:calc(100% - 32px)}
+  .dbx-side{width:170px;background:#FAFAFA;border-right:1px solid #E8E8E8;padding:10px 0;display:flex;flex-direction:column}
+  .dbx-logo{padding:2px 14px 12px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #E8E8E8;margin-bottom:6px}
+  .dbx-logo .lt{font-size:13px;font-weight:700;color:#1B3139;letter-spacing:-.02em}
+  .ni{display:flex;align-items:center;gap:7px;padding:5px 14px;font-size:11.5px;color:#666;cursor:default;transition:background .15s}
+  .ni.on{background:#EDF2F8;color:#1B3139;font-weight:500}
+  .dbx-main{flex:1;display:flex;flex-direction:column;background:#fff}
+  .dbx-top{height:38px;background:#fff;border-bottom:1px solid #E8E8E8;display:flex;align-items:center;padding:0 18px;gap:4px;font-size:11.5px}
+  .dbx-top .bc{color:#999}.dbx-top .cur{color:#1B3139;font-weight:600}
+  .dbx-cnt{flex:1;padding:14px 18px;overflow:hidden}
+
+  .ws-path{font-family:'DM Mono',monospace;font-size:9.5px;color:#999;padding:5px 10px;background:#F8F8F8;border-radius:5px;border:1px solid #E8E8E8;margin-bottom:10px;opacity:0;transition:opacity .3s}
+  .ws-path.show{opacity:1}
+  .ws-path .hp{color:#7C3AED;font-weight:500}
+  .ws-path .hg{color:#059669;font-weight:500}
+  .ws-fi{display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:5px;font-size:11.5px;color:#555;opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s}
+  .ws-fi.show{opacity:1;transform:translateX(0)}
+  .ws-fi .fn{font-family:'DM Mono',monospace;font-size:10px;color:#333}
+  .ws-fi.dir .fn{font-weight:600;color:#1B3139}
+  .ws-fi .fsz{margin-left:auto;font-size:8.5px;color:#BBB;font-family:'DM Mono',monospace}
+
+  /* pipeline — real Databricks SDP style */
+  .pipe-topbar{display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid #E8E8E8;opacity:0;transition:opacity .3s}
+  .pipe-topbar.show{opacity:1}
+  .pipe-topbar .pipe-icon{color:#1B3139;font-size:14px;margin-right:6px}
+  .pipe-topbar .pipe-name{font-size:13px;font-weight:600;color:#1570EF;text-decoration:underline;text-decoration-color:transparent}
+  .pipe-topbar .pipe-ext{font-size:11px;color:#999;margin-left:2px}
+  .pipe-topbar .pipe-open{margin-left:auto;font-size:11px;padding:5px 14px;border:1px solid #D1D5DB;border-radius:4px;color:#1B3139;font-weight:500;cursor:default;background:#fff;display:flex;align-items:center;gap:4px}
+
+  .pipe-status-bar{display:flex;align-items:center;gap:8px;padding:6px 18px;opacity:0;transition:opacity .3s}
+  .pipe-status-bar.show{opacity:1}
+  .pbadge{font-size:9px;padding:2px 10px;border-radius:10px;font-weight:600;letter-spacing:.02em}
+  .pbadge.st{background:#FEF9C3;color:#A16207;border:1px solid #FDE68A}
+  .pbadge.run{background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0}
+
+  .dag-area{flex:1;position:relative;opacity:0;transition:opacity .3s;overflow:hidden;
+    background:radial-gradient(circle,#D4D7DB 0.7px,transparent 0.7px);background-size:9px 9px;background-color:#FAFAFA}
+  .dag-area.show{opacity:1}
+
+  .dag-flow{display:flex;align-items:center;height:100%;padding:0 24px}
+
+  /* zoom controls */
+  .dag-zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:3px;opacity:0;transition:opacity .3s}
+  .dag-zoom.show{opacity:1}
+  .dag-zoom-btn{width:26px;height:26px;border:1px solid #E5E7EB;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;color:#666;cursor:default}
+
+  /* SDP node wrapper */
+  .nd-wrap{display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;opacity:0;transform:scale(.88);transition:opacity .35s,transform .35s cubic-bezier(.22,1,.36,1)}
+  .nd-wrap.show{opacity:1;transform:scale(1)}
+
+  /* type label row above card */
+  .nd-type-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2px;padding:0 2px}
+  .nd-type{font-size:9px;color:#888;font-family:'Inter',sans-serif}
+  .nd-dur{font-size:9px;color:#888;font-family:'DM Mono',monospace;opacity:0;transition:opacity .3s}
+  .nd-dur.show{opacity:1}
+
+  /* green top bar — gray by default, green when done */
+  .nd-topbar{height:3px;border-radius:3px 3px 0 0;background:#E5E7EB;transition:background .3s}
+  .nd-topbar.done{background:#16A34A}
+
+  /* card body */
+  .nd{border-radius:0 0 6px 6px;padding:10px 14px;background:#fff;border:1px solid #E5E7EB;border-top:none;box-shadow:0 1px 4px rgba(0,0,0,.06);min-width:140px}
+
+  .nd-title{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .nd-tbl-icon{flex-shrink:0;width:18px;height:18px;display:flex;align-items:center;justify-content:center}
+  .nd-tbl-icon svg{width:16px;height:16px}
+  .nd .nlbl{font-size:11px;font-weight:600;color:#1B3139;white-space:nowrap}
+  /* outlined green checkmark circle */
+  .nd-check{width:18px;height:18px;border-radius:50%;border:1.5px solid #D1D5DB;display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0;transition:border-color .3s}
+  .nd-check.show{border-color:#16A34A}
+  .nd-check svg{width:11px;height:11px;opacity:0;transition:opacity .3s}
+  .nd-check.show svg{opacity:1}
+
+  .nd-stats{font-size:9.5px;color:#555;font-family:'Inter',sans-serif}
+  .nd-stats span{opacity:0;transition:opacity .3s}
+  .nd-stats span.show{opacity:1}
+
+  /* connector arrows — dotted style like real SDP */
+  .dag-arrow{flex:1;height:9px;position:relative;opacity:0;transition:opacity .4s;min-width:20px;margin:0;align-self:center}
+  .dag-arrow.show{opacity:1}
+  /* dashed line stops short of the arrowhead so it doesn't poke through the tip */
+  .dag-arrow::before{content:'';position:absolute;left:0;right:7px;top:50%;border-top:1.5px dashed #C0C0C0}
+  .dag-arrow::after{content:'';position:absolute;right:-2px;top:50%;transform:translateY(-50%);width:0;height:0;border:4.5px solid transparent;border-left:7px solid #C0C0C0}
+
+  /* badge */
+  .badge{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#FF3621;color:#fff;font-size:12px;font-weight:600;padding:5px 20px;border-radius:16px;z-index:200;opacity:0;transition:opacity .15s;white-space:nowrap;pointer-events:none;letter-spacing:.01em;box-shadow:0 4px 20px rgba(255,54,33,.3)}
+  .badge.show{opacity:1}
+
+  /* cursor */
+  .cursor{position:absolute;width:14px;height:18px;z-index:300;pointer-events:none;opacity:0;transition:left .5s cubic-bezier(.4,0,.2,1),top .5s cubic-bezier(.4,0,.2,1),opacity .15s;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+  .cursor.show{opacity:1}.cursor.fast{transition-duration:.25s}
+  .ring{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,54,33,.5);z-index:299;pointer-events:none;opacity:0;transform:scale(0)}
+  .ring.pop{animation:rpop .35s ease forwards}
+  @keyframes rpop{0%{transform:scale(0);opacity:1}100%{transform:scale(2.5);opacity:0}}
+
+  /* control bar */
+  .cbar{width:1120px;height:36px;background:rgba(11,32,38,.97);border-radius:0 0 14px 14px;display:flex;align-items:center;padding:0 14px;gap:8px;border-top:1px solid rgba(255,255,255,.05)}
+  .cbtn{background:none;border:none;color:#8A9BAA;padding:0;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;transition:all .12s;flex-shrink:0}
+  .cbtn:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .cbtn.hidden{display:none}
+  .pbar-wrap{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;cursor:pointer;position:relative;transition:height .1s}
+  .pbar-wrap:hover{height:6px}
+  .pbar-fill{height:100%;background:#FF3621;border-radius:2px;width:0%;pointer-events:none;transition:none}
+  .pbar-wrap:hover .pbar-fill{background:#ff5040}
+  .pbar-thumb{position:absolute;width:12px;height:12px;border-radius:50%;background:#FF3621;top:50%;transform:translate(-50%,-50%);opacity:0;transition:opacity .1s;pointer-events:none;box-shadow:0 0 4px rgba(255,54,33,.4)}
+  .pbar-wrap:hover .pbar-thumb{opacity:1}
+  .tdisp{font-family:'DM Mono',monospace;font-size:10px;color:#666;min-width:75px;text-align:right;user-select:none;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="fit" id="fit">
+<div class="desktop" id="desktop">
+  <svg class="cursor" id="cur" viewBox="0 0 14 18"><path d="M1 1L1 14L3.8 11L7 17L9 16L5.8 10L10 9.5L1 1Z" fill="white" stroke="black" stroke-width=".7"/></svg>
+  <div class="ring" id="ring"></div>
+  <div class="badge" id="badge"></div>
+
+  <div class="win term" id="winTerm" style="width:530px;height:220px;left:20px;top:90px">
+    <div class="wbar"><div class="wd r"></div><div class="wd y"></div><div class="wd g"></div><span class="wt" id="termT">Terminal</span></div>
+    <div class="term-b" id="termB"></div>
+  </div>
+
+  <div class="win ide" id="winIDE" style="width:940px;height:560px;left:90px;top:40px">
+    <div class="wbar"><div class="wd r"></div><div class="wd y"></div><div class="wd g"></div><span class="wt" id="ideT">Visual Studio Code</span></div>
+    <div class="ide-lay">
+      <div class="ide-s" id="ideS"></div>
+      <div class="ide-m"><div class="ide-tabs" id="ideTabs"></div><div class="ide-ed" id="ideEd"></div></div>
+    </div>
+  </div>
+
+  <div class="win dbx" id="winDBX" style="width:540px;height:480px;right:20px;top:75px">
+    <div class="wbar">
+      <div class="wd r"></div><div class="wd y"></div><div class="wd g"></div>
+      <div class="dbx-url"><span class="lock">🔒</span> <span id="dbxUrl">workspace.databricks.com</span></div>
+    </div>
+    <div class="dbx-body">
+      <div class="dbx-side" id="dbxSide"></div>
+      <div class="dbx-main"><div class="dbx-top" id="dbxTop"></div><div class="dbx-cnt" id="dbxCnt"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="cbar" id="cbar">
+  <button class="cbtn" id="playBtn" onclick="togglePlay()" title="Pause">⏸</button>
+  <div class="pbar-wrap" id="pbarWrap">
+    <div class="pbar-fill" id="pbarFill"></div>
+    <div class="pbar-thumb" id="pbarThumb"></div>
+  </div>
+  <span class="tdisp" id="tdisp">0:00 / 0:48</span>
+  <button class="cbtn" id="skipBtn" onclick="skip()" title="Skip to end">⏭</button>
+  <button class="cbtn hidden" id="replayBtn" onclick="redo()" title="Replay">↻</button>
+</div>
+</div>
+
+<script>
+const DUR=56500,FW_PATH='/Workspace/.bundle/framework/dev/src';
+const $=id=>document.getElementById(id);
+/* fit the fixed 1120x660 stage to the (iframe) viewport width; scale-aware coords below use __scale */
+let __scale=1;
+function fitDemo(){
+  const s=Math.min((window.innerWidth||1120)/1120,1);
+  __scale=s;
+  const f=$('fit');if(!f)return;
+  f.style.transform='scale('+s+')';
+  f.style.width=(1120*s)+'px';
+  f.style.height=(660*s)+'px';
+}
+window.addEventListener('resize',fitDemo);
+const bg=t=>{$('badge').textContent=t;$('badge').classList.add('show')};
+const hb=()=>$('badge').classList.remove('show');
+const showW=(id,s)=>{const w=$(id);if(s)Object.assign(w.style,s);w.classList.add('show');w.classList.remove('out')};
+const hideW=id=>{$(id).classList.remove('show');$(id).classList.add('out')};
+const mt=(x,y,f)=>{const c=$('cur');c.classList.toggle('fast',!!f);c.style.left=x+'px';c.style.top=y+'px'};
+const sc=()=>$('cur').classList.add('show');
+const hc=()=>$('cur').classList.remove('show');
+const ck=(x,y)=>{const r=$('ring');r.classList.remove('pop');r.style.left=(x-7)+'px';r.style.top=(y-7)+'px';void r.offsetWidth;r.classList.add('pop')};
+// Element-anchored cursor: compute target center relative to #desktop so clicks always land on the real element.
+const elCenter=(elOrId,dx=0,dy=0)=>{const e=typeof elOrId==='string'?$(elOrId):elOrId;if(!e)return null;const r=e.getBoundingClientRect(),d=$('desktop').getBoundingClientRect(),k=__scale||1;return{x:(r.left-d.left+r.width/2)/k+dx,y:(r.top-d.top+r.height/2)/k+dy}};
+const mte=(elOrId,f,dx,dy)=>{const p=elCenter(elOrId,dx,dy);if(p)mt(p.x,p.y,f)};
+const cke=(elOrId,dx,dy)=>{const p=elCenter(elOrId,dx,dy);if(p)ck(p.x,p.y)};
+
+/* === SEEKABLE TIMELINE ENGINE === */
+let timeline=[],activeIds=[],elapsed=0,playStart=0,playing=false,done=false;
+
+function ev(ms,fn){timeline.push({t:ms,fn})}
+
+function scheduleFromNow(){
+  activeIds.forEach(clearTimeout);activeIds=[];
+  playStart=Date.now();
+  timeline.forEach(e=>{
+    const rem=e.t-elapsed;
+    if(rem>0) activeIds.push(setTimeout(e.fn,rem));
+  });
+  rafLoop();
+}
+
+function rafLoop(){
+  if(!playing||done)return;
+  const now=Date.now();
+  elapsed+=(now-playStart);playStart=now;
+  if(elapsed>=DUR){elapsed=DUR;done=true;playing=false;
+    $('playBtn').innerHTML='↻';$('playBtn').title='Replay';
+    $('replayBtn').classList.remove('hidden');$('skipBtn').classList.add('hidden');
+  }
+  updateBar();
+  if(!done)requestAnimationFrame(rafLoop);
+}
+
+function updateBar(){
+  const pct=(elapsed/DUR)*100;
+  $('pbarFill').style.width=pct+'%';
+  $('pbarThumb').style.left=pct+'%';
+  const es=Math.floor(elapsed/1000),ts=Math.floor(DUR/1000);
+  $('tdisp').textContent=Math.floor(es/60)+':'+(es%60<10?'0':'')+(es%60)+' / '+Math.floor(ts/60)+':'+(ts%60<10?'0':'')+(ts%60);
+}
+
+function togglePlay(){
+  if(done){redo();return}
+  if(playing){
+    // PAUSE
+    playing=false;
+    elapsed+=(Date.now()-playStart);
+    activeIds.forEach(clearTimeout);activeIds=[];
+    $('playBtn').innerHTML='▶';$('playBtn').title='Play';
+  } else {
+    // PLAY
+    playing=true;
+    $('playBtn').innerHTML='⏸';$('playBtn').title='Pause';
+    scheduleFromNow();
+  }
+}
+
+// Seek on progress bar click/drag
+$('pbarWrap').addEventListener('mousedown',startSeek);
+function startSeek(e){
+  doSeek(e);
+  const onMove=ev=>doSeek(ev);
+  const onUp=()=>{document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp)};
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
+}
+function doSeek(e){
+  const rect=$('pbarWrap').getBoundingClientRect();
+  const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  seekTo(pct*DUR);
+}
+function seekTo(ms){
+  activeIds.forEach(clearTimeout);activeIds=[];
+  done=false;
+  // Reset visual state
+  resetVisuals();
+  elapsed=0;
+  // Instantly fire all events up to target time
+  const target=Math.min(ms,DUR);
+  // Disable transitions for instant replay
+  document.querySelectorAll('.win,.nd,.tl,.ws-fi,.ws-path,.dag-arrow,.pipe-topbar,.pipe-status-bar,.dag-area,.nd-wrap,.nd-check,.nd-topbar,.nd-dur,.nd-stats span,.dag-zoom,.badge,.el').forEach(el=>el.style.transition='none');
+  timeline.filter(e=>e.t<=target).forEach(e=>e.fn());
+  // Re-enable transitions after a frame
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.win,.nd,.tl,.ws-fi,.ws-path,.dag-arrow,.pipe-topbar,.pipe-status-bar,.dag-area,.nd-wrap,.nd-check,.nd-topbar,.nd-dur,.nd-stats span,.dag-zoom,.badge,.el').forEach(el=>el.style.transition='');
+  });
+  elapsed=target;
+  updateBar();
+  if(playing){scheduleFromNow()}
+  else{playStart=Date.now()}
+}
+
+/* typing effect — stores IDs for cleanup */
+function typeCmd(el,txt,sp,cb){
+  let i=0;
+  (function g(){if(!el)return;if(i<=txt.length){el.textContent=txt.slice(0,i);i++;activeIds.push(setTimeout(g,sp))}else if(cb)cb()})();
+}
+
+function setTerm(title,lines){
+  $('termT').textContent=title;$('termB').innerHTML='';
+  lines.forEach((h,i)=>{const d=document.createElement('div');d.className='tl';d.id='tl_'+i;d.innerHTML=h;$('termB').appendChild(d)});
+}
+function sl(i,html){const e=$('tl_'+i);if(!e)return;if(html!==undefined)e.innerHTML=html;e.classList.add('show')}
+
+/* icons — matching real Databricks workspace */
+const ICO={
+  folder:'<svg viewBox="0 0 16 16" fill="none"><path d="M1.5 3.5A1 1 0 012.5 2.5h3.17a1 1 0 01.71.29L7.5 3.91a1 1 0 00.71.29H13.5a1 1 0 011 1v7.3a1 1 0 01-1 1h-12a1 1 0 01-1-1V3.5z" fill="#90959A" stroke="#90959A" stroke-width=".5"/></svg>',
+  python:'<svg viewBox="0 0 16 16" fill="none"><path d="M8 1C5.2 1 5.5 2.2 5.5 2.2V4H8.1v.5H3.4S1 4.2 1 8s2.1 3.6 2.1 3.6h1.3V9.8s-.1-2.1 2-2.1h3.4s2 0 2-1.9V3.1S12.2 1 8 1zm-1.9 1.2a.6.6 0 110 1.2.6.6 0 010-1.2z" fill="#3572A5"/><path d="M8 15c2.8 0 2.5-1.2 2.5-1.2V12H7.9v-.5h4.7S15 11.8 15 8s-2.1-3.6-2.1-3.6h-1.3v1.8s.1 2.1-2 2.1H6.2s-2 0-2 1.9v2.7S3.8 15 8 15zm1.9-1.2a.6.6 0 110-1.2.6.6 0 010 1.2z" fill="#FDD835"/></svg>',
+  json:'<svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" fill="#F59E0B" fill-opacity=".12" stroke="#F59E0B" stroke-width=".8"/><text x="8" y="11" text-anchor="middle" font-size="7" font-weight="700" fill="#F59E0B" font-family="Inter">{}</text></svg>',
+  yaml:'<svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" fill="#EF4444" fill-opacity=".1" stroke="#EF4444" stroke-width=".8"/><text x="8" y="11" text-anchor="middle" font-size="5.5" font-weight="700" fill="#EF4444" font-family="Inter">YML</text></svg>',
+  /* Databricks nav icons — matching real workspace sidebar from screenshot */
+  nav_workspace:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="1.5" width="5" height="5.5" rx=".7"/><rect x="9.5" y="1.5" width="5" height="5.5" rx=".7"/><rect x="1.5" y="9" width="5" height="5.5" rx=".7"/><rect x="9.5" y="9" width="5" height="5.5" rx=".7"/></svg>',
+  nav_pipelines:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="4" r="2"/><circle cx="12.5" cy="12" r="2"/><line x1="5.5" y1="7" x2="10.5" y2="4.5"/><line x1="5.5" y1="9" x2="10.5" y2="11.5"/></svg>',
+  nav_sql:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="4" y1="6" x2="8" y2="6"/><line x1="4" y1="9" x2="10" y2="9"/></svg>',
+  nav_compute:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8c1.7 0 3-1.3 3-3 0-1.4-1-2.6-2.3-2.9C12.5 4.3 10.5 3 8 3 5.5 3 3.5 4.3 3.3 6.1 2 6.4 1 7.6 1 9c0 1.7 1.3 3 3 3z"/></svg>',
+  nav_catalog:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 1.5v3.5M8 5L3.5 8.5M8 5l4.5 3.5M3.5 8.5v3M12.5 8.5v3"/><rect x="6" y="0.5" width="4" height="2.5" rx=".8" fill="currentColor" stroke="none"/><rect x="1.5" y="7.5" width="4" height="2.5" rx=".8" fill="currentColor" stroke="none"/><rect x="10.5" y="7.5" width="4" height="2.5" rx=".8" fill="currentColor" stroke="none"/><rect x="1.5" y="12" width="4" height="2.5" rx=".8" fill="currentColor" stroke="none"/><rect x="10.5" y="12" width="4" height="2.5" rx=".8" fill="currentColor" stroke="none"/></svg>',
+  /* Table icons for SDP DAG — matching real Databricks streaming table & materialized view icons */
+  tbl_icon:'<svg viewBox="0 0 16 16" fill="none" stroke="#888" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="1.5" y1="10" x2="14.5" y2="10"/><line x1="6" y1="5.5" x2="6" y2="14.5"/></svg>',
+};
+function ico(n){return'<span class="sico">'+ICO[n]+'</span>'}
+function sidebar(active){
+  return `<div class="dbx-logo"><svg width="18" height="18" viewBox="0 0 100 100" fill="none"><path d="M50 12 L82 32 L50 52 L18 32 Z" stroke="#FF3621" stroke-width="7" stroke-linejoin="round"/><path d="M18 46 L50 66 L82 46" stroke="#FF3621" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M18 60 L50 80 L82 60" stroke="#FF3621" stroke-width="6" stroke-linecap="round" fill="none"/></svg><span class="lt">databricks</span></div>
+  <div class="ni${active==='workspace'?' on':''}">${ico('nav_workspace')} Workspace</div>
+  <div class="ni${active==='pipelines'?' on':''}" id="navPipe">${ico('nav_pipelines')} Pipelines</div>
+  <div class="ni">${ico('nav_compute')} Compute</div>
+  <div class="ni">${ico('nav_catalog')} Catalog</div>
+  <div class="ni">${ico('nav_sql')} SQL Editor</div>`;
+}
+
+/* GitHub repo view — faithful to the real light-mode repo page (header + tabs + file browser / About) */
+const GH_DIR='<svg width="14" height="14" viewBox="0 0 16 16" fill="#54aeff"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z"/></svg>';
+const GH_FILE='<svg width="14" height="14" viewBox="0 0 16 16" fill="#636c76"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0113.25 16h-9.5A1.75 1.75 0 012 14.25V1.75zm8.75-.25v3.75c0 .138.112.25.25.25h3.75L10.75 1.5z"/></svg>';
+const ghTabs=[['Code',1],['Issues','7'],['Pull requests','12'],['Actions',''],['Projects',''],['Insights','']];
+const ghFiles=[['.github',1],['.vscode',1],['docs',1],['samples',1],['scripts',1],['src',1],['tests',1],
+  ['README.md',0],['LICENSE.md',0],['databricks.yml',0],['pyproject.toml',0],['requirements.txt',0]];
+const ghTopics=['databricks','lakeflow','spark-declarative-pipelines','metadata-driven','medallion','etl','delta-lake','framework'];
+const ghRepoHTML=`
+<div style="height:100%;overflow:hidden;color:#1f2328;font-family:'Inter',sans-serif">
+  <!-- repo owner / name + Public -->
+  <div style="display:flex;align-items:center;gap:7px;padding:2px 0 9px">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="#636c76"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 010-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 11-1.072 1.05A2.495 2.495 0 012 11.5zm10.5-1h-8a1 1 0 00-1 1v6.708A2.486 2.486 0 014.5 9h8z"/></svg>
+    <span style="font-size:13px;color:#0969da;font-weight:400">databricks-solutions</span>
+    <span style="font-size:13px;color:#636c76">/</span>
+    <span style="font-size:13px;color:#0969da;font-weight:600">lakeflow_framework</span>
+    <span style="font-size:9px;color:#636c76;border:1px solid #d0d7de;border-radius:2em;padding:1px 8px;margin-left:2px">Public</span>
+  </div>
+  <!-- nav tabs -->
+  <div style="display:flex;gap:2px;border-bottom:1px solid #d0d7de;margin-bottom:12px">
+    ${ghTabs.map(([t,c],i)=>`<div style="font-size:11px;padding:6px 10px 9px;color:${i===0?'#1f2328':'#59636e'};font-weight:${i===0?600:400};position:relative">${t}${c&&c!==1?` <span style="background:#eff2f5;border-radius:2em;padding:0 6px;font-size:9px;color:#59636e">${c}</span>`:''}${i===0?'<div style=\"position:absolute;left:6px;right:6px;bottom:-1px;height:2px;background:#fd8c73;border-radius:2px\"></div>':''}</div>`).join('')}
+  </div>
+  <!-- two-column body: file browser + About -->
+  <div style="display:flex;gap:16px">
+    <div style="flex:1;min-width:0">
+      <!-- branch + code button row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#1f2328;border:1px solid #d0d7de;border-radius:6px;padding:4px 9px;font-weight:600">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="#636c76"><path d="M9.5 3.25a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5z"/></svg>
+          main <span style="color:#59636e;font-weight:400">▾</span>
+        </div>
+        <div style="font-size:10.5px;font-weight:600;color:#fff;background:#1f883d;border:1px solid rgba(31,136,61,.4);border-radius:6px;padding:5px 11px;display:flex;align-items:center;gap:5px">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="#fff"><path d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06z"/></svg>
+          Code <span style="font-weight:400">▾</span>
+        </div>
+      </div>
+      <!-- file browser box -->
+      <div style="border:1px solid #d0d7de;border-radius:6px;overflow:hidden;font-size:10.5px">
+        <div style="background:#f6f8fa;padding:7px 14px;display:flex;align-items:center;gap:7px;border-bottom:1px solid #d0d7de">
+          <div style="width:16px;height:16px;border-radius:50%;background:#c6e6c9;flex-shrink:0"></div>
+          <span style="color:#1f2328;font-weight:600">databricks-eng</span>
+          <span style="color:#59636e;font-weight:400">feat(nodespec): unified dataflow spec</span>
+          <span style="margin-left:auto;color:#59636e;font-size:9.5px">2 days ago</span>
+        </div>
+        <div style="max-height:196px;overflow:hidden">
+        ${ghFiles.map((f,i)=>`<div style="display:flex;align-items:center;gap:9px;padding:5px 14px;${i<ghFiles.length-1?'border-bottom:1px solid #eaeef2':''}">
+          ${f[1]?GH_DIR:GH_FILE}<span style="color:#1f2328;flex:1">${f[0]}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <!-- About panel -->
+    <div style="width:172px;flex-shrink:0">
+      <div style="font-size:11px;font-weight:600;color:#1f2328;margin-bottom:8px">About</div>
+      <div style="font-size:10px;color:#1f2328;line-height:1.55;margin-bottom:10px">Metadata-driven framework for Databricks Spark Declarative Pipelines. Config-driven, pattern based approach to batch &amp; streaming across the medallion architecture.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">
+        ${ghTopics.map(t=>`<span style="font-size:9px;color:#0969da;background:#ddf4ff;border-radius:2em;padding:1px 8px">${t}</span>`).join('')}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:10px;color:#59636e">
+        <div style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 16 16" fill="#636c76"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg><b style="color:#1f2328;font-weight:600">15</b> stars</div>
+        <div style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 16 16" fill="#636c76"><path d="M8 2a1.75 1.75 0 10-.75 1.437v2.813H4.75A2.75 2.75 0 002 9v.313a1.75 1.75 0 101.5 0V9a1.25 1.25 0 011.25-1.25h5.5A1.25 1.25 0 0111.5 9v.313a1.75 1.75 0 101.5 0V9a2.75 2.75 0 00-2.75-2.75H8.75V3.437A1.75 1.75 0 008 2z"/></svg><b style="color:#1f2328;font-weight:600">14</b> forks</div>
+        <div style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 16 16" fill="#636c76"><path d="M8 2c1.981 0 3.671.992 4.933 2.078 1.27 1.091 2.187 2.345 2.637 3.023a1.62 1.62 0 010 1.798c-.45.678-1.367 1.932-2.637 3.023C11.67 13.008 9.981 14 8 14c-1.981 0-3.671-.992-4.933-2.078C1.797 10.83.88 9.576.43 8.898a1.62 1.62 0 010-1.798c.45-.677 1.367-1.931 2.637-3.022C4.33 2.992 6.019 2 8 2zM8 6.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></svg><b style="color:#1f2328;font-weight:600">2</b> watching</div>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+function setIDE(title,sb,tabs,lines,pfx){
+  $('ideT').textContent=title;$('ideS').innerHTML=sb;$('ideTabs').innerHTML=tabs;
+  const ed=$('ideEd');ed.innerHTML='';
+  lines.forEach((h,i)=>{const d=document.createElement('div');d.className='el';d.id=pfx+(i+1);
+  d.innerHTML=`<span class="ln">${i+1}</span><span class="code">${h}</span>`;ed.appendChild(d)});
+}
+
+/* cascade a block of editor lines in (typing-like), one per step, each highlighted */
+function revealLines(pfx,from,to,startMs,stepMs,hlClass){
+  for(let i=from;i<=to;i++){
+    ev(startMs+(i-from)*stepMs,()=>{const e=$(pfx+i);if(e)e.classList.add('show',hlClass)});
+  }
+}
+/* pin an annotation centered vertically on a [from,to] section of editor lines */
+function annotateSection(pfx,from,to,annClass,annId,html){
+  const first=$(pfx+from),last=$(pfx+to);if(!first)return;
+  const a=document.createElement('div');a.className='ann '+annClass;a.id=annId;a.innerHTML=html;
+  const parent=$('winIDE').querySelector('.ide-m');
+  const fr=first.getBoundingClientRect(),lrr=(last||first).getBoundingClientRect(),pr=parent.getBoundingClientRect(),k=__scale||1;
+  const mid=((fr.top + lrr.bottom)/2 - pr.top)/k;  // vertical center of the whole section (unscaled)
+  a.style.top=(mid - 11)+'px';
+  parent.appendChild(a);
+  setTimeout(()=>a.classList.add('show'),50);
+}
+
+/* === DATA === */
+// Nodespec — unified node-based dataflow spec: source -> transformation -> target
+// 4 sections: (1) spec metadata  (2) source node  (3) transformation node  (4) target node + data quality
+const secMeta=[
+  '<span class="p">{</span>',
+  '  <span class="k">"data_flow_id"</span><span class="p">:</span> <span class="s">"bronze_customers"</span><span class="p">,</span>',
+  '  <span class="k">"data_flow_group"</span><span class="p">:</span> <span class="s">"crm"</span><span class="p">,</span>',
+  '  <span class="k">"data_flow_type"</span><span class="p">:</span> <span class="s">"nodespec"</span><span class="p">,</span>',
+  '  <span class="k">"nodes"</span><span class="p">:</span> <span class="p">[</span>',
+];
+const secSrc=[
+  '    <span class="p">{</span>',
+  '      <span class="k">"name"</span><span class="p">:</span> <span class="s">"v_source_customers"</span><span class="p">,</span>',
+  '      <span class="k">"node_type"</span><span class="p">:</span> <span class="s">"source"</span><span class="p">,</span>',
+  '      <span class="k">"source_type"</span><span class="p">:</span> <span class="s">"cloud_files"</span><span class="p">,</span>',
+  '      <span class="k">"config"</span><span class="p">:</span> <span class="p">{</span>',
+  '        <span class="k">"mode"</span><span class="p">:</span> <span class="s">"stream"</span><span class="p">,</span>',
+  '        <span class="k">"path"</span><span class="p">:</span> <span class="s">"/volumes/raw/crm/customers/"</span>',
+  '      <span class="p">}</span>',
+  '    <span class="p">},</span>',
+];
+const secXf=[
+  '    <span class="p">{</span>',
+  '      <span class="k">"name"</span><span class="p">:</span> <span class="s">"v_clean_customers"</span><span class="p">,</span>',
+  '      <span class="k">"node_type"</span><span class="p">:</span> <span class="s">"transformation"</span><span class="p">,</span>',
+  '      <span class="k">"transformation_type"</span><span class="p">:</span> <span class="s">"sql"</span><span class="p">,</span>',
+  '      <span class="k">"config"</span><span class="p">:</span> <span class="p">{</span>',
+  '        <span class="k">"sql_statement"</span><span class="p">:</span> <span class="s">"SELECT * FROM STREAM(live.v_source_customers)"</span>',
+  '      <span class="p">}</span>',
+  '    <span class="p">},</span>',
+];
+const secTgt=[
+  '    <span class="p">{</span>',
+  '      <span class="k">"name"</span><span class="p">:</span> <span class="s">"target_bronze"</span><span class="p">,</span>',
+  '      <span class="k">"node_type"</span><span class="p">:</span> <span class="s">"target"</span><span class="p">,</span>',
+  '      <span class="k">"config"</span><span class="p">:</span> <span class="p">{</span>',
+  '        <span class="k">"table"</span><span class="p">:</span> <span class="s">"bronze.crm.customers"</span><span class="p">,</span>',
+  '        <span class="k">"cdc_settings"</span><span class="p">:</span> <span class="p">{</span> <span class="k">"keys"</span><span class="p">:</span> <span class="p">[</span><span class="s">"customer_id"</span><span class="p">],</span> <span class="k">"scd_type"</span><span class="p">:</span> <span class="s">"2"</span> <span class="p">},</span>',
+  '        <span class="k">"data_quality"</span><span class="p">:</span> <span class="p">{</span> <span class="k">"expectations_path"</span><span class="p">:</span> <span class="s">"customers_dqe.json"</span> <span class="p">},</span>',
+  '        <span class="k">"input_flows"</span><span class="p">:</span> <span class="p">[</span>',
+  '          <span class="p">{</span> <span class="k">"view"</span><span class="p">:</span> <span class="s">"v_clean_customers"</span><span class="p">,</span> <span class="k">"flow"</span><span class="p">:</span> <span class="s">"f_ingest"</span> <span class="p">}</span>',
+  '        <span class="p">]</span>',
+  '      <span class="p">}</span>',
+  '    <span class="p">}</span>',
+  '  <span class="p">]</span>',
+  '<span class="p">}</span>',
+];
+const specLines=[...secMeta,...secSrc,...secXf,...secTgt];
+
+const yamlLines=[
+  '<span class="k">resources</span><span class="p">:</span>',
+  '  <span class="k">pipelines</span><span class="p">:</span>',
+  '    <span class="k">crm_pipeline</span><span class="p">:</span>',
+  '      <span class="k">name</span><span class="p">:</span> <span class="s">"crm_pipeline"</span>',
+  '      <span class="k">catalog</span><span class="p">:</span> <span class="s">"main"</span>  <span class="c"># Unity Catalog</span>',
+  '      <span class="k">target</span><span class="p">:</span> <span class="s">"crm"</span>',
+  '      <span class="k">libraries</span><span class="p">:</span>',
+  '        <span class="p">-</span> <span class="k">notebook</span><span class="p">:</span>',
+  '            <span class="k">path</span><span class="p">:</span> <span class="vr">${var.framework_path}</span><span class="s">/pipeline_runner</span>',
+  '      <span class="k">configuration</span><span class="p">:</span>',
+  '        <span class="k">lff.spec.path</span><span class="p">:</span> <span class="vr">${var.bundle_path}</span><span class="s">/src/dataflows</span>',
+  '        <span class="k">lff.dataflow.group</span><span class="p">:</span> <span class="s">"crm"</span>',
+];
+
+const specSB=`<div class="ide-sh">Explorer</div><div class="sf dir"><span class="ic">▾</span> crm_bundle</div><div class="sf dir i1"><span class="ic">▾</span> src/dataflows</div><div class="sf i2 on"><span class="ic" style="color:#00A972">●</span> bronze_customers.json</div><div class="sf i2"><span class="ic" style="color:#00A972">●</span> bronze_orders.json</div><div class="sf dir i1"><span class="ic">▾</span> src/resources</div><div class="sf i2"><span class="ic" style="color:#FF3621">●</span> crm_pipeline.yml</div><div class="sf i1"><span class="ic" style="color:#888">●</span> databricks.yml</div>`;
+const yamlSB=`<div class="ide-sh">Explorer</div><div class="sf dir"><span class="ic">▾</span> crm_bundle</div><div class="sf dir i1"><span class="ic">▸</span> src/dataflows</div><div class="sf dir i1"><span class="ic">▾</span> src/resources</div><div class="sf i2 on"><span class="ic" style="color:#FF3621">●</span> crm_pipeline.yml</div><div class="sf i1"><span class="ic" style="color:#888">●</span> databricks.yml</div>`;
+
+const pipeHTML=`<div style="display:flex;flex-direction:column;height:100%">
+  <div class="pipe-topbar" id="ph">
+    <span class="pipe-name">crm_pipeline</span>
+    <div class="pipe-open">Open pipeline details</div>
+  </div>
+  <div class="pipe-status-bar" id="pm">
+    <span class="pbadge st" id="pst">Starting</span>
+    <span style="font-size:10px;color:#999">Update #1</span>
+  </div>
+  <div class="dag-area" id="dag" style="flex:1">
+    <div class="dag-flow">
+
+      <div class="nd-wrap" id="nw1">
+        <div class="nd-type-row"><span class="nd-type">View</span></div>
+        <div class="nd-topbar" id="bar1"></div>
+        <div class="nd" id="nd1">
+          <div class="nd-title"><span class="nd-tbl-icon">${ICO.tbl_icon}</span><span class="nlbl">customers_source</span><span class="nd-check" id="chk1"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="nd-stats"></div>
+        </div>
+      </div>
+
+      <div class="dag-arrow" id="da1"></div>
+
+      <div class="nd-wrap" id="nw2">
+        <div class="nd-type-row"><span class="nd-type">Streaming table</span><span class="nd-dur" id="dur2">3s</span></div>
+        <div class="nd-topbar" id="bar2"></div>
+        <div class="nd" id="nd2">
+          <div class="nd-title"><span class="nd-tbl-icon">${ICO.tbl_icon}</span><span class="nlbl">bronze_customers</span><span class="nd-check" id="chk2"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="nd-stats"><span id="rec2">Upserted: 1,240</span><span id="exp2" style="margin-left:8px">1 expectation</span></div>
+        </div>
+      </div>
+
+      <div class="dag-arrow" id="da2"></div>
+
+      <div class="nd-wrap" id="nw3">
+        <div class="nd-type-row"><span class="nd-type">Streaming table</span><span class="nd-dur" id="dur3">4s</span></div>
+        <div class="nd-topbar" id="bar3"></div>
+        <div class="nd" id="nd3">
+          <div class="nd-title"><span class="nd-tbl-icon">${ICO.tbl_icon}</span><span class="nlbl">silver_customers</span><span class="nd-check" id="chk3"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="nd-stats"><span id="rec3">Output records: 1,185</span><span id="exp3" style="margin-left:8px">1 expectation</span></div>
+        </div>
+      </div>
+
+      <div class="dag-arrow" id="da3"></div>
+
+      <div class="nd-wrap" id="nw4">
+        <div class="nd-type-row"><span class="nd-type">Materialized view</span><span class="nd-dur" id="dur4">2s</span></div>
+        <div class="nd-topbar" id="bar4"></div>
+        <div class="nd" id="nd4">
+          <div class="nd-title"><span class="nd-tbl-icon">${ICO.tbl_icon}</span><span class="nlbl">gold_customers</span><span class="nd-check" id="chk4"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="nd-stats"><span id="rec4">Output records: 856</span></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="dag-zoom" id="dagZoom">
+      <div class="dag-zoom-btn">⛶</div>
+      <div class="dag-zoom-btn">＋</div>
+      <div class="dag-zoom-btn">－</div>
+      <div class="dag-zoom-btn">⚙</div>
+    </div>
+  </div>
+</div>`;
+
+function resetVisuals(){
+  ['winTerm','winIDE','winDBX'].forEach(id=>{$(id).classList.remove('show','out','expand');$(id).style.zIndex=''});
+  $('dbxSide').style.display='';$('dbxTop').style.display='';
+  document.querySelectorAll('.ann').forEach(a=>a.remove());
+  hb();hc();
+}
+
+/* === BUILD TIMELINE === */
+function buildTimeline(){
+  timeline=[];
+
+  /* ===== SCENE 1: Clone & Deploy the Framework (0-13.5s) ===== */
+  ev(200,()=>bg('Step 1 · Clone & Deploy the Framework'));
+
+  // 1a. Browser RIGHT — show the GitHub repo first (no product sidebar; GitHub header is in the content)
+  ev(400,()=>{
+    $('dbxSide').style.display='none';
+    $('dbxTop').style.display='none';
+    $('dbxUrl').textContent='github.com/databricks-solutions/lakeflow_framework';
+    $('dbxCnt').innerHTML=ghRepoHTML;
+    showW('winDBX',{width:'540px',height:'480px',left:'auto',right:'20px',top:'75px'});
+  });
+
+  // 1b. Terminal LEFT — clone the repo
+  ev(1400,()=>{
+    setTerm('Terminal — ~',[
+      '<span class="pr">~ $</span> <span class="cm" id="cmd1"></span><span class="tc" id="tc1"></span>',
+      '','','','','','',''
+    ]);
+    showW('winTerm',{width:'530px',height:'250px',left:'20px',right:'auto',top:'90px'});
+    sl(0);
+  });
+  ev(2000,()=>typeCmd($('cmd1'),'git clone https://github.com/databricks-solutions/lakeflow_framework.git',26,()=>{const tc=$('tc1');if(tc)tc.style.display='none'}));
+  ev(4400,()=>sl(1,'<span class="wa">Cloning into \'lakeflow_framework\'...</span>'));
+  ev(5000,()=>sl(2,'<span class="ok">✓</span> Repository cloned'));
+
+  // 1c. cd into the folder
+  ev(5600,()=>{sl(3,'<span class="pr">~ $</span> <span class="cm" id="cmd1b"></span><span class="tc" id="tc1b"></span>')});
+  ev(5900,()=>typeCmd($('cmd1b'),'cd lakeflow_framework',40,()=>{const tc=$('tc1b');if(tc)tc.style.display='none'}));
+
+  // 1d. PAUSE on the cloned repo, THEN switch the browser to the workspace (still empty — nothing deployed yet)
+  ev(8000,()=>{
+    $('dbxSide').style.display='';
+    $('dbxTop').style.display='';
+    $('dbxSide').innerHTML=sidebar('workspace');
+    $('dbxUrl').textContent='workspace.databricks.com/workspace';
+    $('dbxTop').innerHTML='<span class="bc">Workspace / </span><span class="cur">.bundle / lakeflow_framework</span>';
+    $('dbxCnt').innerHTML=`<div class="ws-path" id="wsPath1"><span class="hp">${FW_PATH}</span></div>
+      <div class="ws-fi dir" id="wfd1">${ico('folder')}<span class="fn">src/</span></div>
+      <div class="ws-fi" id="wf1">${ico('python')}<span class="fn">pipeline_runner.py</span><span class="fsz">4.2 KB</span></div>
+      <div class="ws-fi" id="wf2">${ico('python')}<span class="fn">spec_reader.py</span><span class="fsz">3.1 KB</span></div>
+      <div class="ws-fi" id="wf3">${ico('python')}<span class="fn">config_resolver.py</span><span class="fsz">2.8 KB</span></div>
+      <div class="ws-fi" id="wf4">${ico('python')}<span class="fn">validators.py</span><span class="fsz">1.9 KB</span></div>
+      <div class="ws-fi" id="wf5">${ico('folder')}<span class="fn">config/</span></div>`;
+  });
+  ev(8300,()=>{const p=$('wsPath1');if(p)p.classList.add('show')});
+
+  // 1e. NOW type the deploy command; files populate on the right as the deploy completes
+  ev(8800,()=>{sl(4,'<span class="pr">~/lakeflow_framework $</span> <span class="cm" id="cmd1c"></span><span class="tc" id="tc1c"></span>')});
+  ev(9100,()=>typeCmd($('cmd1c'),'databricks bundle deploy -t dev',40,()=>{const tc=$('tc1c');if(tc)tc.style.display='none'}));
+  ev(10500,()=>sl(5,'<span class="wa">Uploading framework bundle...</span>'));
+  ev(10700,()=>{sl(6,'<span class="ok">✓</span> 5 files uploaded');const d=$('wfd1');if(d)d.classList.add('show')});
+  ev(10900,()=>{const f=$('wf1');if(f)f.classList.add('show')});
+  ev(11200,()=>{const f=$('wf2');if(f)f.classList.add('show')});
+  ev(11500,()=>{const f=$('wf3');if(f)f.classList.add('show')});
+  ev(11800,()=>{const f=$('wf4');if(f)f.classList.add('show');const f2=$('wf5');if(f2)f2.classList.add('show')});
+  ev(12300,()=>sl(7,'<span class="ok">✓ Framework deployed</span>'));
+
+  /* ===== SCENE 2: IDE — Data Flow Spec (8.5-17s) ===== */
+  ev(13500,()=>hb());
+  ev(13800,()=>{hideW('winTerm');hideW('winDBX');bg('Step 2 · Define a Data Flow Spec')});
+  ev(14100,()=>{
+    setIDE('crm_bundle — Visual Studio Code',specSB,
+      '<div class="ide-tab on"><span class="td" style="background:#00A972"></span> bronze_customers.json</div>',specLines,'sp');
+    showW('winIDE',{width:'940px',height:'560px',left:'90px',top:'40px'});
+  });
+  // Section boundaries (1-indexed line numbers within specLines)
+  const m1=1, m2=secMeta.length;                       // spec metadata
+  const s1=m2+1, s2=m2+secSrc.length;                  // source node
+  const x1=s2+1, x2=s2+secXf.length;                   // transformation node
+  const t1=x2+1, t2=x2+secTgt.length;                  // target node + data quality
+  const ST=150;                                        // ms per line — slow enough to read
+  const PAUSE=1100;                                     // beat AFTER each section finishes, so the viewer can read it
+
+  // annotations appear as soon as their section STARTS being written (not after it finishes)
+  // Section 1 — spec metadata (id, group, type)
+  const b1=14300;
+  revealLines('sp',m1,m2,b1,ST,'hl-pur');
+  ev(b1+120,()=>annotateSection('sp',m1,m2,'pur','annMeta',
+    'Data flow spec &mdash; <b>id</b>, <b>group</b> &amp; type'));
+  // Section 2 — source node (starts after meta finishes + a pause)
+  const b2=b1+m2*ST+PAUSE;
+  revealLines('sp',s1,s2,b2,ST,'hl-blu');
+  ev(b2+120,()=>annotateSection('sp',s1,s2,'blu','annSrc',
+    '<b>Source</b> &mdash; cloud_files ingest'));
+  // Section 3 — transformation node (starts after source finishes + a pause)
+  const b3=b2+(s2-s1+1)*ST+PAUSE;
+  revealLines('sp',x1,x2,b3,ST,'hl-yel');
+  ev(b3+120,()=>annotateSection('sp',x1,x2,'yel','annXf',
+    '<b>Transformation</b> &mdash; SQL reshape'));
+  // Section 4 — target node + data quality (starts after transformation finishes + a pause)
+  const b4=b3+(x2-x1+1)*ST+PAUSE;
+  revealLines('sp',t1,t2,b4,ST,'hl-grn');
+  ev(b4+120,()=>annotateSection('sp',t1,t2,'grn','annTgt',
+    '<b>Target</b> &mdash; table, CDC &amp; data quality'));
+  // target section finishes writing, then a pause before the cursor beat
+  const specEnd=b4+(t2-t1+1)*ST+PAUSE;
+
+  // brief cursor beat on the data_quality line inside the target
+  ev(specEnd,()=>{sc();mte('sp'+(t1+6))});   // data_quality line inside the target section
+  ev(specEnd+400,()=>cke('sp'+(t1+6)));
+  ev(specEnd+1100,()=>hc());
+
+  /* ===== SCENE 3: IDE — Pipeline YAML (17-26s) — stays on same IDE ===== */
+  ev(25500,()=>{hb();['annMeta','annSrc','annXf','annTgt'].forEach(id=>{const a=$(id);if(a)a.remove()})});
+  ev(25700,()=>bg('Step 3 · Create Pipeline YAML'));
+
+  // Cursor moves to crm_pipeline.yml in the sidebar and clicks it
+  const ymlFile=()=>[...$('ideS').querySelectorAll('.sf')].find(f=>f.textContent.includes('crm_pipeline.yml'));
+  ev(26000,()=>{sc();mte(ymlFile())});
+  ev(26500,()=>{
+    cke(ymlFile());
+    // Just highlight the clicked file in sidebar — don't change the tree structure
+    const sideFiles=$('ideS').querySelectorAll('.sf');
+    sideFiles.forEach(f=>f.classList.remove('on'));
+    // Find the crm_pipeline.yml entry and highlight it
+    sideFiles.forEach(f=>{if(f.textContent.includes('crm_pipeline.yml'))f.classList.add('on')});
+    // Add new tab, switch active
+    $('ideTabs').innerHTML='<div class="ide-tab"><span class="td" style="background:#00A972"></span> bronze_customers.json</div><div class="ide-tab on"><span class="td" style="background:#FF3621"></span> crm_pipeline.yml</div>';
+    // Swap editor content to YAML
+    const ed=$('ideEd');ed.innerHTML='';
+    yamlLines.forEach((h,i)=>{const d=document.createElement('div');d.className='el';d.id='yl'+(i+1);
+    d.innerHTML=`<span class="ln">${i+1}</span><span class="code">${h}</span>`;ed.appendChild(d)});
+    hc();
+  });
+  // Lines appear
+  for(let i=1;i<=yamlLines.length;i++) ev(27000+i*150,()=>{const e=$('yl'+i);if(e)e.classList.add('show')});
+
+  // Cursor clicks framework_path line (line 9), then annotation appears aligned to it
+  ev(29700,()=>{sc();mte('yl9')});
+  ev(30300,()=>{
+    cke('yl9');
+    const line=$('yl9');if(line){line.classList.add('hlp');
+      const a=document.createElement('div');a.className='ann pur';a.id='annFw';
+      a.innerHTML='← Framework: <b>'+FW_PATH+'</b>';
+      const parent=$('winIDE').querySelector('.ide-m');
+      const lineRect=line.getBoundingClientRect();
+      const parentRect=parent.getBoundingClientRect();const k=__scale||1;
+      a.style.top=((lineRect.top - parentRect.top + lineRect.height/2)/k - 12)+'px';
+      parent.appendChild(a);
+      setTimeout(()=>a.classList.add('show'),50);
+    }
+  });
+
+  // Cursor clicks spec path line (line 11), annotation appears
+  ev(31500,()=>mte('yl11',true));
+  ev(32100,()=>{
+    cke('yl11');
+    const l11=$('yl11'),l12=$('yl12');
+    if(l11)l11.classList.add('hlg');if(l12)l12.classList.add('hlg');
+    const a=document.createElement('div');a.className='ann grn';a.id='annSp';
+    a.innerHTML='← Data flow spec group / ID to attach this pipeline';
+    const parent=$('winIDE').querySelector('.ide-m');
+    const lineRect=l11?l11.getBoundingClientRect():null;
+    const parentRect=parent.getBoundingClientRect();const k=__scale||1;
+    if(lineRect) a.style.top=((lineRect.top - parentRect.top + lineRect.height/2)/k - 12)+'px';
+    parent.appendChild(a);
+    setTimeout(()=>a.classList.add('show'),50);
+  });
+  ev(33500,()=>hc());
+
+  /* ===== SCENE 4: Deploy Pipeline — integrated terminal over IDE (26-33s) ===== */
+  ev(34500,()=>hb());
+  // IDE stays on screen (from Scene 3); terminal docks over its bottom half like VS Code
+  ev(34800,()=>{
+    bg('Step 4 · Deploy the Pipeline');
+    // clear Scene 3 YAML annotations
+    ['annFw','annSp'].forEach(id=>{const a=$(id);if(a)a.remove()});
+  });
+
+  ev(35100,()=>{
+    setTerm('crm_bundle — Terminal',[
+      '<span class="pr">~/crm_bundle $</span> <span class="cm" id="cmd4"></span><span class="tc" id="tc4"></span>',
+      '','','',''
+    ]);
+    // dock terminal over the bottom half of the IDE window (IDE spans y 40→600), above the IDE
+    const wt=$('winTerm');wt.style.zIndex='50';
+    showW('winTerm',{width:'940px',height:'250px',left:'90px',right:'auto',top:'350px'});
+    sl(0);
+  });
+
+  // type the deploy command (finishes ~28450)
+  ev(35700,()=>{
+    const cmdEl=$('cmd4');
+    if(cmdEl) typeCmd(cmdEl,'databricks bundle deploy -t dev',40,()=>{const tc=$('tc4');if(tc)tc.style.display='none'});
+  });
+
+  /* ===== SCENE 5: after typing, split to half-screen so workspace fills up while deploying ===== */
+  // shrink IDE + terminal to the LEFT half, bring in an (empty) workspace browser on the RIGHT
+  ev(37200,()=>{
+    const ide=$('winIDE');ide.classList.add('expand');
+    Object.assign(ide.style,{width:'540px',height:'560px',left:'20px',right:'auto',top:'40px'});
+    // terminal follows: docked over the bottom of the now-narrow IDE
+    const wt=$('winTerm');wt.classList.add('expand');
+    Object.assign(wt.style,{width:'540px',height:'230px',left:'20px',right:'auto',top:'370px'});
+    // workspace browser slides in on the right — starts EMPTY (files appear during deploy)
+    $('dbxSide').innerHTML=sidebar('workspace');
+    $('dbxUrl').textContent='workspace.databricks.com/workspace';
+    $('dbxTop').innerHTML='<span class="bc">Workspace / </span><span class="cur">.bundle / crm_bundle</span>';
+    $('dbxCnt').innerHTML=`<div class="ws-path" id="wsPath4"><span class="hg">/Workspace/.bundle/crm_bundle/dev/src</span></div>
+      <div class="ws-fi dir" id="pfd1">${ico('folder')}<span class="fn">dataflows/</span></div>
+      <div class="ws-fi" id="pf1" style="padding-left:32px">${ico('json')}<span class="fn">bronze_customers.json</span></div>
+      <div class="ws-fi" id="pf2" style="padding-left:32px">${ico('json')}<span class="fn">bronze_orders.json</span></div>
+      <div class="ws-fi dir" id="pf3">${ico('folder')}<span class="fn">resources/</span></div>
+      <div class="ws-fi" id="pf4" style="padding-left:32px">${ico('yaml')}<span class="fn">crm_pipeline.yml</span><span class="fsz" id="pipeAnno" style="margin-left:8px;color:#DC2626;font-weight:500;font-family:Inter,sans-serif;font-size:9.5px;opacity:0;transition:opacity .3s">← created a pipeline</span></div>`;
+    showW('winDBX',{width:'540px',height:'560px',left:'auto',right:'20px',top:'40px'});
+  });
+
+  // deploy output streams in the terminal WHILE the workspace files appear on the right, in sync
+  ev(38100,()=>sl(1,'<span class="wa">Uploading pipeline bundle...</span>'));
+  ev(38400,()=>{const p=$('wsPath4');if(p)p.classList.add('show')});
+  ev(38700,()=>{sl(2,'<span class="ok">✓</span> 3 files uploaded');const d=$('pfd1');if(d)d.classList.add('show')});
+  ev(39000,()=>{const f=$('pf1');if(f)f.classList.add('show')});
+  ev(39300,()=>{const f=$('pf2');if(f)f.classList.add('show')});
+  ev(39600,()=>{const f=$('pf3');if(f)f.classList.add('show');const f2=$('pf4');if(f2)f2.classList.add('show')});
+  ev(40100,()=>sl(3,'<span class="re">Creating pipeline:</span> crm_pipeline'));
+  ev(40800,()=>sl(4,'<span class="ok">✓ Pipeline deployed.</span>'));
+
+  // deploy done — terminal stays docked on the left; it'll get covered by the browser later
+  ev(41900,()=>hb());
+
+  // 3. highlight the newly-created pipeline file in the workspace (no click — that comes on the Pipelines nav)
+  ev(43900,()=>{const pa=$('pipeAnno');if(pa)pa.style.opacity='1'});
+
+  // 4. cursor moves to the Pipelines nav item and clicks it (anchored to the real element)
+  ev(45100,()=>{sc();mte('navPipe')});
+  ev(45600,()=>{
+    cke('navPipe');
+    $('dbxSide').innerHTML=sidebar('pipelines');
+    $('dbxUrl').textContent='workspace.databricks.com/pipelines/crm_pipeline';
+    $('dbxTop').innerHTML='<span class="bc">Pipelines / </span><span class="cur">crm_pipeline</span>';
+    $('dbxCnt').innerHTML=pipeHTML;
+  });
+
+  // 5. expand browser to full width — it simply takes over, covering the IDE & terminal
+  ev(46100,()=>{
+    hc();bg('Step 5 · Pipeline Runs');
+    // let the browser paint above the docked terminal/IDE as it grows
+    $('winTerm').style.zIndex='';
+    const w=$('winDBX');
+    w.style.zIndex='60';
+    w.classList.add('expand');
+    Object.assign(w.style,{width:'1060px',height:'560px',right:'30px',left:'auto',top:'35px'});
+  });
+  // once the browser has fully covered them, remove the IDE & terminal so no sliver peeks out
+  ev(47050,()=>{hideW('winIDE');hideW('winTerm')});
+
+  ev(46900,()=>{const h=$('ph');if(h)h.classList.add('show')});
+  ev(47200,()=>{const m=$('pm');if(m)m.classList.add('show')});
+  ev(47500,()=>{const d=$('dag');if(d)d.classList.add('show');const z=$('dagZoom');if(z)z.classList.add('show')});
+
+  // Nodes + arrows appear
+  ev(48100,()=>{const n=$('nw1');if(n)n.classList.add('show')});
+  ev(48600,()=>{const a=$('da1');if(a)a.classList.add('show')});
+  ev(48800,()=>{const n=$('nw2');if(n)n.classList.add('show')});
+  ev(49300,()=>{const a=$('da2');if(a)a.classList.add('show')});
+  ev(49500,()=>{const n=$('nw3');if(n)n.classList.add('show')});
+  ev(50000,()=>{const a=$('da3');if(a)a.classList.add('show')});
+  ev(50200,()=>{const n=$('nw4');if(n)n.classList.add('show')});
+
+  // Status: Running
+  ev(50900,()=>{const p=$('pst');if(p){p.className='pbadge run';p.textContent='Running'}});
+
+  // Nodes complete: green top bar, outlined checkmark, duration, stats
+  ev(51500,()=>{
+    const b=$('bar1');if(b)b.classList.add('done');
+    const c=$('chk1');if(c)c.classList.add('show');
+  });
+  ev(52100,()=>{
+    const b=$('bar2');if(b)b.classList.add('done');
+    const c=$('chk2');if(c)c.classList.add('show');
+    const d=$('dur2');if(d)d.classList.add('show');
+    const r=$('rec2');if(r)r.classList.add('show');
+    const e=$('exp2');if(e)e.classList.add('show');
+  });
+  ev(52700,()=>{
+    const b=$('bar3');if(b)b.classList.add('done');
+    const c=$('chk3');if(c)c.classList.add('show');
+    const d=$('dur3');if(d)d.classList.add('show');
+    const r=$('rec3');if(r)r.classList.add('show');
+    const e=$('exp3');if(e)e.classList.add('show');
+  });
+  ev(53300,()=>{
+    const b=$('bar4');if(b)b.classList.add('done');
+    const c=$('chk4');if(c)c.classList.add('show');
+    const d=$('dur4');if(d)d.classList.add('show');
+    const r=$('rec4');if(r)r.classList.add('show');
+  });
+  ev(54300,()=>{const p=$('pst');if(p)p.textContent='Completed';hb()});
+}
+
+function go(){
+  resetVisuals();
+  buildTimeline();
+  elapsed=0;done=false;playing=true;
+  $('playBtn').innerHTML='⏸';$('playBtn').title='Pause';
+  $('playBtn').classList.remove('hidden');
+  $('replayBtn').classList.add('hidden');$('skipBtn').classList.remove('hidden');
+  updateBar();
+  scheduleFromNow();
+}
+
+function skip(){seekTo(DUR)}
+
+function redo(){
+  document.querySelectorAll('.win,.nd,.tl,.ws-fi,.ws-path,.dag-arrow,.pipe-topbar,.pipe-status-bar,.dag-area,.nd-wrap,.nd-check,.nd-topbar,.nd-dur,.nd-stats span,.dag-zoom,.badge,.el').forEach(el=>el.style.transition='');
+  go();
+}
+
+window.addEventListener('load',()=>{fitDemo();setTimeout(go,300);});
+</script>
+</body>
+</html>

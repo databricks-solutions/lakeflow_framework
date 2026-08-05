@@ -3,6 +3,22 @@ Quick Start
 
 Get the Lakeflow Framework (LFF) deployed and running sample pipelines in your Databricks workspace in about **15–20 minutes**.
 
+See it end to end
+=================
+
+Before you dive in, here's the whole workflow in under a minute — clone and deploy the framework, define a Data Flow Spec, add a pipeline YAML, deploy it, and watch the Spark Declarative Pipeline run. The steps below walk through the same path.
+
+.. raw:: html
+
+   <div class="lf-demo lf-demo--screen">
+     <div class="lf-demo__frame">
+       <iframe src="../_static/animations/screen_demo.html"
+               title="Lakeflow Framework — from clone to a running pipeline"
+               loading="lazy" scrolling="no"></iframe>
+     </div>
+     <p class="lf-demo__caption">From <code>git clone</code> to a running pipeline — the full Lakeflow Framework workflow.</p>
+   </div>
+
 Prerequisites
 =============
 
