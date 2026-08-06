@@ -25,11 +25,8 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "schema_path": "target/feature_python_function_source_schema.json",
-                "input_flows": [
-                    {
-                        "view": "v_python_function_source",
-                        "flow": "f_python_function_source"
-                    }
+                "sources": [
+                    "v_python_function_source"
                 ]
             }
         }

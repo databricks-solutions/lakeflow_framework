@@ -327,28 +327,30 @@ def _table_key(name: Optional[str]) -> Optional[str]:
 
 
 def _flow_name(view: str) -> str:
-    """Derive the SDP flow name for a source view.
+    """The SDP flow name the framework derives for a source view.
 
     The legacy standard/materialized_view transformers name the flow
     ``f_{sourceViewName}`` verbatim (e.g. ``v_customer`` -> ``f_v_customer``),
-    so we prefix ``f_`` without stripping the view's ``v_`` prefix. Matching
-    the legacy name keeps the SDP flow (and its streaming checkpoint) stable
-    across migration.
+    so the ``f_`` prefix is added without stripping the view's ``v_`` prefix.
+    The nodespec transformer derives the identical name, so a migrated spec does
+    not need to restate it — this helper exists only for comparison/testing.
     """
     return f"f_{view}"
 
 
-def _input_flow(view: str, flow: Optional[str] = None) -> Dict[str, str]:
-    """A single ``input_flows`` entry.
+def _source_entry(view: str, flow: Optional[str] = None) -> Any:
+    """A single ``sources`` entry.
 
-    ``flow`` pins the SDP flow name. Preserve the *legacy* flow name when
-    migrating an existing spec: SDP keys a streaming flow's checkpoint by its
-    name, so renaming a flow resets the checkpoint and forces the source to be
-    re-streamed from the start (breaking lineage / forcing a full refresh on
-    existing pipelines). Flow specs pass the authored flow name explicitly;
-    standard/materialized_view specs fall back to the legacy ``f_{view}``.
+    Only emit an explicit flow name when the legacy spec *authored* one (flow
+    specs name their flows). Standard/materialized_view specs never named their
+    flow — the framework derived ``f_{sourceViewName}`` at runtime — so those
+    migrate to a bare view name and let the transformer derive the same name.
+    That keeps the SDP flow (and its streaming checkpoint) identical without
+    inventing a name the author never wrote.
     """
-    return {"view": view, "flow": flow or _flow_name(view)}
+    if flow is None or flow == _flow_name(view):
+        return view
+    return {"view": view, "flow": flow}
 
 
 def _is_historical_snapshot(spec: Dict) -> bool:
@@ -367,12 +369,12 @@ def _migrate_standard(spec: Dict) -> Dict:
     nodes: List[Dict] = []
     # Historical snapshots have no source node — the snapshot reads its
     # files/table directly via cdc_snapshot_settings.source, and the target
-    # takes no input_flows.
+    # takes no sources.
     if not _is_historical_snapshot(spec) and (spec.get("sourceViewName") or spec.get("sourceDetails")):
         source_id = spec.get("sourceViewName") or "v_source"
         nodes.append(_build_source_node(source_id, spec.get("sourceType", "delta"),
                                         spec.get("sourceDetails", {}), spec.get("mode", "stream")))
-        target_config["input_flows"] = [_input_flow(source_id)]
+        target_config["sources"] = [_source_entry(source_id)]
 
     target_name = target_config.get("table") or target_config.get("name") or "output"
     target_node: Dict[str, Any] = {"name": f"target_{target_name}", "node_type": "target"}
@@ -472,14 +474,14 @@ def _migrate_flow(spec: Dict) -> Dict:
         staging_tables = fg.get("stagingTables", {})
         flows = fg.get("flows", {})
 
-        # Staging tables -> target nodes (input_flows filled while processing flows).
+        # Staging tables -> target nodes (sources filled while processing flows).
         for stg_name, stg_config in staging_tables.items():
             target_id = f"target_{stg_name}"
             if target_id in node_ids:
                 continue
             node_ids.add(target_id)
             config = _build_target_config_from_staging(stg_name, stg_config)
-            config["input_flows"] = []
+            config["sources"] = []
             nodes.append({"name": target_id, "node_type": "target", "config": config})
 
         for flow_name, flow_config in flows.items():
@@ -578,8 +580,8 @@ def _migrate_flow(spec: Dict) -> Dict:
             target_key = _table_key(target_table)
             target_node = find_target_node(target_key)
             if target_node is not None:
-                target_node["config"].setdefault("input_flows", []).append(
-                    _input_flow(source_node_id, flow_name))
+                target_node["config"].setdefault("sources", []).append(
+                    _source_entry(source_node_id, flow_name))
             else:
                 # Main (spec-level) target (delta or sink).
                 target_id = f"target_{target_key}"
@@ -588,18 +590,18 @@ def _migrate_flow(spec: Dict) -> Dict:
                     main_config, target_type = _build_spec_target(spec)
                     if flow_details.get("once"):
                         main_config["once"] = True
-                    main_config["input_flows"] = [_input_flow(source_node_id, flow_name)]
+                    main_config["sources"] = [_source_entry(source_node_id, flow_name)]
                     main_node: Dict[str, Any] = {"name": target_id, "node_type": "target"}
                     if target_type != "delta":
                         main_node["target_type"] = target_type
                     main_node["config"] = main_config
                     nodes.append(main_node)
 
-    # Drop placeholder empty input_flows lists.
+    # Drop placeholder empty sources lists.
     for node in nodes:
         config = node.get("config", {})
-        if config.get("input_flows") == []:
-            del config["input_flows"]
+        if config.get("sources") == []:
+            del config["sources"]
 
     return _result_envelope(spec, nodes)
 
@@ -653,7 +655,7 @@ def _migrate_materialized_view(spec: Dict) -> Dict:
         _add_target_settings(target_config, mv_config)
 
         # MV source views are no longer inlined on the target: emit a source node
-        # and chain it into the MV via `input_flows`.
+        # and chain it into the MV via `sources`.
         source_view = _get(mv_config, "sourceView", "source_view")
         if isinstance(source_view, dict) and source_view:
             source_id = (source_view.get("sourceViewName")
@@ -673,7 +675,7 @@ def _migrate_materialized_view(spec: Dict) -> Dict:
             src_cfg.pop("cdf_enabled", None)
             src_cfg.pop("cdf_change_type_override", None)
             nodes.append(src_node)
-            target_config["input_flows"] = [_input_flow(source_id)]
+            target_config["sources"] = [_source_entry(source_id)]
 
         nodes.append({"name": f"target_{mv_name}", "node_type": "target", "config": target_config})
 
@@ -683,12 +685,30 @@ def _migrate_materialized_view(spec: Dict) -> Dict:
 # ─── Template specs ───────────────────────────────────────────────────────────
 
 def is_template_instantiation_spec(spec: Dict) -> bool:
-    """True for {template: <name>, parameterSets: [...]} main spec files."""
+    """True for {template: <name>, parameter_sets: [...]} main spec files."""
     return (
         isinstance(spec, dict)
         and isinstance(spec.get("template"), str)
-        and "parameterSets" in spec
+        and ("parameter_sets" in spec or "parameterSets" in spec)
     )
+
+
+def migrate_template_instantiation_spec(spec: Dict) -> Dict:
+    """Snake-case the framework key on a template instantiation spec.
+
+    Only the framework-owned ``parameterSets`` key is renamed to
+    ``parameter_sets``. The parameter sets themselves are user input (the values
+    passed into the template) and are copied through verbatim — their keys are
+    the template's parameter names and must not be touched, even when the author
+    wrote them in camelCase.
+    """
+    result: Dict[str, Any] = {}
+    for key, value in spec.items():
+        if key in ("parameterSets", "parameter_sets"):
+            result["parameter_sets"] = value
+        else:
+            result[key] = value
+    return result
 
 
 def is_template_definition(defn: Dict) -> bool:
@@ -804,6 +824,10 @@ def process_file(input_path: str, output_path: Optional[str] = None) -> Tuple[st
     spec = _load_spec_file(input_path)
 
     if is_template_instantiation_spec(spec):
+        if "parameterSets" in spec:
+            result = migrate_template_instantiation_spec(spec)
+            out = _ensure_output_file(input_path, output_path or input_path, result)
+            return out, "converted"
         return _ensure_output_file(input_path, output_path or input_path), "unchanged"
 
     spec_type = (spec.get("dataFlowType") or spec.get("data_flow_type") or "").lower()
@@ -881,7 +905,7 @@ def migrate_bundle(
         rel = spec_path.relative_to(bundle_root)
         if dry_run:
             spec = _load_spec_file(str(spec_path))
-            if is_template_instantiation_spec(spec):
+            if is_template_instantiation_spec(spec) and "parameterSets" not in spec:
                 print(f"  Would leave unchanged (template spec): {rel}")
                 stats["unchanged_files"] += 1
             else:

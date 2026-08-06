@@ -8,7 +8,7 @@
             "node_type": "target",
             "config": {
                 "table": "customer_ms_decomp_appnd",
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_customer",
                         "flow": "f_customer"
@@ -51,7 +51,8 @@
             "source_type": "delta",
             "config": {
                 "mode": "stream",
-                "table": "customer_ms_decomp_appnd"
+                "table": "customer_ms_decomp_appnd",
+                "as_view": false
             }
         },
         {
@@ -75,10 +76,10 @@
                     ],
                     "ignore_null_updates": true
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_customer_ms_decomp_appnd",
-                        "flow": "f_customer_ms_decomp_appnd"
+                        "flow": "f_merge"
                     }
                 ]
             }

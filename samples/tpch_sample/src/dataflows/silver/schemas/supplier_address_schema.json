@@ -1,9 +1,0 @@
-{
-    "type": "struct",
-    "fields": [
-        { "name": "supplier_key", "type": "long", "nullable": false, "metadata": {} },
-        { "name": "address", "type": "string", "nullable": true, "metadata": {} },
-        { "name": "nation_key", "type": "long", "nullable": true, "metadata": {} },
-        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} }
-    ]
-}

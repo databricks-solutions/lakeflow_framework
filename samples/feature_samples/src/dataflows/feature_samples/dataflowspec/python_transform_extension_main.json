@@ -27,11 +27,8 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "schema_path": "target/feature_python_function_transform_schema.json",
-                "input_flows": [
-                    {
-                        "view": "v_python_extension_transform",
-                        "flow": "f_python_extension_transform"
-                    }
+                "sources": [
+                    "v_python_extension_transform"
                 ]
             }
         }

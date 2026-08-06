@@ -107,10 +107,10 @@
                         "ignore_null_updates": false,
                         "apply_as_deletes": "is_delete = 1"
                     },
-                    "input_flows": [
+                    "sources": [
                         {
                             "view": "v_stg_${param.dataFlowId}_${param.sourceTable}",
-                            "flow": "f_stg_${param.dataFlowId}_${param.sourceTable}"
+                            "flow": "f_${param.dataFlowId}_${param.sourceTable}_merge_flow"
                         }
                     ]
                 }

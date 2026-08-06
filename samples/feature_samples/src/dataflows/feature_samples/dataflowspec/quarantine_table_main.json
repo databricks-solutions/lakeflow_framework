@@ -41,11 +41,8 @@
                         }
                     }
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer_address_feature_quarantine_table",
-                        "flow": "f_customer_address_feature_quarantine_table"
-                    }
+                "sources": [
+                    "v_customer_address_feature_quarantine_table"
                 ]
             }
         }

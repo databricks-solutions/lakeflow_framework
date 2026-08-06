@@ -37,11 +37,8 @@
                         "mode": "flag"
                     }
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer_address_feature_quarantine_flag",
-                        "flow": "f_customer_address_feature_quarantine_flag"
-                    }
+                "sources": [
+                    "v_customer_address_feature_quarantine_flag"
                 ]
             }
         }

@@ -24,11 +24,8 @@
                     "delta.enableChangeDataFeed": "true"
                 },
                 "schema_path": "target/feature_ddl_schema.ddl",
-                "input_flows": [
-                    {
-                        "view": "v_feature_constraints",
-                        "flow": "f_feature_constraints"
-                    }
+                "sources": [
+                    "v_feature_constraints"
                 ]
             }
         }

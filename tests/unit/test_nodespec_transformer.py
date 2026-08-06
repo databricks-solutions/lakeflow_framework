@@ -45,7 +45,7 @@ class TestNodespecStreaming:
                 "node_type": "target",
                 "config": {
                     "table": "customer_silver",
-                    "input_flows": [{"view": "v_source_customer", "flow": "f_load"}],
+                    "sources": [{"view": "v_source_customer", "flow": "f_load"}],
                 },
             },
         )
@@ -54,6 +54,31 @@ class TestNodespecStreaming:
         assert result["targetDetails"]["type"] == TableType.STREAMING
         flow = next(iter(result["flowGroups"][0]["flows"].values()))
         assert flow["flowType"] == FlowType.APPEND_VIEW
+
+
+class TestNodespecSourcesFlowNaming:
+    """A bare view name derives the flow name the framework itself would use
+    (``f_<view>``), so migrated specs need not restate a name the author never
+    wrote. An explicit {view, flow} pins an authored name."""
+
+    def _target(self, sources_value):
+        return _spec(
+            _source(),
+            {
+                "name": "target_customer",
+                "node_type": "target",
+                "config": {"table": "customer_silver", "sources": sources_value},
+            },
+        )
+
+    def test_bare_view_name_derives_legacy_flow_name(self, pipeline_context):
+        result = NodespecSpecTransformer().transform(self._target(["v_source_customer"]))
+        assert set(result["flowGroups"][0]["flows"]) == {"f_v_source_customer"}
+
+    def test_explicit_flow_name_is_preserved(self, pipeline_context):
+        result = NodespecSpecTransformer().transform(
+            self._target([{"view": "v_source_customer", "flow": "f_authored"}]))
+        assert set(result["flowGroups"][0]["flows"]) == {"f_authored"}
 
 
 class TestNodespecDataQuality:
@@ -66,7 +91,7 @@ class TestNodespecDataQuality:
                 "config": {
                     "table": "customer_silver",
                     "data_quality": data_quality,
-                    "input_flows": [{"view": "v_source_customer", "flow": "f_load"}],
+                    "sources": [{"view": "v_source_customer", "flow": "f_load"}],
                 },
             },
         )
@@ -130,7 +155,7 @@ class TestNodespecMaterializedView:
                 "config": {
                     "table": "customer_summary_mv",
                     "table_type": "mv",
-                    "input_flows": [{"view": "v_mv_source", "flow": "f_mv_load"}],
+                    "sources": [{"view": "v_mv_source", "flow": "f_mv_load"}],
                 },
             },
         )
@@ -141,6 +166,61 @@ class TestNodespecMaterializedView:
         ]
         assert len(mv_specs) == 1
         assert mv_specs[0]["targetDetails"]["table"] == "customer_summary_mv"
+
+
+class TestNodespecSnapshotFlows:
+    """Snapshot targets read their source directly; the SDP snapshot API takes no
+    flow name, so we must not synthesize a differently-named flow for a *staging*
+    snapshot (the runtime builds it from the staging table's own settings)."""
+
+    _SNAP = {
+        "keys": ["id"], "scd_type": "1", "snapshot_type": "historical",
+        "source_type": "file", "source": {"format": "csv", "path": "/data/s_{version}.csv"},
+    }
+
+    def test_terminal_historical_snapshot_keeps_its_flow(self, pipeline_context):
+        spec = _spec({
+            "name": "target_dim",
+            "node_type": "target",
+            "config": {"database": "db", "table": "dim", "cdc_snapshot_settings": self._SNAP},
+        })
+        result = NodespecSpecTransformer().transform(spec)
+        flows = result["flowGroups"][0]["flows"]
+        # terminal snapshot target needs a flow entry to drive the runtime
+        assert len(flows) == 1
+        assert next(iter(flows.values()))["flowDetails"]["targetTable"] == "db.dim"
+
+    def test_staging_snapshot_emits_no_synthetic_flow(self, pipeline_context):
+        # staging snapshot target (feeds the terminal target) + an append into the
+        # terminal target. The staging snapshot must NOT get its own synthesized
+        # flow — only the authored append flow should appear.
+        spec = _spec(
+            {
+                "name": "target_stg",
+                "node_type": "target",
+                "config": {"table": "stg", "cdc_snapshot_settings": self._SNAP},
+            },
+            {
+                "name": "v_stg_read",
+                "node_type": "source",
+                "source_type": "delta",
+                "config": {"mode": "stream", "table": "stg", "as_view": False},
+            },
+            {
+                "name": "target_final",
+                "node_type": "target",
+                "config": {
+                    "database": "db", "table": "final",
+                    "sources": [{"view": "v_stg_read", "flow": "f_stg_append"}],
+                },
+            },
+        )
+        result = NodespecSpecTransformer().transform(spec)
+        fg = result["flowGroups"][0]
+        # staging table is still registered (runtime drives its snapshot flow)
+        assert "stg" in (fg.get("stagingTables") or {})
+        # only the authored append flow — no f_historical_snapshot_for_stg
+        assert set(fg["flows"]) == {"f_stg_append"}
 
 
 class TestNodespecFactory:

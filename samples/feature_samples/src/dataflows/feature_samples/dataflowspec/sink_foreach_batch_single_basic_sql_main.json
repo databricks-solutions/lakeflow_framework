@@ -29,11 +29,8 @@
                         "delta.enableChangeDataFeed": "true"
                     }
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer_purchase_basic_sql",
-                        "flow": "f_customer_purchase_basic_sql"
-                    }
+                "sources": [
+                    "v_customer_purchase_basic_sql"
                 ]
             }
         }

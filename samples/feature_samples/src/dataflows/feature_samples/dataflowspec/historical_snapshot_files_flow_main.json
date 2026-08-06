@@ -74,10 +74,10 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_historical_files_snapshot_append",
-                        "flow": "f_historical_files_snapshot_append"
+                        "flow": "f_historical_files_snapshot_append_flow"
                     }
                 ]
             }

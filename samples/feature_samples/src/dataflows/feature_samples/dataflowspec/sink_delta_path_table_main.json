@@ -23,11 +23,8 @@
                 "sink_options": {
                     "path": "{staging_volume}/feature_sink_delta_path_table"
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer_delta_sink_path_table",
-                        "flow": "f_customer_delta_sink_path_table"
-                    }
+                "sources": [
+                    "v_customer_delta_sink_path_table"
                 ]
             }
         }

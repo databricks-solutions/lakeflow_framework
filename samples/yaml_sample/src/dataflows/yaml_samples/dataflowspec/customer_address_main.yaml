@@ -24,6 +24,5 @@ nodes:
         mode: table
         target:
           target_format: delta
-    input_flows:
-    - view: v_customer_address
-      flow: f_v_customer_address
+    sources:
+    - v_customer_address

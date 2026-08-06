@@ -23,11 +23,8 @@
                 "sink_options": {
                     "table_name": "{feature_schema}.feature_sink_delta_uc_table"
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer_delta_sink_uc_table",
-                        "flow": "f_customer_delta_sink_uc_table"
-                    }
+                "sources": [
+                    "v_customer_delta_sink_uc_table"
                 ]
             }
         }

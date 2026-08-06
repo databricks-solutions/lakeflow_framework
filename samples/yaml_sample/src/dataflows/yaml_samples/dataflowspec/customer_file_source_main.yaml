@@ -32,6 +32,5 @@ nodes:
       where: ''
       ignore_null_updates: false
       scd_type: '1'
-    input_flows:
-    - view: v_customer_files
-      flow: f_v_customer_files
+    sources:
+    - v_customer_files

@@ -47,11 +47,8 @@
                     "apply_as_deletes": "cdc_change_type = 'delete'",
                     "ignore_null_updates": false
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer_snapshot_source",
-                        "flow": "f_customer_snapshot_source"
-                    }
+                "sources": [
+                    "v_customer_snapshot_source"
                 ]
             }
         }

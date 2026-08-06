@@ -8,7 +8,7 @@
             "node_type": "target",
             "config": {
                 "table": "stream_static_stg_customer_json_appnd_keys",
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_dim_customer_json",
                         "flow": "f_stream_static_dim_customer_json"
@@ -42,10 +42,10 @@
                     "track_history_column_list": [],
                     "track_history_except_column_list": []
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_stg_customer_json_appnd_keys",
-                        "flow": "f_stream_static_stg_customer_json_appnd_keys"
+                        "flow": "f_stream_static_dim_customer_json_merge_keys"
                     }
                 ]
             }
@@ -86,7 +86,8 @@
             "source_type": "delta",
             "config": {
                 "mode": "stream",
-                "table": "stream_static_stg_customer_json_appnd_keys"
+                "table": "stream_static_stg_customer_json_appnd_keys",
+                "as_view": false
             }
         },
         {
@@ -161,10 +162,10 @@
                     "ignore_null_updates": true,
                     "apply_as_deletes": "DELETE_FLAG = 1"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_dim_customer_json_transform",
-                        "flow": "f_stream_static_dim_customer_json_transform"
+                        "flow": "f_stream_static_dim_customer_json_target"
                     }
                 ]
             }

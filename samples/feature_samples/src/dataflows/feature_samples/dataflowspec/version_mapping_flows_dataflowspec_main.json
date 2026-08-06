@@ -19,10 +19,10 @@
                     "ignore_null_updates": true,
                     "scd_type": "1"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_flows_version_mapping",
-                        "flow": "f_flows_version_mapping"
+                        "flow": "f_version_mapping_merge"
                     }
                 ]
             }
@@ -68,10 +68,10 @@
                     "ignore_null_updates": false,
                     "scd_type": "1"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_version_mapping_final",
-                        "flow": "f_version_mapping_final"
+                        "flow": "f_target"
                     }
                 ]
             }

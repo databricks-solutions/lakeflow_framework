@@ -16,6 +16,6 @@ nodes:
     table: append_view_flow
     table_properties:
       delta.enableChangeDataFeed: 'true'
-    input_flows:
+    sources:
     - view: v_append_view_flow
       flow: f_customer_append_view

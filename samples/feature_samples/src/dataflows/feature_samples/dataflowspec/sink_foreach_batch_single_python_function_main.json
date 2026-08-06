@@ -29,11 +29,8 @@
                         "staging_volume": "{staging_volume}"
                     }
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer_purchase_python_function",
-                        "flow": "f_customer_purchase_python_function"
-                    }
+                "sources": [
+                    "v_customer_purchase_python_function"
                 ]
             }
         }

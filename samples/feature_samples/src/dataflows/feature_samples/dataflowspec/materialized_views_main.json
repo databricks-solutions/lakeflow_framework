@@ -19,11 +19,8 @@
             "config": {
                 "table": "mv_source_view",
                 "table_type": "mv",
-                "input_flows": [
-                    {
-                        "view": "v_mv_source_view",
-                        "flow": "f_mv_source_view"
-                    }
+                "sources": [
+                    "v_mv_source_view"
                 ]
             }
         },

@@ -44,10 +44,10 @@
                     "ignore_null_updates": true,
                     "apply_as_deletes": "DELETE_FLAG = 1"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_final_transform",
-                        "flow": "f_final_transform"
+                        "flow": "f_target"
                     }
                 ]
             }

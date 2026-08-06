@@ -26,11 +26,8 @@
                 "table_properties": {
                     "delta.enableChangeDataFeed": "true"
                 },
-                "input_flows": [
-                    {
-                        "view": "v_topic_1",
-                        "flow": "f_topic_1"
-                    }
+                "sources": [
+                    "v_topic_1"
                 ]
             }
         }

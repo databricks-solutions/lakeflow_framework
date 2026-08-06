@@ -24,6 +24,10 @@ _SCHEMA_ROOT = Path("src") / "lakeflow_framework" / "schemas"
 
 class TestDetectSpecForm:
     def test_template_form_when_both_keys_present(self):
+        data = {"template": "my_template", "parameter_sets": [{"dataFlowId": "x"}]}
+        assert vd.detect_spec_form(data) == vd.SPEC_FORM_TEMPLATE
+
+    def test_template_form_with_legacy_camelcase_key(self):
         data = {"template": "my_template", "parameterSets": [{"dataFlowId": "x"}]}
         assert vd.detect_spec_form(data) == vd.SPEC_FORM_TEMPLATE
 

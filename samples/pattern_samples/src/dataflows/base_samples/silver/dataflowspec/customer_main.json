@@ -36,11 +36,8 @@
                     "ignore_null_updates": false,
                     "apply_as_deletes": "DELETE_FLAG = 1"
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer",
-                        "flow": "f_customer"
-                    }
+                "sources": [
+                    "v_customer"
                 ]
             }
         }

@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "https://dlt-framework/schemas/spec_nodespec.json",
     "title": "Nodespec Dataflow Specification",
-    "description": "Node-based dataflow spec (snake_case). A node's `config` is discriminated by node_type + source_type/target_type/table_type so editors offer only the fields valid for that node. Feature bundles (cdc, snapshot, data_quality, migration) are single nested objects; quarantine nests under data_quality. Targets declare their inputs via `input_flows`. Sink targets keep their current flat form for now (sink redesign deferred).",
+    "description": "Node-based dataflow spec (snake_case). A node's `config` is discriminated by node_type + source_type/target_type/table_type so editors offer only the fields valid for that node. Feature bundles (cdc, snapshot, data_quality, migration) are single nested objects; quarantine nests under data_quality. Targets declare their inputs via `sources`. Sink targets keep their current flat form for now (sink redesign deferred).",
     "$comment": "A node's `config` is discriminated at the node level via allOf/if-then keyed on node_type + source_type/target_type/table_type; each `then` selects one closed config $def, so editors offer only the fields valid for that node. Nested blobs are typed objects with descriptions. Sink targets keep their current flat form (sink_type/sink_config/sink_options) pending the sink redesign. Legacy definitions_sources.json / definitions_targets.json are camelCase; nodespec is snake_case, so source/target detail shapes are re-declared here. Literal Spark option keys (cloudFiles.*, kafka.*) are preserved verbatim.",
     "$defs": {
         "nodespec_spec": {
@@ -329,9 +329,9 @@
 
         "target_delta_config": {
             "type": "object",
-            "description": "Delta target (target_type=delta). A streaming table by default; set table_type=mv for a materialized view (then supply sql_path/sql_statement or an input_flows source).",
+            "description": "Delta target (target_type=delta). A streaming table by default; set table_type=mv for a materialized view (then supply sql_path/sql_statement or a `sources` entry).",
             "properties": {
-                "input_flows": {"$ref": "#/$defs/input_flows"},
+                "sources": {"$ref": "#/$defs/sources"},
                 "table": {"type": "string", "description": "Target table name."},
                 "database": {"type": "string", "description": "Target schema/database."},
                 "table_type": {"type": "string", "enum": ["st", "mv"], "default": "st", "description": "st (streaming table) or mv (materialized view). Default: st."},
@@ -387,7 +387,7 @@
             "type": "object",
             "description": "Sink target (target_type = delta_sink / kafka_sink / foreach_batch_sink / custom_python_sink). NOTE: the sink redesign is DEFERRED — sink fields remain in their current flat form (sink_type / sink_config / sink_options) rather than a nested `sink` object. Revisit when the sink redesign is taken up.",
             "properties": {
-                "input_flows": {"$ref": "#/$defs/input_flows"},
+                "sources": {"$ref": "#/$defs/sources"},
                 "name": {"type": "string", "description": "Sink name."},
                 "sink_type": {"type": "string", "description": "Sink sub-type, e.g. basic_sql or python_function (foreach_batch_sink)."},
                 "sink_config": {"type": "object", "additionalProperties": true, "description": "Sink-specific configuration (e.g. sql_path, function_path, tokens)."},
@@ -396,12 +396,12 @@
             "additionalProperties": false
         },
 
-        "input_flows": {
+        "sources": {
             "type": "array",
-            "description": "Upstream views feeding this target. Each item is a node name (flow auto-named) or {view, flow} to pin the SDP flow name.",
+            "description": "Upstream views feeding this target. Each item is a node name (the SDP flow name is derived as f_<view>, matching what the framework names it) or {view, flow} to pin an explicitly-authored flow name.",
             "items": {
                 "oneOf": [
-                    {"type": "string", "description": "Upstream node name; SDP flow name auto-generated."},
+                    {"type": "string", "description": "Upstream node name; the SDP flow name is derived as f_<view> (same as the framework)."},
                     {
                         "type": "object",
                         "properties": {

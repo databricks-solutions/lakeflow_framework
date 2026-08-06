@@ -1,17 +1,22 @@
-Creating a Nodespec Data Flow Spec Reference
-############################################
+Creating a Data Flow Spec
+#########################
 
-The **Nodespec** Data Flow Spec describes a pipeline as a graph of nodes that
-chain together:
+.. tip::
+
+   Looking for the ``standard``, ``flow``, or ``materialized_view`` formats?
+   See :doc:`/build/spec-reference/legacy`. Those formats remain supported, but
+   the node-based spec on this page is the recommended default for new work.
+
+A Data Flow Spec describes a pipeline as a graph of nodes that chain together:
 
 .. code-block:: text
 
    source  ->  transformation  ->  target
 
-Instead of the target-table-driven layout of the standard and flow specs, a
-Nodespec spec is a flat list of nodes that reads top-to-bottom in the order the
-data flows. The framework converts a Nodespec spec into its internal flow-based
-format at build time, so every existing capability (CDC, data quality,
+This node-based format (referred to as the **nodespec** spec type internally) is
+the framework's default. A spec is a flat list of nodes that reads top-to-bottom
+in the order the data flows. The framework converts it into its internal
+flow-based format at build time, so every existing capability (CDC, data quality,
 quarantine, snapshots, table migration, sinks, materialized views) is available.
 
 Key concepts
@@ -26,18 +31,18 @@ There are three node types:
   (CDC, data quality, quarantine, clustering, and so on).
 
 **How nodes connect.** A *target* node declares what feeds it through an explicit
-``input_flows`` list. *Source* and *transformation* nodes are wired by explicit
+``sources`` list. *Source* and *transformation* nodes are wired by explicit
 reference inside their own definition: a SQL transformation names the view it
 reads in its SQL (for example ``FROM STREAM(live.v_source_customer)``), and a
-source names the table, path, or stream it reads. The ``input_flows`` list is
+source names the table, path, or stream it reads. The ``sources`` list is
 therefore a target-node construct.
 
-**Casing.** Nodespec specs use ``snake_case`` field names.
+**Casing.** These specs use ``snake_case`` field names.
 
 **Field order.** Within a node's ``config``, fields are written in a consistent
 order — identity (``table``/``database``), then table/structural details, then
 feature blocks (``cdc_settings``, ``data_quality`` — with quarantine nested
-inside it — ``table_migration``), and finally ``input_flows``. The order is
+inside it — ``table_migration``), and finally ``sources``. The order is
 conventional only; it does not affect behavior.
 
 Example: simple data flow
@@ -69,7 +74,7 @@ The simplest spec connects a source to a target:
                "config": {
                    "table": "customer_silver",
                    "cluster_by_auto": true,
-                   "input_flows": [
+                   "sources": [
                        { "view": "v_source_customer", "flow": "f_customer_ingest" }
                    ]
                }
@@ -85,7 +90,7 @@ Example: multi-step transformation and CDC
 ==========================================
 
 Chaining a transformation into a CDC target. The SQL transformation names the
-view it reads; the target lists the transformation in its ``input_flows``:
+view it reads; the target lists the transformation in its ``sources``:
 
 .. code-block:: json
 
@@ -120,7 +125,7 @@ view it reads; the target lists the transformation in its ``input_flows``:
                        "scd_type": "2",
                        "ignore_null_updates": true
                    },
-                   "input_flows": ["v_enrich"]
+                   "sources": ["v_enrich"]
                }
            }
        ]
@@ -347,12 +352,13 @@ Target node configuration
    * - **table_migration** (*optional*)
      - ``object``
      - Table migration configuration.
-   * - **input_flows**
+   * - **sources**
      - ``array``
      - What feeds this target. Each item is either an upstream node name
-       (``string``, flow name auto-generated) or an object
-       ``{ "view": <node name>, "flow": <flow name> }`` that sets the flow name.
-       Conventionally written last in the config.
+       (``string``) — the flow name is then derived as ``f_<node name>``, the same
+       name the framework itself uses — or an object
+       ``{ "view": <node name>, "flow": <flow name> }`` to pin an explicit flow
+       name. Conventionally written last in the config.
 
 .. note::
    Which fields are valid depends on ``table_type``. Streaming-table settings
@@ -372,17 +378,19 @@ fields instead of the delta-table fields: ``name``, ``sink_type`` (sink sub-type
 e.g. ``basic_sql`` / ``python_function`` for ``foreach_batch_sink``),
 ``sink_config`` (sink-specific configuration), and ``sink_options`` (e.g.
 ``table_name``/``path`` for a delta sink, or Kafka connection options), plus
-``input_flows``.
+``sources``.
 
 Defining flow names
 -------------------
 
-By default the framework derives a flow name from the graph, so simple specs stay
-simple. Use the object form of ``input_flows`` to set a flow name explicitly:
+By default the flow name is derived as ``f_<node name>`` — exactly the name the
+framework generates internally and passes to SDP — so simple specs stay simple and
+do not need to restate it. Use the object form of ``sources`` only when you need a
+specific flow name (for example one that was authored in a legacy flow spec):
 
 .. code-block:: json
 
-   "input_flows": [
+   "sources": [
        "v_source_a",
        { "view": "v_source_b", "flow": "f_append_b" }
    ]
@@ -401,7 +409,7 @@ modes, set via ``snapshot_type``:
   ``source_type`` (``file`` or ``table``) and a ``source`` object. No source node
   is required; the framework reads the files/table directly.
 - **periodic** — the target reads from an upstream **source node** chained via
-  ``input_flows``; ``source_type`` / ``source`` are not used.
+  ``sources``; ``source_type`` / ``source`` are not used.
 
 For historical snapshots the ``source`` object fields depend on ``source_type``:
 
@@ -488,7 +496,7 @@ by inline SQL or by chaining a source node into it:
        }
    }
 
-To feed a materialized view from a source node, chain it via ``input_flows`` (an
+To feed a materialized view from a source node, chain it via ``sources`` (an
 inline ``source_view`` on the target is **not** supported):
 
 .. code-block:: json
@@ -505,7 +513,7 @@ inline ``source_view`` on the target is **not** supported):
        "config": {
            "table": "customer_mv",
            "table_type": "mv",
-           "input_flows": ["v_mv_source"]
+           "sources": ["v_mv_source"]
        }
    }
 
@@ -524,7 +532,7 @@ How Nodespec specs are converted
 3. Source nodes become views; an internal source (one that reads a table produced
    by a target in the same spec) references that table directly.
 4. Transformation nodes become SQL or Python views.
-5. Each ``input_flows`` entry becomes a flow into its target. The flow type is
+5. Each ``sources`` entry becomes a flow into its target. The flow type is
    ``merge`` when the target has CDC, otherwise ``append_view`` (or ``append_sql``
    for an inline SQL source).
 6. Each ``table_type: "mv"`` target becomes its own materialized-view flow spec.

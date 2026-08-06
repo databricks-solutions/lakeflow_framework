@@ -6,6 +6,16 @@
     "type": "object",
     "properties": {
         "template": {"type": "string"},
+        "parameter_sets": {"$ref": "#/definitions/parameterSets"},
+        "parameterSets": {"$ref": "#/definitions/parameterSets"}
+    },
+    "required": ["template"],
+    "oneOf": [
+        {"required": ["parameter_sets"]},
+        {"required": ["parameterSets"]}
+    ],
+    "additionalProperties": false,
+    "definitions": {
         "parameterSets": {
             "type": "array",
             "items": {
@@ -19,7 +29,5 @@
             },
             "minItems": 1
         }
-    },
-    "required": ["template", "parameterSets"],
-    "additionalProperties": false
+    }
 }

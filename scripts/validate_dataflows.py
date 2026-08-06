@@ -100,13 +100,15 @@ def find_dataflow_files(search_path: Path) -> List[Path]:
 
 # Spec form detection — top-level shape of a *_main.json determines which
 # schema to validate against.
-SPEC_FORM_TEMPLATE = "template"   # { "template": "...", "parameterSets": [...] }
+SPEC_FORM_TEMPLATE = "template"   # { "template": "...", "parameter_sets": [...] }
 SPEC_FORM_EXPANDED = "expanded"   # { "dataFlowId": ..., "dataFlowType": ..., ... }
 
 
 def detect_spec_form(data: Dict) -> str:
     """Infer whether a dataflow spec is template-instantiating or expanded form."""
-    if isinstance(data, dict) and "template" in data and "parameterSets" in data:
+    if isinstance(data, dict) and "template" in data and (
+        "parameter_sets" in data or "parameterSets" in data
+    ):
         return SPEC_FORM_TEMPLATE
     return SPEC_FORM_EXPANDED
 

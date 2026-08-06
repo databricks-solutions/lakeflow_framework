@@ -19,11 +19,8 @@
             "config": {
                 "table": "mv_library_cluster_install",
                 "table_type": "mv",
-                "input_flows": [
-                    {
-                        "view": "v_library_cluster_install",
-                        "flow": "f_library_cluster_install"
-                    }
+                "sources": [
+                    "v_library_cluster_install"
                 ]
             }
         }

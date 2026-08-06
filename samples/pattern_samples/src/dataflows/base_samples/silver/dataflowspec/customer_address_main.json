@@ -36,11 +36,8 @@
                     ],
                     "ignore_null_updates": false
                 },
-                "input_flows": [
-                    {
-                        "view": "v_customer_address",
-                        "flow": "f_customer_address"
-                    }
+                "sources": [
+                    "v_customer_address"
                 ]
             }
         }

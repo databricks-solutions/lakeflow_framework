@@ -64,7 +64,7 @@
                     "ignore_null_updates": false,
                     "apply_as_deletes": "DELETE_FLAG = 1"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_customer_basic",
                         "flow": "f_stream_static_customer_basic"

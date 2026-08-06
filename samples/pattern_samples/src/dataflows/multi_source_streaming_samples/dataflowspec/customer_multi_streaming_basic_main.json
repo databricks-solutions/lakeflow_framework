@@ -8,7 +8,7 @@
             "node_type": "target",
             "config": {
                 "table": "customer_ms_basic_appnd",
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_customer",
                         "flow": "f_customer"
@@ -37,10 +37,10 @@
                     "ignore_null_updates": true,
                     "scd_type": "2"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_customer_ms_basic_appnd",
-                        "flow": "f_customer_ms_basic_appnd"
+                        "flow": "f_merge"
                     }
                 ]
             }
@@ -73,7 +73,8 @@
             "source_type": "delta",
             "config": {
                 "mode": "stream",
-                "table": "customer_ms_basic_appnd"
+                "table": "customer_ms_basic_appnd",
+                "as_view": false
             }
         },
         {
@@ -121,10 +122,10 @@
                     "ignore_null_updates": false,
                     "apply_as_deletes": "DELETE_FLAG = true"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_final_transform",
-                        "flow": "f_final_transform"
+                        "flow": "f_target"
                     }
                 ]
             }

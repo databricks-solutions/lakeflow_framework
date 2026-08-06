@@ -17,6 +17,5 @@ nodes:
     table_properties:
       delta.enableChangeDataFeed: 'true'
     schema_path: customer_schema.json
-    input_flows:
-    - view: v_customer
-      flow: f_v_customer
+    sources:
+    - v_customer

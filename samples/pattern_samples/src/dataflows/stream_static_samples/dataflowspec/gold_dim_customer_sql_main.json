@@ -8,7 +8,7 @@
             "node_type": "target",
             "config": {
                 "table": "stream_static_stg_customer_sql_appnd_keys",
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_dim_customer_sql",
                         "flow": "f_stream_static_dim_customer_sql"
@@ -38,10 +38,10 @@
                         "__START_AT"
                     ]
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_stg_customer_sql_appnd_keys",
-                        "flow": "f_stream_static_stg_customer_sql_appnd_keys"
+                        "flow": "f_stream_static_dim_customer_sql_merge_keys"
                     }
                 ]
             }
@@ -82,7 +82,8 @@
             "source_type": "delta",
             "config": {
                 "mode": "stream",
-                "table": "stream_static_stg_customer_sql_appnd_keys"
+                "table": "stream_static_stg_customer_sql_appnd_keys",
+                "as_view": false
             }
         },
         {
@@ -125,10 +126,10 @@
                     "ignore_null_updates": true,
                     "apply_as_deletes": "DELETE_FLAG = 1"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_dim_customer_sql_transform",
-                        "flow": "f_stream_static_dim_customer_sql_transform"
+                        "flow": "f_stream_static_dim_customer_sql_target"
                     }
                 ]
             }

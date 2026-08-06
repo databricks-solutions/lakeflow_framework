@@ -11,7 +11,7 @@ spec returns a list.
 
 The snake_case -> camelCase translation is centralised: one global key map
 (``_KEYS``) plus ``_camel`` (flat) / ``_deep_camel`` (nested blobs). Each builder
-copies every config key that isn't "structural" (``_HANDLED`` — input_flows,
+copies every config key that isn't "structural" (``_HANDLED`` — sources,
 cdc_*, data_quality, quarantine, sink_*, ...); everything else is passthrough
 table/source detail.
 """
@@ -49,7 +49,7 @@ _KEYS = {
 
 # Keys a target config handles specially, so they are NOT copied into details.
 _HANDLED = {
-    "input_flows", "table", "table_type", "enabled", "once", "name",
+    "sources", "table", "table_type", "enabled", "once", "name",
     "cdc_settings", "cdc_snapshot_settings",
     "data_quality", "table_migration",
     "sink_type", "sink_config", "sink_options", "source_view",
@@ -167,7 +167,7 @@ class NodespecSpecTransformer(BaseSpecTransformer):
                 raise ValueError(
                     f"Materialized view target '{t.get('name')}' defines an inline 'source_view'. "
                     "This is no longer supported. Declare a source node and chain it into the "
-                    "materialized view target via its 'input_flows' array instead.")
+                    "materialized view target via its 'sources' array instead.")
         if not targets:
             raise ValueError("Nodespec spec must contain at least one target node")
 
@@ -180,9 +180,14 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     # -- inputs --
 
     def _inputs(self, node: Dict) -> List[Tuple[Optional[str], str]]:
-        """``input_flows`` items as (flow_name, view_name); strings auto-name the flow."""
+        """``sources`` items as (flow_name, view_name).
+
+        Each entry is either a plain view name (the flow name is then derived,
+        matching what the runtime would have named it) or a ``{view, flow}``
+        object when the flow name was explicitly authored.
+        """
         pairs = []
-        for item in node.get("config", {}).get("input_flows", []) or []:
+        for item in node.get("config", {}).get("sources", []) or []:
             if isinstance(item, dict) and item.get("view"):
                 pairs.append((item.get("flow"), item["view"]))
             elif not isinstance(item, dict):
@@ -317,21 +322,35 @@ class NodespecSpecTransformer(BaseSpecTransformer):
 
         if not inputs:  # only valid for snapshot CDC targets (snapshot reads its source directly)
             snap = cfg.get("cdc_snapshot_settings") or {}
-            if snap:
-                # A historical snapshot reads its files/table directly (no input
-                # flow). Name the flow to match the legacy standard transformer
-                # (`f_historical_snapshot_for_<qualified target>`) so the SDP
-                # flow — and its checkpoint — stay stable across migration.
-                # Periodic snapshots keep the auto-generated per-target name.
-                if snap.get("snapshot_type") == "historical":
-                    flow_key = f"{self.FLOW_PREFIX}historical_snapshot_for_{target_ref}"
-                else:
-                    flow_key = f"{self.FLOW_PREFIX}{name}_{counter}"
-                group["flows"][flow_key] = {
-                    "flowType": FlowType.MERGE, "flowDetails": {"targetTable": target_ref}, "enabled": enabled}
-                counter += 1
-            else:
+            if not snap:
                 self.logger.warning(f"Target '{name}' has no inputs, skipping")
+                return counter
+
+            # A snapshot target reads its source directly — the SDP
+            # `create_auto_cdc_from_snapshot_flow` API is self-contained and takes
+            # no flow name (and the framework never passes one), so SDP always
+            # names the flow after its target table. It therefore has no incoming
+            # flow to model.
+            #
+            # For a *staging* (non-terminal) snapshot target the runtime builds
+            # the snapshot flow directly from the staging table's own
+            # ``cdcSnapshotSettings`` (see DataFlow._create_flow_group), so we must
+            # NOT synthesize a flow here — doing so would fabricate a second,
+            # differently-named flow that the legacy path never had. The staging
+            # table (with its settings) is already registered by ``_flow_group``.
+            if target is not spec_target:
+                return counter
+
+            # The terminal (spec) target still needs a flow entry to drive the
+            # runtime's snapshot flow creation. The flow name is cosmetic (SDP
+            # ignores it for snapshots), but keep it stable / descriptive.
+            if snap.get("snapshot_type") == "historical":
+                flow_key = f"{self.FLOW_PREFIX}historical_snapshot_for_{target_ref}"
+            else:
+                flow_key = f"{self.FLOW_PREFIX}{name}_{counter}"
+            group["flows"][flow_key] = {
+                "flowType": FlowType.MERGE, "flowDetails": {"targetTable": target_ref}, "enabled": enabled}
+            counter += 1
             return counter
 
         merge = bool(cfg.get("cdc_settings") or (has_cdc and target is spec_target))
@@ -339,7 +358,18 @@ class NodespecSpecTransformer(BaseSpecTransformer):
             node = self.lookup.get(view, {})
             sql_source = node.get("node_type", "").lower() == self.SOURCE and node.get("source_type") == "sql"
             ftype = FlowType.MERGE if merge else (FlowType.APPEND_SQL if sql_source else FlowType.APPEND_VIEW)
-            key = flow_name or f"{self.FLOW_PREFIX}{view}_{counter}"
+            # An unnamed source derives the same flow name the legacy
+            # standard/materialized_view transformers produced: ``f_<view>``
+            # (e.g. ``v_customer`` -> ``f_v_customer``). That name is what the
+            # runtime passes to SDP (``dp.append_flow(name=...)`` /
+            # ``create_auto_cdc_flow(flow_name=...)``) and SDP keys a streaming
+            # flow's checkpoint by it, so deriving it — rather than requiring it
+            # to be spelled out — keeps lineage stable without the spec having to
+            # restate a name the author never wrote. Only fall back to a
+            # counter-suffixed name if that would collide.
+            key = flow_name or f"{self.FLOW_PREFIX}{view}"
+            if not flow_name and key in group["flows"]:
+                key = f"{self.FLOW_PREFIX}{view}_{counter}"
             counter += 1
 
             if ftype == FlowType.APPEND_SQL:
@@ -390,7 +420,9 @@ class NodespecSpecTransformer(BaseSpecTransformer):
                     for v in views.values():
                         v["mode"] = Mode.BATCH  # MVs use batch reads (spark.sql)
                     flow["views"] = views
-                group["flows"][flow_name or f"{self.FLOW_PREFIX}{mv}"] = flow
+                # Unnamed: derive `f_<view>` — the same name the legacy
+                # materialized_view transformer used (f_{sourceViewName}).
+                group["flows"][flow_name or f"{self.FLOW_PREFIX}{view}"] = flow
         spec["flowGroups"] = [group]
         return spec
 

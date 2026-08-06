@@ -8,7 +8,7 @@
             "node_type": "target",
             "config": {
                 "table": "stream_static_stg_customer_streaming_dwh_appnd_keys",
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_customer_streaming_dwh",
                         "flow": "f_stream_static_customer_streaming_dwh"
@@ -39,10 +39,10 @@
                         "LOAD_TIMESTAMP"
                     ]
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_stg_customer_streaming_dwh_appnd_keys",
-                        "flow": "f_stream_static_stg_customer_streaming_dwh_appnd_keys"
+                        "flow": "f_stream_static_customer_streaming_dwh_merge_keys"
                     }
                 ]
             }
@@ -83,7 +83,8 @@
             "source_type": "delta",
             "config": {
                 "mode": "stream",
-                "table": "stream_static_stg_customer_streaming_dwh_appnd_keys"
+                "table": "stream_static_stg_customer_streaming_dwh_appnd_keys",
+                "as_view": false
             }
         },
         {
@@ -158,10 +159,10 @@
                     "ignore_null_updates": false,
                     "apply_as_deletes": "DELETE_FLAG = 1"
                 },
-                "input_flows": [
+                "sources": [
                     {
                         "view": "v_stream_static_customer_streaming_dwh_transform",
-                        "flow": "f_stream_static_customer_streaming_dwh_transform"
+                        "flow": "f_stream_static_customer_streaming_dwh_target"
                     }
                 ]
             }
