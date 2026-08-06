@@ -2,15 +2,15 @@
 
 > **Deprecation notice**
 >
-> The bundles in this directory use **legacy dataflow spec formats** (`standard`,
-> `flow`, and `materialized_view`). These have been superseded by the unified
-> **`nodespec`** dataflow spec introduced in **v0.22.0** (see
+> The bundles in this directory use the **legacy dataflow spec formats**
+> (`standard`, `flow`, and `materialized_view`). These are superseded by the
+> unified **`nodespec`** dataflow spec (see
 > [ADR-0010: A unified, node-based dataflow spec](../docs/decisions/0010-unified-nodespec-dataflow-spec.md)).
 >
-> Legacy formats remain supported for now, but **this directory will be removed in
-> v1.0.0**. For new work, use the equivalent bundles under [`../samples/`](../samples/)
-> (for example `feature_samples`, `pattern_samples`, and `tpch_sample`), which are
-> written in `nodespec` format.
+> The legacy formats remain supported, but this directory is kept only as a
+> reference for migrating existing pipelines. For new work, use the equivalent
+> bundles under [`../samples/`](../samples/) (for example `feature_samples`,
+> `pattern_samples`, and `tpch_sample`), which are written in `nodespec` format.
 >
 > To migrate existing specs, use [`scripts/migrate_to_nodespec.py`](../scripts/migrate_to_nodespec.py).
 
@@ -18,9 +18,9 @@ The Framework comes with extensive samples that demonstrate the use of the frame
 
 | Bundle | Description |
 |--------|-------------|
-| **`feature-samples`** | Demonstrates every framework feature in isolation using a single `{namespace}_feature` schema. Uses legacy `standard` / `flow` / `materialized_view` specs. |
-| **`pattern-samples`** | End-to-end medallion architecture patterns (bronze → silver → gold) across multiple schemas. Uses legacy spec formats. |
-| **`tpch-sample`** *(under development)* | Full end-to-end reference implementation based on the TPC-H schema in the UC samples catalog. Uses legacy spec formats. |
+| **`feature_samples`** | Demonstrates every framework feature in isolation using a single `{namespace}_feature` schema. Uses legacy `standard` / `flow` / `materialized_view` specs. |
+| **`pattern_samples`** | End-to-end medallion architecture patterns (bronze → silver → gold) across multiple schemas. Uses legacy spec formats. |
+| **`tpch_sample`** *(under development)* | Full end-to-end reference implementation based on the TPC-H schema in the UC samples catalog. Uses legacy spec formats. |
 
 For YAML-format examples and additional current samples, see [`../samples/`](../samples/).
 
@@ -28,9 +28,9 @@ For YAML-format examples and additional current samples, see [`../samples/`](../
 
 The samples can be deployed using the scripts located in this `legacy_samples` directory:
 
-* `deploy.sh`: Deploys all the samples (feature-samples + pattern-samples).
-* `deploy_feature_samples.sh`: Deploys only the feature-samples bundle.
-* `deploy_pattern_samples.sh`: Deploys only the pattern-samples bundle.
+* `deploy.sh`: Deploys all the samples (feature_samples + pattern_samples).
+* `deploy_feature_samples.sh`: Deploys only the feature_samples bundle.
+* `deploy_pattern_samples.sh`: Deploys only the pattern_samples bundle.
 * `deploy_tpch.sh`: Deploys only the TPC-H sample.
 
 ### Prerequisites
@@ -60,8 +60,8 @@ The samples can be deployed using the scripts located in this `legacy_samples` d
    * **Select Compute**: Classic/Enhanced or Serverless (0=Enhanced, 1=Serverless). Default: `1`.
    * **UC Catalog**: The Unity Catalog to deploy into. Default: `main`.
    * **Schema Namespace**: Prefix for all deployed schemas. Default: `lakeflow_samples`.
-     * `feature-samples` creates: `{namespace}_feature{logical_env}`
-     * `pattern-samples` creates: `{namespace}_staging{logical_env}`, `{namespace}_bronze{logical_env}`, `{namespace}_silver{logical_env}`, `{namespace}_gold{logical_env}`
+     * `feature_samples` creates: `{namespace}_feature{logical_env}`
+     * `pattern_samples` creates: `{namespace}_staging{logical_env}`, `{namespace}_bronze{logical_env}`, `{namespace}_silver{logical_env}`, `{namespace}_gold{logical_env}`
    * **Logical environment**: Suffix to isolate your deployment e.g. `_jd`.
 
    > **Important:**
@@ -111,9 +111,9 @@ The samples can be deployed using the scripts located in this `legacy_samples` d
 
 ## Using the Samples
 
-### feature-samples
+### feature_samples
 
-The `feature-samples` bundle deploys a single job that runs all feature pipelines end-to-end:
+The `feature_samples` bundle deploys a single job that runs all feature pipelines end-to-end:
 
 **Job:** `Lakeflow Framework - Feature Samples - Run ({logical_env})`
 
@@ -129,9 +129,9 @@ The job runs in three tiers:
 
 **Kafka samples** are deployed as a separate job: `Lakeflow Framework - Kafka Samples - Run ({logical_env})`
 
-### pattern-samples
+### pattern_samples
 
-The `pattern-samples` bundle simulates a 4-day incremental data load across four sequential jobs:
+The `pattern_samples` bundle simulates a 4-day incremental data load across four sequential jobs:
 
 * `Lakeflow Framework - Pattern Samples - Run 1 - Load and Schema Initialization ({logical_env})`
 * `Lakeflow Framework - Pattern Samples - Run 2 - Load ({logical_env})`

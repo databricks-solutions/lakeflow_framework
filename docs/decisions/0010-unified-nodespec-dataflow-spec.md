@@ -1,30 +1,7 @@
-# ADR-0008: A unified, node-based dataflow spec (`nodespec`)
+# ADR-0010: A unified, node-based dataflow spec (`nodespec`)
 
 **Date:** 2026-06-19
-**Status:** Accepted (amended)
-
----
-
-## Amendment — post-acceptance refinements
-
-The decision below stands. Since acceptance, the authoring syntax has been
-refined; the examples in this ADR use the **original** field names. The current
-names (authoritative reference: ``docs/source/dataflow_spec_ref_main_nodespec.rst``)
-differ as follows:
-
-- **`input` → `input_flows`** — the target-node wiring list was renamed for clarity.
-- **Data quality → nested `data_quality`** object (`{ "expectations_path": ... }`),
-  replacing the `data_quality_expectations_enabled` / `_path` pair; presence implies
-  enabled.
-- **Quarantine → nested `quarantine`** object (`{ "mode", "target" }`), replacing
-  `quarantine_mode` / `quarantine_target_details`.
-- **`data_flow_type` is optional** — nodespec is the framework default, so a spec
-  that omits it is treated as nodespec.
-- **`scd_type` is a string** in `cdc_settings` (e.g. `"2"`).
-- **Sink targets keep flat fields** (`sink_type` / `sink_config` / `sink_options`);
-  a nested `sink` object was considered but deferred.
-- **A node's `config` is schema-discriminated** by `node_type` +
-  `source_type`/`target_type`, so editors offer only the fields valid for that node.
+**Status:** Accepted
 
 ---
 
@@ -101,11 +78,11 @@ source  ->  transformation  ->  target
   settings (CDC, data quality, quarantine, clustering, and so on).
 
 Nodes are wired together in two complementary ways. A **target** node declares
-what feeds it through an explicit `input` list. **Source** and **transformation**
+what feeds it through an explicit `sources` list. **Source** and **transformation**
 nodes are connected by explicit reference inside their own definition: a
 transformation names its upstream view directly in its SQL or Python (for example
 `FROM STREAM(live.v_source_customer)`), and a source names the table, path, or
-stream it reads. The `input` list is therefore a target-node construct, while the
+stream it reads. The `sources` list is therefore a target-node construct, while the
 intermediate source-to-transformation wiring lives where the logic that uses it
 lives. That uniform model replaces all three legacy formats. Every pipeline,
 whether a one-hop ingest, a CDC merge, a multi-step transform, or a materialized
@@ -116,25 +93,27 @@ can declare both streaming-table and materialized-view targets at once, includin
 chains where one feeds the other. A logical pipeline that mixes the two no longer
 has to be split across separate specs by output type.
 
-### The `input` list
+### The `sources` list
 
-`input` belongs to target nodes and lists what feeds the target. Each item is
-either a plain string (the upstream node name, with the flow name auto-generated)
-or an object that defines the flow name:
+`sources` belongs to target nodes and lists what feeds the target. Each item is
+either a plain string (the upstream node name) or an object that pins the flow
+name explicitly:
 
 ```json
-"input": [
+"sources": [
   "v_source_customer",
   { "view": "v_source_address", "flow": "f_append_address" }
 ]
 ```
 
-The two forms can be mixed in the same list. By default the framework derives the
-flow name from the graph, so simple specs stay simple; the object form defines it
-when stability matters. This matters because renaming a flow forces a full refresh
-in SDP, so defining the flow name lets authors keep it stable across edits and
-migrations without triggering one. Source and transformation nodes do not carry an
-`input` list; they reference their upstream within their own definition as
+The two forms can be mixed in the same list. For a plain string the flow name is
+derived as `f_<node name>` — the same name the framework generates internally and
+passes to SDP — so simple specs stay simple and never restate a name they did not
+choose. The object form is for when a specific flow name is required. This matters
+because SDP keys a streaming flow's checkpoint by its name, so renaming a flow
+forces a full refresh; pinning the name lets authors keep it stable across edits
+and migrations without triggering one. Source and transformation nodes do not carry
+a `sources` list; they reference their upstream within their own definition as
 described above.
 
 ### Why a node graph
@@ -256,7 +235,7 @@ belongs to, and the connections are stated rather than inferred:
       "node_type": "target",
       "config": {
         "table": "customer_ms_decomp_appnd",
-        "input": ["v_customer", "v_customer_address"]
+        "sources": ["v_customer", "v_customer_address"]
       }
     },
     {
@@ -280,7 +259,7 @@ belongs to, and the connections are stated rather than inferred:
           "except_column_list": ["LOAD_TIMESTAMP"],
           "ignore_null_updates": true
         },
-        "input": ["v_staging_cdf"]
+        "sources": ["v_staging_cdf"]
       }
     }
   ]
@@ -288,7 +267,7 @@ belongs to, and the connections are stated rather than inferred:
 ```
 
 There are no flow groups to assemble, no views to register by hand, and no
-separate staging-table block. Fan-in is just two names in one `input` list, CDC
+separate staging-table block. Fan-in is just two names in one `sources` list, CDC
 lives on the target it applies to, and adding another step later is another node
 in the chain rather than another layer of nesting.
 
@@ -314,7 +293,7 @@ To steer everyone toward the chaining model, two behaviours change:
 - **Inline source views on materialized view targets are removed (breaking).** A
   materialized view target may no longer carry an inline `source_view`. Authors
   declare a source node and chain it into the materialized view target via
-  `input`, exactly like every other node. This keeps the graph uniform, with one
+  `sources`, exactly like every other node. This keeps the graph uniform, with one
   way to feed a target rather than a special case for materialized views. Because
   this pattern was not in use, it is removed outright rather than deprecated.
 
@@ -328,7 +307,7 @@ To steer everyone toward the chaining model, two behaviours change:
   pipeline's shape directly. Per-target settings live on the target they
   describe, which makes specs easier for teams to review and edit.
 
-- **Topology is explicit.** Targets state what feeds them via `input`, and
+- **Topology is explicit.** Targets state what feeds them via `sources`, and
   transformations name their upstream views directly in their logic, which makes
   specs inspectable and a natural fit for lineage and visual tooling.
 
@@ -359,7 +338,7 @@ onto it.
 | **All target settings live on the target node.** CDC, data quality, quarantine, table migration, and sink config are declared on the target they apply to, not at the spec level. | Each setting belongs with the thing it configures, which removes the spec-level scatter of the older formats. |
 | **Materialized views are target nodes** (`table_type: "mv"`), and a single spec may contain both streaming-table and materialized-view targets, including chains between them. | Keeps the node model uniform and lets one logical pipeline stay in one spec instead of being split by output type. |
 | **Inline SQL/Python sources and `append_sql` are discouraged.** They still work and are warned about; the recommended alternative is a transformation node, which defines the logic as a view rather than folding it into a source. | Keeps "where data comes from" separate from "how it is transformed". |
-| **Materialized view inline `source_view` is removed (breaking).** Chain a source node into the MV target via `input`. | One uniform way to feed any target, with no special case for materialized views. |
+| **Materialized view inline `source_view` is removed (breaking).** Chain a source node into the MV target via `sources`. | One uniform way to feed any target, with no special case for materialized views. |
 | **Historical snapshot targets need no source node.** Targets with historical snapshot CDC config describe their source within that config; periodic snapshot targets still require a source. | The historical snapshot system reads files or tables directly, so a source view would have nothing to read. |
-| **`input` is a target-node construct.** Each item is a string (auto flow name) or `{ "view", "flow" }` (flow name defined). | Source-to-transformation wiring lives in the transformation's own definition; `input` only describes what feeds a target. Defining the flow name avoids a full refresh in SDP on rename. |
+| **`sources` is a target-node construct.** Each item is a string (flow name derived as `f_<view>`) or `{ "view", "flow" }` (flow name pinned). | Source-to-transformation wiring lives in the transformation's own definition; `sources` only describes what feeds a target. Pinning the flow name avoids a full refresh in SDP on rename. |
 | **Internal sources are auto-detected by table name.** A source that reads a table produced by a target in the same spec is wired internally with no extra view. | Enables staging-to-downstream chains without manual `live.` wiring. |

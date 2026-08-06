@@ -28,7 +28,7 @@ Examples:
     python migrate_to_nodespec.py ./dataflowspec/ --output-dir ./nodespec_dataflowspec/
 
     # Entire bundle (copy structure, convert specs in the copy)
-    python migrate_to_nodespec.py --bundle legacy_samples/feature-samples --output-dir samples/feature_samples
+    python migrate_to_nodespec.py --bundle legacy_samples/feature_samples --output-dir samples/feature_samples
 """
 import argparse
 import json

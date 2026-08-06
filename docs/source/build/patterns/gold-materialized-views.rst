@@ -59,8 +59,8 @@ Feature Support
 
 Sample
 ------
-- Bundle: ``samples/pattern-samples``
+- Bundle: ``samples/pattern_samples``
 - Pipeline: ``Lakeflow Framework - Pattern - Base Gold Samples Pipeline``
-- Sample: ``samples/pattern-samples/src/dataflows/base_samples/gold/dataflowspec/gold_materialized_views_main.json``
+- Sample: ``samples/pattern_samples/src/dataflows/base_samples/gold/dataflowspec/gold_materialized_views_main.json``
 
-For stream-static gold dimensions (streaming silver into gold), see ``samples/pattern-samples/src/dataflows/stream_static_samples/dataflowspec/gold_dim_customer_json_main.json`` and the stream-static pattern pages.
+For stream-static gold dimensions (streaming silver into gold), see ``samples/pattern_samples/src/dataflows/stream_static_samples/dataflowspec/gold_dim_customer_json_main.json`` and the stream-static pattern pages.

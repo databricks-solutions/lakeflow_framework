@@ -96,6 +96,6 @@ The same design decomposed into three pipelines:
      STG1b -->|"readStream()<br/>CDF enabled"| V1a
      STGnb -->|"readStream()<br/>CDF enabled"| Vna
 
-For decomposed multi-source samples, see ``samples/pattern-samples`` (Multi Source Streaming Decomposed Staging and Final pipelines).
+For decomposed multi-source samples, see ``samples/pattern_samples`` (Multi Source Streaming Decomposed Staging and Final pipelines).
 
 See also :doc:`/build/patterns/index` for the pattern catalog and :doc:`/build/patterns/mix-and-match-patterns`.

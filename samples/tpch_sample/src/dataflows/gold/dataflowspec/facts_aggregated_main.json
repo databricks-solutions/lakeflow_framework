@@ -1,0 +1,72 @@
+{
+    "data_flow_id": "fct_aggregate_metrics",
+    "data_flow_group": "tpch_gold",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_fct_sales_by_month_segment",
+            "node_type": "target",
+            "config": {
+                "table": "fct_sales_by_month_segment",
+                "table_type": "mv",
+                "sql_path": "fct_sales_by_month_segment.sql",
+                "comment": "Pre-aggregated sales by month x market segment x region for dashboards/Genie.",
+                "table_properties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        },
+        {
+            "name": "target_fct_fulfillment_sla_monthly",
+            "node_type": "target",
+            "config": {
+                "table": "fct_fulfillment_sla_monthly",
+                "table_type": "mv",
+                "sql_path": "fct_fulfillment_sla_monthly.sql",
+                "comment": "Fulfillment SLA / OTIF by month x supplier-nation x ship mode: on-time rate, lead time, transit time.",
+                "table_properties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        },
+        {
+            "name": "target_fct_product_performance",
+            "node_type": "target",
+            "config": {
+                "table": "fct_product_performance",
+                "table_type": "mv",
+                "sql_path": "fct_product_performance.sql",
+                "comment": "Product performance by month x brand x part type: units, gross/net sales, avg selling price, return rate.",
+                "table_properties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        },
+        {
+            "name": "target_fct_customer_segment_value",
+            "node_type": "target",
+            "config": {
+                "table": "fct_customer_segment_value",
+                "table_type": "mv",
+                "sql_path": "fct_customer_segment_value.sql",
+                "comment": "Customer value by month x market segment x region: active customers, orders, net sales, AOV, orders/customer, weighted discount.",
+                "table_properties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        },
+        {
+            "name": "target_fct_supplier_scorecard",
+            "node_type": "target",
+            "config": {
+                "table": "fct_supplier_scorecard",
+                "table_type": "mv",
+                "sql_path": "fct_supplier_scorecard.sql",
+                "comment": "Supplier scorecard by month x supplier: net sales supplied, units, on-time rate, return rate, estimated gross margin (net sales - qty*supply_cost).",
+                "table_properties": {
+                    "delta.enableRowTracking": "true"
+                }
+            }
+        }
+    ]
+}

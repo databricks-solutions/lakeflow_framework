@@ -83,20 +83,20 @@ Sample
 
 **Bronze**
 
-- Bundle: ``samples/pattern-samples``
+- Bundle: ``samples/pattern_samples``
 - Pipeline: ``Lakeflow Framework - Pattern - Base Bronze Samples Pipeline``
 - Samples:
 
-  - ``samples/pattern-samples/src/dataflows/base_samples/bronze/dataflowspec/customer_main.json``
-  - ``samples/pattern-samples/src/dataflows/base_samples/bronze/dataflowspec/customer_address_main.json``
+  - ``samples/pattern_samples/src/dataflows/base_samples/bronze/dataflowspec/customer_main.json``
+  - ``samples/pattern_samples/src/dataflows/base_samples/bronze/dataflowspec/customer_address_main.json``
 
 **Silver**
 
 - Pipeline: ``Lakeflow Framework - Pattern - Base Silver Samples Pipeline``
 - Samples:
 
-  - ``samples/pattern-samples/src/dataflows/base_samples/silver/dataflowspec/customer_main.json`` (SCD2)
-  - ``samples/pattern-samples/src/dataflows/base_samples/silver/dataflowspec/customer_address_main.json`` (SCD2)
+  - ``samples/pattern_samples/src/dataflows/base_samples/silver/dataflowspec/customer_main.json`` (SCD2)
+  - ``samples/pattern_samples/src/dataflows/base_samples/silver/dataflowspec/customer_address_main.json`` (SCD2)
 
 Example Data Flow
 ------------------

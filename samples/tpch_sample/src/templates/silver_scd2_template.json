@@ -1,0 +1,88 @@
+{
+    "name": "silver_scd2_template",
+    "parameters": {
+        "dataFlowId": {
+            "type": "string",
+            "required": true
+        },
+        "sourceDatabase": {
+            "type": "string",
+            "required": true
+        },
+        "sourceTable": {
+            "type": "string",
+            "required": true
+        },
+        "sourceViewName": {
+            "type": "string",
+            "required": true
+        },
+        "selectExp": {
+            "type": "list",
+            "required": true
+        },
+        "targetTable": {
+            "type": "string",
+            "required": true
+        },
+        "schemaPath": {
+            "type": "string",
+            "required": true
+        },
+        "keys": {
+            "type": "list",
+            "required": true
+        },
+        "sequenceBy": {
+            "type": "string",
+            "required": true
+        },
+        "exceptColumnList": {
+            "type": "list",
+            "required": true
+        }
+    },
+    "template": {
+        "data_flow_id": "${param.dataFlowId}",
+        "data_flow_group": "tpch_silver",
+        "data_flow_type": "nodespec",
+        "nodes": [
+            {
+                "name": "${param.sourceViewName}",
+                "node_type": "source",
+                "source_type": "delta",
+                "config": {
+                    "mode": "stream",
+                    "database": "${param.sourceDatabase}",
+                    "table": "${param.sourceTable}",
+                    "cdf_enabled": true,
+                    "select_exp": "${param.selectExp}"
+                }
+            },
+            {
+                "name": "target_${param.targetTable}",
+                "node_type": "target",
+                "config": {
+                    "database": "{silver_schema}",
+                    "table": "${param.targetTable}",
+                    "table_properties": {
+                        "delta.enableChangeDataFeed": "true",
+                        "delta.enableRowTracking": "true"
+                    },
+                    "schema_path": "${param.schemaPath}",
+                    "cdc_settings": {
+                        "keys": "${param.keys}",
+                        "scd_type": "2",
+                        "sequence_by": "${param.sequenceBy}",
+                        "apply_as_deletes": "cdc_operation = 'D'",
+                        "except_column_list": "${param.exceptColumnList}",
+                        "ignore_null_updates": false
+                    },
+                    "sources": [
+                        "${param.sourceViewName}"
+                    ]
+                }
+            }
+        ]
+    }
+}

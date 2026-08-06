@@ -153,9 +153,9 @@ class NodespecSpecTransformer(BaseSpecTransformer):
             if st in ("sql", "python"):
                 self.logger.warning(
                     "Source node '%s' defines an inline %s transformation (source_type: '%s'). "
-                    "This is still supported but discouraged and may not be supported in a future "
-                    "release. Define a source node and chain a dedicated transformation node off it "
-                    "instead.", node.get("name"), st, st)
+                    "This conflates where the data comes from with how it is transformed. Define a "
+                    "plain source node and chain a dedicated transformation node off it instead.",
+                    node.get("name"), st, st)
 
     def _validate(self, sources: List[Dict], targets: List[Dict], nodes: List[Dict]) -> None:
         names = {n.get("name") for n in nodes}
@@ -166,8 +166,8 @@ class NodespecSpecTransformer(BaseSpecTransformer):
             if self._is_mv(t) and "source_view" in t.get("config", {}):
                 raise ValueError(
                     f"Materialized view target '{t.get('name')}' defines an inline 'source_view'. "
-                    "This is no longer supported. Declare a source node and chain it into the "
-                    "materialized view target via its 'sources' array instead.")
+                    "Declare a source node and chain it into the materialized view target via its "
+                    "'sources' array instead, the same way every other target is fed.")
         if not targets:
             raise ValueError("Nodespec spec must contain at least one target node")
 

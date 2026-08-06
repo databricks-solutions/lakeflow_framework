@@ -122,9 +122,9 @@ Considerations and Limitations
 
 Sample
 ------
-- Bundle: ``samples/pattern-samples``
+- Bundle: ``samples/pattern_samples``
 - Pipeline: ``Lakeflow Framework - Pattern - Stream Static - Silver``
-- Sample: ``samples/pattern-samples/src/dataflows/stream_static_samples/dataflowspec/silver_customer_stream_static_streaming_dwh_main.json``
+- Sample: ``samples/pattern_samples/src/dataflows/stream_static_samples/dataflowspec/silver_customer_stream_static_streaming_dwh_main.json``
 
 Example Data Flow
 ------------------

@@ -1,0 +1,50 @@
+resources:
+  jobs:
+    lakeflow_samples_tpch_run_1_job:
+      name: Lakeflow Framework - TPCH Samples - 1 - Run 1 - Full Refresh (${var.logical_env})
+      queue:
+        enabled: true
+      tasks:
+        # Processing only — assumes setup job already created catalogs/schemas/volume + initial staging.
+        - task_key: bronze_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_bronze_pipeline.id}
+            full_refresh: true
+
+        - task_key: silver_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_silver_pipeline.id}
+            full_refresh: true
+          depends_on:
+            - task_key: bronze_pipeline
+
+        - task_key: gold_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.lakeflow_samples_tpch_gold_pipeline.id}
+            full_refresh: true
+          depends_on:
+            - task_key: silver_pipeline
+
+        # UC Metric Views (semantic layer) created on the gold star schema after gold completes.
+        - task_key: create_metric_views
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/notebooks/create_metric_views
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+          depends_on:
+            - task_key: gold_pipeline
+
+        # AI/BI Genie space (semantic NL layer). OPTIONAL: the notebook no-ops when warehouse_id
+        # is empty, so this task succeeds even for users without SQL warehouse access.
+        - task_key: create_genie_space
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/notebooks/create_genie_space
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}
+              warehouse_id: ${var.warehouse_id}
+          depends_on:
+            - task_key: create_metric_views

@@ -1,0 +1,56 @@
+{
+    "data_flow_id": "fct_order_lines",
+    "data_flow_group": "tpch_gold",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_lineitem_cdf_feed",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{silver_schema}",
+                "table": "lineitem",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_order_lines_tfm",
+            "node_type": "transformation",
+            "transformation_type": "sql",
+            "config": {
+                "sql_path": "fct_order_lines.sql"
+            }
+        },
+        {
+            "name": "target_fct_order_lines",
+            "node_type": "target",
+            "config": {
+                "table": "fct_order_lines",
+                "schema_path": "./fct_order_lines_schema.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true",
+                    "delta.enableRowTracking": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "order_key",
+                        "line_number"
+                    ],
+                    "scd_type": "1",
+                    "sequence_by": "load_timestamp",
+                    "except_column_list": [
+                        "load_timestamp"
+                    ],
+                    "ignore_null_updates": false
+                },
+                "sources": [
+                    {
+                        "view": "v_order_lines_tfm",
+                        "flow": "f_order_lines"
+                    }
+                ]
+            }
+        }
+    ]
+}
