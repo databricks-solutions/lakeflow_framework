@@ -42,5 +42,11 @@
             "fileMatch": ["*_secrets.json"],
             "url": "./src/lakeflow_framework/schemas/secrets.json"
         }
-    ]
+    ],
+    "yaml.schemas": {
+        "./src/lakeflow_framework/schemas/main.json": ["*_main.yaml", "*_main.yml"],
+        "./src/lakeflow_framework/schemas/flow_group.json": ["*_flow.yaml", "*_flow.yml"],
+        "./src/lakeflow_framework/schemas/expectations.json": ["*_dqe.yaml", "*_dqe.yml"],
+        "./src/lakeflow_framework/schemas/secrets.json": ["*_secrets.yaml", "*_secrets.yml"]
+    }
 }
