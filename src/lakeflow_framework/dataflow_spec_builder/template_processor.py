@@ -40,7 +40,9 @@ class TemplateProcessor:
     class SpecKeys:
         """Constants for dictionary keys for the template dataflow spec JSON files"""
         TEMPLATE_NAME = "template"
-        PARAMETER_SETS = "parameterSets"
+        PARAMETER_SETS = "parameter_sets"
+        # Legacy camelCase spelling, still accepted for backward compatibility.
+        PARAMETER_SETS_LEGACY = "parameterSets"
         DATA_FLOW_ID = "dataFlowId"
         TAGS = "tags"
         TAG_IS_TEMPLATE_GENERATED = "_isTemplateGenerated"
@@ -100,7 +102,10 @@ class TemplateProcessor:
             raise ValueError(error_msg)
         
         template_name = template_spec.get(self.SpecKeys.TEMPLATE_NAME)
-        dataflow_spec_params = template_spec.get(self.SpecKeys.PARAMETER_SETS, [])
+        dataflow_spec_params = template_spec.get(
+            self.SpecKeys.PARAMETER_SETS,
+            template_spec.get(self.SpecKeys.PARAMETER_SETS_LEGACY, []),
+        )
         
         # Validate template spec structure
         if not template_name:

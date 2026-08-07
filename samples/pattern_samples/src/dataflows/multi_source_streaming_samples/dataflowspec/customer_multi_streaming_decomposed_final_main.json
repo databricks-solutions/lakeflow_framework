@@ -1,0 +1,56 @@
+{
+    "data_flow_id": "multi_source_streaming_decomp_final",
+    "data_flow_group": "multi_source_streaming_decomposed_final",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_final_cdf_feed",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{silver_schema}",
+                "table": "customer_ms_decomp_merge",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_final_transform",
+            "node_type": "transformation",
+            "transformation_type": "sql",
+            "config": {
+                "sql_path": "./tfm_customer.sql"
+            }
+        },
+        {
+            "name": "target_customer_ms_decomp",
+            "node_type": "target",
+            "config": {
+                "database": "{silver_schema}",
+                "table": "customer_ms_decomp",
+                "schema_path": "customer.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "SEQUENCE_BY_COLUMN",
+                    "except_column_list": [
+                        "SEQUENCE_BY_COLUMN"
+                    ],
+                    "ignore_null_updates": true,
+                    "apply_as_deletes": "DELETE_FLAG = 1"
+                },
+                "sources": [
+                    {
+                        "view": "v_final_transform",
+                        "flow": "f_target"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -64,11 +64,11 @@ Optional coverage: ``--cov=lakeflow_framework --cov-report=term-missing``. See `
 .. code-block:: console
    :class: lf-command-block
 
-   python scripts/validate_dataflows.py samples/pattern-samples/
+   python scripts/validate_dataflows.py samples/pattern_samples/
    python scripts/validate_dataflows.py samples/tpch_sample/
-   python scripts/validate_dataflows.py samples/feature-samples/
+   python scripts/validate_dataflows.py samples/feature_samples/
 
-When adding a feature, add or extend samples in ``feature-samples`` (isolated demos) or ``pattern-samples`` (medallion patterns) as appropriate. Deploy and run affected pipelines on Databricks — see :doc:`/samples/index`.
+When adding a feature, add or extend samples in ``feature_samples`` (isolated demos) or ``pattern_samples`` (medallion patterns) as appropriate. Deploy and run affected pipelines on Databricks — see :doc:`/samples/index`.
 
 Step 5 — Update documentation
 =============================

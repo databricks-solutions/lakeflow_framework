@@ -16,8 +16,8 @@ VALIDATE_SCRIPT_PATH = PROJECT_ROOT / "scripts" / "validate_dataflows.py"
 
 # Top-level sample bundles that ship JSON *_main.json specs (yaml_sample uses YAML only).
 JSON_SAMPLE_BUNDLES = (
-    "feature-samples",
-    "pattern-samples",
+    "feature_samples",
+    "pattern_samples",
     "tpch_sample",
 )
 
@@ -75,15 +75,15 @@ def validate_bundle(
 @pytest.fixture
 def feature_samples_bundle_path() -> Path:
     """Pipeline bundle root for feature samples (``src/`` tree)."""
-    path = SAMPLES_DIR / "feature-samples" / "src"
+    path = SAMPLES_DIR / "feature_samples" / "src"
     if not path.is_dir():
-        pytest.skip("feature-samples bundle not present in checkout")
+        pytest.skip("feature_samples bundle not present in checkout")
     return path
 
 
 @pytest.fixture
 def feature_samples_secrets_manager(feature_samples_bundle_path, framework_package_path, pipeline_context):
-    """SecretsManager wired to feature-samples pipeline config."""
+    """SecretsManager wired to feature_samples pipeline config."""
     from lakeflow_framework.secrets_manager import SecretsManager
 
     bundle = feature_samples_bundle_path
@@ -100,7 +100,7 @@ def feature_samples_secrets_manager(feature_samples_bundle_path, framework_packa
 
 @pytest.fixture
 def feature_samples_substitution_manager(feature_samples_bundle_path, pipeline_context):
-    """SubstitutionManager using feature-samples dev substitutions."""
+    """SubstitutionManager using feature_samples dev substitutions."""
     from lakeflow_framework.pipeline_config import initialize_substitution_manager
     from lakeflow_framework.substitution_manager import SubstitutionManager
 

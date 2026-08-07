@@ -7,7 +7,7 @@ and validates them against the project's JSON schemas.
 
 Usage:
     python scripts/validate_dataflows.py                           # Validate all dataflow files (with version mapping)
-    python scripts/validate_dataflows.py samples/feature-samples/    # Validate all files in specific directory
+    python scripts/validate_dataflows.py samples/feature_samples/    # Validate all files in specific directory
     python scripts/validate_dataflows.py path/to/file_main.json   # Validate specific file
     python scripts/validate_dataflows.py --no-mapping              # Validate without applying version mappings
     
@@ -16,13 +16,13 @@ Examples:
     python scripts/validate_dataflows.py
     
     # Validate only feature samples
-    python scripts/validate_dataflows.py samples/feature-samples/
+    python scripts/validate_dataflows.py samples/feature_samples/
     
     # Validate without version mapping (strict validation against current schema)
-    python scripts/validate_dataflows.py --no-mapping samples/feature-samples/
+    python scripts/validate_dataflows.py --no-mapping samples/feature_samples/
     
     # Validate a single file
-    python scripts/validate_dataflows.py samples/feature-samples/src/dataflows/feature_samples/dataflowspec/append_sql_flow_main.json
+    python scripts/validate_dataflows.py samples/feature_samples/src/dataflows/feature_samples/dataflowspec/append_sql_flow_main.json
 """
 
 import argparse
@@ -100,13 +100,15 @@ def find_dataflow_files(search_path: Path) -> List[Path]:
 
 # Spec form detection — top-level shape of a *_main.json determines which
 # schema to validate against.
-SPEC_FORM_TEMPLATE = "template"   # { "template": "...", "parameterSets": [...] }
+SPEC_FORM_TEMPLATE = "template"   # { "template": "...", "parameter_sets": [...] }
 SPEC_FORM_EXPANDED = "expanded"   # { "dataFlowId": ..., "dataFlowType": ..., ... }
 
 
 def detect_spec_form(data: Dict) -> str:
     """Infer whether a dataflow spec is template-instantiating or expanded form."""
-    if isinstance(data, dict) and "template" in data and "parameterSets" in data:
+    if isinstance(data, dict) and "template" in data and (
+        "parameter_sets" in data or "parameterSets" in data
+    ):
         return SPEC_FORM_TEMPLATE
     return SPEC_FORM_EXPANDED
 
@@ -415,8 +417,8 @@ def main():
         epilog="""
 Examples:
   %(prog)s                                 # Validate all dataflow files
-  %(prog)s samples/feature-samples/          # Validate specific directory
-  %(prog)s samples/feature-samples/src/dataflows/feature_samples/dataflowspec/append_sql_flow_main.json  # Validate single file
+  %(prog)s samples/feature_samples/          # Validate specific directory
+  %(prog)s samples/feature_samples/src/dataflows/feature_samples/dataflowspec/append_sql_flow_main.json  # Validate single file
         """
     )
     parser.add_argument(

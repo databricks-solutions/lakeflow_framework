@@ -1,6 +1,6 @@
 {
     "template": "silver_scd1_template",
-    "parameterSets": [
+    "parameter_sets": [
         {
             "dataFlowId": "region",
             "sourceDatabase": "{bronze_reference_data_schema}",
@@ -13,9 +13,13 @@
             ],
             "targetTable": "region",
             "schemaPath": "region_schema.json",
-            "keys": ["region_key"],
+            "keys": [
+                "region_key"
+            ],
             "sequenceBy": "load_timestamp",
-            "exceptColumnList": ["load_timestamp"]
+            "exceptColumnList": [
+                "load_timestamp"
+            ]
         },
         {
             "dataFlowId": "nation",
@@ -30,9 +34,13 @@
             ],
             "targetTable": "nation",
             "schemaPath": "nation_schema.json",
-            "keys": ["nation_key"],
+            "keys": [
+                "nation_key"
+            ],
             "sequenceBy": "load_timestamp",
-            "exceptColumnList": ["load_timestamp"]
+            "exceptColumnList": [
+                "load_timestamp"
+            ]
         }
     ]
 }

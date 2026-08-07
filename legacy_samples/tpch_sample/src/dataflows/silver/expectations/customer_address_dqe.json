@@ -1,0 +1,14 @@
+{
+    "expect_or_drop": [
+        {
+            "name": "customer_key not null",
+            "constraint": "customer_key IS NOT NULL",
+            "tag": "Validity"
+        },
+        {
+            "name": "nation_key not null",
+            "constraint": "nation_key IS NOT NULL",
+            "tag": "Validity"
+        }
+    ]
+}

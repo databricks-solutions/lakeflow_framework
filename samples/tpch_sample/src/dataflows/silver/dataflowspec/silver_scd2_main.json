@@ -1,6 +1,6 @@
 {
     "template": "silver_scd2_template",
-    "parameterSets": [
+    "parameter_sets": [
         {
             "dataFlowId": "customer",
             "sourceDatabase": "{bronze_crm_schema}",
@@ -17,9 +17,15 @@
             ],
             "targetTable": "customer",
             "schemaPath": "customer_schema.json",
-            "keys": ["customer_key"],
+            "keys": [
+                "customer_key"
+            ],
             "sequenceBy": "effective_date",
-            "exceptColumnList": ["load_timestamp", "effective_date", "cdc_operation"]
+            "exceptColumnList": [
+                "load_timestamp",
+                "effective_date",
+                "cdc_operation"
+            ]
         },
         {
             "dataFlowId": "customer_phone",
@@ -35,9 +41,15 @@
             ],
             "targetTable": "customer_phone",
             "schemaPath": "customer_phone_schema.json",
-            "keys": ["customer_key"],
+            "keys": [
+                "customer_key"
+            ],
             "sequenceBy": "effective_date",
-            "exceptColumnList": ["load_timestamp", "effective_date", "cdc_operation"]
+            "exceptColumnList": [
+                "load_timestamp",
+                "effective_date",
+                "cdc_operation"
+            ]
         },
         {
             "dataFlowId": "supplier",
@@ -55,9 +67,15 @@
             ],
             "targetTable": "supplier",
             "schemaPath": "supplier_schema.json",
-            "keys": ["supplier_key"],
+            "keys": [
+                "supplier_key"
+            ],
             "sequenceBy": "effective_date",
-            "exceptColumnList": ["load_timestamp", "effective_date", "cdc_operation"]
+            "exceptColumnList": [
+                "load_timestamp",
+                "effective_date",
+                "cdc_operation"
+            ]
         },
         {
             "dataFlowId": "supplier_address",
@@ -73,9 +91,14 @@
             ],
             "targetTable": "supplier_address",
             "schemaPath": "supplier_address_schema.json",
-            "keys": ["supplier_key"],
+            "keys": [
+                "supplier_key"
+            ],
             "sequenceBy": "load_timestamp",
-            "exceptColumnList": ["load_timestamp", "cdc_operation"]
+            "exceptColumnList": [
+                "load_timestamp",
+                "cdc_operation"
+            ]
         },
         {
             "dataFlowId": "supplier_phone",
@@ -90,9 +113,14 @@
             ],
             "targetTable": "supplier_phone",
             "schemaPath": "supplier_phone_schema.json",
-            "keys": ["supplier_key"],
+            "keys": [
+                "supplier_key"
+            ],
             "sequenceBy": "load_timestamp",
-            "exceptColumnList": ["load_timestamp", "cdc_operation"]
+            "exceptColumnList": [
+                "load_timestamp",
+                "cdc_operation"
+            ]
         },
         {
             "dataFlowId": "part",
@@ -114,9 +142,14 @@
             ],
             "targetTable": "part",
             "schemaPath": "part_schema.json",
-            "keys": ["part_key"],
+            "keys": [
+                "part_key"
+            ],
             "sequenceBy": "load_timestamp",
-            "exceptColumnList": ["load_timestamp", "cdc_operation"]
+            "exceptColumnList": [
+                "load_timestamp",
+                "cdc_operation"
+            ]
         }
     ]
 }

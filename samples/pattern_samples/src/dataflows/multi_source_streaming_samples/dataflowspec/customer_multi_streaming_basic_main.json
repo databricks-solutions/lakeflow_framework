@@ -1,0 +1,134 @@
+{
+    "data_flow_id": "multi_source_streaming_basic",
+    "data_flow_group": "multi_source_streaming_basic",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_customer_ms_basic_appnd",
+            "node_type": "target",
+            "config": {
+                "table": "customer_ms_basic_appnd",
+                "sources": [
+                    {
+                        "view": "v_customer",
+                        "flow": "f_customer"
+                    },
+                    {
+                        "view": "v_customer_address",
+                        "flow": "f_customer_address"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "target_customer_ms_basic_merge",
+            "node_type": "target",
+            "config": {
+                "table": "customer_ms_basic_merge",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cluster_by_auto": true,
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "ignore_null_updates": true,
+                    "scd_type": "2"
+                },
+                "sources": [
+                    {
+                        "view": "v_customer_ms_basic_appnd",
+                        "flow": "f_merge"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "v_customer",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{bronze_schema}",
+                "table": "base_customer_append",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_customer_address",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{bronze_schema}",
+                "table": "base_customer_address_append",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_customer_ms_basic_appnd",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "table": "customer_ms_basic_appnd",
+                "as_view": false
+            }
+        },
+        {
+            "name": "v_final_cdf_feed",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "live",
+                "table": "customer_ms_basic_merge",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_final_transform",
+            "node_type": "transformation",
+            "transformation_type": "sql",
+            "config": {
+                "sql_path": "./tfm_customer.sql"
+            }
+        },
+        {
+            "name": "target_customer_ms_basic",
+            "node_type": "target",
+            "config": {
+                "database": "{silver_schema}",
+                "table": "customer_ms_basic",
+                "schema_path": "customer.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cluster_by_auto": true,
+                "cluster_by_columns": [
+                    "CUSTOMER_ID"
+                ],
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "SEQUENCE_BY_COLUMN",
+                    "except_column_list": [
+                        "SEQUENCE_BY_COLUMN"
+                    ],
+                    "ignore_null_updates": false,
+                    "apply_as_deletes": "DELETE_FLAG = true"
+                },
+                "sources": [
+                    {
+                        "view": "v_final_transform",
+                        "flow": "f_target"
+                    }
+                ]
+            }
+        }
+    ]
+}

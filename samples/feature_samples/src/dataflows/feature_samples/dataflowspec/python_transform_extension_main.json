@@ -1,0 +1,36 @@
+{
+    "data_flow_id": "feature_python_extension_transform",
+    "data_flow_group": "feature_samples_python",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_python_extension_transform",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{feature_schema}",
+                "table": "src_customer",
+                "cdf_enabled": true,
+                "python_transform": {
+                    "module": "transforms.customer_aggregation"
+                }
+            }
+        },
+        {
+            "name": "target_tgt_python_extension_transform",
+            "node_type": "target",
+            "config": {
+                "database": "{feature_schema}",
+                "table": "tgt_python_extension_transform",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "schema_path": "target/feature_python_function_transform_schema.json",
+                "sources": [
+                    "v_python_extension_transform"
+                ]
+            }
+        }
+    ]
+}

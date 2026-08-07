@@ -1,39 +1,36 @@
-# Metadata
-dataFlowId: base_customer_file_source
-dataFlowGroup: yaml_samples
-dataFlowType: standard
-
-# Source Configuration
-sourceSystem: testSystem
-sourceType: cloudFiles
-sourceViewName: v_customer_files
-sourceDetails:
-  path: '{sample_file_location}/customer/'
-  readerOptions:
-    cloudFiles.format: csv
-    header: 'true'
-  schemaPath: ./customer_file_source_schema.json
-  selectExp:
-  - CUSTOMER_ID
-  - FIRST_NAME
-  - LAST_NAME
-  - EMAIL
-  - CAST(LOAD_TIMESTAMP AS TIMESTAMP) AS LOAD_TIMESTAMP
-mode: stream
-
-# Target Configuration
-targetFormat: delta
-targetDetails:
-  table: customer_file_sample
-  tableProperties:
-    delta.enableChangeDataFeed: 'true'
-  schemaPath: customer_schema.json
-
-# CDC Configuration
-cdcSettings:
-  keys:
-  - CUSTOMER_ID
-  sequence_by: LOAD_TIMESTAMP
-  where: ''
-  ignore_null_updates: false
-  scd_type: '1'
+data_flow_id: base_customer_file_source
+data_flow_group: yaml_samples
+data_flow_type: nodespec
+nodes:
+- name: v_customer_files
+  node_type: source
+  source_type: cloud_files
+  config:
+    mode: stream
+    path: '{sample_file_location}/customer/'
+    reader_options:
+      cloudFiles.format: csv
+      header: 'true'
+    schema_path: ./customer_file_source_schema.json
+    select_exp:
+    - CUSTOMER_ID
+    - FIRST_NAME
+    - LAST_NAME
+    - EMAIL
+    - CAST(LOAD_TIMESTAMP AS TIMESTAMP) AS LOAD_TIMESTAMP
+- name: target_customer_file_sample
+  node_type: target
+  config:
+    table: customer_file_sample
+    table_properties:
+      delta.enableChangeDataFeed: 'true'
+    schema_path: customer_schema.json
+    cdc_settings:
+      keys:
+      - CUSTOMER_ID
+      sequence_by: LOAD_TIMESTAMP
+      where: ''
+      ignore_null_updates: false
+      scd_type: '1'
+    sources:
+    - v_customer_files

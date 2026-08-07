@@ -14,7 +14,7 @@ Validates dataflow JSON/YAML specification files against the project's JSON sche
 python scripts/validate_dataflows.py
 
 # Validate files in a specific bundle directory
-python scripts/validate_dataflows.py samples/pattern-samples/
+python scripts/validate_dataflows.py samples/pattern_samples/
 
 # Validate a single file
 python scripts/validate_dataflows.py samples/tpch_sample/src/dataflows/bronze/dataflowspec/customer_main.json
@@ -67,16 +67,16 @@ Converts Lakeflow Framework pipeline bundles from JSON format to YAML format, wi
 python scripts/convert_json_to_yaml.py --file path/to/file.json
 
 # Convert an entire bundle
-python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --output samples/pattern-samples_yaml
+python scripts/convert_json_to_yaml.py --bundle samples/pattern_samples --output samples/pattern_samples_yaml
 
 # Convert with overwrite
-python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --output samples/pattern-samples_yaml --overwrite
+python scripts/convert_json_to_yaml.py --bundle samples/pattern_samples --output samples/pattern_samples_yaml --overwrite
 
 # Dry run (preview changes without making them)
-python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --dry-run
+python scripts/convert_json_to_yaml.py --bundle samples/pattern_samples --dry-run
 
 # Convert without validation
-python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --no-validate
+python scripts/convert_json_to_yaml.py --bundle samples/pattern_samples --no-validate
 ```
 
 **Command-Line Options:**
@@ -105,7 +105,7 @@ python scripts/convert_json_to_yaml.py --bundle samples/pattern-samples --no-val
 
 **Example Output:**
 ```
-Converting bundle from samples/pattern-samples to samples/pattern-samples_yaml
+Converting bundle from samples/pattern_samples to samples/pattern_samples_yaml
 Copying bundle structure...
 Scanning for JSON files to convert...
 Found 19 JSON files to convert
@@ -154,8 +154,8 @@ convert_json_file_to_yaml(
 
 # Convert an entire bundle
 stats = convert_bundle(
-    source_bundle_path="samples/pattern-samples",
-    target_bundle_path="samples/pattern-samples_yaml",
+    source_bundle_path="samples/pattern_samples",
+    target_bundle_path="samples/pattern_samples_yaml",
     validate=True,
     overwrite=True
 )

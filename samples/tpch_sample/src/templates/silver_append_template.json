@@ -1,37 +1,68 @@
 {
     "name": "silver_append_template",
     "parameters": {
-        "dataFlowId": { "type": "string", "required": true },
-        "sourceDatabase": { "type": "string", "required": true },
-        "sourceTable": { "type": "string", "required": true },
-        "sourceViewName": { "type": "string", "required": true },
-        "selectExp": { "type": "list", "required": true },
-        "targetTable": { "type": "string", "required": true },
-        "schemaPath": { "type": "string", "required": true }
+        "dataFlowId": {
+            "type": "string",
+            "required": true
+        },
+        "sourceDatabase": {
+            "type": "string",
+            "required": true
+        },
+        "sourceTable": {
+            "type": "string",
+            "required": true
+        },
+        "sourceViewName": {
+            "type": "string",
+            "required": true
+        },
+        "selectExp": {
+            "type": "list",
+            "required": true
+        },
+        "targetTable": {
+            "type": "string",
+            "required": true
+        },
+        "schemaPath": {
+            "type": "string",
+            "required": true
+        }
     },
     "template": {
-        "dataFlowId": "${param.dataFlowId}",
-        "dataFlowGroup": "tpch_silver",
-        "dataFlowType": "standard",
-        "sourceSystem": "tpch",
-        "sourceType": "delta",
-        "sourceViewName": "${param.sourceViewName}",
-        "sourceDetails": {
-            "database": "${param.sourceDatabase}",
-            "table": "${param.sourceTable}",
-            "cdfEnabled": true,
-            "selectExp": "${param.selectExp}"
-        },
-        "mode": "stream",
-        "targetFormat": "delta",
-        "targetDetails": {
-            "database": "{silver_schema}",
-            "table": "${param.targetTable}",
-            "tableProperties": {
-                "delta.enableChangeDataFeed": "true",
-                "delta.enableRowTracking": "true"
+        "data_flow_id": "${param.dataFlowId}",
+        "data_flow_group": "tpch_silver",
+        "data_flow_type": "nodespec",
+        "nodes": [
+            {
+                "name": "${param.sourceViewName}",
+                "node_type": "source",
+                "source_type": "delta",
+                "config": {
+                    "mode": "stream",
+                    "database": "${param.sourceDatabase}",
+                    "table": "${param.sourceTable}",
+                    "cdf_enabled": true,
+                    "select_exp": "${param.selectExp}"
+                }
             },
-            "schemaPath": "${param.schemaPath}"
-        }
+            {
+                "name": "target_${param.targetTable}",
+                "node_type": "target",
+                "config": {
+                    "database": "{silver_schema}",
+                    "table": "${param.targetTable}",
+                    "table_properties": {
+                        "delta.enableChangeDataFeed": "true",
+                        "delta.enableRowTracking": "true"
+                    },
+                    "schema_path": "${param.schemaPath}",
+                    "sources": [
+                        "${param.sourceViewName}"
+                    ]
+                }
+            }
+        ]
     }
 }

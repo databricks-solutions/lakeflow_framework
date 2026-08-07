@@ -18,7 +18,7 @@ def _processor(bundle_path: Path, framework_src_path: Path) -> TemplateProcessor
 def _minimal_template_spec(parameter_sets=None):
     spec = {
         "template": "minimal_template",
-        "parameterSets": parameter_sets
+        "parameter_sets": parameter_sets
         or [
             {
                 "dataFlowId": "from_template_a",
@@ -53,6 +53,35 @@ class TestTemplateProcessorExpansion:
         ids = {spec["dataFlowId"] for spec in result.values()}
         assert ids == {"from_template_a", "from_template_b"}
 
+    def test_accepts_snake_case_and_legacy_camelcase_parameter_sets(
+        self,
+        pipeline_context,
+        template_bundle_tree: Path,
+        framework_src_path: Path,
+    ):
+        """``parameter_sets`` is the current key; ``parameterSets`` still works."""
+        processor = _processor(template_bundle_tree, framework_src_path)
+        param_sets = [
+            {
+                "dataFlowId": "from_template_a",
+                "sourceSystem": "erp",
+                "sourceViewName": "v_tpl_a",
+                "path": "/data/a",
+                "database": "db_a",
+                "table": "tbl_a",
+            }
+        ]
+        snake = processor.process_template_spec(
+            "/virtual/snake.json",
+            {"template": "minimal_template", "parameter_sets": param_sets},
+        )
+        camel = processor.process_template_spec(
+            "/virtual/camel.json",
+            {"template": "minimal_template", "parameterSets": param_sets},
+        )
+        assert {s["dataFlowId"] for s in snake.values()} == {"from_template_a"}
+        assert {s["dataFlowId"] for s in camel.values()} == {"from_template_a"}
+
     def test_marks_generated_specs_with_template_tags(
         self,
         pipeline_context,
@@ -64,7 +93,7 @@ class TestTemplateProcessorExpansion:
         template_spec = json.loads(
             (fixtures_dir / "specs" / "template_main_minimal.json").read_text()
         )
-        template_spec["parameterSets"] = [template_spec["parameterSets"][0]]
+        template_spec["parameter_sets"] = [template_spec["parameter_sets"][0]]
         result = processor.process_template_spec("/virtual/spec.json", template_spec)
         spec = next(iter(result.values()))
         assert spec["tags"]["_isTemplateGenerated"] is True
@@ -229,7 +258,7 @@ class TestTemplateProcessorValidation:
         template_spec = json.loads(
             (fixtures_dir / "specs" / "template_main_minimal.json").read_text()
         )
-        template_spec["parameterSets"] = [{"dataFlowId": "only_id"}]
+        template_spec["parameter_sets"] = [{"dataFlowId": "only_id"}]
         with pytest.raises(ValueError, match="missing required parameters"):
             processor.process_template_spec("/x.json", template_spec)
 

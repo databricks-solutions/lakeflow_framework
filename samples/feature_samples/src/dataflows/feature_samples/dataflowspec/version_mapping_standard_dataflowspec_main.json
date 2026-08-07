@@ -1,0 +1,42 @@
+{
+    "data_flow_id": "version_mapping",
+    "data_flow_group": "feature_samples_general",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_version_mapping_standard",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{feature_schema}",
+                "table": "src_customer",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_v_version_mapping_standard",
+            "node_type": "target",
+            "config": {
+                "database": "{feature_schema}",
+                "table": "v_version_mapping_standard",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "where": "",
+                    "ignore_null_updates": false,
+                    "scd_type": "1"
+                },
+                "sources": [
+                    "v_version_mapping_standard"
+                ]
+            }
+        }
+    ],
+    "data_flow_version": "0.1.0"
+}

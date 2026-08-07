@@ -1,16 +1,20 @@
 {
-    "dataFlowId": "fct_part_supply",
-    "dataFlowGroup": "tpch_gold",
-    "dataFlowType": "materialized_view",
-    "materializedViews": {
-        "fct_part_supply": {
-            "sqlPath": "fct_part_supply.sql",
-            "tableDetails": {
+    "data_flow_id": "fct_part_supply",
+    "data_flow_group": "tpch_gold",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_fct_part_supply",
+            "node_type": "target",
+            "config": {
+                "table": "fct_part_supply",
+                "table_type": "mv",
+                "sql_path": "fct_part_supply.sql",
                 "comment": "Part-supplier supply fact (one row per part-supplier pair) with part and supplier descriptive attributes.",
-                "tableProperties": {
+                "table_properties": {
                     "delta.enableRowTracking": "true"
                 }
             }
         }
-    }
+    ]
 }

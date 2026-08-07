@@ -1,40 +1,48 @@
 {
     "title": "Main DataFlowSpec",
-    "type": "object",
-    "properties": {
-        "dataFlowId": {"type": "string"},
-        "dataFlowGroup": {"type": "string"},
-        "dataFlowType": {"type": "string", "enum": ["flow", "standard", "materialized_view"]},
-        "dataFlowVersion": {"type": "string"},
-        "tags": {"type": "object", "additionalProperties": true},
-        "features": {
-            "type": "object",
-            "properties": {
-                "operationalMetadataEnabled": {"type": "boolean"}
-            }
-        }
-    },
+    "$comment": "nodespec is the default spec type: a spec is validated as a legacy format only when it carries an explicit legacy dataFlowType (standard/flow/materialized_view). Anything else — including specs that omit the type entirely — is treated as nodespec.",
     "if": {
-        "properties": {
-            "dataFlowType": { "const": "standard" }
-        }
+        "properties": { "dataFlowType": { "enum": ["flow", "standard", "materialized_view"] } },
+        "required": ["dataFlowType"]
     },
-    "then": { "$ref": "./spec_standard.json#/$defs/standardSpec" },
-    "else": {
-        "if": {
-            "properties": {
-                "dataFlowType": { "const": "flow" }
+    "then": {
+        "type": "object",
+        "properties": {
+            "dataFlowId": {"type": "string"},
+            "dataFlowGroup": {"type": "string"},
+            "dataFlowType": {"type": "string", "enum": ["flow", "standard", "materialized_view"]},
+            "dataFlowVersion": {"type": "string"},
+            "tags": {"type": "object", "additionalProperties": true},
+            "features": {
+                "type": "object",
+                "properties": {
+                    "operationalMetadataEnabled": {"type": "boolean"}
+                }
             }
         },
-        "then": { "$ref": "./spec_flows.json#/$defs/flowsSpec" },
-        "else": { 
+        "if": {
+            "properties": {
+                "dataFlowType": { "const": "standard" }
+            }
+        },
+        "then": { "$ref": "./spec_standard.json#/$defs/standardSpec" },
+        "else": {
             "if": {
                 "properties": {
-                    "dataFlowType": { "const": "materialized_view" }
+                    "dataFlowType": { "const": "flow" }
                 }
             },
-            "then": { "$ref": "./spec_materialized_views.json#/$defs/materializedViewsSpec" }
-        }
+            "then": { "$ref": "./spec_flows.json#/$defs/flowsSpec" },
+            "else": {
+                "if": {
+                    "properties": {
+                        "dataFlowType": { "const": "materialized_view" }
+                    }
+                },
+                "then": { "$ref": "./spec_materialized_views.json#/$defs/materializedViewsSpec" }
+            }
+        },
+        "required": ["dataFlowId", "dataFlowGroup", "dataFlowType"]
     },
-    "required": ["dataFlowId", "dataFlowGroup", "dataFlowType"]
+    "else": { "$ref": "./spec_nodespec.json#/$defs/nodespec_spec" }
 }

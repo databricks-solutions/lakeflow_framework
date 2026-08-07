@@ -1,0 +1,19 @@
+{
+    "key_schema": {
+        "type": "string"
+    },
+    "value_schema": {
+        "type": "record",
+        "name": "User",
+        "fields": [
+            {
+                "name": "action",
+                "type": "string"
+            },
+            {
+                "name": "time",
+                "type": "long"
+            }
+        ]
+    }
+}

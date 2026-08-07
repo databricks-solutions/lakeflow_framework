@@ -1,6 +1,6 @@
 {
   "template": "minimal_template",
-  "parameterSets": [
+  "parameter_sets": [
     {
       "dataFlowId": "from_template_a",
       "sourceSystem": "erp",

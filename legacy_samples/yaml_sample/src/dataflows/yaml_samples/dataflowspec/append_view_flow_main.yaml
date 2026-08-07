@@ -1,0 +1,29 @@
+# Metadata
+dataFlowId: append_view_flow
+dataFlowGroup: yaml_samples
+dataFlowType: flow
+
+# Target Configuration
+targetFormat: delta
+targetDetails:
+  table: append_view_flow
+  tableProperties:
+    delta.enableChangeDataFeed: 'true'
+
+# Flow Groups Configuration
+flowGroups:
+- flowGroupId: main
+  flows:
+    f_customer_append_view:
+      flowType: append_view
+      flowDetails:
+        targetTable: append_view_flow
+        sourceView: v_append_view_flow
+      views:
+        v_append_view_flow:
+          mode: stream
+          sourceType: delta
+          sourceDetails:
+            database: '{staging_schema}'
+            table: customer
+            cdfEnabled: true

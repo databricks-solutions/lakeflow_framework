@@ -1,0 +1,45 @@
+{
+    "data_flow_id": "base_customer",
+    "data_flow_group": "base_silver",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_customer",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{bronze_schema}",
+                "table": "base_customer_append",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_base_customer_scd2",
+            "node_type": "target",
+            "config": {
+                "database": "{silver_schema}",
+                "table": "base_customer_scd2",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "schema_path": "customer_schema.json",
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "except_column_list": [
+                        "LOAD_TIMESTAMP"
+                    ],
+                    "ignore_null_updates": false,
+                    "apply_as_deletes": "DELETE_FLAG = 1"
+                },
+                "sources": [
+                    "v_customer"
+                ]
+            }
+        }
+    ]
+}

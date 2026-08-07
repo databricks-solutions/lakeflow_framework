@@ -1,0 +1,48 @@
+{
+    "data_flow_id": "table_migration_append_only",
+    "data_flow_group": "feature_samples_table_migration",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_tm_customer_scd0",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{feature_schema}",
+                "table": "src_customer",
+                "cdf_enabled": true,
+                "select_exp": [
+                    "CUSTOMER_ID",
+                    "FIRST_NAME",
+                    "LAST_NAME",
+                    "EMAIL",
+                    "LOAD_TIMESTAMP"
+                ]
+            }
+        },
+        {
+            "name": "target_tgt_migrated_table_append_only",
+            "node_type": "target",
+            "config": {
+                "database": "{feature_schema}",
+                "table": "tgt_migrated_table_append_only",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "table_migration": {
+                    "catalog_type": "uc",
+                    "enabled": true,
+                    "auto_starting_versions_enabled": true,
+                    "source": {
+                        "database": "{feature_schema}",
+                        "table": "src_table_to_migrate_scd0"
+                    }
+                },
+                "sources": [
+                    "v_tm_customer_scd0"
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,37 @@
+{
+    "data_flow_id": "base_customer",
+    "data_flow_group": "base_bronze",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_customer",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{staging_schema}",
+                "table": "customer",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_base_customer_append",
+            "node_type": "target",
+            "config": {
+                "database": "{bronze_schema}",
+                "table": "base_customer_append",
+                "comment": "Customer main table",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "schema_path": "customer_schema.json",
+                "spark_conf": {
+                    "spark.sql.session.timeZone": "UTC"
+                },
+                "sources": [
+                    "v_customer"
+                ]
+            }
+        }
+    ]
+}

@@ -25,4 +25,28 @@
     ],
     "cursorpyright.analysis.stubPath": ".vscode",
     "python.languageServer": "None",
+    "json.schemas": [
+        {
+            "fileMatch": ["*_main.json"],
+            "url": "./src/lakeflow_framework/schemas/main.json"
+        },
+        {
+            "fileMatch": ["*_flow.json"],
+            "url": "./src/lakeflow_framework/schemas/flow_group.json"
+        },
+        {
+            "fileMatch": ["*_dqe.json"],
+            "url": "./src/lakeflow_framework/schemas/expectations.json"
+        },
+        {
+            "fileMatch": ["*_secrets.json"],
+            "url": "./src/lakeflow_framework/schemas/secrets.json"
+        }
+    ],
+    "yaml.schemas": {
+        "./src/lakeflow_framework/schemas/main.json": ["*_main.yaml", "*_main.yml"],
+        "./src/lakeflow_framework/schemas/flow_group.json": ["*_flow.yaml", "*_flow.yml"],
+        "./src/lakeflow_framework/schemas/expectations.json": ["*_dqe.yaml", "*_dqe.yml"],
+        "./src/lakeflow_framework/schemas/secrets.json": ["*_secrets.yaml", "*_secrets.yml"]
+    }
 }

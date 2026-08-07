@@ -1,0 +1,174 @@
+{
+    "data_flow_id": "dim_customer_stream_static_json",
+    "data_flow_group": "stream_static_gold",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_stream_static_stg_customer_json_appnd_keys",
+            "node_type": "target",
+            "config": {
+                "table": "stream_static_stg_customer_json_appnd_keys",
+                "sources": [
+                    {
+                        "view": "v_stream_static_dim_customer_json",
+                        "flow": "f_stream_static_dim_customer_json"
+                    },
+                    {
+                        "view": "v_stream_static_dim_customer_address_json",
+                        "flow": "f_stream_static_dim_customer_address_json"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "target_stream_static_stg_customer_json_merge_keys",
+            "node_type": "target",
+            "config": {
+                "table": "stream_static_stg_customer_json_merge_keys",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "sequence_by": "__START_AT",
+                    "where": "",
+                    "ignore_null_updates": true,
+                    "except_column_list": [
+                        "__START_AT"
+                    ],
+                    "scd_type": "2",
+                    "track_history_column_list": [],
+                    "track_history_except_column_list": []
+                },
+                "sources": [
+                    {
+                        "view": "v_stream_static_stg_customer_json_appnd_keys",
+                        "flow": "f_stream_static_dim_customer_json_merge_keys"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "v_stream_static_dim_customer_json",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{silver_schema}",
+                "table": "base_customer_scd2",
+                "cdf_enabled": true,
+                "select_exp": [
+                    "CUSTOMER_ID",
+                    "__START_AT"
+                ]
+            }
+        },
+        {
+            "name": "v_stream_static_dim_customer_address_json",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{silver_schema}",
+                "table": "base_customer_address_scd2",
+                "cdf_enabled": true,
+                "select_exp": [
+                    "CUSTOMER_ID",
+                    "__START_AT"
+                ]
+            }
+        },
+        {
+            "name": "v_stream_static_stg_customer_json_appnd_keys",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "table": "stream_static_stg_customer_json_appnd_keys",
+                "as_view": false
+            }
+        },
+        {
+            "name": "v_stream_static_dim_customer_json_transform",
+            "node_type": "source",
+            "source_type": "delta_join",
+            "config": {
+                "mode": "stream",
+                "sources": [
+                    {
+                        "database": "live",
+                        "table": "stream_static_stg_customer_json_merge_keys",
+                        "cdf_enabled": true,
+                        "alias": "drv",
+                        "join_mode": "stream"
+                    },
+                    {
+                        "database": "{silver_schema}",
+                        "table": "base_customer_scd2",
+                        "cdf_enabled": false,
+                        "alias": "c",
+                        "join_mode": "static"
+                    },
+                    {
+                        "database": "{silver_schema}",
+                        "table": "base_customer_address_scd2",
+                        "cdf_enabled": false,
+                        "alias": "ca",
+                        "join_mode": "static"
+                    }
+                ],
+                "joins": [
+                    {
+                        "join_type": "inner",
+                        "condition": "drv.CUSTOMER_ID = c.CUSTOMER_ID and drv.__START_AT = c.__START_AT"
+                    },
+                    {
+                        "join_type": "inner",
+                        "condition": "drv.CUSTOMER_ID = ca.CUSTOMER_ID and drv.__START_AT = ca.__START_AT"
+                    }
+                ],
+                "select_exp": [
+                    "drv.CUSTOMER_ID",
+                    "drv.__START_AT",
+                    "c.FIRST_NAME",
+                    "c.LAST_NAME",
+                    "c.EMAIL",
+                    "ca.CITY",
+                    "ca.STATE",
+                    "c.DELETE_FLAG"
+                ]
+            }
+        },
+        {
+            "name": "target_stream_static_dim_customer_json_sample",
+            "node_type": "target",
+            "config": {
+                "database": "{gold_schema}",
+                "table": "stream_static_dim_customer_json_sample",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "__START_AT",
+                    "except_column_list": [
+                        "__START_AT"
+                    ],
+                    "ignore_null_updates": true,
+                    "apply_as_deletes": "DELETE_FLAG = 1"
+                },
+                "sources": [
+                    {
+                        "view": "v_stream_static_dim_customer_json_transform",
+                        "flow": "f_stream_static_dim_customer_json_target"
+                    }
+                ]
+            }
+        }
+    ]
+}

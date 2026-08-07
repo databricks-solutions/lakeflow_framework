@@ -1,6 +1,4 @@
 name: cdc_stream_from_snapshot_template
-
-# Parameter Definitions
 parameters:
   dataFlowId:
     type: string
@@ -20,73 +18,68 @@ parameters:
   schemaPath:
     type: string
     required: true
-
-# Template Definition
 template:
-  dataFlowId: ${param.dataFlowId}
-  dataFlowGroup: yaml_samples
-  dataFlowType: flow
-  targetFormat: delta
-  targetDetails:
-    table: ${param.targetTable}
-    tableProperties:
-      delta.enableChangeDataFeed: "true"
-  cdcSettings:
-    keys: ${param.cdcKeys}
-    scd_type: "2"
-    sequence_by: ${param.sequenceByColumn}
-    except_column_list:
-      - ${param.sequenceByColumn}
-      - is_delete
-    ignore_null_updates: false
-    apply_as_deletes: is_delete = 1
-  flowGroups:
-    - flowGroupId: main
-      stagingTables:
-        stg_${param.dataFlowId}_${param.sourceTable}:
-          type: ST
-          tableProperties:
-            delta.enableChangeDataFeed: "true"
-          cdcSnapshotSettings:
-            keys: ${param.cdcKeys}
-            scd_type: "1"
-            snapshotType: historical
-            sourceType: file
-            source:
-              format: csv
-              path: "{sample_file_location}/template_samples/snapshot_${param.sourceTable}/${param.sourceTable}_{version}.csv"
-              readerOptions:
-                header: "true"
-              versionType: timestamp
-              datetimeFormat: "%Y_%m_%d"
-              schemaPath: ${param.schemaPath}
-              selectExp:
-                - "* EXCEPT(${param.sequenceByColumn})"
-                - "TO_TIMESTAMP(${param.sequenceByColumn}, 'yyyy-MM-dd HH:mm:ss') AS ${param.sequenceByColumn}"
-                - "_metadata AS meta_file_metadata"
-          configFlags:
-            - disableOperationalMetadata
-      flows:
-        f_${param.dataFlowId}_${param.sourceTable}_merge_flow:
-          flowType: merge
-          flowDetails:
-            targetTable: ${param.targetTable}
-            sourceView: v_stg_${param.dataFlowId}_${param.sourceTable}
-          views:
-            v_stg_${param.dataFlowId}_${param.sourceTable}:
-              mode: stream
-              sourceType: delta
-              sourceDetails:
-                database: live
-                table: stg_${param.dataFlowId}_${param.sourceTable}
-                cdfEnabled: true
-                selectExp:
-                  - "*"
-                startingVersionFromDLTSetup: true
-                cdfChangeTypeOverride:
-                  - insert
-                  - update_postimage
-                  - delete
-                pythonTransform:
-                  functionPath: explode_deletes_function_transform.py
-
+  data_flow_id: ${param.dataFlowId}
+  data_flow_group: yaml_samples
+  data_flow_type: nodespec
+  nodes:
+  - name: target_stg_${param.dataFlowId}_${param.sourceTable}
+    node_type: target
+    config:
+      table: stg_${param.dataFlowId}_${param.sourceTable}
+      table_properties:
+        delta.enableChangeDataFeed: 'true'
+      config_flags:
+      - disable_operational_metadata
+      cdc_snapshot_settings:
+        keys: ${param.cdcKeys}
+        scd_type: '1'
+        snapshot_type: historical
+        source_type: file
+        source:
+          format: csv
+          path: '{sample_file_location}/template_samples/snapshot_${param.sourceTable}/${param.sourceTable}_{version}.csv'
+          reader_options:
+            header: 'true'
+          version_type: timestamp
+          datetime_format: '%Y_%m_%d'
+          schema_path: ${param.schemaPath}
+          select_exp:
+          - '* EXCEPT(${param.sequenceByColumn})'
+          - TO_TIMESTAMP(${param.sequenceByColumn}, 'yyyy-MM-dd HH:mm:ss') AS ${param.sequenceByColumn}
+          - _metadata AS meta_file_metadata
+  - name: v_stg_${param.dataFlowId}_${param.sourceTable}
+    node_type: source
+    source_type: delta
+    config:
+      mode: stream
+      database: live
+      table: stg_${param.dataFlowId}_${param.sourceTable}
+      cdf_enabled: true
+      select_exp:
+      - '*'
+      starting_version_from_dlt_setup: true
+      cdf_change_type_override:
+      - insert
+      - update_postimage
+      - delete
+      python_transform:
+        function_path: explode_deletes_function_transform.py
+  - name: target_${param.targetTable}
+    node_type: target
+    config:
+      table: ${param.targetTable}
+      table_properties:
+        delta.enableChangeDataFeed: 'true'
+      cdc_settings:
+        keys: ${param.cdcKeys}
+        scd_type: '2'
+        sequence_by: ${param.sequenceByColumn}
+        except_column_list:
+        - ${param.sequenceByColumn}
+        - is_delete
+        ignore_null_updates: false
+        apply_as_deletes: is_delete = 1
+      sources:
+      - view: v_stg_${param.dataFlowId}_${param.sourceTable}
+        flow: f_${param.dataFlowId}_${param.sourceTable}_merge_flow

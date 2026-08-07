@@ -1,0 +1,19 @@
+resources:
+  jobs:
+    lakeflow_samples_tpch_setup_job:
+      name: Lakeflow Framework - TPCH Samples - 0 - Setup and Initialise Staging (${var.logical_env})
+      queue:
+        enabled: true
+      job_clusters:
+        - job_cluster_key: ${var.job_cluster_name}
+          new_cluster: ${var.job_cluster_config}
+      tasks:
+        # One-time (idempotent) provisioning + full initial staging load. Skippable in demos.
+        - task_key: setup_catalogs_and_staging
+          job_cluster_key: ${var.job_cluster_name}
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/notebooks/setup_catalogs_and_staging
+            base_parameters:
+              catalog: ${var.catalog}
+              schema_namespace: ${var.schema_namespace}
+              logical_env: ${var.logical_env}

@@ -1,43 +1,59 @@
 {
-    "dataFlowId": "dimensions",
-    "dataFlowGroup": "tpch_gold",
-    "dataFlowType": "materialized_view",
-    "materializedViews": {
-        "dim_date": {
-            "sqlPath": "dim_date.sql",
-            "tableDetails": {
+    "data_flow_id": "dimensions",
+    "data_flow_group": "tpch_gold",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_dim_date",
+            "node_type": "target",
+            "config": {
+                "table": "dim_date",
+                "table_type": "mv",
+                "sql_path": "dim_date.sql",
                 "comment": "Static calendar dimension covering the TPC-H date range (1992-1998), including a fiscal calendar (FY starts 1 April). Generated via sequence + explode; rebuilt on each refresh.",
-                "tableProperties": {
+                "table_properties": {
                     "delta.enableRowTracking": "true"
                 }
             }
         },
-        "dim_location": {
-            "sqlPath": "dim_location.sql",
-            "tableDetails": {
+        {
+            "name": "target_dim_location",
+            "node_type": "target",
+            "config": {
+                "table": "dim_location",
+                "table_type": "mv",
+                "sql_path": "dim_location.sql",
                 "comment": "Geography dimension (SCD1, current view) joining nation and region from silver.",
-                "tableProperties": {
+                "table_properties": {
                     "delta.enableRowTracking": "true"
                 }
             }
         },
-        "dim_part": {
-            "sqlPath": "dim_part.sql",
-            "tableDetails": {
+        {
+            "name": "target_dim_part",
+            "node_type": "target",
+            "config": {
+                "table": "dim_part",
+                "table_type": "mv",
+                "sql_path": "dim_part.sql",
                 "comment": "Product catalog dimension built as a materialized view over the silver part SCD2 table; preserves __START_AT/__END_AT version history.",
-                "tableProperties": {
+                "table_properties": {
                     "delta.enableRowTracking": "true"
                 }
             }
         },
-        "dim_supplier": {
-            "sqlPath": "dim_supplier.sql",
-            "tableDetails": {
+        {
+            "name": "target_dim_supplier",
+            "node_type": "target",
+            "config": {
+                "table": "dim_supplier",
+                "table_type": "mv",
+                "sql_path": "dim_supplier.sql",
                 "comment": "Supplier dimension (genuine SCD2) built as a materialized view. Carries the real __START_AT/__END_AT validity windows from the silver supplier SCD2 feed; address/phone/nation joined at their current version.",
-                "tableProperties": {
+                "table_properties": {
                     "delta.enableRowTracking": "true"
                 }
             }
         }
-    }
+    ]
 }

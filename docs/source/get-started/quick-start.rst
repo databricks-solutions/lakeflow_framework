@@ -83,7 +83,7 @@ From the **repository root**:
 Step 4 — Deploy the samples
 ===========================
 
-Samples require the framework deploy above. ``./deploy.sh`` deploys the full sample set (feature-samples and pattern-samples). For bundle descriptions and other scripts, see ``samples/README.md`` in the repository.
+Samples require the framework deploy above. ``./deploy.sh`` deploys the full sample set (feature_samples and pattern_samples). For bundle descriptions and other scripts, see ``samples/README.md`` in the repository.
 
 From the ``samples/`` directory:
 
@@ -141,8 +141,8 @@ Run with no flags and answer the prompts:
 
 Schema namespaces created:
 
-* **feature-samples:** ``{namespace}_feature{logical_env}``
-* **pattern-samples:** ``{namespace}_staging{logical_env}``, ``{namespace}_bronze{logical_env}``, ``{namespace}_silver{logical_env}``, ``{namespace}_gold{logical_env}``
+* **feature_samples:** ``{namespace}_feature{logical_env}``
+* **pattern_samples:** ``{namespace}_staging{logical_env}``, ``{namespace}_bronze{logical_env}``, ``{namespace}_silver{logical_env}``, ``{namespace}_gold{logical_env}``
 
 Option B — Command-line
 -----------------------
@@ -204,7 +204,7 @@ Step 5 — Run the feature samples
 
    **``Lakeflow Framework - Feature Samples - Run (<logical_env>)``**
 
-   Or run from the CLI (from the ``samples/feature-samples`` bundle directory after deploy):
+   Or run from the CLI (from the ``samples/feature_samples`` bundle directory after deploy):
 
    .. code-block:: console
       :class: lf-command-block

@@ -4,8 +4,8 @@ The Framework comes with extensive samples that demonstrate the use of the frame
 
 | Bundle | Description |
 |--------|-------------|
-| **`feature-samples`** | Demonstrates every framework feature in isolation using a single `{namespace}_feature` schema. The simplest entry point. |
-| **`pattern-samples`** | End-to-end medallion architecture patterns (bronze → silver → gold) across multiple schemas. Includes multi-source streaming, stream-static joins, CDC from snapshot sources, and gold-layer materialized views. |
+| **`feature_samples`** | Demonstrates every framework feature in isolation using a single `{namespace}_feature` schema. The simplest entry point. |
+| **`pattern_samples`** | End-to-end medallion architecture patterns (bronze → silver → gold) across multiple schemas. Includes multi-source streaming, stream-static joins, CDC from snapshot sources, and gold-layer materialized views. |
 | **`yaml_sample`** | Demonstrates that data flow specs can be written in YAML format instead of JSON. Contains YAML equivalents of basic specs. |
 | **`tpch_sample`** | The most comprehensive end-to-end reference, built on the TPC-H dataset in the UC samples catalog. Covers multi-source schema-on-read bronze, conformed/history-tracked silver (SCD2 + SCD1 + append-only facts with DQ quarantine), and a governed gold star schema with surrogate keys, point-in-time joins, pre-aggregated MVs, and UC metric views. Uses template specs and a three-run incremental simulation. See its README.md |
 
@@ -16,9 +16,9 @@ The target **UC catalog must already exist** (default `main`, or pass another wi
 
 Scripts in the `samples/` directory:
 
-* `deploy.sh`: Deploys all the samples (feature-samples + pattern-samples). Prefer this for a full walkthrough.
-* `deploy_feature_samples.sh`: Deploys only the feature-samples bundle.
-* `deploy_pattern_samples.sh`: Deploys only the pattern-samples bundle.
+* `deploy.sh`: Deploys all the samples (feature_samples + pattern_samples). Prefer this for a full walkthrough.
+* `deploy_feature_samples.sh`: Deploys only the feature_samples bundle.
+* `deploy_pattern_samples.sh`: Deploys only the pattern_samples bundle.
 * `deploy_tpch.sh`: Deploys only the TPC-H sample.
 
 ### Prerequisites
@@ -62,8 +62,8 @@ Run the desired deploy script with no flags and answer the prompts:
 
 Schema namespaces created:
 
-* `feature-samples`: `{namespace}_feature{logical_env}`
-* `pattern-samples`: `{namespace}_staging{logical_env}`, `{namespace}_bronze{logical_env}`, `{namespace}_silver{logical_env}`, `{namespace}_gold{logical_env}`
+* `feature_samples`: `{namespace}_feature{logical_env}`
+* `pattern_samples`: `{namespace}_staging{logical_env}`, `{namespace}_bronze{logical_env}`, `{namespace}_silver{logical_env}`, `{namespace}_gold{logical_env}`
 
 ### Deployment Option B — Command-line
 
@@ -107,9 +107,9 @@ You should see the jobs and pipelines deployed in the UI.
 
 ## Using the Samples
 
-### feature-samples
+### feature_samples
 
-The `feature-samples` bundle deploys a single job that runs all feature pipelines end-to-end:
+The `feature_samples` bundle deploys a single job that runs all feature pipelines end-to-end:
 
 **Job:** `Lakeflow Framework - Feature Samples - Run ({logical_env})`
 
@@ -125,9 +125,9 @@ The job runs in three tiers:
 
 **Kafka samples** are deployed as a separate job: `Lakeflow Framework - Kafka Samples - Run ({logical_env})`
 
-### pattern-samples
+### pattern_samples
 
-The `pattern-samples` bundle simulates a 4-day incremental data load across four sequential jobs:
+The `pattern_samples` bundle simulates a 4-day incremental data load across four sequential jobs:
 
 * `Lakeflow Framework - Pattern Samples - Run 1 - Load and Schema Initialization ({logical_env})`
 * `Lakeflow Framework - Pattern Samples - Run 2 - Load ({logical_env})`

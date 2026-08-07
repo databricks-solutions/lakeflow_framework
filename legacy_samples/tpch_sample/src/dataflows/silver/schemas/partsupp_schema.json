@@ -1,0 +1,11 @@
+{
+    "type": "struct",
+    "fields": [
+        { "name": "part_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "supplier_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "available_qty", "type": "integer", "nullable": false, "metadata": {} },
+        { "name": "supply_cost", "type": "decimal(18,2)", "nullable": false, "metadata": {} },
+        { "name": "comment", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} }
+    ]
+}

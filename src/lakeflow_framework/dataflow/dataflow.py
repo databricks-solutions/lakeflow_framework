@@ -39,15 +39,18 @@ class DataFlow:
         cdc_settings (CDCSettings): The CDC settings.
         cdc_snapshot_settings (CDCSnapshotSettings): The CDC snapshot settings.
 
-        # expectations
-        expectations_enabled (bool): Whether expectations are enabled.
-        expectations (DataQualityExpectations): The data quality expectations.
+        # expectations (for main target)
+        expectations_enabled (bool): Whether expectations are enabled for main target.
+        expectations (DataQualityExpectations): The data quality expectations for main target.
         expectations_clause (Dict): The expectations clause for the SDP create table api.
 
-        # quarantine settings
-        quarantine_enabled (bool): Whether quarantine is enabled.
-        quarantine_manager (QuarantineManager): The quarantine manager.
-        quarantine_mode (str): The quarantine mode.
+        # quarantine settings (for main target)
+        quarantine_enabled (bool): Whether quarantine is enabled for main target.
+        quarantine_manager (QuarantineManager): The quarantine manager for main target.
+        quarantine_mode (str): The quarantine mode for main target.
+        
+        # per-target quarantine managers
+        staging_quarantine_managers (Dict): Quarantine managers per staging table.
 
         # table migration settings
         table_migration_manager (TableMigrationManager): The table migration manager.
@@ -92,6 +95,9 @@ class DataFlow:
         self._init_expectations()
         self._init_quarantine()
         self._init_table_migration()
+        
+        # Initialize per-staging-table quarantine managers (populated during flow group creation)
+        self.staging_quarantine_managers: Dict[str, QuarantineManager] = {}
 
     def _init_target_details(self):
         """init target details from the dataflow specification."""
@@ -268,7 +274,14 @@ class DataFlow:
         if staging_tables:
             self.logger.info("Creating Staging Tables...")
             for staging_table in staging_tables.values():
-                staging_table.create_table()
+                # Initialize DQ and quarantine for this staging table
+                staging_expectations = self._init_staging_table_expectations(staging_table)
+                self._init_staging_table_quarantine(staging_table, staging_expectations)
+                # Add SCD columns to staging table schema if it has a schema and CDC/CDC Snapshot SCD2
+                self._init_staging_table_cdc_settings(staging_table)
+
+                # Create the staging table with expectations if enabled
+                staging_table.create_table(staging_expectations)
 
                 # Support direct historical snapshots into Staging Tables in Flows
                 cdc_snapshot_settings = staging_table.get_cdc_snapshot_settings()
@@ -294,6 +307,93 @@ class DataFlow:
             else:
                 self.logger.info("Flow Disabled: %s", flow.flowName)
 
+    def _init_staging_table_expectations(self, staging_table: StagingTable) -> Dict:
+        """Initialize data quality expectations for a staging table."""
+        if not staging_table.dataQualityExpectationsEnabled:
+            return None
+        
+        self.logger.info("Initializing DQ expectations for staging table: %s", staging_table.table)
+        
+        expectations = staging_table.get_data_quality_expectations()
+        if expectations is None:
+            self.logger.warning(
+                "DQ enabled for staging table %s but no expectations loaded", 
+                staging_table.table
+            )
+            return None
+        
+        self.logger.debug("Expectations for %s: %s", staging_table.table, expectations.__dict__)
+        
+        # For quarantine FLAG mode, return expect_all format
+        if (staging_table.has_quarantine_enabled() 
+            and staging_table.quarantineMode == QuarantineMode.FLAG):
+            return expectations.get_expectations_as_expect_all()
+        
+        return expectations.get_expectations()
+
+    def _init_staging_table_quarantine(
+        self, 
+        staging_table: StagingTable,
+        expectations: Dict
+    ) -> None:
+        """Initialize quarantine manager for a staging table if enabled."""
+        if not staging_table.has_quarantine_enabled():
+            return
+        
+        # Get the DQ expectations object for quarantine rules
+        dq_expectations = staging_table.get_data_quality_expectations()
+        if dq_expectations is None or not dq_expectations.all_rules:
+            self.logger.warning(
+                "Quarantine enabled for staging table %s but no DQ rules available",
+                staging_table.table
+            )
+            return
+        
+        self.logger.info(
+            "Initializing quarantine for staging table: %s, mode: %s",
+            staging_table.table, staging_table.quarantineMode
+        )
+        
+        # Create quarantine manager for this staging table
+        quarantine_manager = QuarantineManager(
+            quarantine_mode=staging_table.quarantineMode,
+            data_quality_rules=dq_expectations.all_rules,
+            target_format=TargetType.DELTA,
+            target_details=staging_table,
+            quarantine_target_details=staging_table.quarantineTargetDetails or {}
+        )
+        
+        # Store the quarantine manager for this staging table
+        self.staging_quarantine_managers[staging_table.table] = quarantine_manager
+        
+        # Add quarantine columns to staging table schema if FLAG mode
+        if staging_table.quarantineMode == QuarantineMode.FLAG:
+            quarantine_manager.add_quarantine_columns_delta(staging_table)
+
+    def _init_staging_table_cdc_settings(self, staging_table: StagingTable):
+        """Add SCD2 columns to staging table schema if it has a defined schema and CDC/CDC Snapshot SCD type 2."""
+        if not hasattr(staging_table, 'schema') or not staging_table.schema:
+            return
+
+        def get_scd2_columns(sequence_by_data_type: T.DataType) -> List[T.StructField]:
+            return [
+                T.StructField(SystemColumns.SCD2Columns.SCD2_START_AT.value, sequence_by_data_type),
+                T.StructField(SystemColumns.SCD2Columns.SCD2_END_AT.value, sequence_by_data_type)
+            ]
+
+        cdc_settings = staging_table.get_cdc_settings()
+        cdc_snapshot_settings = staging_table.get_cdc_snapshot_settings()
+
+        scd2_cfg = None
+        if cdc_settings and cdc_settings.scd_type == "2":
+            scd2_cfg = cdc_settings
+        elif cdc_snapshot_settings and cdc_snapshot_settings.scd_type == "2":
+            scd2_cfg = cdc_snapshot_settings
+        if scd2_cfg:
+            sequence_by_data_type = scd2_cfg.sequence_by_data_type
+            scd2_columns = get_scd2_columns(sequence_by_data_type)
+            staging_table.add_columns(scd2_columns)
+
     def _create_flow(self, flow: BaseFlow, staging_tables: Dict[str, StagingTable]):
         """Create a flow and its associated views."""
         self.logger.info("Creating Views...")
@@ -301,49 +401,93 @@ class DataFlow:
         # Prepare Flow Configuration
         is_target = self.is_target(flow.targetTable)
         flow_config = self._prepare_flow_config(flow, staging_tables)
+        
+        # Get quarantine settings for this flow's target
+        quarantine_enabled, quarantine_mode, quarantine_manager = self._get_target_quarantine_settings(
+            flow.targetTable, staging_tables
+        )
 
         if isinstance(flow, BaseFlowWithViews):
             views = flow.get_views() or {}
 
             # Create views
-            self._create_views(views, flow.sourceView, is_target, flow_config.target_config_flags)
+            self._create_views(
+                views, flow.sourceView, is_target, flow_config.target_config_flags,
+                quarantine_enabled, quarantine_mode, quarantine_manager
+            )
 
             # Create Flow
             flow.create_flow(self.dataflow_config, flow_config)
 
             # Handle Table Quarantine Mode
-            if (self.quarantine_enabled
-                and self.quarantine_mode == QuarantineMode.TABLE
-                and is_target
+            if (quarantine_enabled
+                and quarantine_mode == QuarantineMode.TABLE
+                and quarantine_manager
             ):
-                self.quarantine_manager.create_quarantine_flow(flow.sourceView)
+                quarantine_manager.create_quarantine_flow(flow.sourceView)
 
         else:
             # Get quarantine rules if needed. note in table mode we don't apply them to the source view,
             # they are applied to a quarantine view that passes to the the quarantine target table.
             quarantine_rules = None
-            if (self.quarantine_enabled
-                and self.quarantine_mode != QuarantineMode.TABLE
-                and is_target
+            if (quarantine_enabled
+                and quarantine_mode != QuarantineMode.TABLE
+                and quarantine_manager
             ):
-                quarantine_rules = self.quarantine_manager.quarantine_rules
+                quarantine_rules = quarantine_manager.quarantine_rules
 
             # Create Flow
             flow.create_flow(self.dataflow_config, flow_config, quarantine_rules)
 
-    def _create_views(self, views: Dict[str, View], flow_source_view: str, is_target: bool, target_config_flags: List[str]) -> None:
+    def _get_target_quarantine_settings(
+        self,
+        target_table: str,
+        staging_tables: Dict[str, StagingTable]
+    ) -> tuple:
+        """Get quarantine settings for a target (main target or staging table)."""
+        is_target = self.is_target(target_table)
+        
+        if is_target:
+            # Main target uses spec-level quarantine settings
+            return (
+                self.quarantine_enabled,
+                self.quarantine_mode,
+                self.quarantine_manager if self.quarantine_enabled else None
+            )
+        else:
+            # Staging table uses its own quarantine settings
+            staging_table = staging_tables.get(target_table)
+            if staging_table and staging_table.has_quarantine_enabled():
+                quarantine_manager = self.staging_quarantine_managers.get(staging_table.table)
+                return (
+                    True,
+                    staging_table.quarantineMode,
+                    quarantine_manager
+                )
+            return (False, None, None)
+
+    def _create_views(
+        self, 
+        views: Dict[str, View], 
+        flow_source_view: str, 
+        is_target: bool, 
+        target_config_flags: List[str],
+        quarantine_enabled: bool = False,
+        quarantine_mode: str = None,
+        quarantine_manager: QuarantineManager = None
+    ) -> None:
         """Create views for the flow, handling quarantine as needed."""
         for view in views.values():
 
             # Get quarantine rules if needed. note in table mode we don't apply them to the source view,
             # they are applied to a quarantine view that passes to the the quarantine target table.
             quarantine_rules = None
-            if (self.quarantine_enabled
-                and self.quarantine_mode != QuarantineMode.TABLE
-                and is_target
+            if (quarantine_enabled
+                and quarantine_mode != QuarantineMode.TABLE
                 and flow_source_view == view.viewName
+                and quarantine_manager
             ):
-                quarantine_rules = self.quarantine_manager.quarantine_rules
+                quarantine_rules = quarantine_manager.quarantine_rules
 
             # Create the view
             view.create_view(

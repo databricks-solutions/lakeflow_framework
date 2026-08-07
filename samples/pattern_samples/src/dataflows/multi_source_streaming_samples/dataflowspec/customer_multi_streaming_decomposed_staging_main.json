@@ -1,0 +1,88 @@
+{
+    "data_flow_id": "multi_source_streaming_decomp_staging",
+    "data_flow_group": "multi_source_streaming_decomposed_staging",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "target_customer_ms_decomp_appnd",
+            "node_type": "target",
+            "config": {
+                "table": "customer_ms_decomp_appnd",
+                "sources": [
+                    {
+                        "view": "v_customer",
+                        "flow": "f_customer"
+                    },
+                    {
+                        "view": "v_customer_address",
+                        "flow": "f_customer_address"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "v_customer",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{bronze_schema}",
+                "table": "base_customer_append",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_customer_address",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{bronze_schema}",
+                "table": "base_customer_address_append",
+                "cdf_enabled": true,
+                "where_clause": [
+                    "STATE is not NULL"
+                ]
+            }
+        },
+        {
+            "name": "v_customer_ms_decomp_appnd",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "table": "customer_ms_decomp_appnd",
+                "as_view": false
+            }
+        },
+        {
+            "name": "target_customer_ms_decomp_merge",
+            "node_type": "target",
+            "config": {
+                "database": "{silver_schema}",
+                "table": "customer_ms_decomp_merge",
+                "schema_path": "customer.json",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "scd_type": "2",
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "except_column_list": [
+                        "LOAD_TIMESTAMP"
+                    ],
+                    "ignore_null_updates": true
+                },
+                "sources": [
+                    {
+                        "view": "v_customer_ms_decomp_appnd",
+                        "flow": "f_merge"
+                    }
+                ]
+            }
+        }
+    ]
+}

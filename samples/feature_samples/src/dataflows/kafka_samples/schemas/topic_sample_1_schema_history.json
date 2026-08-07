@@ -1,0 +1,47 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "key",
+            "type": "binary",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "value",
+            "type": "binary",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "topic",
+            "type": "string",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "partition",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "offset",
+            "type": "long",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "timestamp",
+            "type": "timestamp",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "timestampType",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        }
+    ]
+}

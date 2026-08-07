@@ -18,15 +18,15 @@ When selecting a pattern, start with ownership model, modeling approach, source 
 
 .. note::
 
-   These patterns are **not an exhaustive catalog** of everything the Lakeflow Framework supports. They are a curated **starting point** — common building blocks and composition approaches that align with the bundled ``pattern-samples`` and what most teams implement first. Combine, extend, or depart from them as your sources, modeling, and operational constraints require.
+   These patterns are **not an exhaustive catalog** of everything the Lakeflow Framework supports. They are a curated **starting point** — common building blocks and composition approaches that align with the bundled ``pattern_samples`` and what most teams implement first. Combine, extend, or depart from them as your sources, modeling, and operational constraints require.
 
 .. tip::
 
-   **Runnable samples:** End-to-end specs live in ``samples/pattern-samples`` (bronze → silver → gold, multi-source streaming, stream-static joins, CDC from snapshot, gold materialized views, and more). See :doc:`/samples/index` for deploy steps. Each pattern page links to the matching specs in that bundle; advanced pattern pages also include multi-day example data flows for SCD and late-arriving behavior.
+   **Runnable samples:** End-to-end specs live in ``samples/pattern_samples`` (bronze → silver → gold, multi-source streaming, stream-static joins, CDC from snapshot, gold materialized views, and more). See :doc:`/samples/index` for deploy steps. Each pattern page links to the matching specs in that bundle; advanced pattern pages also include multi-day example data flows for SCD and late-arriving behavior.
 
 .. rubric:: Base Patterns
 
-These patterns match the default ``pattern-samples`` bronze, silver, and gold pipelines. Most new projects begin here. See also :doc:`/build/patterns/base-patterns`.
+These patterns match the default ``pattern_samples`` bronze, silver, and gold pipelines. Most new projects begin here. See also :doc:`/build/patterns/base-patterns`.
 
 .. list-table::
    :widths: 30 70

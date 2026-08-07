@@ -1,6 +1,6 @@
 {
     "template": "silver_append_template",
-    "parameterSets": [
+    "parameter_sets": [
         {
             "dataFlowId": "lineitem",
             "sourceDatabase": "{bronze_order_fulfillment_schema}",

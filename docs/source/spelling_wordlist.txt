@@ -81,6 +81,7 @@ namespace
 namespaced
 namespaces
 nav
+nodespec
 Observability
 OAuth
 openpyxl

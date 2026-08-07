@@ -1,0 +1,9 @@
+{
+    "type": "struct",
+    "fields": [
+        { "name": "customer_key", "type": "long", "nullable": false, "metadata": {} },
+        { "name": "phone", "type": "string", "nullable": true, "metadata": {} },
+        { "name": "load_timestamp", "type": "timestamp", "nullable": false, "metadata": {} },
+        { "name": "effective_date", "type": "timestamp", "nullable": false, "metadata": {} }
+    ]
+}

@@ -1,6 +1,6 @@
 {
     "template": "bronze_parquet_ingestion_template",
-    "parameterSets": [
+    "parameter_sets": [
         {
             "dataFlowId": "crm_customer",
             "sourceSystem": "crm",

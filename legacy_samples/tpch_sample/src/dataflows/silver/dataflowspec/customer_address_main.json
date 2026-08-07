@@ -1,0 +1,57 @@
+{
+    "dataFlowId": "customer_address",
+    "dataFlowGroup": "tpch_silver",
+    "dataFlowType": "standard",
+    "sourceSystem": "tpch",
+    "sourceType": "delta",
+    "sourceViewName": "v_customer_address",
+    "sourceDetails": {
+        "database": "{bronze_crm_schema}",
+        "table": "customer_address",
+        "cdfEnabled": true,
+        "selectExp": [
+            "customer_id as customer_key",
+            "address",
+            "nat_id as nation_key",
+            "load_timestamp",
+            "effective_date",
+            "cdc_operation"
+        ]
+    },
+    "mode": "stream",
+    "targetFormat": "delta",
+    "targetDetails": {
+        "database": "{silver_schema}",
+        "table": "customer_address",
+        "tableProperties": {
+            "delta.enableChangeDataFeed": "true",
+            "delta.enableRowTracking": "true"
+        },
+        "schemaPath": "customer_address_schema.json"
+    },
+    "cdcSettings": {
+        "keys": [
+            "customer_key"
+        ],
+        "scd_type": "2",
+        "sequence_by": "effective_date",
+        "apply_as_deletes": "cdc_operation = 'D'",
+        "except_column_list": [
+            "load_timestamp",
+            "effective_date",
+            "cdc_operation"
+        ],
+        "ignore_null_updates": false,
+        "track_history_column_list": [
+            "address",
+            "nation_key"
+        ]
+    },
+    "dataQualityExpectationsEnabled": true,
+    "dataQualityExpectationsPath": "./customer_address_dqe.json",
+    "quarantineMode": "table",
+    "quarantineTargetDetails": {
+        "targetFormat": "delta",
+        "database": "{silver_schema}"
+    }
+}
