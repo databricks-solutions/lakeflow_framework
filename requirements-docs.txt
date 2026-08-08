@@ -1,4 +1,4 @@
-myst-parser==5.0.0
+myst-parser==5.1.0
 nbsphinx==0.9.8
 sphinx==9.0.4
 sphinx-autoapi==3.8.0
