@@ -2,7 +2,7 @@
 ## Databricks dependencies — pinned to DBR 17.3 LTS compatible versions
 databricks-connect==16.1.7
 databricks-dlt==0.3.0
-delta-spark==4.2.0
+delta-spark==4.3.0
 pyspark==4.1.1
 jsonschema==4.26.0
 
