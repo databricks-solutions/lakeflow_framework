@@ -8,11 +8,13 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:100%;height:100%}
-  body{background:#EBEEF0;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-direction:column;margin:0}
+  html,body{width:100%}
+  body{background:#EBEEF0;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;margin:0;overflow:hidden}
 
-  /* 1600x650 canvas + controls, scaled to fit the viewport width */
-  .fit{width:1600px;display:flex;flex-direction:column;align-items:center;gap:14px;transform-origin:top center}
+  /* 1600px-wide stage scaled to fill the (iframe) viewport width. Pinned top-left and out of
+     flow so the scaled visual spans exactly W x (650*s) — equal to the iframe's aspect-ratio
+     height — with no centering offset. */
+  .fit{position:absolute;top:0;left:0;width:1600px;transform-origin:top left}
   .stage{width:1600px;height:650px;position:relative;background:#fff;border-radius:16px;box-shadow:0 30px 100px rgba(0,0,0,.25);overflow:hidden}
 
   /* header */
@@ -208,23 +210,15 @@
     </div>
 
   </div>
-
-  <div class="ctl">
-    <button onclick="play()">▶ Replay</button>
-    <button onclick="stepMode()">Step through</button>
-  </div>
  </div>
 
 <script>
 const $=id=>document.getElementById(id);
 
-/* fit the 1600px-wide canvas + controls to the (iframe) viewport width */
+/* fit the 1600px-wide stage to the (iframe) viewport width */
 function fit(){const f=$('fit');if(!f)return;
-  const s=Math.min((window.innerWidth||1600)/1600,1);
-  f.style.transform='scale('+s+')';
-  // offsetHeight is the natural (unscaled) height; reserve exact scaled room so nothing clips
-  const nat=f.offsetHeight;
-  document.body.style.height=(nat*s)+'px';document.body.style.minHeight='0';}
+  const s=(window.innerWidth||1600)/1600;
+  f.style.transform='scale('+s+')';}
 window.addEventListener('resize',()=>{fit();buildLines();});
 
 /* icons */
@@ -371,6 +365,8 @@ function play(){
   ev(16700,()=>drawLn(LINES.g3));
   ev(17000,()=>show('pn4'));
   ev(17900,()=>$('badge').classList.remove('show'));
+  // no on-screen controls: loop the animation so it keeps replaying
+  ev(21500,()=>play());
 }
 
 /* step-through */

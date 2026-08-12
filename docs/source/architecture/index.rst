@@ -24,16 +24,7 @@ These approaches can be implemented using the same Data Flow Spec-driven pattern
 Framework overview
 ==================
 
-The below diagram illustrates some of the key concepts of the Framework, which are explained in more detail in the following sections.
-
-.. image:: ../images/framework_concept_overview.png
-   :target: _images/framework_concept_overview.png
-   :alt: Framework Concept Overview
-
-See how it fits together
-------------------------
-
-The animation below shows the same concepts in motion: the Platform Team deploys the Framework Bundle once, Data Engineers deploy Pipeline Bundles, and DABs deploy both to the workspace where the framework reads the Data Flow Specs and runs the Spark Declarative Pipeline.
+The animation below illustrates some of the key concepts of the Framework in motion: the Platform Team deploys the Framework Bundle once, Data Engineers deploy Pipeline Bundles, and DABs deploy both to the workspace where the framework reads the Data Flow Specs and runs the Spark Declarative Pipeline. These concepts are explained in more detail in the following sections.
 
 .. raw:: html
 
@@ -43,7 +34,6 @@ The animation below shows the same concepts in motion: the Platform Team deploys
                title="Lakeflow Framework — architecture in motion"
                loading="lazy" scrolling="no"></iframe>
      </div>
-     <p class="lf-demo__caption">Bundles, DABs deployment, and pipeline execution — how the pieces fit together.</p>
    </div>
 
 .. _concepts_dabs:

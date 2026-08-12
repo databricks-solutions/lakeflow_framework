@@ -8,9 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#1B3139;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-direction:column}
-  /* fit the fixed 1120px stage to the (iframe) viewport width */
-  #fit{transform-origin:top center}
+  body{background:#1B3139;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;margin:0;overflow:hidden}
+  /* fit the fixed 1120px-wide stage to the (iframe) viewport width. Pinned top-left and out
+     of flow so the scaled visual always spans exactly W x (660*s) — which equals the iframe's
+     aspect-ratio height — with no flexbox centering offset. */
+  #fit{position:absolute;top:0;left:0;transform-origin:top left}
   .sico{width:16px;height:16px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
   .sico svg{width:14px;height:14px}
 
@@ -245,12 +247,10 @@ const $=id=>document.getElementById(id);
 /* fit the fixed 1120x660 stage to the (iframe) viewport width; scale-aware coords below use __scale */
 let __scale=1;
 function fitDemo(){
-  const s=Math.min((window.innerWidth||1120)/1120,1);
+  const s=(window.innerWidth||1120)/1120;
   __scale=s;
   const f=$('fit');if(!f)return;
   f.style.transform='scale('+s+')';
-  f.style.width=(1120*s)+'px';
-  f.style.height=(660*s)+'px';
 }
 window.addEventListener('resize',fitDemo);
 const bg=t=>{$('badge').textContent=t;$('badge').classList.add('show')};
