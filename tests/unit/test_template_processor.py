@@ -129,6 +129,74 @@ class TestTemplateProcessorExpansion:
         spec = next(iter(result.values()))
         assert spec["targetDetails"]["layer"] == "bronze"
 
+    def test_applies_optional_defaults_for_all_parameter_types(
+        self,
+        pipeline_context,
+        framework_src_path: Path,
+        tmp_path: Path,
+    ):
+        """Defaults for string/integer/boolean/list/object must validate and apply (#127)."""
+        template_definition = {
+            "name": "all_defaults_template",
+            "parameters": {
+                "dataFlowId": {"type": "string", "required": True},
+                "layer": {"type": "string", "required": False, "default": "bronze"},
+                "batchSize": {"type": "integer", "required": False, "default": 100},
+                "enabled": {"type": "boolean", "required": False, "default": True},
+                "selectExp": {
+                    "type": "list",
+                    "required": False,
+                    "default": ["*", "_change_type as cdc_change_type"],
+                },
+                "metadata": {
+                    "type": "object",
+                    "required": False,
+                    "default": {"region": "us"},
+                },
+            },
+            "template": {
+                "dataFlowId": "${param.dataFlowId}",
+                "dataFlowGroup": "defaults_all_types",
+                "dataFlowType": "standard",
+                "sourceSystem": "test",
+                "sourceType": "cloudFiles",
+                "sourceViewName": "v_defaults",
+                "sourceDetails": {"path": "/data"},
+                "mode": "stream",
+                "targetFormat": "delta",
+                "targetDetails": {
+                    "database": "db",
+                    "table": "tbl",
+                    "layer": "${param.layer}",
+                },
+                "features": {
+                    "batchSize": "${param.batchSize}",
+                    "enabled": "${param.enabled}",
+                    "selectExp": "${param.selectExp}",
+                    "metadata": "${param.metadata}",
+                },
+            },
+        }
+        bundle = tmp_path / "bundle"
+        make_tree(
+            bundle,
+            {"templates/all_defaults_template.json": json.dumps(template_definition)},
+        )
+        processor = _processor(bundle, framework_src_path)
+        result = processor.process_template_spec(
+            "/virtual/all_defaults.json",
+            {
+                "template": "all_defaults_template",
+                "parameterSets": [{"dataFlowId": "typed_defaults"}],
+            },
+        )
+        spec = next(iter(result.values()))
+        assert spec["targetDetails"]["layer"] == "bronze"
+        assert spec["features"]["batchSize"] == 100
+        assert spec["features"]["enabled"] is True
+        assert spec["features"]["selectExp"] == ["*", "_change_type as cdc_change_type"]
+        assert spec["features"]["metadata"] == {"region": "us"}
+
     def test_expands_yaml_template_definition(
         self,
         pipeline_context,
