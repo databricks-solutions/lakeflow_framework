@@ -381,27 +381,29 @@ update_substitutions_file() {
         # JSON format: "key": "value"
         log_info "Detected JSON format"
         
-        # Update staging_schema
-        perl -i -pe "s|\"staging_schema\": \"[^\"]*\"|\"staging_schema\": \"$catalog.${schema_namespace}_staging${logical_env}\"|" "$substitutions_file"
+        # Update staging_schema (allow flexible whitespace around ':')
+        perl -i -pe "s|\"staging_schema\"\s*:\s*\"[^\"]*\"|\"staging_schema\": \"$catalog.${schema_namespace}_staging${logical_env}\"|" "$substitutions_file"
         
         # Update bronze_schema
-        perl -i -pe "s|\"bronze_schema\": \"[^\"]*\"|\"bronze_schema\": \"$catalog.${schema_namespace}_bronze${logical_env}\"|" "$substitutions_file"
+        perl -i -pe "s|\"bronze_schema\"\s*:\s*\"[^\"]*\"|\"bronze_schema\": \"$catalog.${schema_namespace}_bronze${logical_env}\"|" "$substitutions_file"
         
         # Update silver_schema
-        perl -i -pe "s|\"silver_schema\": \"[^\"]*\"|\"silver_schema\": \"$catalog.${schema_namespace}_silver${logical_env}\"|" "$substitutions_file"
+        perl -i -pe "s|\"silver_schema\"\s*:\s*\"[^\"]*\"|\"silver_schema\": \"$catalog.${schema_namespace}_silver${logical_env}\"|" "$substitutions_file"
         
         # Update gold_schema
-        perl -i -pe "s|\"gold_schema\": \"[^\"]*\"|\"gold_schema\": \"$catalog.${schema_namespace}_gold${logical_env}\"|" "$substitutions_file"
+        perl -i -pe "s|\"gold_schema\"\s*:\s*\"[^\"]*\"|\"gold_schema\": \"$catalog.${schema_namespace}_gold${logical_env}\"|" "$substitutions_file"
         
         # Update dpm_schema (if present)
-        perl -i -pe "s|\"dpm_schema\": \"[^\"]*\"|\"dpm_schema\": \"$catalog.${schema_namespace}_dpm${logical_env}\"|" "$substitutions_file"
+        perl -i -pe "s|\"dpm_schema\"\s*:\s*\"[^\"]*\"|\"dpm_schema\": \"$catalog.${schema_namespace}_dpm${logical_env}\"|" "$substitutions_file"
 
         # Update feature_schema (if present — feature_samples bundle)
-        perl -i -pe "s|\"feature_schema\": \"[^\"]*\"|\"feature_schema\": \"$catalog.${schema_namespace}_feature${logical_env}\"|" "$substitutions_file"
+        perl -i -pe "s|\"feature_schema\"\s*:\s*\"[^\"]*\"|\"feature_schema\": \"$catalog.${schema_namespace}_feature${logical_env}\"|" "$substitutions_file"
 
-        # Update sample_file_location — handles both _staging and _feature volume paths
-        perl -i -pe "s|\"sample_file_location\": \"[^/]*/[^/]*/[^_]*_staging[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume\"|" "$substitutions_file"
-        perl -i -pe "s|\"sample_file_location\": \"[^/]*/[^/]*/[^_]*_feature[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_feature${logical_env}/stg_volume\"|" "$substitutions_file"
+        # Update sample_file_location — handles both _staging and _feature volume paths.
+        # Match on "staging"/"feature" in the value (not [^_]* before the suffix): schema
+        # namespaces like lakeflow_samples_feature contain underscores that break [^_]*.
+        perl -i -pe "s|\"sample_file_location\"\s*:\s*\"[^\"]*staging[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume\"|" "$substitutions_file"
+        perl -i -pe "s|\"sample_file_location\"\s*:\s*\"[^\"]*feature[^\"]*\"|\"sample_file_location\": \"/Volumes/$catalog/${schema_namespace}_feature${logical_env}/stg_volume\"|" "$substitutions_file"
     fi
     
     log_success "Successfully updated substitutions file"
@@ -484,7 +486,6 @@ update_tpch_substitutions_file() {
 # Function to update pipeline bundle global.json|yaml with table_migration_state_volume_path (same catalog/schema rules as substitutions)
 update_pipeline_global_config_file() {
     local global_config_file="$1"
-    local checkpoint_path="/Volumes/$catalog/${schema_namespace}_staging${logical_env}/stg_volume/checkpoint_state"
 
     # Only update if using non-default values (match update_substitutions_file)
     if [[ "$catalog" == "$DEFAULT_CATALOG" && "$schema_namespace" == "$DEFAULT_SCHEMA_NAMESPACE" ]]; then
@@ -500,6 +501,15 @@ update_pipeline_global_config_file() {
         log_info "No table_migration_state_volume_path in $global_config_file, skipping global config update"
         return 0
     fi
+
+    # Preserve feature vs staging from the authored path. Feature samples use
+    # …_feature…/stg_volume; pattern/yaml samples use …_staging…. Hardcoding
+    # _staging breaks non-default catalogs for feature_samples.
+    local layer="staging"
+    if grep -Eq 'table_migration_state_volume_path["[:space:]:]*["/][^"]*_feature' "$global_config_file"; then
+        layer="feature"
+    fi
+    local checkpoint_path="/Volumes/$catalog/${schema_namespace}_${layer}${logical_env}/stg_volume/checkpoint_state"
 
     log_info "Updating pipeline global config: $global_config_file"
     log_info "Using table_migration_state_volume_path: $checkpoint_path"
