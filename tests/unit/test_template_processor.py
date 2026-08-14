@@ -197,6 +197,81 @@ class TestTemplateProcessorExpansion:
         assert spec["features"]["selectExp"] == ["*", "_change_type as cdc_change_type"]
         assert spec["features"]["metadata"] == {"region": "us"}
 
+    def test_parameter_set_value_overrides_optional_default(
+        self,
+        pipeline_context,
+        framework_src_path: Path,
+        tmp_path: Path,
+    ):
+        """A parameter set value must win over the template's optional default (#128).
+
+        The template declares a non-empty ``selectExp`` default; a parameter set
+        that supplies its own ``selectExp`` must override it (not merge or be
+        ignored), while a parameter set that omits it falls back to the default.
+        """
+        template_definition = {
+            "name": "override_template",
+            "parameters": {
+                "dataFlowId": {"type": "string", "required": True},
+                "selectExp": {
+                    "type": "list",
+                    "required": False,
+                    "default": ["*"],
+                },
+                "layer": {"type": "string", "required": False, "default": "bronze"},
+            },
+            "template": {
+                "dataFlowId": "${param.dataFlowId}",
+                "dataFlowGroup": "override_group",
+                "dataFlowType": "standard",
+                "sourceSystem": "test",
+                "sourceType": "cloudFiles",
+                "sourceViewName": "v_override",
+                "sourceDetails": {"path": "/data"},
+                "mode": "stream",
+                "targetFormat": "delta",
+                "targetDetails": {
+                    "database": "db",
+                    "table": "tbl",
+                    "layer": "${param.layer}",
+                },
+                "features": {
+                    "selectExp": "${param.selectExp}",
+                },
+            },
+        }
+        bundle = tmp_path / "bundle"
+        make_tree(
+            bundle,
+            {"templates/override_template.json": json.dumps(template_definition)},
+        )
+        processor = _processor(bundle, framework_src_path)
+        result = processor.process_template_spec(
+            "/virtual/override.json",
+            {
+                "template": "override_template",
+                "parameterSets": [
+                    {
+                        "dataFlowId": "xml_table",
+                        "selectExp": ["decompress(xml_col) AS xml_col"],
+                        "layer": "silver",
+                    },
+                    {"dataFlowId": "plain_table"},
+                ],
+            },
+        )
+        specs = {spec["dataFlowId"]: spec for spec in result.values()}
+
+        # Parameter set value overrides both the list default and the string default.
+        assert specs["xml_table"]["features"]["selectExp"] == [
+            "decompress(xml_col) AS xml_col"
+        ]
+        assert specs["xml_table"]["targetDetails"]["layer"] == "silver"
+
+        # Omitted parameters fall back to the template defaults.
+        assert specs["plain_table"]["features"]["selectExp"] == ["*"]
+        assert specs["plain_table"]["targetDetails"]["layer"] == "bronze"
+
     def test_expands_yaml_template_definition(
         self,
         pipeline_context,
