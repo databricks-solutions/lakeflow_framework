@@ -64,3 +64,64 @@ class TestSchemaContracts:
         )
         errors = validator.validate(payload)
         assert errors == [], f"minimal_template.json: {errors}"
+
+
+@pytest.fixture
+def template_definition_validator(framework_src_path: Path):
+    schema = framework_src_path / FrameworkPaths.TEMPLATE_DEFINITION_SPEC_SCHEMA_PATH.lstrip("./")
+    return utility.JSONValidator(str(schema))
+
+
+def _template_definition_with_default(param_type: str, default):
+    return {
+        "name": f"default_{param_type}_template",
+        "parameters": {
+            "dataFlowId": {"type": "string", "required": True},
+            "optionalParam": {
+                "type": param_type,
+                "required": False,
+                "default": default,
+            },
+        },
+        "template": {
+            "dataFlowId": "${param.dataFlowId}",
+            "value": "${param.optionalParam}",
+        },
+    }
+
+
+class TestTemplateDefinitionParameterDefaults:
+    """Parameter ``default`` must accept every declared parameter type (#127)."""
+
+    @pytest.mark.parametrize(
+        "param_type,default",
+        [
+            ("string", "bronze"),
+            ("integer", 42),
+            ("boolean", True),
+            ("list", ["*", "_change_type as cdc_change_type"]),
+            ("list", []),
+            ("object", {"region": "us"}),
+            ("object", {}),
+        ],
+        ids=[
+            "string",
+            "integer",
+            "boolean",
+            "list-with-values",
+            "list-empty",
+            "object-with-values",
+            "object-empty",
+        ],
+    )
+    def test_default_value_matches_parameter_type(
+        self, template_definition_validator, param_type, default
+    ):
+        payload = _template_definition_with_default(param_type, default)
+        errors = template_definition_validator.validate(payload)
+        assert errors == [], f"type={param_type!r} default={default!r}: {errors}"
+
+    def test_rejects_null_default(self, template_definition_validator):
+        payload = _template_definition_with_default("string", None)
+        errors = template_definition_validator.validate(payload)
+        assert errors, "null defaults should be rejected"

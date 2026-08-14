@@ -14,7 +14,7 @@
                     "properties": {
                         "type": {"type": "string", "enum": ["string", "list", "object", "integer", "boolean"]},
                         "required": {"type": "boolean", "default": true},
-                        "default": {"type": "string"}
+                        "default": {"type": ["string", "integer", "boolean", "array", "object"]}
                     },
                     "required": ["type"],
                     "additionalProperties": false
