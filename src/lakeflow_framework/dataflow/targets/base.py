@@ -11,11 +11,13 @@ import lakeflow_framework.utility as utility
 
 from ..enums import TableType, TargetConfigFlags
 from ..features import Features
+from .._ddl_parsing import (
+    ddl_column_name,
+    parse_ddl_text,
+    struct_from_ddl_column_lines,
+)
 
 Self = TypeVar("Self", bound="BaseTargetDelta")
-
-
-CONSTRAINT_KEY_WORDS = ("CONSTRAINT ", "PRIMARY KEY ", "FOREIGN KEY ")
 
 
 @dataclass(kw_only=True)
@@ -127,20 +129,15 @@ class BaseTargetDelta():
             if not isinstance(self._schema_json, dict):
                 raise ValueError(f"Invalid JSON schema format in {self.schemaPath}")
         elif file_extension == '.ddl':
-            with open(self.schemaPath, 'r', encoding='utf-8') as f:
-                self._schema_ddl = f.read()
-
-                # Parse schema
-                schema_lines = self._schema_ddl.split("\n")
-                schema_lines = [line.strip().rstrip(",") for line in schema_lines]
-                schema_lines = [line for line in schema_lines if not line.strip().startswith("--")]
-
-                # Parse constraints
-                schema_constraints = [line for line in schema_lines if line.strip().startswith(CONSTRAINT_KEY_WORDS)]
-                schema_lines = [line for line in schema_lines if not line.strip().startswith(CONSTRAINT_KEY_WORDS)]
-                
-                self._schema_lines = schema_lines
-                self._schema_constraints = schema_constraints
+            # Shared parser drops blank lines / comments (#139) and returns
+            # column vs constraint lines. Also populate _schema_struct so
+            # metadata helpers that need StructType see appended columns (#133).
+            with open(self.schemaPath, encoding="utf-8") as fh:
+                self._schema_ddl = fh.read()
+            schema_lines, schema_constraints = parse_ddl_text(self._schema_ddl)
+            self._schema_lines = schema_lines
+            self._schema_constraints = schema_constraints
+            self._schema_struct = struct_from_ddl_column_lines(schema_lines)
 
         # Initialize operational metadata schema
         if self.operational_metadata_schema:
@@ -190,7 +187,12 @@ class BaseTargetDelta():
         return self
 
     def _add_columns(self, columns: Union[List[T.StructField], List[Dict]]):
-        """Add columns to the target schema."""
+        """Add columns to the target schema.
+
+        Updates ``_schema_struct`` and ``_schema_lines`` independently whenever
+        each representation is populated (#133). DDL membership compares column
+        names extracted from lines, not raw DDL line strings.
+        """
         if not self._schema_struct and not self._schema_lines:
             raise ValueError(
                 f"Attempting to add columns to table: {self.table} but schema structure is not initialized.")
@@ -200,11 +202,13 @@ class BaseTargetDelta():
             if not isinstance(column, T.StructField):
                 raise ValueError(f"Unsupported column format: {type(column)}. Must be Dict or StructField.")
 
-            if self.schema_type == "json":
+            if self._schema_struct is not None:
                 if column.name not in self._schema_struct.fieldNames():
                     self._schema_struct = self._schema_struct.add(column)
-            elif self.schema_type == "ddl":
-                if column.name not in self._schema_lines:
+
+            if self._schema_lines:
+                existing_names = {ddl_column_name(line) for line in self._schema_lines}
+                if column.name not in existing_names:
                     self._schema_lines.append(column.simpleString().replace(":", " "))
 
     def remove_columns(self, column_names: List[str]) -> Self:
@@ -225,15 +229,16 @@ class BaseTargetDelta():
         if not self._schema_struct and not self._schema_lines:
             raise ValueError("Schema structure is not initialized.")
 
-        if self.schema_type == "json":
+        if self._schema_struct is not None:
             self._schema_struct = T.StructType([
                 field for field in self._schema_struct.fields
                 if field.name not in column_names
             ])
-        elif self.schema_type == "ddl":
+
+        if self._schema_lines:
             self._schema_lines = [
                 line for line in self._schema_lines
-                if line.strip().split(" ")[0] not in column_names
+                if ddl_column_name(line) not in column_names
             ]
 
     def add_table_properties(self, table_properties: Dict) -> Self:
