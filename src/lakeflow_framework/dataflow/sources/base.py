@@ -16,6 +16,7 @@ from ..enums import TargetConfigFlags
 from ..features import Features
 from ..operational_metadata import OperationalMetadataMixin
 from ..sql import SqlMixin
+from .._ddl_parsing import parse_ddl_file, struct_from_ddl_column_lines
 
 Self = TypeVar("Self", bound="BaseSource")
 
@@ -215,18 +216,45 @@ class BaseSourceWithSchemaOnRead(BaseSource):
     """
     schemaPath: str = None
     _schema_json: Dict[str, Any] = field(default_factory=dict, init=False)
+    _schema_struct: T.StructType | None = field(default=None, init=False)
 
     @property
     def schema_json(self) -> Dict[str, Any]:
-        """Lazily load the schema JSON from the schema path."""
+        """Lazily load the schema as JSON (from ``.json`` or derived from ``.ddl``)."""
         if not self._schema_json and self.schemaPath and self.schemaPath.strip() != "":
-            self._schema_json = utility.get_json_from_file(self.schemaPath)
+            ext = os.path.splitext(self.schemaPath)[1].lower()
+            if ext == ".json":
+                self._schema_json = utility.get_json_from_file(self.schemaPath)
+            elif ext == ".ddl":
+                struct = self.schema_struct
+                self._schema_json = struct.jsonValue() if struct else {}
+            else:
+                raise ValueError(
+                    f"Unsupported schema file extension: {ext}. Only .json and .ddl are supported."
+                )
         return self._schema_json
 
     @property
     def schema_struct(self) -> T.StructType:
-        """Lazily load the schema from the schema path."""
-        return T.StructType.fromJson(self.schema_json) if self.schema_json else None
+        """Lazily load the schema from the schema path (JSON or DDL) (#132)."""
+        if self._schema_struct is not None:
+            return self._schema_struct
+        if not self.schemaPath or self.schemaPath.strip() == "":
+            return None
+
+        ext = os.path.splitext(self.schemaPath)[1].lower()
+        if ext == ".ddl":
+            column_lines, _constraints = parse_ddl_file(self.schemaPath)
+            self._schema_struct = struct_from_ddl_column_lines(column_lines)
+            return self._schema_struct
+        if ext == ".json":
+            json_schema = self.schema_json
+            self._schema_struct = T.StructType.fromJson(json_schema) if json_schema else None
+            return self._schema_struct
+
+        raise ValueError(
+            f"Unsupported schema file extension: {ext}. Only .json and .ddl are supported."
+        )
 
 
 

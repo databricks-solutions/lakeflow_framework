@@ -71,7 +71,7 @@
                 },
                 "selectExp": {"type": "array", "items": {"type": "string"}},
                 "whereClause": {"type": "array", "items": {"type": "string"}},
-                "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
             },
             "required": ["path", "readerOptions"],
@@ -181,7 +181,7 @@
                 },
                 "selectExp": {"type": "array", "items": {"type": "string"}},
                 "whereClause": {"type": "array", "items": {"type": "string"}},
-                "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
             },
             "required": ["path", "readerOptions"],
@@ -195,7 +195,7 @@
                 "tablePath": {"type": "string"},
                 "selectExp": {"type": "array", "items": {"type": "string"}},
                 "whereClause": {"type": "array", "items": {"type": "string"}},
-                "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "readerOptions": {"type": "object", "additionalProperties": true},
                 "cdfChangeTypeOverride": {"type": "array", "items": {"type": "string", "enum": ["insert", "update_postimage", "delete"]}},
                 "startingVersionFromDLTSetup": {"type": "boolean"},
@@ -229,7 +229,7 @@
                             "tablePath": {"type": "string"},
                             "selectExp": {"type": "array", "items": {"type": "string"}},
                             "whereClause": {"type": "array", "items": {"type": "string"}},
-                            "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                            "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
                             "readerOptions": {"type": "object", "additionalProperties": true},
                             "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
                         },
@@ -278,7 +278,7 @@
                 },
                 "selectExp": {"type": "array", "items": {"type": "string"}},
                 "whereClause": {"type": "array", "items": {"type": "string"}},
-                "schemaPath": {"type": "string", "pattern": "\\.json$"},
+                "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
             },
             "required": ["readerOptions"],
