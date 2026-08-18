@@ -204,7 +204,7 @@
                 "reader_options": {"$ref": "#/$defs/reader_options_cloud_files"},
                 "select_exp": {"type": "array", "items": {"type": "string"}},
                 "where_clause": {"type": "array", "items": {"type": "string"}},
-                "schema_path": {"type": "string", "pattern": "\\.json$"},
+                "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "python_transform": {"$ref": "#/$defs/python_transform"}
             },
             "required": ["path", "reader_options"],
@@ -221,7 +221,7 @@
                 "reader_options": {"type": "object", "additionalProperties": true},
                 "select_exp": {"type": "array", "items": {"type": "string"}},
                 "where_clause": {"type": "array", "items": {"type": "string"}},
-                "schema_path": {"type": "string", "pattern": "\\.json$"},
+                "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "python_transform": {"$ref": "#/$defs/python_transform"}
             },
             "required": ["path", "reader_options"],
@@ -236,7 +236,7 @@
                 "reader_options": {"$ref": "#/$defs/reader_options_kafka"},
                 "select_exp": {"type": "array", "items": {"type": "string"}},
                 "where_clause": {"type": "array", "items": {"type": "string"}},
-                "schema_path": {"type": "string", "pattern": "\\.json$"},
+                "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "python_transform": {"$ref": "#/$defs/python_transform"}
             },
             "required": ["reader_options"],
@@ -261,7 +261,7 @@
                             "table_path": {"type": "string"},
                             "select_exp": {"type": "array", "items": {"type": "string"}},
                             "where_clause": {"type": "array", "items": {"type": "string"}},
-                            "schema_path": {"type": "string", "pattern": "\\.json$"},
+                            "schema_path": {"type": "string", "pattern": "\\.(json|ddl)$"},
                             "reader_options": {"type": "object", "additionalProperties": true},
                             "python_transform": {"$ref": "#/$defs/python_transform"}
                         },

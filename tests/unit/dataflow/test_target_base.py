@@ -115,6 +115,20 @@ class TestBaseTargetDeltaSchemaDdl:
         assert target.schema_type == "ddl"
         assert "id INT" in target.schema_ddl
         assert "CONSTRAINT pk PRIMARY KEY (id)" in target.schema_ddl
+        # DDL load also populates StructType for metadata helpers (#133)
+        assert target.schema_struct.fieldNames() == ["id", "name"]
+
+    def test_ignores_blank_lines_in_ddl(self, pipeline_context, tmp_path):
+        """Trailing/blank lines must not produce PARSE_SYNTAX_ERROR DDL (#139)."""
+        schema_path = tmp_path / "blank_lines.ddl"
+        schema_path.write_text("`a` STRING,\n\n`b` INT\n")
+        target = TargetDeltaStreamingTable(
+            table="t",
+            type=TableType.STREAMING.value,
+            schemaPath=str(schema_path),
+        )
+        assert ",\n," not in target.schema_ddl
+        assert target.schema_struct.fieldNames() == ["a", "b"]
 
     def test_add_columns_appends_ddl_lines(self, pipeline_context, fixtures_dir):
         schema_path = fixtures_dir / "schemas" / "minimal_table.ddl"
@@ -125,7 +139,33 @@ class TestBaseTargetDeltaSchemaDdl:
         )
         target.add_columns([T.StructField("extra", T.StringType())])
         assert "extra string" in target.schema_ddl
+        assert "extra" in target.schema_struct.fieldNames()
 
+    def test_add_columns_skips_existing_ddl_by_column_name(self, pipeline_context, tmp_path):
+        """Membership must compare names, not raw DDL lines (#133)."""
+        schema_path = tmp_path / "quoted.ddl"
+        schema_path.write_text("`id` INT,\n`name` STRING\n")
+        target = TargetDeltaStreamingTable(
+            table="t",
+            type=TableType.STREAMING.value,
+            schemaPath=str(schema_path),
+        )
+        original_ddl = target.schema_ddl
+        original_fields = list(target.schema_struct.fieldNames())
+        target.add_columns([T.StructField("id", T.IntegerType())])
+        assert target.schema_ddl == original_ddl
+        assert target.schema_struct.fieldNames() == original_fields
+
+    def test_add_columns_keeps_struct_and_ddl_in_sync(self, pipeline_context, fixtures_dir):
+        schema_path = fixtures_dir / "schemas" / "minimal_table.ddl"
+        target = TargetDeltaStreamingTable(
+            table="t",
+            type=TableType.STREAMING.value,
+            schemaPath=str(schema_path),
+        )
+        target.add_columns([T.StructField("meta", T.StringType())])
+        assert "meta" in target.schema_struct.fieldNames()
+        assert any(line.startswith("meta ") for line in target._schema_lines)
 
 class TestBaseTargetDeltaProperties:
     def test_merges_mandatory_table_properties(self, pipeline_context):
