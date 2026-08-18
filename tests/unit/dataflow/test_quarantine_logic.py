@@ -6,9 +6,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
+import lakeflow_framework.dataflow.quarantine as quarantine_module
 from lakeflow_framework.dataflow.enums import Mode, QuarantineMode, TableType, TargetType
 from lakeflow_framework.dataflow.quarantine import QuarantineManager
 from lakeflow_framework.dataflow.targets import TargetDeltaMaterializedView, TargetDeltaStreamingTable
+
+# Captured before any test patches the class, so the ANSI filter tests can call the real method.
+_REAL_CREATE_VIEW_MV = QuarantineManager._create_quarantine_view_mv
 
 
 def _streaming_target(table: str) -> TargetDeltaStreamingTable:
@@ -57,7 +61,34 @@ class TestQuarantineLogic:
         self, pipeline_context, monkeypatch
     ):
         manager, _ = _build_quarantine_manager(monkeypatch, pipeline_context)
-        assert manager.quarantine_rules == "NOT(id IS NOT NULL)"
+        assert manager.quarantine_rules == "NOT((id IS NOT NULL))"
+
+    def test_parenthesises_each_rule_when_combining(
+        self, pipeline_context, monkeypatch
+    ):
+        """A rule containing OR must not change the combined predicate (#134)."""
+        manager, _ = _build_quarantine_manager(
+            monkeypatch,
+            pipeline_context,
+            data_quality_rules={
+                "present": "a IS NULL OR b > 0",
+                "positive": "c > 0",
+            },
+        )
+        assert manager.quarantine_rules == "NOT((a IS NULL OR b > 0) AND (c > 0))"
+
+    def test_missing_quarantine_target_details_falls_back_to_target_name(
+        self, pipeline_context, monkeypatch
+    ):
+        """quarantineMode: table without quarantineTargetDetails must not raise (#134)."""
+        _, captured = _build_quarantine_manager(
+            monkeypatch,
+            pipeline_context,
+            target_details=_streaming_target("catalog.schema.orders"),
+            quarantine_target_details=None,
+        )
+        assert captured["table_details"]["table"] == "catalog.schema.orders_quarantine"
+        assert captured["table_details"]["database"] is None
 
     def test_stream_mode_uses_streaming_quarantine_table_type(
         self, pipeline_context, monkeypatch
@@ -149,3 +180,82 @@ class TestQuarantineLogic:
         )
         with pytest.raises(ValueError, match="Cannot create quarantine flow for batch mode"):
             manager.create_quarantine_flow("v_orders")
+
+
+class _RecordingDataFrame:
+    """DataFrame stand-in that records the arguments it is filtered with."""
+
+    def __init__(self, recorder: dict, columns: list[str] | None = None):
+        self._recorder = recorder
+        self.columns = columns if columns is not None else ["id", "_quarantine_flag"]
+
+    def withColumn(self, name, expression):
+        self._recorder["with_column"] = (name, expression)
+        return self
+
+    def where(self, condition):
+        self._recorder["where"] = condition
+        return self
+
+    def drop(self, *columns):
+        self._recorder["drop"] = columns
+        return self
+
+
+class TestQuarantineFilterIsAnsiSafe:
+    """The quarantine flag is boolean, so it must not be compared to 1 (#134)."""
+
+    def test_materialized_view_filters_on_boolean_column(
+        self, pipeline_context, monkeypatch
+    ):
+        recorder: dict = {}
+        captured_views: dict = {}
+
+        def fake_view(function, name=None, comment=None):
+            captured_views[name] = function
+
+        manager, _ = _build_quarantine_manager(
+            monkeypatch,
+            pipeline_context,
+            target_details=_materialized_view_target("catalog.schema.orders"),
+        )
+        # raising=False: the installed pyspark exposes temporary_view, not view.
+        monkeypatch.setattr(quarantine_module.dp, "view", fake_view, raising=False)
+        manager.spark = MagicMock()
+        manager.spark.read.table.return_value = _RecordingDataFrame(recorder)
+
+        # The builder helper stubs out view creation, so invoke the real implementation.
+        _REAL_CREATE_VIEW_MV(manager, "v_q", manager.target_details)
+        captured_views["v_q"]()
+
+        condition = recorder["where"]
+        assert not isinstance(condition, str)
+        assert "= 1" not in str(condition)
+
+    def test_append_flow_filters_on_boolean_column(
+        self, pipeline_context, monkeypatch
+    ):
+        recorder: dict = {}
+        captured_flows: dict = {}
+
+        def fake_append_flow(name=None, target=None):
+            def decorator(function):
+                captured_flows[name] = function
+                return function
+            return decorator
+
+        manager, _ = _build_quarantine_manager(
+            monkeypatch,
+            pipeline_context,
+            target_details=_streaming_target("catalog.schema.orders"),
+        )
+        monkeypatch.setattr(quarantine_module.dp, "append_flow", fake_append_flow)
+        manager.spark = MagicMock()
+        manager.spark.readStream.table.return_value = _RecordingDataFrame(recorder)
+
+        manager._create_quarantine_flow("v_q", "catalog.schema.orders_quarantine")
+        captured_flows["f_quarantine_v_q"]()
+
+        condition = recorder["where"]
+        assert not isinstance(condition, str)
+        assert "= 1" not in str(condition)
