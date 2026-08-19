@@ -227,3 +227,68 @@ class TestDataflowSpecBuilderFilters:
         }
         with pytest.raises(ValueError, match="Invalid dataflow spec files found"):
             builder._validate_dataflow_specs(bad_specs)
+
+    def test_nodespec_validator_resolves_packaged_schema(
+        self, secrets_manager, framework_src_path, minimal_bundle_tree, pipeline_context
+    ):
+        # Regression for #135: the schema lives under lakeflow_framework/schemas/,
+        # not <framework_path>/schemas/, and must be resolved eagerly (no silent skip).
+        builder = _make_builder(secrets_manager, framework_src_path, minimal_bundle_tree)
+        assert builder.nodespec_validator.schema["title"] == "Nodespec Dataflow Specification"
+
+    def test_validate_dataflow_specs_validates_nodespec_against_schema(
+        self, secrets_manager, framework_src_path, minimal_bundle_tree, pipeline_context
+    ):
+        builder = _make_builder(
+            secrets_manager,
+            framework_src_path,
+            minimal_bundle_tree,
+            ignore_validation_errors=False,
+        )
+        # Metadata keys are camelCase after read-time normalisation; `nodes` is
+        # required by spec_nodespec.json, so this payload must be rejected.
+        bad_specs = {
+            "/bad_nodespec.json": {
+                "fileType": "main",
+                "dataFlowType": "nodespec",
+                "data": {"dataFlowId": "x", "dataFlowGroup": "g", "dataFlowType": "nodespec"},
+            }
+        }
+        with pytest.raises(ValueError, match="Invalid dataflow spec files found"):
+            builder._validate_dataflow_specs(bad_specs)
+
+    def test_validate_dataflow_specs_accepts_valid_nodespec(
+        self, secrets_manager, framework_src_path, minimal_bundle_tree, pipeline_context
+    ):
+        builder = _make_builder(
+            secrets_manager,
+            framework_src_path,
+            minimal_bundle_tree,
+            ignore_validation_errors=False,
+        )
+        good_specs = {
+            "/good_nodespec.json": {
+                "fileType": "main",
+                "dataFlowType": "nodespec",
+                "data": {
+                    "dataFlowId": "x",
+                    "dataFlowGroup": "g",
+                    "dataFlowType": "nodespec",
+                    "nodes": [
+                        {
+                            "name": "src",
+                            "node_type": "source",
+                            "source_type": "delta",
+                            "config": {"table": "cat.sch.tbl"},
+                        },
+                        {
+                            "name": "tgt",
+                            "node_type": "target",
+                            "config": {"table": "tgt_tbl", "sources": ["src"]},
+                        },
+                    ],
+                },
+            }
+        }
+        builder._validate_dataflow_specs(good_specs)
+        assert builder.validation_errors == {}

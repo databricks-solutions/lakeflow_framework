@@ -17,6 +17,7 @@ class TestFrameworkPaths:
     def test_schema_paths_are_under_schemas_directory(self):
         assert FrameworkPaths.MAIN_SPEC_SCHEMA_PATH.endswith("main.json")
         assert FrameworkPaths.TEMPLATE_SPEC_SCHEMA_PATH.endswith("spec_template.json")
+        assert FrameworkPaths.NODESPEC_SPEC_SCHEMA_PATH == "./lakeflow_framework/schemas/spec_nodespec.json"
 
 
 class TestPipelineBundlePaths:
