@@ -49,9 +49,11 @@ class QuarantineManager():
         self.quarantine_mode = quarantine_mode
         self.data_quality_rules = data_quality_rules
         self.target_format = target_format
-        self.quarantine_target_details = quarantine_target_details
+        self.quarantine_target_details = quarantine_target_details or {}
         self.target_details = target_details
-        self.quarantine_rules = f"NOT({ ' AND '.join(data_quality_rules.values()) })"
+        # Each rule is parenthesised so a rule containing OR cannot change the
+        # meaning of the combined predicate.
+        self.quarantine_rules = f"NOT({ ' AND '.join(f'({rule})' for rule in data_quality_rules.values()) })"
         self.mode = Mode.STREAM if (
             (self.target_format == TargetType.DELTA and self.target_details.type == TableType.STREAMING.value)
             or self.target_format in (TargetType.KAFKA_SINK) #TODO: Add other types as they become supported
@@ -184,7 +186,7 @@ class QuarantineManager():
 
             return (df
                 .withColumn(quarantine_column_name, F.expr(self.quarantine_rules))
-                .where(f"{quarantine_column_name} = 1")
+                .where(F.col(quarantine_column_name))
                 .drop(quarantine_column_name)
             )
 
@@ -232,7 +234,7 @@ class QuarantineManager():
             name=f"f_quarantine_{quarantine_view_name}",
             target=quarantine_table_name)
         def quarantined_rows():
-            df = self.spark.readStream.table(f"live.{quarantine_view_name}").where(f"{quarantine_column_name} = 1")
+            df = self.spark.readStream.table(f"live.{quarantine_view_name}").where(F.col(quarantine_column_name))
             df = utility.drop_columns(df, columns_to_drop)
             return df
     
