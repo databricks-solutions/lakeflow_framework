@@ -76,8 +76,11 @@ def create_table_import_flow(
                 sequence_by=SystemColumns.SCD2Columns.SCD2_START_AT.value,
                 apply_as_deletes=f"{is_deleted_column} = true",
                 ignore_null_updates=cdc_settings.ignore_null_updates,
-                except_column_list= (
-                    list(set(cdc_settings.except_column_list.copy().extend(*exclude_columns)))
+                # Union of the spec's except_column_list and the framework's
+                # internal columns; dict.fromkeys de-duplicates while keeping order
+                # (list.extend() returns None, so it cannot be chained here).
+                except_column_list=(
+                    list(dict.fromkeys([*cdc_settings.except_column_list, *exclude_columns]))
                     if cdc_settings.except_column_list
                     else [is_deleted_column, *scd2_columns]
                 )
