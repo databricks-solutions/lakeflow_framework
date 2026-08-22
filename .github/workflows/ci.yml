@@ -6,11 +6,15 @@
 #
 # | Job               | When it runs                          |
 # |-------------------|---------------------------------------|
-# | changes           | Always (path filter outputs)          |
-# | pytest            | Always on PR / push                   |
-# | docs-spelling     | docs/** changed                       |
-# | docs-html         | docs/** changed                       |
-# | validate-samples  | samples/** changed                    |
+# | changes           | Same-repo PR / push (path filters)    |
+# | pytest            | Same-repo PR / push                   |
+# | docs-spelling     | docs/** changed (same-repo)           |
+# | docs-html         | docs/** changed (same-repo)           |
+# | validate-samples  | samples/** changed (same-repo)        |
+#
+# Fork pull_request jobs cannot mint this repository's OIDC token, so every
+# JFrog-backed job is skipped when head.repo is not this repository. Push to
+# main is unchanged. Docs/validate jobs need `changes`, so they skip too.
 
 name: CI
 
@@ -33,6 +37,7 @@ concurrency:
 jobs:
   changes:
     name: Detect changes
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on:
       group: databricks-solutions-protected-runner-group
       labels: linux-ubuntu-latest
@@ -59,6 +64,7 @@ jobs:
 
   pytest:
     name: Unit tests
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on:
       group: databricks-solutions-protected-runner-group
       labels: linux-ubuntu-latest
