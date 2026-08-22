@@ -786,12 +786,15 @@ Per-materialized-view Spark config:
 
 ### Secrets Management
 
-Reference Databricks secrets in Data Flow Specs:
+Reference Databricks secrets in Data Flow Specs with `${secret.<alias>}` (aliases from the pipeline secrets config). The token may be the entire field or embedded in a larger string. Spark-conf syntax `{{secrets/scope/key}}` is **not** interpolated in Data Flow Spec `readerOptions`.
+
 ```json
 "sourceDetails": {
     "readerOptions": {
-        "kafka.bootstrap.servers": "{{secrets/my-scope/kafka-brokers}}",
-        "kafka.sasl.jaas.config": "{{secrets/my-scope/kafka-jaas}}"
+        "kafka.bootstrap.servers": "${secret.kafka_brokers}",
+        "kafka.security.protocol": "SASL_SSL",
+        "kafka.sasl.mechanism": "PLAIN",
+        "kafka.sasl.jaas.config": "kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${secret.kafka_client_id}\" password=\"${secret.kafka_client_secret}\";"
     }
 }
 ```

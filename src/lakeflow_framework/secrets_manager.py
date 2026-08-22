@@ -49,19 +49,20 @@ class SecretConfig:
 
 class SecretValue:
     """
-    A wrapper class that lazily retrieves secrets when accessed.
-    This prevents secrets from being stored in memory and only retrieves them when needed.
+    Wrapper that yields the secret to Spark via ``str()`` while keeping
+    ``repr()`` (used by dict logging and debug prints) redacted.
     """
-    def __init__(self, secret: str):
+    def __init__(self, secret: str, *, redacted: str = "[REDACTED]"):
         self.__secret = secret
+        self.__redacted = redacted
 
     def __str__(self) -> str:
-        """Return the secret value when converted to string."""
+        """Return the secret value when converted to string (Spark options)."""
         return self.__secret
 
     def __repr__(self) -> str:
-        """Return a redacted string representation."""
-        return "[REDACTED]"
+        """Return a redacted string representation for logs and debug prints."""
+        return self.__redacted
 
     def __dict__(self) -> Dict[str, str]:
         """Prevent conversion to dict from exposing the secret value."""
@@ -92,7 +93,8 @@ class SecretsManager:
         value = manager.get_secret("db_password")  # Get specific secret
     """
 
-    SECRET_PATTERN: Pattern = re.compile(r"^\$\{secret\.([a-zA-Z0-9_]+)\}$")
+    # Matches ``${secret.alias}`` anywhere in a string (whole value or embedded).
+    SECRET_PATTERN: Pattern = re.compile(r"\$\{secret\.([a-zA-Z0-9_]+)\}")
 
     def __init__(
         self,
@@ -170,21 +172,33 @@ class SecretsManager:
 
     def substitute_secrets(self, data: Any) -> Any:
         """
-        Substitute secret references in a dictionary with SecretValue objects.
-        
+        Substitute ``${secret.alias}`` references with SecretValue objects.
+
+        A field whose entire value is ``${secret.alias}`` is replaced by the
+        secret wrapper. References embedded in a larger string (for example a
+        Kafka JAAS config) are interpolated, and the result is still wrapped so
+        ``repr()`` / dict logging stay redacted while ``str()`` yields the
+        resolved value for Spark.
+
         Args:
             data: The data to process (dict, list, or any other type)
-            
+
         Returns:
             Processed data with secret references replaced by SecretValue objects
         """
-        def substitute_value(value: Any) -> Any:
-            match = self.SECRET_PATTERN.match(value)
-            if match:
-                secret_alias = match.group(1)
-                return self.get_secret(secret_alias)
-            else:
+        def substitute_value(value: str) -> Any:
+            matches = list(self.SECRET_PATTERN.finditer(value))
+            if not matches:
                 return value
+            if len(matches) == 1 and matches[0].span() == (0, len(value)):
+                return self.get_secret(matches[0].group(1))
+
+            def replacer(match: re.Match[str]) -> str:
+                return str(self.get_secret(match.group(1)))
+
+            interpolated = self.SECRET_PATTERN.sub(replacer, value)
+            redacted = self.SECRET_PATTERN.sub("[REDACTED]", value)
+            return SecretValue(interpolated, redacted=redacted)
 
         if isinstance(data, dict):
             return {k: self.substitute_secrets(v) for k, v in data.items()}
