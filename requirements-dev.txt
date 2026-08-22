@@ -5,6 +5,7 @@ databricks-dlt==0.3.0
 delta-spark==4.2.0
 pyspark==4.1.1
 jsonschema==4.26.0
+pyyaml==6.0.3
 
 ## testing packages
 pytest==9.0.3
