@@ -45,7 +45,8 @@ class DLTPipelineBuilder:
         framework_path (str): The path to the framework to use for the pipeline.
         bundle_path (str): The path to the bundle to use for the pipeline.
         dataflow_path (str): The path to the dataflow to use for the pipeline.
-        workspace_host (str): The host to use for the pipeline.
+        workspace_host (str): The workspace host, from the optional ``workspace.host`` pipeline
+            configuration or ``spark.databricks.workspaceUrl`` when unset.
         
         dataflow_specs (List[DataflowSpec]): The dataflow specifications to use for the pipeline.
         dataflow_spec_filters (Dict[str, Any]): The filters to use for the dataflow specifications.
@@ -62,8 +63,10 @@ class DLTPipelineBuilder:
     MANDATORY_CONFIG_PARAMS = [
         DLTPipelineSettingKeys.BUNDLE_SOURCE_PATH,
         DLTPipelineSettingKeys.FRAMEWORK_SOURCE_PATH,
-        DLTPipelineSettingKeys.WORKSPACE_HOST
     ]
+
+    # Spark conf key Databricks sets on every cluster with the workspace URL (no scheme).
+    SPARK_WORKSPACE_URL_CONF = "spark.databricks.workspaceUrl"
 
     def __init__(self, spark: SparkSession, dbutils: DBUtils):
         """Initialize the pipeline builder with Spark session and utilities."""
@@ -126,7 +129,13 @@ class DLTPipelineBuilder:
         self.bundle_path = config_values[DLTPipelineSettingKeys.BUNDLE_SOURCE_PATH]
         self.framework_path = config_values[DLTPipelineSettingKeys.FRAMEWORK_SOURCE_PATH]
         self._framework_config_path = resolve_framework_config_path(self.framework_path)
-        self.workspace_host = config_values[DLTPipelineSettingKeys.WORKSPACE_HOST]
+        # workspace.host is optional: a DAB target that follows the CLI profile
+        # resolves ${workspace.host} to "" at deploy time, so fall back to the
+        # workspace URL Databricks exposes on the cluster instead of failing.
+        self.workspace_host = (
+            self.spark.conf.get(DLTPipelineSettingKeys.WORKSPACE_HOST, None)
+            or self.spark.conf.get(self.SPARK_WORKSPACE_URL_CONF, None)
+        )
 
     def _init_configurations(self) -> None:
         """Load and validate all necessary configurations."""
