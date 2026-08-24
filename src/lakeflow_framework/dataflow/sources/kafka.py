@@ -35,7 +35,8 @@ class SourceKafka(BaseSource):
         reader_options = self.readerOptions.copy()
         logger = self.logger
 
-        logger.debug(f"Reading Kafka topic: {self.topic}")
-        logger.debug(f"Reader options: {reader_options}")
+        logger.debug("Reading Kafka topic: %s", self.topic)
+        # dict formatting uses repr() of values, so SecretValue stays redacted
+        logger.debug("Reader options: %r", reader_options)
 
         return spark.readStream.format("kafka").options(**reader_options).load()

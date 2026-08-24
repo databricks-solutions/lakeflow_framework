@@ -60,7 +60,9 @@ Inmon
 IntelliSense
 instantiation
 integrations
+JAAS
 json
+kafkashaded
 keystore
 kwargs
 lakehouse
@@ -108,6 +110,7 @@ rst
 RTD
 Schemas
 schemas
+SASL
 sdist
 semver
 serverless

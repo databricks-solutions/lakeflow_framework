@@ -92,7 +92,9 @@ An secrets config file has the following structure:
 
 Referencing Secrets in Data Flow Specs
 --------------------------------------
-Secrets can be referenced as a value in any part of your data flow specs by using the following syntax: ``${secret.<secret_alias>}``.
+Secrets can be referenced in any part of your data flow specs by using the syntax ``${secret.<secret_alias>}``.
+
+The token may be the **entire** field value, or **embedded** in a larger string (for example a Kafka JAAS config with both username and password). In both cases the resolved value is wrapped so Spark receives the real secret via ``str()``, while Framework logs and debug prints show ``[REDACTED]`` instead of the secret text.
 
 For example, assume we want to connect to Kafka and we need to provide a keystore password. We would first ensure that the secret is configured in the secrets config file discussed above as follows:
 
@@ -184,6 +186,39 @@ We can then reference the secret in any data flow spec as per the highlighted li
              delta.enableChangeDataFeed: 'true'
          dataQualityExpectationsEnabled: false
          quarantineMode: 'off'
+
+Embedded secrets
+^^^^^^^^^^^^^^^^
+When a Spark option must mix static text with credentials, embed one or more ``${secret.<alias>}`` tokens in the same string.
+
+.. tabs::
+
+   .. tab:: JSON
+
+      .. code-block:: json
+         :linenos:
+         :emphasize-lines: 6-7
+
+         {
+             "readerOptions": {
+                 "kafka.bootstrap.servers": "{kafka_source_bootstrap_servers}",
+                 "kafka.security.protocol": "SASL_SSL",
+                 "kafka.sasl.mechanism": "PLAIN",
+                 "kafka.sasl.jaas.config": "kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule required username=${secret.kafka_client_id} password=${secret.kafka_client_secret};"
+             }
+         }
+
+   .. tab:: YAML
+
+      .. code-block:: yaml
+         :linenos:
+         :emphasize-lines: 5
+
+         readerOptions:
+           kafka.bootstrap.servers: '{kafka_source_bootstrap_servers}'
+           kafka.security.protocol: SASL_SSL
+           kafka.sasl.mechanism: PLAIN
+           kafka.sasl.jaas.config: 'kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule required username="${secret.kafka_client_id}" password="${secret.kafka_client_secret}";'
 
 Best Practices
 --------------
