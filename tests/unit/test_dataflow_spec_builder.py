@@ -154,6 +154,60 @@ class TestDataflowSpecBuilderPathHandling:
 
         assert resolved == str(base / "dml" / "transform.sql")
 
+    def test_template_schema_path_prefers_spec_schemas(
+        self, secrets_manager, framework_src_path, minimal_bundle_tree, pipeline_context, tmp_path
+    ):
+        builder = _make_builder(secrets_manager, framework_src_path, minimal_bundle_tree)
+        base = tmp_path / "dataflows" / "grp"
+        spec_schema = base / "schemas" / "customer.json"
+        template_schema = minimal_bundle_tree / "templates" / "schemas" / "customer.json"
+        spec_schema.parent.mkdir(parents=True)
+        template_schema.parent.mkdir(parents=True)
+        spec_schema.write_text('{"title": "spec"}')
+        template_schema.write_text('{"title": "template"}')
+
+        resolved = builder._resolve_path_value(
+            "schemaPath",
+            "customer.json",
+            str(base),
+            {"dataFlowId": "f1", "tags": {"_isTemplateGenerated": True}},
+        )
+
+        assert resolved == str(spec_schema)
+
+    def test_template_schema_path_falls_back_to_templates_schemas(
+        self, secrets_manager, framework_src_path, minimal_bundle_tree, pipeline_context, tmp_path
+    ):
+        builder = _make_builder(secrets_manager, framework_src_path, minimal_bundle_tree)
+        base = tmp_path / "dataflows" / "grp"
+        template_schema = minimal_bundle_tree / "templates" / "schemas" / "customer.json"
+        template_schema.parent.mkdir(parents=True)
+        template_schema.write_text('{"title": "template"}')
+
+        resolved = builder._resolve_path_value(
+            "schemaPath",
+            "customer.json",
+            str(base),
+            {"dataFlowId": "f1", "tags": {"_isTemplateGenerated": True}},
+        )
+
+        assert resolved == str(template_schema)
+
+    def test_regular_schema_path_does_not_use_templates_schemas(
+        self, secrets_manager, framework_src_path, minimal_bundle_tree, pipeline_context, tmp_path
+    ):
+        builder = _make_builder(secrets_manager, framework_src_path, minimal_bundle_tree)
+        base = tmp_path / "dataflows" / "grp"
+        template_schema = minimal_bundle_tree / "templates" / "schemas" / "customer.json"
+        template_schema.parent.mkdir(parents=True)
+        template_schema.write_text('{"title": "template"}')
+
+        resolved = builder._resolve_path_value(
+            "schemaPath", "customer.json", str(base), {"dataFlowId": "f1"}
+        )
+
+        assert resolved == str(base / "schemas" / "customer.json")
+
     def test_get_base_path_strips_dataflowspec_suffix(self, secrets_manager, framework_src_path, minimal_bundle_tree, pipeline_context):
         builder = _make_builder(secrets_manager, framework_src_path, minimal_bundle_tree)
         path = "/bundle/dataflows/grp/dataflowspec/flow_main.json"
