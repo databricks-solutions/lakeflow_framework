@@ -615,6 +615,8 @@ class DataflowSpecBuilder:
                 )
                 #TODO: pipe through to validation errors
                 return os.path.normpath(value)
+        elif key == "sqlPath":
+            return self._resolve_sql_path(value, base_path, root_spec_data)
         else:
             # Standard path resolution
             subpath = DataflowSpecBuilder.LOCALISE_PATHS[key]
@@ -716,6 +718,48 @@ class DataflowSpecBuilder:
         self.validation_errors[spec_path] = f"Python function file '{filename}' not found in any search location"
         
         return filename
+
+    def _resolve_sql_path(self, filename: str, base_path: str, spec_data: Dict) -> str:
+        """Resolve a SQL path, with a template DML fallback for generated specs.
+
+        Regular specs retain the existing search order:
+            1. base_path/dataflowspec/dml/<filename>
+            2. base_path/dml/<filename>
+
+        Template-generated specs additionally search:
+            3. bundle_path/templates/dml/<filename>
+        """
+        spec_dml_paths = [
+            os.path.join(
+                base_path,
+                PipelineBundlePaths.DATAFLOW_SPEC_PATH,
+                PipelineBundlePaths.DML_PATH,
+                filename,
+            ),
+            os.path.join(base_path, PipelineBundlePaths.DML_PATH, filename),
+        ]
+        search_paths = list(spec_dml_paths)
+
+        if spec_data.get("tags", {}).get("_isTemplateGenerated", False):
+            search_paths.append(
+                os.path.join(
+                    self.bundle_path,
+                    PipelineBundlePaths.TEMPLATE_PATH,
+                    PipelineBundlePaths.DML_PATH,
+                    filename,
+                )
+            )
+
+        for path in search_paths:
+            normalized_path = os.path.normpath(path)
+            if os.path.exists(normalized_path):
+                self.logger.debug(
+                    f"Resolved SQL file '{filename}': {normalized_path}"
+                )
+                return normalized_path
+
+        # Preserve the existing unresolved-path behavior for validation/runtime errors.
+        return os.path.normpath(spec_dml_paths[-1])
 
     def _validate_file_path(self, path: str) -> bool:
         """Validate a file path meets all requirements."""
