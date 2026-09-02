@@ -414,6 +414,34 @@ The framework searches for python function path values in the following order:
 3. Under the extensions directory of the pipeline bundle
 4. Under the framework extensions directory
 
+SQL Path Search Priority
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+For a template-generated spec, the framework resolves a relative ``sqlPath`` in
+the following order:
+
+1. Under the ``dml`` directory associated with the data flow spec
+2. Under ``templates/dml`` in the pipeline bundle
+
+This allows a generated spec to override a template's shared SQL by placing a
+file with the same relative path in its own ``dml`` directory. Regular,
+non-template specs only search their associated ``dml`` directory and do not
+fall back to ``templates/dml``.
+
+Schema Path Search Priority
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For a template-generated spec, the framework resolves a relative ``schemaPath`` in
+the following order:
+
+1. Under the ``schemas`` directory associated with the data flow spec
+2. Under ``templates/schemas`` in the pipeline bundle
+
+This allows a generated spec to override a template's shared schema by placing a
+file with the same relative path in its own ``schemas`` directory. Regular,
+non-template specs only search their associated ``schemas`` directory and do not
+fall back to ``templates/schemas``.
+
 Error Handling
 ^^^^^^^^^^^^^^
 
