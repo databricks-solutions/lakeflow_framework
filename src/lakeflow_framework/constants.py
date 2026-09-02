@@ -67,6 +67,7 @@ class FrameworkPaths:
         LOGGER_CONFIG (str): Basename of the pluggable logger configuration file (under the resolved config root).
         MAIN_SPEC_SCHEMA_PATH (str): Path to the main specification schema file.
         FLOW_GROUP_SPEC_SCHEMA_PATH (str): Path to the flow group specification schema file.
+        NODESPEC_SPEC_SCHEMA_PATH (str): Path to the nodespec specification schema file.
         EXPECTATIONS_SPEC_SCHEMA_PATH (str): Path to the expectations specification schema file.
         SECRETS_SCHEMA_PATH (str): Path to the secrets specification schema file.
         TEMPLATE_DEFINITION_SPEC_SCHEMA_PATH (str): Path to the template definition specification schema file.
@@ -91,6 +92,7 @@ class FrameworkPaths:
     SPEC_MAPPING_SCHEMA_PATH: str = "./lakeflow_framework/schemas/spec_mapping.json"
     MAIN_SPEC_SCHEMA_PATH: str = "./lakeflow_framework/schemas/main.json"
     FLOW_GROUP_SPEC_SCHEMA_PATH: str = "./lakeflow_framework/schemas/flow_group.json"
+    NODESPEC_SPEC_SCHEMA_PATH: str = "./lakeflow_framework/schemas/spec_nodespec.json"
     EXPECTATIONS_SPEC_SCHEMA_PATH: str = "./lakeflow_framework/schemas/expectations.json"
     SECRETS_SCHEMA_PATH: str = "./lakeflow_framework/schemas/secrets.json"
     TEMPLATE_DEFINITION_SPEC_SCHEMA_PATH: str = "./lakeflow_framework/schemas/spec_template_definition.json"

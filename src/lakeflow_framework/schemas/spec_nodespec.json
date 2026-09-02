@@ -4,6 +4,7 @@
     "title": "Nodespec Dataflow Specification",
     "description": "Node-based dataflow spec (snake_case). A node's `config` is discriminated by node_type + source_type/target_type/table_type so editors offer only the fields valid for that node. Feature bundles (cdc, snapshot, data_quality, migration) are single nested objects; quarantine nests under data_quality. Targets declare their inputs via `sources`. Sink targets keep their current flat form for now (sink redesign deferred).",
     "$comment": "A node's `config` is discriminated at the node level via allOf/if-then keyed on node_type + source_type/target_type/table_type; each `then` selects one closed config $def, so editors offer only the fields valid for that node. Nested blobs are typed objects with descriptions. Sink targets keep their current flat form (sink_type/sink_config/sink_options) pending the sink redesign. Legacy definitions_sources.json / definitions_targets.json are camelCase; nodespec is snake_case, so source/target detail shapes are re-declared here. Literal Spark option keys (cloudFiles.*, kafka.*) are preserved verbatim.",
+    "$ref": "#/$defs/nodespec_spec",
     "$defs": {
         "nodespec_spec": {
             "type": "object",
