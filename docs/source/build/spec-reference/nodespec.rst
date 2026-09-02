@@ -134,7 +134,7 @@ view it reads; the target lists the transformation in its ``sources``:
 Editor autocomplete and validation
 ==================================
 
-Nodespec specs have a JSON Schema (``src/schemas/spec_nodespec.json``), so editors
+Nodespec specs have a JSON Schema (``src/lakeflow_framework/schemas/spec_nodespec.json``), so editors
 can offer key/value autocomplete and inline validation while you author them. The
 schema is wired through ``main.json``, which routes any ``*_main.json`` file to
 the correct spec schema based on its ``data_flow_type``. Add the ``json.schemas``

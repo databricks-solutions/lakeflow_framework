@@ -38,6 +38,7 @@ class DataflowSpecBuilder:
         filter_list_files (List[str]): List of files to filter.
         main_validator: Main JSON validator.
         flow_validator: Flow JSON validator.
+        nodespec_validator: Nodespec JSON validator.
         dataflow_spec_version (str): Path to the dataflow spec mapping file.
         dataflow_spec_list (List): List of dataflow specifications.
         validation_errors (Dict): Dictionary of validation errors.
@@ -139,6 +140,8 @@ class DataflowSpecBuilder:
             os.path.join(self.framework_path,FrameworkPaths.MAIN_SPEC_SCHEMA_PATH))
         self.flow_validator = utility.JSONValidator(
             os.path.join(self.framework_path,FrameworkPaths.FLOW_GROUP_SPEC_SCHEMA_PATH))
+        self.nodespec_validator = utility.JSONValidator(
+            os.path.join(self.framework_path,FrameworkPaths.NODESPEC_SPEC_SCHEMA_PATH))
 
         # Initialize storage
         self.processed_specs: List[DataflowSpec] = []
@@ -453,24 +456,19 @@ class DataflowSpecBuilder:
             # Nodespec specs use their own schema directly — the main.json
             # if/else chain doesn't route cleanly for non-standard types.
             if spec_type == "nodespec":
-                nodespec_schema_path = os.path.join(self.framework_path, "schemas", "spec_nodespec.json")
-                if os.path.exists(nodespec_schema_path):
-                    nodespec_validator = utility.JSONValidator(nodespec_schema_path)
-                    # Nodespec field names are snake_case. The metadata keys were
-                    # normalised to camelCase at read time for uniform downstream
-                    # processing, so present them as snake_case for validation.
-                    camel_to_snake = {
-                        self.Keys.DATA_FLOW_ID: "data_flow_id",
-                        self.Keys.DATA_FLOW_GROUP: "data_flow_group",
-                        self.Keys.DATA_FLOW_TYPE: "data_flow_type",
-                        self.Keys.DATA_FLOW_VERSION: "data_flow_version",
-                    }
-                    validation_data = {
-                        camel_to_snake.get(k, k): v for k, v in json_data.items()
-                    }
-                    errors = nodespec_validator.validate(validation_data)
-                else:
-                    errors = []
+                # Nodespec field names are snake_case. The metadata keys were
+                # normalised to camelCase at read time for uniform downstream
+                # processing, so present them as snake_case for validation.
+                camel_to_snake = {
+                    self.Keys.DATA_FLOW_ID: "data_flow_id",
+                    self.Keys.DATA_FLOW_GROUP: "data_flow_group",
+                    self.Keys.DATA_FLOW_TYPE: "data_flow_type",
+                    self.Keys.DATA_FLOW_VERSION: "data_flow_version",
+                }
+                validation_data = {
+                    camel_to_snake.get(k, k): v for k, v in json_data.items()
+                }
+                errors = self.nodespec_validator.validate(validation_data)
             elif file_type == "main":
                 errors = self.main_validator.validate(json_data)
             else:
