@@ -138,18 +138,32 @@ class TestQuarantineLogic:
         assert captured["table_details"]["table"] == "orders_quarantine"
         assert captured["table_details"]["database"] == "quarantine_db"
 
-    def test_honors_explicit_quarantine_table_and_clears_database(
+    def test_honors_unqualified_quarantine_table_and_keeps_database(
         self, pipeline_context, monkeypatch
     ):
         _, captured = _build_quarantine_manager(
             monkeypatch,
             pipeline_context,
             quarantine_target_details={
-                "database": "quarantine_db",
-                "table": "custom_quarantine",
+                "database": "validated_dev.trade_store",
+                "table": "trade_events_quarantine",
             },
         )
-        assert captured["table_details"]["table"] == "custom_quarantine"
+        assert captured["table_details"]["table"] == "trade_events_quarantine"
+        assert captured["table_details"]["database"] == "validated_dev.trade_store"
+
+    def test_honors_fully_qualified_quarantine_table_and_clears_database(
+        self, pipeline_context, monkeypatch
+    ):
+        _, captured = _build_quarantine_manager(
+            monkeypatch,
+            pipeline_context,
+            quarantine_target_details={
+                "database": "ignored_db",
+                "table": "catalog.schema.custom_quarantine",
+            },
+        )
+        assert captured["table_details"]["table"] == "catalog.schema.custom_quarantine"
         assert captured["table_details"]["database"] is None
 
     def test_flag_mode_adds_quarantine_column_when_schema_present(
