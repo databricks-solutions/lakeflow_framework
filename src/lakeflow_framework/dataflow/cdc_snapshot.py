@@ -11,6 +11,7 @@ import pyspark.sql.types as T
 
 import pipeline_config
 
+from .cdc import exclude_from_scd2_history, get_operational_metadata_columns
 from .dataflow_config import DataFlowConfig
 from .sources import SourceDelta, SourceBatchFiles, ReadConfig
 
@@ -250,7 +251,7 @@ class CDCSnapshotFlow:
 
         try:
             if self.snapshotType == CDCSnapshotTypes.PERIODIC:
-                self._apply_periodic_changes(target_table, source_view_name)
+                self._apply_periodic_changes(target_table, source_view_name, dataflow_config, target_config_flags)
             elif self.snapshotType == CDCSnapshotTypes.HISTORICAL:
                 self._apply_historical_changes(target_table, dataflow_config, target_config_flags)
             else:
@@ -259,7 +260,28 @@ class CDCSnapshotFlow:
             self.logger.error(f"Failed to create CDC snapshot flow: {e}")
             raise
 
-    def _apply_periodic_changes(self, target_table: str, source_view_name: str) -> None:
+    def _track_history_except(
+        self,
+        dataflow_config: Optional[DataFlowConfig] = None,
+        target_config_flags: Optional[List[str]] = None
+    ) -> Optional[List[str]]:
+        """Exclude operational metadata (it changes on every load) from SCD2 history tracking."""
+        return exclude_from_scd2_history(
+            scd_type=self.scd_type,
+            track_history_column_list=self.track_history_column_list,
+            track_history_except_column_list=self.track_history_except_column_list,
+            columns=get_operational_metadata_columns(
+                dataflow_config.features if dataflow_config else None, target_config_flags
+            )
+        )
+
+    def _apply_periodic_changes(
+        self,
+        target_table: str,
+        source_view_name: str,
+        dataflow_config: Optional[DataFlowConfig] = None,
+        target_config_flags: Optional[List[str]] = None
+    ) -> None:
         """Apply periodic changes from snapshot."""
         dp.create_auto_cdc_from_snapshot_flow(
             target=target_table,
@@ -267,7 +289,7 @@ class CDCSnapshotFlow:
             keys=self.keys,
             stored_as_scd_type=self.scd_type,
             track_history_column_list=self.track_history_column_list,
-            track_history_except_column_list=self.track_history_except_column_list
+            track_history_except_column_list=self._track_history_except(dataflow_config, target_config_flags)
         )
 
     def _apply_historical_changes(self, target_table: str, dataflow_config: DataFlowConfig, target_config_flags: Optional[List[str]] = None):
@@ -278,7 +300,7 @@ class CDCSnapshotFlow:
             keys=self.keys,
             stored_as_scd_type=self.scd_type,
             track_history_column_list=self.track_history_column_list,
-            track_history_except_column_list=self.track_history_except_column_list
+            track_history_except_column_list=self._track_history_except(dataflow_config, target_config_flags)
         )
 
     def _next_snapshot_and_version(self, latest_snapshot_version, dataflow_config: DataFlowConfig, target_config_flags: Optional[List[str]] = None):

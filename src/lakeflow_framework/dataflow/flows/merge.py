@@ -24,6 +24,8 @@ class FlowMerge(BaseFlowWithViews):
                 target_table=self.targetTable,
                 source_view_name=self.sourceView,
                 flow_name=self.flowName,
+                features=dataflow_config.features,
+                target_config_flags=target_config_flags,
             )
             
         elif cdc_snapshot_settings:
