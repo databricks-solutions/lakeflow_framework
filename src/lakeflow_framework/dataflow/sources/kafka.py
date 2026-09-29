@@ -20,15 +20,6 @@ class SourceKafka(BaseSource):
         BaseSource.__post_init__(self)
         self.readerOptions["topic"] = self.topic
 
-    def read_source(self, read_config: ReadConfig) -> DataFrame:
-        """Get a DataFrame from the source details with applied transformations."""
-        df = self._get_df(read_config)
-        df = self._apply_python_function(df)
-        df = self._apply_where_clause(df)
-        df = self._apply_select_exp(df)
-
-        return df
-
     def _get_df(self, read_config: ReadConfig) -> DataFrame:
         """Execute a SQL query and retrieves the result as a DataFrame."""
         spark = self.spark
