@@ -183,7 +183,7 @@
                 "table": {"type": "string", "description": "Source table name."},
                 "table_path": {"type": "string", "description": "Physical path to the Delta table (alternative to database/table)."},
                 "cdf_enabled": {"type": "boolean", "description": "Read the table's Change Data Feed."},
-                "cdf_change_type_override": {"type": "array", "items": {"type": "string", "enum": ["insert", "update_postimage", "delete"]}},
+                "cdf_change_type_override": {"type": "array", "items": {"type": "string", "enum": ["insert", "update_preimage", "update_postimage", "delete"]}},
                 "starting_version_from_dlt_setup": {"type": "boolean"},
                 "select_exp": {"type": "array", "items": {"type": "string"}},
                 "where_clause": {"type": "array", "items": {"type": "string"}},

@@ -102,10 +102,17 @@ class BaseSource(OperationalMetadataMixin, ABC):
         df = self._apply_where_clause(df)
         df = self._apply_select_exp(df)
 
-        # Drop cdf columns if present. Important as they are not allowed in the target table.
-        # If data engineers need them they can alias them in the selectExp
+        # Drop CDF columns unless this source asked for update_preimage.
+        # columns_to_update_except needs those rows to tell metadata-only
+        # updates from payload changes. Alias them in selectExp to keep them
+        # when the default drop still runs.
         cdf_columns = [column.value for column in SystemColumns.CDFColumns]
-        df = utility.drop_columns(df, cdf_columns)
+        retain_cdf_columns = (
+            getattr(self, "cdfEnabled", False)
+            and "update_preimage" in (getattr(self, "cdfChangeTypeOverride", None) or [])
+        )
+        if not retain_cdf_columns:
+            df = utility.drop_columns(df, cdf_columns)
 
         # Add operational metadata
         if (features.operationalMetadataEnabled 

@@ -177,6 +177,7 @@ class SystemColumns:
     Classes:
         CDFColumns (Enum): Contains constants for Change Data Feed (CDF) system columns.
         SCD2Columns (Enum): Contains constants for Slowly Changing Dimension Type 2 (SCD2) system columns.
+        CDCColumns (Enum): Framework-generated AUTO CDC helper columns.
     """
     class CDFColumns(Enum):
         """Change Data Feed system columns."""
@@ -188,6 +189,10 @@ class SystemColumns:
         """SCD2 system columns."""
         SCD2_START_AT = "__START_AT"
         SCD2_END_AT = "__END_AT"
+
+    class CDCColumns(Enum):
+        """Framework-generated AUTO CDC helper columns."""
+        COLUMNS_TO_UPDATE = "__columns_to_update"
 
 class MetaDataColumnDefs:
     """MetaDataColumnDefs is a class that contains constants for all Framework metadata columns."""

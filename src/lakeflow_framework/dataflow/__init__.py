@@ -3,6 +3,11 @@ from .enums import Mode, SinkType, QuarantineMode, SourceType, TargetType
 
 # Import core classes
 from .cdc import CDCFlow, CDCSettings
+from .cdc_columns_to_update import (
+    build_columns_to_update,
+    columns_to_update_for_event,
+    payload_columns,
+)
 from .cdc_snapshot import (
     CDCSnapshotFlow,
     CDCSnapshotSettings,
@@ -43,6 +48,7 @@ __all__ = (
 
         # Feature-specific classes
         'CDCFlow', 'CDCSettings', 'CDCSnapshotFlow', 'CDCSnapshotSettings', 'CDCSnapshotTypes', 'CDCSnapshotVersionTypes', 'DeduplicateMode',
+        'build_columns_to_update', 'columns_to_update_for_event', 'payload_columns',
         'DataQualityExpectations', 'ExpectationType',
         'TableMigrationDetails', 'TableMigrationManager',
         'QuarantineManager',

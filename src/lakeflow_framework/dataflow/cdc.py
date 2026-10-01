@@ -6,6 +6,29 @@ from pyspark.sql import functions as F
 import pyspark.sql.types as T
 
 import lakeflow_framework.pipeline_config as pipeline_config
+from lakeflow_framework.constants import SystemColumns
+
+from .cdc_columns_to_update import COLUMNS_TO_UPDATE_COLUMN, build_columns_to_update
+
+_CDF_HELPER_COLUMNS = (
+    SystemColumns.CDFColumns.CDF_CHANGE_TYPE.value,
+    SystemColumns.CDFColumns.CDF_COMMIT_VERSION.value,
+    SystemColumns.CDFColumns.CDF_COMMIT_TIMESTAMP.value,
+    "meta_cdc_change_type",
+    "meta_cdc_commit_version",
+    "meta_cdc_commit_timestamp",
+)
+
+
+def _empty_to_none(value):
+    """AUTO CDC rejects empty lists; coerce them to None."""
+    if value is None:
+        return None
+    if isinstance(value, list) and not value:
+        return None
+    if isinstance(value, str) and not value.strip():
+        return None
+    return value
 
 
 @dataclass
@@ -19,30 +42,67 @@ class CDCSettings:
         scd_type (str): SCD type.
         where (str, optional): Where clause.
         ignore_null_updates (bool, optional): Ignore null updates flag.
+        ignore_null_updates_column_list (List, optional): Columns that ignore incoming nulls.
+        ignore_null_updates_except_column_list (List, optional): Columns that apply explicit nulls.
         apply_as_deletes (str, optional): Apply as deletes flag.
         apply_as_truncates (str, optional): Apply as truncates flag.
         column_list (List, optional): List of columns.
         except_column_list (List, optional): List of columns to exclude.
         track_history_column_list (List, optional): List of columns to track history.
         track_history_except_column_list (List, optional): List of columns to exclude from history tracking.
+        columns_to_update (str, optional): Source column holding per-row columns to write.
+        columns_to_update_except_column_list (List, optional): Lineage columns written only
+            on insert or when a payload column also changes.
     """
     keys: List
     sequence_by: str
     scd_type: str
     where: str = None
     ignore_null_updates: bool = False
+    ignore_null_updates_column_list: List = field(default_factory=list)
+    ignore_null_updates_except_column_list: List = field(default_factory=list)
     apply_as_deletes: str = None
     apply_as_truncates: str = None
     column_list: List = field(default_factory=list)
     except_column_list: List = field(default_factory=list)
     track_history_column_list: List = field(default_factory=list)
     track_history_except_column_list: List = field(default_factory=list)
+    columns_to_update: str = None
+    columns_to_update_except_column_list: List = field(default_factory=list)
     sequence_by_data_type: T.DataType = None
 
     def __post_init__(self):
+        self.ignore_null_updates_column_list = _empty_to_none(self.ignore_null_updates_column_list) or []
+        self.ignore_null_updates_except_column_list = _empty_to_none(
+            self.ignore_null_updates_except_column_list
+        ) or []
+        self.columns_to_update = _empty_to_none(self.columns_to_update)
+        self.columns_to_update_except_column_list = _empty_to_none(
+            self.columns_to_update_except_column_list
+        ) or []
+
         if self.scd_type == "2":
             # TODO: implement dynamic sequence by type
             self.sequence_by_data_type = T.TimestampType()
+
+        has_ignore_column_list = bool(self.ignore_null_updates_column_list)
+        has_ignore_except_list = bool(self.ignore_null_updates_except_column_list)
+        if has_ignore_column_list and has_ignore_except_list:
+            raise ValueError(
+                "Set ignore_null_updates_column_list or "
+                "ignore_null_updates_except_column_list, not both."
+            )
+
+        uses_columns_to_update = bool(
+            self.columns_to_update or self.columns_to_update_except_column_list
+        )
+        if uses_columns_to_update and (
+            self.ignore_null_updates or has_ignore_column_list or has_ignore_except_list
+        ):
+            raise ValueError(
+                "columns_to_update cannot be combined with ignore_null_updates, "
+                "ignore_null_updates_column_list, or ignore_null_updates_except_column_list."
+            )
 
 
 class CDCFlow:
@@ -63,6 +123,44 @@ class CDCFlow:
         self.track_history_except_column_list = self.settings.track_history_except_column_list
         self.where = self.settings.where
         self.ignore_null_updates = self.settings.ignore_null_updates
+        self.ignore_null_updates_column_list = self.settings.ignore_null_updates_column_list
+        self.ignore_null_updates_except_column_list = self.settings.ignore_null_updates_except_column_list
+        self.columns_to_update = self.settings.columns_to_update
+        self.columns_to_update_except_column_list = self.settings.columns_to_update_except_column_list
+
+    def _should_build_columns_to_update(self) -> bool:
+        return bool(self.columns_to_update_except_column_list)
+
+    def _wrap_source_with_columns_to_update(
+        self,
+        source_view_name: str,
+        target_table: str,
+        extra_ignore: List[str],
+    ) -> str:
+        """Emit a view that adds ``__columns_to_update`` from lineage-except columns."""
+        wrapped_view_name = f"{source_view_name}__columns_to_update"
+        lineage_cols = list(self.columns_to_update_except_column_list)
+
+        @dp.view(name=wrapped_view_name)
+        def _columns_to_update_view():
+            spark = pipeline_config.get_spark()
+            df = spark.readStream.table(source_view_name)
+            target_df = None
+            try:
+                if spark.catalog.tableExists(target_table):
+                    target_df = spark.read.table(target_table)
+            except Exception:
+                target_df = None
+            built = build_columns_to_update(
+                df,
+                keys=self.keys,
+                lineage_cols=lineage_cols,
+                extra_ignore=extra_ignore,
+                target_df=target_df,
+            ).where(F.size(F.col(COLUMNS_TO_UPDATE_COLUMN)) > 0)
+            return built.drop(*[col for col in _CDF_HELPER_COLUMNS if col in built.columns])
+
+        return wrapped_view_name
 
     def create(
             self,
@@ -100,24 +198,59 @@ class CDCFlow:
         except_column_list = self.except_column_list.copy() if self.except_column_list else []
         if additional_except_columns:
             except_column_list.extend(additional_except_columns)
+
+        extra_ignore = list(dict.fromkeys([
+            self.sequence_by,
+            *except_column_list,
+        ])) if self.sequence_by else list(except_column_list)
+
+        columns_to_update = self.columns_to_update
+        if self._should_build_columns_to_update():
+            source_view_name = self._wrap_source_with_columns_to_update(
+                source_view_name=source_view_name,
+                target_table=target_table,
+                extra_ignore=extra_ignore,
+            )
+            columns_to_update = (
+                columns_to_update or SystemColumns.CDCColumns.COLUMNS_TO_UPDATE.value
+            )
+
+        if columns_to_update and columns_to_update not in except_column_list:
+            except_column_list.append(columns_to_update)
+
         # CDCAPI throws error on empty list, so set to None if list empty
         except_column_list = except_column_list if except_column_list else None
         logger.debug("CDC API: except_column_list: %s", except_column_list)
 
-        dp.create_auto_cdc_flow(
-            flow_name=flow_name,
-            target=target_table,
-            once=run_once,
-            source=source_view_name,
-            keys=self.keys,
-            sequence_by=self.sequence_by,
-            where=self.where.strip() if self.where and self.where.strip() else None,
-            ignore_null_updates=self.ignore_null_updates,
-            apply_as_deletes=apply_as_deletes,
-            apply_as_truncates=apply_as_truncates,
-            column_list=self.column_list,
-            except_column_list=except_column_list,
-            stored_as_scd_type=self.scd_type,
-            track_history_column_list=self.track_history_column_list,
-            track_history_except_column_list=self.track_history_except_column_list
+        cdc_kwargs = {
+            "flow_name": flow_name,
+            "target": target_table,
+            "once": run_once,
+            "source": source_view_name,
+            "keys": self.keys,
+            "sequence_by": self.sequence_by,
+            "where": self.where.strip() if self.where and self.where.strip() else None,
+            "ignore_null_updates": self.ignore_null_updates,
+            "apply_as_deletes": apply_as_deletes,
+            "apply_as_truncates": apply_as_truncates,
+            "column_list": self.column_list,
+            "except_column_list": except_column_list,
+            "stored_as_scd_type": self.scd_type,
+            "track_history_column_list": self.track_history_column_list,
+            "track_history_except_column_list": self.track_history_except_column_list,
+        }
+        # Newer AUTO CDC args — only pass when set so older runtimes stay compatible.
+        ignore_null_updates_column_list = _empty_to_none(self.ignore_null_updates_column_list)
+        ignore_null_updates_except_column_list = _empty_to_none(
+            self.ignore_null_updates_except_column_list
         )
+        if ignore_null_updates_column_list:
+            cdc_kwargs["ignore_null_updates_column_list"] = ignore_null_updates_column_list
+        if ignore_null_updates_except_column_list:
+            cdc_kwargs["ignore_null_updates_except_column_list"] = (
+                ignore_null_updates_except_column_list
+            )
+        if columns_to_update:
+            cdc_kwargs["columns_to_update"] = columns_to_update
+
+        dp.create_auto_cdc_flow(**cdc_kwargs)
