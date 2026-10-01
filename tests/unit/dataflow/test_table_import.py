@@ -71,3 +71,16 @@ class TestSCD2ExceptColumnList:
         settings = patched_table_import.captured[0]
         scd2_columns = [c.value for c in SystemColumns.SCD2Columns]
         assert settings.except_column_list == ["is_deleted", *scd2_columns]
+
+    def test_columns_to_update_settings_are_copied(self, patched_table_import):
+        _run(CDCSettings(
+            scd_type="2",
+            keys=["id"],
+            sequence_by="ts",
+            columns_to_update="__columns_to_update",
+            columns_to_update_except_column_list=["meta_file_metadata"],
+        ))
+
+        settings = patched_table_import.captured[0]
+        assert settings.columns_to_update == "__columns_to_update"
+        assert settings.columns_to_update_except_column_list == ["meta_file_metadata"]

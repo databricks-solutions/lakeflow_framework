@@ -197,7 +197,7 @@
                 "whereClause": {"type": "array", "items": {"type": "string"}},
                 "schemaPath": {"type": "string", "pattern": "\\.(json|ddl)$"},
                 "readerOptions": {"type": "object", "additionalProperties": true},
-                "cdfChangeTypeOverride": {"type": "array", "items": {"type": "string", "enum": ["insert", "update_postimage", "delete"]}},
+                "cdfChangeTypeOverride": {"type": "array", "items": {"type": "string", "enum": ["insert", "update_preimage", "update_postimage", "delete"]}},
                 "startingVersionFromDLTSetup": {"type": "boolean"},
                 "pythonTransform": {"$ref": "./definitions_sources.json#/$defs/pythonTransform"}
             },

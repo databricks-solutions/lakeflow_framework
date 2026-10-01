@@ -1,0 +1,3 @@
+CUSTOMER_ID,FIRST_NAME,LAST_NAME,EMAIL,LOAD_TIMESTAMP
+1,John,Doe,jdoe@example.com,2024-03-02 10:00:00
+2,Jane,Smith,jane.smith@example.com,2024-03-02 10:00:00
