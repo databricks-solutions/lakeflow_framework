@@ -53,6 +53,36 @@
     color: white !important;
 }
 
+/* Landing-page "See it in action" showcase (marketing hero for the demo) */
+.lf-showcase {
+    max-width: 62rem;
+    margin: 0.5rem auto 2.5rem;
+    text-align: center;
+}
+.md-typeset .lf-showcase p.lf-hero__subtitle {
+    max-width: 46rem;
+    margin: 0 auto 0.6rem;
+    color: var(--md-default-fg-color, #1b3139);
+    font-family: var(--md-text-font, "Roboto"), sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    opacity: 0.92;
+}
+.md-typeset .lf-showcase p.lf-showcase__lead {
+    max-width: 46rem;
+    margin: 0 auto 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--md-default-fg-color, #1b3139);
+    opacity: 0.92;
+}
+.lf-showcase__demo {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* Embedded animated demos (self-contained HTML in _static/animations, shown via iframe) */
 .lf-demo {
     margin: 1.5rem 0 2rem;

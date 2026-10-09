@@ -113,19 +113,22 @@
   .foot{position:absolute;left:80px;bottom:32px;font-size:15px;color:#98A4AA;display:flex;align-items:center;gap:11px}
   .foot .flogo{width:22px;height:22px}
 
-  /* step badge */
-  .stepbadge{position:absolute;top:28px;left:360px;transform:translateY(-6px);background:#1B3139;color:#fff;font-size:16px;font-weight:600;padding:9px 28px;border-radius:20px;opacity:0;transition:opacity .3s,transform .3s;z-index:100;white-space:nowrap;max-width:640px}
-  .stepbadge.show{opacity:1;transform:translateY(0)}
-
-  .ctl{display:flex;gap:10px;align-items:center}
-  .ctl button{font-family:'Inter';font-size:14px;font-weight:600;padding:9px 20px;border-radius:9px;border:1px solid #C9D2D7;background:#fff;color:#1B3139;cursor:pointer}
-  .ctl button:hover{background:#F3F6F8}
+  /* play-through button — overlaid top-right of the stage */
+  .playbtn{position:absolute;top:20px;right:20px;z-index:120;display:flex;align-items:center;gap:7px;
+    font-family:'Inter';font-size:14px;font-weight:600;padding:9px 18px;border-radius:9px;
+    border:1px solid #C9D2D7;background:rgba(255,255,255,.92);color:#1B3139;cursor:pointer;
+    box-shadow:0 2px 10px rgba(27,49,57,.12);transition:background .15s,box-shadow .15s}
+  .playbtn:hover{background:#fff;box-shadow:0 4px 14px rgba(27,49,57,.18)}
+  .playbtn svg{width:13px;height:13px}
 </style>
 </head>
 <body>
  <div class="fit" id="fit">
   <div class="stage" id="stage">
-    <div class="stepbadge" id="badge"></div>
+    <button class="playbtn" id="playBtn" onclick="play()">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 2.5v11a.6.6 0 00.92.5l8.5-5.5a.6.6 0 000-1l-8.5-5.5A.6.6 0 003 2.5z"/></svg>
+      Play through
+    </button>
 
     <svg class="lines" id="lines" viewBox="0 0 1600 650">
       <defs>
@@ -219,7 +222,9 @@ const $=id=>document.getElementById(id);
 function fit(){const f=$('fit');if(!f)return;
   const s=(window.innerWidth||1600)/1600;
   f.style.transform='scale('+s+')';}
-window.addEventListener('resize',()=>{fit();buildLines();});
+// while true, resize won't clobber the animation; when idle we re-show the played-through state
+let playing=false;
+window.addEventListener('resize',()=>{fit();if(!playing){buildLines();showAll();}});
 
 /* icons */
 const ICO={
@@ -304,18 +309,19 @@ const drawLn=p=>{if(!p)return;p.classList.add('on');p.style.opacity='1';p.style.
   if(p.dataset&&p.dataset.marker){setTimeout(()=>{p.setAttribute('marker-end','url(#'+p.dataset.marker+')');},700);}
 };
 const cap=id=>{const e=$(id);if(e)e.classList.add('on')};
-function badge(t){const b=$('badge');b.textContent=t;b.classList.add('show');}
+/* step badges removed — no on-stage step text; kept as a no-op so call sites/timing stay intact */
+function badge(t){}
 
 function resetAll(){
   timers.forEach(clearTimeout);timers=[];
   document.querySelectorAll('.rv').forEach(e=>e.classList.remove('show'));
   document.querySelectorAll('.zcap').forEach(e=>e.classList.remove('on'));
-  $('badge').classList.remove('show');
   buildLines();
 }
 
 function play(){
   resetAll();
+  playing=true;
   ev(100,()=>{show('ws');show('wsHd')});
 
   /* STEP 1 — Framework Bundle first (Platform Team), deployed once */
@@ -364,9 +370,18 @@ function play(){
   ev(16400,()=>show('pn3'));
   ev(16700,()=>drawLn(LINES.g3));
   ev(17000,()=>show('pn4'));
-  ev(17900,()=>$('badge').classList.remove('show'));
-  // no on-screen controls: loop the animation so it keeps replaying
-  ev(21500,()=>play());
+  ev(17900,()=>{playing=false;});
+  // ends in the fully played-through state; no loop — press "Play through" to replay
+}
+
+/* Fully played-through end state, shown instantly (no step-by-step animation).
+   This is what the viewer sees initially; "Play through" then animates from the start. */
+function showAll(){
+  resetAll();
+  show('ws');show('wsHd');
+  document.querySelectorAll('.rv').forEach(e=>e.classList.add('show'));
+  document.querySelectorAll('.zcap').forEach(e=>e.classList.add('on'));
+  Object.values(LINES).forEach(p=>{if(p)drawLn(p);});
 }
 
 /* step-through */
@@ -385,7 +400,7 @@ function stepMode(){resetAll();buildSteps();si=0;stepping=true;
   $('stage').onclick=()=>{if(stepping&&si<steps.length){steps[si]();si++;}};
   setTimeout(()=>{show('ws');show('wsHd')},80);}
 
-window.addEventListener('load',()=>{fit();setTimeout(()=>{buildLines();play();},200);});
+window.addEventListener('load',()=>{fit();setTimeout(()=>{buildLines();showAll();},200);});
 </script>
 </body>
 </html>

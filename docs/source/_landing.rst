@@ -22,6 +22,48 @@
 
 .. raw:: html
 
+   <section class="lf-showcase">
+     <p class="lf-hero__subtitle">See it in action</p>
+     <p class="lf-hero__lead lf-showcase__lead">
+       Barely any setup stands between you and a running pipeline. Watch the whole
+       workflow unfold &mdash; clean, lightweight, and quick to pick up.
+     </p>
+     <div class="lf-demo lf-demo--screen lf-showcase__demo">
+       <div class="lf-demo__frame">
+         <iframe id="lff-demo-frame" src="_static/animations/screen_demo.html?autostart=0"
+                 title="Lakeflow Framework — from clone to a running pipeline"
+                 loading="lazy" scrolling="no"></iframe>
+       </div>
+     </div>
+   </section>
+
+   <script>
+   /* Start the landing demo only once the reader can see at least 75% of it. */
+   (function () {
+     var f = document.getElementById('lff-demo-frame');
+     if (!f) return;
+     var loaded = false, visible = false, played = false;
+     function tryPlay() {
+       if (played || !loaded || !visible) return;
+       played = true;
+       try { f.contentWindow.postMessage({ lff: 'play' }, '*'); } catch (e) {}
+     }
+     f.addEventListener('load', function () { loaded = true; tryPlay(); });
+     if ('IntersectionObserver' in window) {
+       var io = new IntersectionObserver(function (entries) {
+         entries.forEach(function (en) {
+           if (en.intersectionRatio >= 0.75) { visible = true; tryPlay(); io.disconnect(); }
+         });
+       }, { threshold: [0.75] });
+       io.observe(f);
+     } else {
+       visible = true; tryPlay();
+     }
+   })();
+   </script>
+
+.. raw:: html
+
    <div class="lf-landing-blurb">
      <p class="lf-hero__subtitle">One framework. Any operating model.</p>
      <p class="lf-hero__lead">

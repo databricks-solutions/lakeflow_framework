@@ -17,6 +17,22 @@ The Lakeflow Framework is a metadata-driven framework for building Databricks La
 
 The framework supports centralized and domain-oriented operating models, and accommodates multiple modelling paradigms (including dimensional, Data Vault, and enterprise canonical models). It is designed for simplicity, performance, maintainability, and extensibility as the Databricks product evolves.
 
+<!-- Dont remove: exclude package -->
+<p align="center">
+  <video
+    src="docs/source/_static/animations/screen_demo.mp4"
+    poster="docs/source/_static/animations/screen_demo_poster.webp"
+    preload="none" controls muted playsinline width="820">
+  </video>
+</p>
+<!--
+  Lazy-loaded: preload="none" means the video is not downloaded until the viewer clicks play;
+  the poster (~33 KB) shows immediately. The relative src plays in local Markdown previews.
+  For inline playback on github.com, replace the src above with the GitHub user-attachments URL
+  you get by dragging docs/source/_static/animations/screen_demo.mp4 into any GitHub edit box.
+-->
+<!-- Dont remove: end exclude package -->
+
 ## Why use Lakeflow Framework
 
 - Configuration-driven pattern based pipeline delivery with reusable implementation patterns
