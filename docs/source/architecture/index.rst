@@ -24,7 +24,7 @@ These approaches can be implemented using the same Data Flow Spec-driven pattern
 Framework overview
 ==================
 
-The animation below illustrates some of the key concepts of the Framework in motion: the Platform Team deploys the Framework Bundle once, Data Engineers deploy Pipeline Bundles, and DABs deploy both to the workspace where the framework reads the Data Flow Specs and runs the Spark Declarative Pipeline. These concepts are explained in more detail in the following sections.
+The Framework Bundle is deployed once with DABs to a central location in the Databricks workspace, decoupled from the pipelines that use it. Pipeline Bundles — as many as you need — are then deployed with DABs; each references the framework's deployment location and creates the physical Spark Declarative Pipelines. At pipeline execution, the framework code runs, reads the Data Flow Specs directly from the workspace files, and interprets them to build the data flow (the pipeline DAG). These concepts are explained in more detail in the following sections.
 
 .. raw:: html
 

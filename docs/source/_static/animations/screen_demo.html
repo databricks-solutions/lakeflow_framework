@@ -929,7 +929,18 @@ function redo(){
   go();
 }
 
-window.addEventListener('load',()=>{fitDemo();setTimeout(go,300);});
+/* Start control.
+   Default: autoplay shortly after load (standalone view, other embeds).
+   With ?autostart=0 (used by the landing page): stay paused at the start and only
+   play once the parent posts {lff:'play'} — e.g. when 75% of the frame is on screen. */
+let lffStarted=false;
+function lffStart(){if(lffStarted)return;lffStarted=true;go();}
+window.addEventListener('message',e=>{if(e&&e.data&&e.data.lff==='play')lffStart();});
+window.addEventListener('load',()=>{
+  fitDemo();
+  const hold=/[?&]autostart=0(&|$)/.test(location.search);
+  if(!hold)setTimeout(lffStart,300);
+});
 </script>
 </body>
 </html>
