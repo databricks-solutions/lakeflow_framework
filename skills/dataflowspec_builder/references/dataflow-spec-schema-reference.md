@@ -91,7 +91,10 @@ All fields used across Standard, Flows, and Materialized View data flow specs.
 | `sequence_by` | string | Yes | Ordering column |
 | `scd_type` | string | Yes | `"1"` or `"2"` |
 | `where` | string | No | Row filter |
-| `ignore_null_updates` | boolean | No | Skip null values in updates |
+| `ignore_null_updates` | boolean | No | Skip null values in updates. Cannot combine with `columns_to_update`. |
+| `ignore_null_updates_column_list` | list | No | Only these columns ignore incoming nulls |
+| `ignore_null_updates_except_column_list` | list | No | All columns except these ignore incoming nulls |
+| `columns_to_update` | string | No | Source `array<string>` column naming columns to write |
 | `except_column_list` | list | No | Columns excluded from upsert |
 | `apply_as_deletes` | string | No | SQL expression for delete detection |
 | `track_history_column_list` | list | No | Explicit history columns (SCD2) |
