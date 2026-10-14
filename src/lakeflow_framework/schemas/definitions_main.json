@@ -9,7 +9,10 @@
                 "apply_as_deletes": {"type": "string"},
                 "where": {"type": "string"},
                 "ignore_null_updates": {"type": "boolean"},
+                "ignore_null_updates_column_list": {"type": "array", "items": {"type": "string"}},
+                "ignore_null_updates_except_column_list": {"type": "array", "items": {"type": "string"}},
                 "except_column_list": {"type": "array", "items": {"type": "string"}},
+                "columns_to_update": {"type": "string"},
                 "scd_type": {"type": "string"},
                 "track_history_column_list": {"type": "array", "items": {"type": "string"}},
                 "track_history_except_column_list": {"type": "array", "items": {"type": "string"}}

@@ -1,0 +1,42 @@
+{
+    "data_flow_id": "columns_to_update_cdc",
+    "data_flow_group": "feature_samples_general",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_columns_to_update_cdc",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{feature_schema}",
+                "table": "src_customer_columns_to_update",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "target_columns_to_update_cdc",
+            "node_type": "target",
+            "config": {
+                "database": "{feature_schema}",
+                "table": "tgt_columns_to_update_cdc",
+                "table_properties": {
+                    "delta.enableChangeDataFeed": "true"
+                },
+                "cdc_settings": {
+                    "keys": [
+                        "CUSTOMER_ID"
+                    ],
+                    "sequence_by": "LOAD_TIMESTAMP",
+                    "where": "",
+                    "scd_type": "1",
+                    "columns_to_update": "COLUMNS_TO_UPDATE"
+                },
+                "sources": [
+                    "v_columns_to_update_cdc"
+                ]
+            }
+        }
+    ],
+    "data_flow_version": "0.1.0"
+}

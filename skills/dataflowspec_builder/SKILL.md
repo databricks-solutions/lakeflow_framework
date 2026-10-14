@@ -396,7 +396,10 @@ Add `cdcSettings` to any standard or flows data flow spec:
 | `sequence_by` | Timestamp column for ordering CDC events |
 | `scd_type` | `"1"` (overwrite) or `"2"` (history tracking with `__START_AT` / `__END_AT`) |
 | `apply_as_deletes` | SQL expression — when true, treat the event as a DELETE |
-| `ignore_null_updates` | If true, null values in updates don't overwrite existing data |
+| `ignore_null_updates` | If true, null values in updates don't overwrite existing data. Cannot combine with `columns_to_update`. |
+| `ignore_null_updates_column_list` | Only these columns ignore incoming nulls |
+| `ignore_null_updates_except_column_list` | All columns except these ignore incoming nulls |
+| `columns_to_update` | Source `array<string>` column naming columns to write per event |
 | `except_column_list` | Columns to exclude from the upsert |
 | `track_history_column_list` | Explicit list of columns to track history for (SCD2 only) |
 | `track_history_except_column_list` | Columns to exclude from history tracking (SCD2 only) |

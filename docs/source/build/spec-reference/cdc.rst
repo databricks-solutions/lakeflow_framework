@@ -47,7 +47,16 @@ The ``cdcSettings`` object contains the following properties:
      - (*optional*) Filter the rows by a condition.
    * - **ignore_null_updates**
      - ``boolean``
-     - (*optional*) Allow ingesting updates containing a subset of the target columns. When a CDC event matches an existing row and ignore_null_updates is True, columns with a null retain their existing values in the target. This also applies to nested columns with a value of null. When ignore_null_updates is False, existing values are overwritten with null values.
+     - (*optional*) Allow ingesting updates containing a subset of the target columns. When a CDC event matches an existing row and ignore_null_updates is True, columns with a null retain their existing values in the target. This also applies to nested columns with a value of null. When ignore_null_updates is False, existing values are overwritten with null values. Cannot be combined with ``columns_to_update``.
+   * - **ignore_null_updates_column_list**
+     - ``list``
+     - (*optional*) Only the listed columns retain their existing target value when the incoming value is null. All other columns apply explicit nulls. Cannot be combined with ``ignore_null_updates_except_column_list`` or ``columns_to_update``.
+   * - **ignore_null_updates_except_column_list**
+     - ``list``
+     - (*optional*) All columns except those listed retain their existing target value when the incoming value is null. Cannot be combined with ``ignore_null_updates_column_list`` or ``columns_to_update``.
+   * - **columns_to_update**
+     - ``string``
+     - (*optional*) Name of a source column that holds, for each change record, the set of columns to write as an ``array<string>``. Columns not in the array keep their existing target values. Use this when the source view already builds that array. The named column is added to ``except_column_list`` so it is not stored on the target. Cannot be combined with any ``ignore_null_updates*`` option.
    * - **except_column_list**
      - ``list``
      - (*optional*) A list of columns to exclude from the upsert into the target table.
