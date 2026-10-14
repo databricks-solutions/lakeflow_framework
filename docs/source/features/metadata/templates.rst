@@ -148,16 +148,17 @@ A template data flow specification is a simplified file that references a templa
 
          {
              "template": "standard_cdc_template",
-             "parameterSets": [
+             "global_defaults": {
+                 "sourceDatabase": "{bronze_schema}"
+             },
+             "parameter_sets": [
                  {
                      "dataFlowId": "customer_scd2",
-                     "sourceDatabase": "{bronze_schema}",
                      "sourceTable": "customer_raw",
                      "targetTable": "customer_scd2"
                  },
                  {
                      "dataFlowId": "customer_address_scd2",
-                     "sourceDatabase": "{bronze_schema}",
                      "sourceTable": "customer_address_raw",
                      "targetTable": "customer_address_scd2"
                  }
@@ -170,13 +171,13 @@ A template data flow specification is a simplified file that references a templa
          :linenos:
 
          template: standard_cdc_template
-         parameterSets:
+         global_defaults:
+           sourceDatabase: '{bronze_schema}'
+         parameter_sets:
            - dataFlowId: customer_scd2
-             sourceDatabase: '{bronze_schema}'
              sourceTable: customer_raw
              targetTable: customer_scd2
            - dataFlowId: customer_address_scd2
-             sourceDatabase: '{bronze_schema}'
              sourceTable: customer_address_raw
              targetTable: customer_address_scd2
 
@@ -190,14 +191,16 @@ A template data flow specification is a simplified file that references a templa
      - Description
    * - **template**
      - The filename of the template definition to use (without the ``.json`` extension). The framework will search for this template in the configured template directories.
-   * - **parameterSets**
-     - An array of parameter sets. Each object in the array represents one set of parameter values that will generate one complete data flow specification. Each parameter set must include all required parameters defined in the template definition.
+   * - **global_defaults** (*optional*)
+     - Shared parameter values applied to every entry in ``parameter_sets``. Per-set keys override these values. Omit the key for the previous behavior (all values only on each set).
+   * - **parameter_sets**
+     - An array of parameter sets. Each object in the array represents one set of parameter values that will generate one complete data flow specification. Legacy ``parameterSets`` is still accepted. After merging ``global_defaults``, each set must supply every required template parameter (including a unique ``dataFlowId``).
 
 .. important::
 
-    - Each parameter set must include a unique ``dataFlowId`` value
+    - Each parameter set must resolve to a unique ``dataFlowId`` (on the set, or via ``global_defaults`` only if every set would share one id — normally set per row)
     - The array must contain at least one parameter set
-    - All required parameters from the template definition must be provided in each parameter set
+    - All required parameters from the template definition must be present after ``{**global_defaults, **parameter_set}`` (per-set wins)
 
 **File Location:**
 
@@ -213,8 +216,8 @@ Template Processing
 During the data flow spec build process, the template processor will:
 
 1. Detect spec files containing a ``template`` key
-2. Loads the referenced template file
-3. For each parameter set in ``parameterSets``, create a concrete spec by replacing all ``${param.<key>}`` placeholders
+2. Load the referenced template file
+3. For each entry in ``parameter_sets``, merge optional ``global_defaults`` under the set (per-set keys win), then create a concrete spec by replacing all ``${param.<key>}`` placeholders
 4. Validate each expanded spec using the existing schema validators
 5. Return the expanded specs with unique internal identifiers
 
@@ -459,9 +462,9 @@ Each expanded spec is validated using the existing schema validators to ensure c
 
 Template usage specs are validated against the schema at ``src/lakeflow_framework/schemas/spec_template.json``:
 
-- ``template``: Required string (template name without .json extension)
-- ``params``: Required array with at least one parameter object
-- Each parameter object must be a dictionary with at least one key-value pair
+- ``template``: Required string (template name without ``.json`` extension)
+- ``parameter_sets`` (or legacy ``parameterSets``): Required array with at least one parameter object; each must include ``dataFlowId``
+- ``global_defaults``: Optional object of shared parameter values; per-set keys override these defaults
 
 Unique Identifiers
 ^^^^^^^^^^^^^^^^^^
