@@ -57,6 +57,86 @@ class TestTemplateProcessorExpansion:
         ids = {spec["dataFlowId"] for spec in result.values()}
         assert ids == {"from_template_a", "from_template_b"}
 
+    def test_global_defaults_apply_and_parameter_set_overrides(
+        self,
+        pipeline_context,
+        template_bundle_tree: Path,
+        framework_src_path: Path,
+    ):
+        processor = _processor(template_bundle_tree, framework_src_path)
+        template_spec = {
+            "template": "minimal_template",
+            "global_defaults": {
+                "sourceSystem": "erp",
+                "database": "shared_db",
+                "path": "/data/shared",
+            },
+            "parameter_sets": [
+                {
+                    "dataFlowId": "from_defaults",
+                    "sourceViewName": "v_defaults",
+                    "table": "tbl_defaults",
+                },
+                {
+                    "dataFlowId": "with_override",
+                    "sourceViewName": "v_override",
+                    "table": "tbl_override",
+                    "database": "override_db",
+                },
+            ],
+        }
+        result = processor.process_template_spec(
+            "/virtual/global_defaults.json", template_spec
+        )
+        by_id = {spec["dataFlowId"]: spec for spec in result.values()}
+        assert by_id["from_defaults"]["targetDetails"]["database"] == "shared_db"
+        assert by_id["with_override"]["targetDetails"]["database"] == "override_db"
+        assert by_id["from_defaults"]["sourceDetails"]["path"] == "/data/shared"
+        assert by_id["with_override"]["sourceDetails"]["path"] == "/data/shared"
+        assert by_id["from_defaults"]["sourceSystem"] == "erp"
+        assert by_id["with_override"]["sourceSystem"] == "erp"
+
+    def test_omitting_global_defaults_keeps_prior_behavior(
+        self,
+        pipeline_context,
+        template_bundle_tree: Path,
+        framework_src_path: Path,
+        fixtures_dir: Path,
+    ):
+        processor = _processor(template_bundle_tree, framework_src_path)
+        template_spec = json.loads(
+            (fixtures_dir / "specs" / "template_main_minimal.json").read_text()
+        )
+        assert "global_defaults" not in template_spec
+        result = processor.process_template_spec(
+            "/virtual/template_main_minimal.json", template_spec
+        )
+        assert len(result) == 2
+
+    def test_rejects_non_object_global_defaults(
+        self,
+        pipeline_context,
+        template_bundle_tree: Path,
+        framework_src_path: Path,
+    ):
+        processor = _processor(template_bundle_tree, framework_src_path)
+        template_spec = {
+            "template": "minimal_template",
+            "global_defaults": ["not", "an", "object"],
+            "parameter_sets": [
+                {
+                    "dataFlowId": "x",
+                    "sourceSystem": "erp",
+                    "sourceViewName": "v",
+                    "path": "/data",
+                    "database": "db",
+                    "table": "tbl",
+                }
+            ],
+        }
+        with pytest.raises(ValueError, match="not of type 'object'"):
+            processor.process_template_spec("/virtual/bad_globals.json", template_spec)
+
     def test_parallel_parameter_set_expansion_matches_sequential(
         self,
         pipeline_context,

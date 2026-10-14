@@ -43,6 +43,7 @@ class TemplateProcessor:
     class SpecKeys:
         """Constants for dictionary keys for the template dataflow spec JSON files"""
         TEMPLATE_NAME = "template"
+        GLOBAL_DEFAULTS = "global_defaults"
         PARAMETER_SETS = "parameter_sets"
         # Legacy camelCase spelling, still accepted for backward compatibility.
         PARAMETER_SETS_LEGACY = "parameterSets"
@@ -110,6 +111,14 @@ class TemplateProcessor:
             self.SpecKeys.PARAMETER_SETS,
             template_spec.get(self.SpecKeys.PARAMETER_SETS_LEGACY, []),
         )
+        global_defaults = template_spec.get(self.SpecKeys.GLOBAL_DEFAULTS) or {}
+        if global_defaults is not None and not isinstance(global_defaults, dict):
+            error_msg = (
+                f"'global_defaults' must be an object when provided "
+                f"(template spec: {file_path})"
+            )
+            self.logger.error(error_msg)
+            raise ValueError(error_msg)
         
         # Validate template spec structure
         if not template_name:
@@ -136,6 +145,7 @@ class TemplateProcessor:
             parameter_sets=dataflow_spec_params,
             param_definitions=param_definitions,
             spec_template=spec_template,
+            global_defaults=global_defaults,
         )
         
         self.logger.info(
@@ -151,13 +161,20 @@ class TemplateProcessor:
         parameter_sets: list,
         param_definitions: Dict,
         spec_template: Dict,
+        global_defaults: Dict | None = None,
     ) -> Dict[str, Dict]:
         """Expand each parameter set into a concrete spec, optionally in parallel."""
+        defaults = global_defaults or {}
         if self.max_workers == 1 or len(parameter_sets) <= 1:
             processed_specs = {}
             for params in parameter_sets:
                 spec_key, generated_spec = self._expand_one_parameter_set(
-                    file_path, template_name, params, param_definitions, spec_template
+                    file_path,
+                    template_name,
+                    params,
+                    param_definitions,
+                    spec_template,
+                    defaults,
                 )
                 processed_specs[spec_key] = generated_spec
             return processed_specs
@@ -179,6 +196,7 @@ class TemplateProcessor:
                     params,
                     param_definitions,
                     spec_template,
+                    defaults,
                 )
                 for params in parameter_sets
             ]
@@ -194,13 +212,17 @@ class TemplateProcessor:
         params: Dict,
         param_definitions: Dict,
         spec_template: Dict,
+        global_defaults: Dict | None = None,
     ) -> Tuple[str, Dict]:
         """Validate one parameter set and generate its concrete spec."""
-        dataflow_id = params.get(self.SpecKeys.DATA_FLOW_ID)
+        # Per-set keys override global_defaults; template definition defaults
+        # still apply afterward for any remaining optional params.
+        merged_params = {**(global_defaults or {}), **params}
+        dataflow_id = merged_params.get(self.SpecKeys.DATA_FLOW_ID)
         spec_key = f'{file_path}#template_{template_name}_{dataflow_id}'
 
         processed_params = self._validate_and_apply_defaults(
-            params, param_definitions, spec_key
+            merged_params, param_definitions, spec_key
         )
 
         try:
