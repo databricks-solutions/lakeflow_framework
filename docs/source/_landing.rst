@@ -22,11 +22,25 @@
 
 .. raw:: html
 
+   <div class="lf-landing-blurb">
+     <p class="lf-hero__subtitle">One framework. Any operating model.</p>
+     <p class="lf-hero__lead">
+       Built to fit the way your organization delivers data. Whether your 
+       teams operate through a centralized platform, a hybrid model, or 
+       federated domain ownership, LFF adapts to your operating model. 
+       Use consistent implementation patterns to build medallion pipelines, 
+       domain-owned data products, or architectures tailored to your business.
+     </p>
+   </div>
+
+.. include:: _lff_architecture_diagram.rst
+
+.. raw:: html
+
    <section class="lf-showcase">
      <p class="lf-hero__subtitle">See it in action</p>
      <p class="lf-hero__lead lf-showcase__lead">
-       Barely any setup stands between you and a running pipeline. Watch the whole
-       workflow unfold &mdash; clean, lightweight, and quick to pick up.
+       Watch the path from sample specs to a running SDP pipeline.
      </p>
      <div class="lf-demo lf-demo--screen lf-showcase__demo">
        <div class="lf-demo__frame">
@@ -61,21 +75,6 @@
      }
    })();
    </script>
-
-.. raw:: html
-
-   <div class="lf-landing-blurb">
-     <p class="lf-hero__subtitle">One framework. Any operating model.</p>
-     <p class="lf-hero__lead">
-       Built to fit the way your organization delivers data. Whether your 
-       teams operate through a centralized platform, a hybrid model, or 
-       federated domain ownership, LFF adapts to your operating model. 
-       Use consistent implementation patterns to build medallion pipelines, 
-       domain-owned data products, or architectures tailored to your business.
-     </p>
-   </div>
-
-.. include:: _lff_architecture_diagram.rst
 
 .. container:: lf-landing-onboarding
 
