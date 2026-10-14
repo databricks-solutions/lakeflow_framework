@@ -447,7 +447,7 @@ class DLTPipelineBuilder:
         self.logger.info("Initializing Pipeline...")
         pipeline_builder_threading_disabled = self.pipeline_config.get(
             FrameworkSettings.PIPELINE_BUILDER_DISABLE_THREADING_KEY,
-            True
+            False
         )
 
         self.logger.info("Processing Dataflow Specs...")

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor as RealThreadPoolExecutor
 from types import SimpleNamespace
 
 import pytest
 
-from lakeflow_framework.constants import DLTPipelineSettingKeys
+from lakeflow_framework.constants import DLTPipelineSettingKeys, FrameworkSettings
 from lakeflow_framework.dlt_pipeline_builder import DLTPipelineBuilder
 
 
@@ -30,6 +31,92 @@ def _base_conf(framework_src_path):
         DLTPipelineSettingKeys.BUNDLE_SOURCE_PATH: "/Workspace/bundle/src",
         DLTPipelineSettingKeys.FRAMEWORK_SOURCE_PATH: str(framework_src_path),
     }
+
+
+def _builder_for_initialize(pipeline_config, dataflow_specs=("spec-a", "spec-b")):
+    builder = DLTPipelineBuilder.__new__(DLTPipelineBuilder)
+    builder.pipeline_config = pipeline_config
+    builder.dataflow_specs = list(dataflow_specs)
+    builder.default_max_workers = 2
+    builder.logger = SimpleNamespace(info=lambda *a, **k: None)
+    builder.framework_path = "/fw"
+    builder.bundle_path = "/bundle"
+    return builder
+
+
+class TestInitializePipelineThreading:
+    def test_threading_enabled_when_key_omitted(self, monkeypatch):
+        builder = _builder_for_initialize({})
+        pool_sizes = []
+
+        class TrackingPool(RealThreadPoolExecutor):
+            def __init__(self, *args, **kwargs):
+                pool_sizes.append(kwargs.get("max_workers"))
+                super().__init__(*args, **kwargs)
+
+        created = []
+
+        class FakeDataFlow:
+            def __init__(self, dataflow_spec=None):
+                created.append(dataflow_spec)
+
+            def create_dataflow(self):
+                return None
+
+        monkeypatch.setattr(
+            "lakeflow_framework.dlt_pipeline_builder.run_init_scripts",
+            lambda *a, **k: None,
+        )
+        monkeypatch.setattr(
+            "lakeflow_framework.dlt_pipeline_builder.ThreadPoolExecutor",
+            TrackingPool,
+        )
+        monkeypatch.setattr(
+            "lakeflow_framework.dlt_pipeline_builder.DataFlow",
+            FakeDataFlow,
+        )
+
+        builder.initialize_pipeline()
+
+        assert pool_sizes == [2]
+        assert created == ["spec-a", "spec-b"]
+
+    def test_threading_disabled_uses_sequential_path(self, monkeypatch):
+        builder = _builder_for_initialize(
+            {FrameworkSettings.PIPELINE_BUILDER_DISABLE_THREADING_KEY: True}
+        )
+        pool_sizes = []
+        order = []
+
+        class TrackingPool(RealThreadPoolExecutor):
+            def __init__(self, *args, **kwargs):
+                pool_sizes.append(kwargs.get("max_workers"))
+                super().__init__(*args, **kwargs)
+
+        class FakeDataFlow:
+            def __init__(self, dataflow_spec=None):
+                order.append(dataflow_spec)
+
+            def create_dataflow(self):
+                return None
+
+        monkeypatch.setattr(
+            "lakeflow_framework.dlt_pipeline_builder.run_init_scripts",
+            lambda *a, **k: None,
+        )
+        monkeypatch.setattr(
+            "lakeflow_framework.dlt_pipeline_builder.ThreadPoolExecutor",
+            TrackingPool,
+        )
+        monkeypatch.setattr(
+            "lakeflow_framework.dlt_pipeline_builder.DataFlow",
+            FakeDataFlow,
+        )
+
+        builder.initialize_pipeline()
+
+        assert pool_sizes == []
+        assert order == ["spec-a", "spec-b"]
 
 
 class TestLoadMandatoryPaths:

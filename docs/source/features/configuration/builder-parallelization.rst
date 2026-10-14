@@ -48,7 +48,9 @@ Parameters
      - Boolean
      - False
      - Pipeline Initialization
-     - Disables threading when creating DataFlow objects
+     - When ``true``, creates DataFlow objects sequentially. When omitted or ``false``
+       (the default), DataFlow creation uses a thread pool sized by ``override_max_workers``
+       (or ``cpu_count() - 1``).
 
 Configuration
 -------------
