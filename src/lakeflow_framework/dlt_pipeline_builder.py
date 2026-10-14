@@ -445,7 +445,6 @@ class DLTPipelineBuilder:
         run_init_scripts(self.framework_path, self.bundle_path, "pre", self.logger)
 
         self.logger.info("Initializing Pipeline...")
-        # Default False matches docs: threading is on unless explicitly disabled.
         pipeline_builder_threading_disabled = self.pipeline_config.get(
             FrameworkSettings.PIPELINE_BUILDER_DISABLE_THREADING_KEY,
             False
