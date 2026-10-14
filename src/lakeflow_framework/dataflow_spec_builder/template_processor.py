@@ -1,7 +1,8 @@
 import json
 import os
 import re
-from typing import Dict, Any
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, Any, Tuple
 
 from lakeflow_framework.constants import FrameworkPaths, PipelineBundlePaths, SupportedSpecFormat
 import lakeflow_framework.pipeline_config as pipeline_config
@@ -21,11 +22,13 @@ class TemplateProcessor:
     Attributes:
         bundle_path (str): Path to the pipeline bundle containing templates
         framework_path (str): Path to the framework containing schemas
+        max_workers (int): Worker threads for expanding parameter sets
         logger: Logger instance for tracking template processing
         
     Note:
-        Templates definitionsare cached after first load to optimize performance when
-        the same template is used multiple times.
+        Template definitions are cached after first load. The template file is loaded
+        once per ``process_template_spec`` call; parameter-set expansion may run in
+        parallel and never writes the template cache from worker threads.
     """
 
     class DefinitionKeys:
@@ -48,10 +51,11 @@ class TemplateProcessor:
         TAG_IS_TEMPLATE_GENERATED = "_isTemplateGenerated"
         TAG_TEMPLATE_NAME = "_templateName"
     
-    def __init__(self, bundle_path: str, framework_path: str):
+    def __init__(self, bundle_path: str, framework_path: str, max_workers: int = 1):
         """Initialize the template processor."""
         self.bundle_path = bundle_path
         self.framework_path = framework_path
+        self.max_workers = max(1, int(max_workers))
         self.logger = pipeline_config.get_logger()
         self._pattern = re.compile(r'\$\{param\.([^}]+)\}')
         
@@ -118,47 +122,101 @@ class TemplateProcessor:
             self.logger.error(error_msg)
             raise ValueError(error_msg)
         
-        # Load template content and validate against schema
+        # Load template content and validate against schema (main thread only —
+        # workers must not write _template_cache).
         template_definition = self._get_template_definition(template_name, spec_file_format)
         
         # Get and validate parameter definitions
         param_definitions = self._get_template_parameters(template_definition, template_name)
-        
-        # Generat Spec for each parameter set
-        processed_specs = {}
         spec_template = template_definition.get(self.DefinitionKeys.TEMPLATE, {})
-        for params in dataflow_spec_params:
-            dataflow_id = params.get(self.SpecKeys.DATA_FLOW_ID)
-            spec_key = f'{file_path}#template_{template_name}_{dataflow_id}'
-            
-            # Validate and apply defaults to parameters
-            processed_params = self._validate_and_apply_defaults(
-                params, param_definitions, spec_key
-            )
-            
-            # Generate Spec with this parameter set
-            try:
-                generated_spec = self._generate_spec(spec_template, processed_params)
-                
-                # Explicitly mark this spec as template-generated for downstream processing
-                tags = generated_spec.get(self.SpecKeys.TAGS, {})
-                tags[self.SpecKeys.TAG_IS_TEMPLATE_GENERATED] = True
-                tags[self.SpecKeys.TAG_TEMPLATE_NAME] = template_name
-                generated_spec[self.SpecKeys.TAGS] = tags
-                
-                # Add spec
-                processed_specs[spec_key] = generated_spec
-                self.logger.debug(f"Generated spec from template: '{spec_key}'")
-            except Exception as e:
-                error_msg = f"Failed to generate spec from template '{spec_key}': {str(e)}"
-                self.logger.error(error_msg)
-                raise ValueError(error_msg) from e
+
+        processed_specs = self._expand_parameter_sets(
+            file_path=file_path,
+            template_name=template_name,
+            parameter_sets=dataflow_spec_params,
+            param_definitions=param_definitions,
+            spec_template=spec_template,
+        )
         
         self.logger.info(
             f"Successfully generated {len(processed_specs)} specs from template '{template_name}'"
         )
         
         return processed_specs
+
+    def _expand_parameter_sets(
+        self,
+        file_path: str,
+        template_name: str,
+        parameter_sets: list,
+        param_definitions: Dict,
+        spec_template: Dict,
+    ) -> Dict[str, Dict]:
+        """Expand each parameter set into a concrete spec, optionally in parallel."""
+        if self.max_workers == 1 or len(parameter_sets) <= 1:
+            processed_specs = {}
+            for params in parameter_sets:
+                spec_key, generated_spec = self._expand_one_parameter_set(
+                    file_path, template_name, params, param_definitions, spec_template
+                )
+                processed_specs[spec_key] = generated_spec
+            return processed_specs
+
+        processed_specs = {}
+        workers = min(self.max_workers, len(parameter_sets))
+        self.logger.debug(
+            "Expanding %s parameter sets for template '%s' with %s workers",
+            len(parameter_sets),
+            template_name,
+            workers,
+        )
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = [
+                executor.submit(
+                    self._expand_one_parameter_set,
+                    file_path,
+                    template_name,
+                    params,
+                    param_definitions,
+                    spec_template,
+                )
+                for params in parameter_sets
+            ]
+            for future in as_completed(futures):
+                spec_key, generated_spec = future.result()
+                processed_specs[spec_key] = generated_spec
+        return processed_specs
+
+    def _expand_one_parameter_set(
+        self,
+        file_path: str,
+        template_name: str,
+        params: Dict,
+        param_definitions: Dict,
+        spec_template: Dict,
+    ) -> Tuple[str, Dict]:
+        """Validate one parameter set and generate its concrete spec."""
+        dataflow_id = params.get(self.SpecKeys.DATA_FLOW_ID)
+        spec_key = f'{file_path}#template_{template_name}_{dataflow_id}'
+
+        processed_params = self._validate_and_apply_defaults(
+            params, param_definitions, spec_key
+        )
+
+        try:
+            generated_spec = self._generate_spec(spec_template, processed_params)
+
+            tags = generated_spec.get(self.SpecKeys.TAGS, {})
+            tags[self.SpecKeys.TAG_IS_TEMPLATE_GENERATED] = True
+            tags[self.SpecKeys.TAG_TEMPLATE_NAME] = template_name
+            generated_spec[self.SpecKeys.TAGS] = tags
+
+            self.logger.debug(f"Generated spec from template: '{spec_key}'")
+            return spec_key, generated_spec
+        except Exception as e:
+            error_msg = f"Failed to generate spec from template '{spec_key}': {str(e)}"
+            self.logger.error(error_msg)
+            raise ValueError(error_msg) from e
     
     def _get_template_definition(self, template_name: str, spec_file_format: str) -> Dict:
         """Load a template file from the file system with caching."""
