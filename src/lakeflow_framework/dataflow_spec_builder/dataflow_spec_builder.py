@@ -125,8 +125,12 @@ class DataflowSpecBuilder:
         # Initialize spec mapper for version migrations
         self.spec_mapper = SpecMapper(self.framework_path, self.max_workers)
         
-        # Initialize template processor
-        self.template_processor = TemplateProcessor(self.bundle_path, self.framework_path)
+        # Initialize template processor (shares override_max_workers for param-set expand)
+        self.template_processor = TemplateProcessor(
+            self.bundle_path,
+            self.framework_path,
+            max_workers=self.max_workers,
+        )
 
         # Initialize filters
         self.filter_data_flow_ids = self._parse_filter(self.filters.get("data_flow_ids"))
