@@ -6,6 +6,11 @@
     "type": "object",
     "properties": {
         "template": {"type": "string"},
+        "global_defaults": {
+            "type": "object",
+            "description": "Optional shared parameter values applied to every parameter set. Per-set keys override these defaults.",
+            "additionalProperties": true
+        },
         "parameter_sets": {"$ref": "#/definitions/parameterSets"},
         "parameterSets": {"$ref": "#/definitions/parameterSets"}
     },
