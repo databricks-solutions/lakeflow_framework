@@ -11,8 +11,12 @@ from lakeflow_framework.dataflow_spec_builder.template_processor import Template
 from helpers import make_tree
 
 
-def _processor(bundle_path: Path, framework_src_path: Path) -> TemplateProcessor:
-    return TemplateProcessor(str(bundle_path), str(framework_src_path))
+def _processor(
+    bundle_path: Path, framework_src_path: Path, max_workers: int = 1
+) -> TemplateProcessor:
+    return TemplateProcessor(
+        str(bundle_path), str(framework_src_path), max_workers=max_workers
+    )
 
 
 def _minimal_template_spec(parameter_sets=None):
@@ -52,6 +56,58 @@ class TestTemplateProcessorExpansion:
         assert len(result) == 2
         ids = {spec["dataFlowId"] for spec in result.values()}
         assert ids == {"from_template_a", "from_template_b"}
+
+    def test_parallel_parameter_set_expansion_matches_sequential(
+        self,
+        pipeline_context,
+        template_bundle_tree: Path,
+        framework_src_path: Path,
+        fixtures_dir: Path,
+    ):
+        template_spec = json.loads(
+            (fixtures_dir / "specs" / "template_main_minimal.json").read_text()
+        )
+        sequential = _processor(template_bundle_tree, framework_src_path, max_workers=1)
+        parallel = _processor(template_bundle_tree, framework_src_path, max_workers=4)
+
+        seq_result = sequential.process_template_spec(
+            "/virtual/template_main_minimal.json", template_spec
+        )
+        par_result = parallel.process_template_spec(
+            "/virtual/template_main_minimal.json", template_spec
+        )
+
+        assert set(seq_result) == set(par_result)
+        for key in seq_result:
+            assert seq_result[key] == par_result[key]
+
+    def test_parallel_expansion_propagates_parameter_errors(
+        self,
+        pipeline_context,
+        template_bundle_tree: Path,
+        framework_src_path: Path,
+    ):
+        processor = _processor(template_bundle_tree, framework_src_path, max_workers=4)
+        template_spec = {
+            "template": "minimal_template",
+            "parameter_sets": [
+                {
+                    "dataFlowId": "ok",
+                    "sourceSystem": "erp",
+                    "sourceViewName": "v_ok",
+                    "path": "/data/ok",
+                    "database": "db",
+                    "table": "tbl",
+                },
+                {
+                    "dataFlowId": "missing_required",
+                    "sourceSystem": "erp",
+                    # sourceViewName / path / database / table omitted
+                },
+            ],
+        }
+        with pytest.raises(ValueError, match="missing required parameters"):
+            processor.process_template_spec("/virtual/bad.json", template_spec)
 
     def test_accepts_snake_case_and_legacy_camelcase_parameter_sets(
         self,
