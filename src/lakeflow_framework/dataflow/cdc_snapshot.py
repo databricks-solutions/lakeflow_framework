@@ -786,23 +786,22 @@ class CDCSnapshotFlow:
                 self.logger.warning(f"CDC Snapshot: No files found for version {target_version}")
                 return None
 
+            files_to_read = sorted(files_to_read)
             self.logger.info(f"CDC Snapshot: Reading {len(files_to_read)} file(s) for version {target_version}")
-            schema_path = self.source.schemaPath
-            select_exp = self.source.selectExp
-            df = None
-            for file_path in sorted(files_to_read):
+            for file_path in files_to_read:
                 self.logger.debug(f"CDC Snapshot: Reading file: {file_path}")
-                file_df = SourceBatchFiles(
-                    path=file_path,
-                    format=self.source.format,
-                    readerOptions=self.source.readerOptions,
-                    schemaPath=schema_path,
-                    selectExp=select_exp
-                ).read_source(read_config)
-                if df is None:
-                    df = file_df
-                else:
-                    df = df.union(file_df)
+
+            # One Spark load for all fragments of this version (same as union, cheaper).
+            source_path: Union[str, List[str]] = (
+                files_to_read[0] if len(files_to_read) == 1 else files_to_read
+            )
+            df = SourceBatchFiles(
+                path=source_path,
+                format=self.source.format,
+                readerOptions=self.source.readerOptions,
+                schemaPath=self.source.schemaPath,
+                selectExp=self.source.selectExp,
+            ).read_source(read_config)
 
             # Apply filter if specified
             if self.source.filter:

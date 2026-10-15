@@ -301,3 +301,94 @@ class TestCDCSnapshotFileListing:
         file_snapshot_flow._list_files = counting_list  # type: ignore[method-assign]
         file_snapshot_flow._get_listed_files(str(data_dir), recursive=False)
         assert calls["n"] == 0
+
+
+class TestCDCSnapshotMultiFileRead:
+    @pytest.fixture
+    def data_dir(self, tmp_path):
+        d = tmp_path / "multi_frag"
+        d.mkdir()
+        return d
+
+    @pytest.fixture
+    def file_snapshot_flow(self, pipeline_context, data_dir):
+        settings = CDCSnapshotSettings(
+            keys=["id"],
+            scd_type="1",
+            snapshotType=CDCSnapshotTypes.HISTORICAL,
+            sourceType=CDCSnapshotSourceTypes.FILE,
+            source={
+                "format": "csv",
+                "path": f"{data_dir}/{{version}}_FINAL_{{fragment}}.csv",
+                "versionType": CDCSnapshotVersionTypes.INTEGER,
+                "readerOptions": {"header": "true", "inferSchema": "false"},
+            },
+        )
+        return CDCSnapshotFlow(settings)
+
+    def test_read_snapshot_dataframe_loads_all_fragments_in_one_call(
+        self, file_snapshot_flow, data_dir, monkeypatch
+    ):
+        from lakeflow_framework.dataflow import cdc_snapshot as cdc_mod
+        from lakeflow_framework.dataflow.dataflow_config import DataFlowConfig
+        from lakeflow_framework.dataflow.features import Features
+
+        p1 = data_dir / "1_FINAL_a.csv"
+        p2 = data_dir / "1_FINAL_b.csv"
+        p1.write_text("id\n1\n")
+        p2.write_text("id\n2\n")
+
+        captured = {}
+
+        class FakeBatchFiles:
+            def __init__(self, **kwargs):
+                captured["kwargs"] = kwargs
+
+            def read_source(self, read_config):
+                captured["read_config"] = read_config
+                return "fake-df"
+
+        monkeypatch.setattr(cdc_mod, "SourceBatchFiles", FakeBatchFiles)
+
+        file_snapshot_flow._version_paths = {
+            "1": [str(p2), str(p1)],  # unsorted on purpose
+        }
+        version = VersionInfo(1, CDCSnapshotVersionTypes.INTEGER)
+        df = file_snapshot_flow._read_snapshot_dataframe(
+            version,
+            DataFlowConfig(features=Features()),
+            target_config_flags=[],
+        )
+
+        assert df == "fake-df"
+        assert captured["kwargs"]["path"] == [str(p1), str(p2)]
+        assert captured["kwargs"]["format"] == "csv"
+
+    def test_read_snapshot_dataframe_uses_string_path_for_single_file(
+        self, file_snapshot_flow, data_dir, monkeypatch
+    ):
+        from lakeflow_framework.dataflow import cdc_snapshot as cdc_mod
+        from lakeflow_framework.dataflow.dataflow_config import DataFlowConfig
+        from lakeflow_framework.dataflow.features import Features
+
+        p1 = data_dir / "1_FINAL_a.csv"
+        p1.write_text("id\n1\n")
+
+        captured = {}
+
+        class FakeBatchFiles:
+            def __init__(self, **kwargs):
+                captured["kwargs"] = kwargs
+
+            def read_source(self, read_config):
+                return "fake-df"
+
+        monkeypatch.setattr(cdc_mod, "SourceBatchFiles", FakeBatchFiles)
+        file_snapshot_flow._version_paths = {"1": [str(p1)]}
+        df = file_snapshot_flow._read_snapshot_dataframe(
+            VersionInfo(1, CDCSnapshotVersionTypes.INTEGER),
+            DataFlowConfig(features=Features()),
+            target_config_flags=[],
+        )
+        assert df == "fake-df"
+        assert captured["kwargs"]["path"] == str(p1)
