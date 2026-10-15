@@ -218,3 +218,86 @@ class TestCDCSnapshotSortedVersions:
             VersionInfo(1, CDCSnapshotVersionTypes.INTEGER),
         ]
         assert file_snapshot_flow.version_values == [1, 2]
+
+
+class TestCDCSnapshotFileListing:
+    @pytest.fixture
+    def data_dir(self, tmp_path):
+        d = tmp_path / "snapshots"
+        d.mkdir()
+        return d
+
+    @pytest.fixture
+    def file_snapshot_flow(self, pipeline_context, data_dir):
+        settings = CDCSnapshotSettings(
+            keys=["id"],
+            scd_type="1",
+            snapshotType=CDCSnapshotTypes.HISTORICAL,
+            sourceType=CDCSnapshotSourceTypes.FILE,
+            source={
+                "format": "csv",
+                "path": f"{data_dir}/customer_{{version}}.csv",
+                "versionType": CDCSnapshotVersionTypes.INTEGER,
+            },
+        )
+        return CDCSnapshotFlow(settings)
+
+    def test_fuse_lists_flat_directory(self, file_snapshot_flow, data_dir):
+        (data_dir / "customer_1.csv").write_text("id\n1\n")
+        (data_dir / "customer_2.csv").write_text("id\n2\n")
+        listed = file_snapshot_flow._list_files_fuse(str(data_dir), recursive=False)
+        names = sorted(entry.name for entry in listed)
+        assert names == ["customer_1.csv", "customer_2.csv"]
+
+    def test_fuse_skips_descending_into_parquet_directories(
+        self, file_snapshot_flow, data_dir
+    ):
+        parquet_dir = data_dir / "snap.parquet"
+        parquet_dir.mkdir()
+        (parquet_dir / "part-0000.parquet").write_text("x")
+        (data_dir / "other.csv").write_text("id\n1\n")
+
+        listed = file_snapshot_flow._list_files_fuse(str(data_dir), recursive=True)
+        names = {entry.name for entry in listed}
+        assert "snap.parquet" in names
+        assert "other.csv" in names
+        assert "part-0000.parquet" not in names
+
+    def test_get_listed_files_caches_single_listing(self, file_snapshot_flow, data_dir):
+        (data_dir / "customer_1.csv").write_text("id\n1\n")
+        calls = {"n": 0}
+        original = file_snapshot_flow._list_files
+
+        def counting_list(path, recursive=True):
+            calls["n"] += 1
+            return original(path, recursive=recursive)
+
+        file_snapshot_flow._list_files = counting_list  # type: ignore[method-assign]
+        first = file_snapshot_flow._get_listed_files(str(data_dir), recursive=False)
+        second = file_snapshot_flow._get_listed_files(str(data_dir), recursive=False)
+        assert calls["n"] == 1
+        assert first is second
+
+    def test_available_file_versions_indexes_paths_for_read(
+        self, file_snapshot_flow, data_dir
+    ):
+        (data_dir / "customer_1.csv").write_text("id\n1\n")
+        (data_dir / "customer_2.csv").write_text("id\n2\n")
+        versions = file_snapshot_flow._get_available_file_versions(None)
+        assert sorted(v.raw_value for v in versions) == [1, 2]
+        assert file_snapshot_flow._version_paths is not None
+        assert any(
+            p.endswith("customer_1.csv")
+            for p in file_snapshot_flow._version_paths["1"]
+        )
+        # Second listing should be a cache hit
+        calls = {"n": 0}
+        original = file_snapshot_flow._list_files
+
+        def counting_list(path, recursive=True):
+            calls["n"] += 1
+            return original(path, recursive=recursive)
+
+        file_snapshot_flow._list_files = counting_list  # type: ignore[method-assign]
+        file_snapshot_flow._get_listed_files(str(data_dir), recursive=False)
+        assert calls["n"] == 0

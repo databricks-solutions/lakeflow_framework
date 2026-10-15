@@ -1,8 +1,9 @@
 import bisect
 from dataclasses import dataclass, field
 from datetime import datetime
+import os
 import re
-from typing import Dict, List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 from pyspark import pipelines as dp
 from pyspark.sql import DataFrame
@@ -13,6 +14,21 @@ import pipeline_config
 
 from .dataflow_config import DataFlowConfig
 from .sources import SourceDelta, SourceBatchFiles, ReadConfig
+
+
+@dataclass
+class _ListedPath:
+    """Minimal file listing entry shared across FUSE / dbutils / Spark discovery."""
+
+    path: str
+    name: str
+    size: int = 0
+    modificationTime: int = 0
+    is_dir: bool = False
+
+    def isDir(self) -> bool:
+        """Match ``dbutils.fs.FileInfo.isDir()`` for shared recursive helpers."""
+        return self.is_dir
 
 
 @dataclass(frozen=True)
@@ -199,10 +215,15 @@ class CDCSnapshotFlow:
             if self.source is None:
                 raise ValueError("Source configuration is required for historical snapshots")
 
-        # Cached version data
+        # Cached version data (per pipeline update / flow instance)
         self._available_versions: Optional[List[VersionInfo]] = None
         self._sorted_versions: Optional[List[VersionInfo]] = None
         self._version_values: Optional[List[Union[int, datetime]]] = None
+        # Cached file listing for historical file sources — avoids re-listing
+        # once for version discovery and again for every version read.
+        self._listed_files_key: Optional[Tuple[str, bool]] = None
+        self._listed_files: Optional[List] = None
+        self._version_paths: Optional[Dict[str, List[str]]] = None
 
     @property
     def sorted_versions(self) -> List[VersionInfo]:
@@ -319,89 +340,163 @@ class CDCSnapshotFlow:
         else:
             raise ValueError(f"Unsupported source type: {self.sourceType}")
     
-    def _list_files(self, path: str, recursive: bool = True) -> List:
-        """List files in a directory, attempting dbutils.fs.ls() first.
+    @staticmethod
+    def _posix_path(path: str) -> str:
+        """Strip optional ``dbfs:`` scheme for local /Volumes FUSE access."""
+        return path[5:] if path.startswith("dbfs:") else path
 
-        Falls back to Spark binaryFile if dbutils is unavailable (e.g., blocked
-        by Serverless Restricted Access / SEG Py4JSecurityException).
+    @staticmethod
+    def _with_caller_scheme(path: str, caller_path: str) -> str:
+        """Preserve ``dbfs:`` prefix when the caller used it."""
+        if caller_path.startswith("dbfs:") and not path.startswith("dbfs:"):
+            return f"dbfs:{path}" if path.startswith("/") else f"dbfs:/{path}"
+        if not caller_path.startswith("dbfs:") and path.startswith("dbfs:"):
+            return path[5:]
+        return path
+
+    def _get_listed_files(self, path: str, recursive: bool = True) -> List:
+        """List files once per (path, recursive) for this flow instance."""
+        key = (path, recursive)
+        if self._listed_files is not None and self._listed_files_key == key:
+            self.logger.debug(
+                "CDC Snapshot: Reusing cached file listing for '%s' (%s entries)",
+                path,
+                len(self._listed_files),
+            )
+            return self._listed_files
+        files = self._list_files(path, recursive=recursive)
+        self._listed_files_key = key
+        self._listed_files = files
+        return files
+
+    def _list_files(self, path: str, recursive: bool = True) -> List:
+        """List files for snapshot discovery.
+
+        Order (fast → SEG-safe last resort):
+        1. FUSE / POSIX ``os.listdir`` / ``os.walk`` (typical for ``/Volumes/...``)
+        2. ``dbutils.fs.ls``
+        3. Spark ``binaryFile`` + ``collect`` (works under SEG; expensive)
 
         Args:
             path: Directory path to list files from.
             recursive: If True, list files recursively.
 
         Returns:
-            List of objects with a .path attribute per discovered file.
+            List of objects with a ``.path`` attribute per discovered entry.
         """
-        try:
-            dbutils = pipeline_config.get_dbutils()
-            all_files = []
-            for f in dbutils.fs.ls(path):
-                all_files.append(f)
-                # Recursively list files in subdirectories unless the path ends with .parquet
-                if recursive and f.isDir() and not f.path.rstrip("/").endswith(".parquet"):
-                    all_files.extend(self._list_files(f.path, recursive=True))
-            return all_files
-        except Exception as e:
-            self.logger.warning(
-                f"CDC Snapshot: dbutils.fs.ls() failed at '{path}'. "
-                f"Falling back to Spark binaryFile for file discovery."
-            )
-
-        # Fallback: Spark binaryFile read is SEG-compatible and needs no dbutils.
-        self.logger.debug("CDC Snapshot: Falling back to Spark binaryFile for file discovery")
-        
-        class _FileInfo:
-            __slots__ = ("path", "name", "size", "modificationTime")
-
-            # binaryFile returns full URIs (e.g. dbfs:/Volumes/...). Normalise to
-            # match the caller's path scheme so split-by-segment indices stay aligned.
-            _prefix = path.startswith("dbfs:")
-
-            def __init__(self, row) -> None:
-                raw = row.path
-                if self._prefix:
-                    self.path = raw if raw.startswith("dbfs:") else f"dbfs:{raw}"
-                else:
-                    self.path = raw[5:] if raw.startswith("dbfs:") else raw
-                self.name = self.path.rstrip("/").rsplit("/", 1)[-1]
-                self.size = row.length
-                self.modificationTime = row.modificationTime
-        
-        spark = pipeline_config.get_spark()
-        rows = (
-            spark.read
-                    .format("binaryFile")
-                    .option("recursiveFileLookup", str(recursive).lower())
-                    .load(path)
-                    .select("path", "modificationTime", "length")
-                    .collect()
+        attempts = (
+            ("FUSE/POSIX", self._list_files_fuse),
+            ("dbutils.fs.ls", self._list_files_dbutils),
+            ("Spark binaryFile", self._list_files_spark),
+        )
+        errors: List[str] = []
+        for label, lister in attempts:
+            try:
+                files = lister(path, recursive)
+                self.logger.debug(
+                    "CDC Snapshot: Listed %s entr(y/ies) under '%s' via %s",
+                    len(files),
+                    path,
+                    label,
+                )
+                return files
+            except Exception as exc:
+                errors.append(f"{label}: {exc}")
+                self.logger.warning(
+                    "CDC Snapshot: %s listing failed at '%s' (%s). Trying next strategy.",
+                    label,
+                    path,
+                    exc,
+                )
+        raise RuntimeError(
+            "CDC Snapshot: All file listing strategies failed for "
+            f"'{path}': {'; '.join(errors)}"
         )
 
-        # binaryFile only returns leaf files, not directories. For parquet "files" that
-        # are actually directories (e.g. customer.parquet/part-00000.parquet), truncate
-        # the path at the .parquet directory level and deduplicate so each snapshot is
-        # counted once.
+    def _list_files_fuse(self, path: str, recursive: bool = True) -> List:
+        """List via local filesystem (UC Volume FUSE mount when available)."""
+        posix = self._posix_path(path)
+        if not os.path.isdir(posix):
+            raise FileNotFoundError(
+                f"FUSE/POSIX path is not a directory or is not mounted: {posix}"
+            )
+
+        def _make(entry_posix: str, is_dir: bool) -> _ListedPath:
+            normalized = self._with_caller_scheme(entry_posix, path)
+            return _ListedPath(
+                path=normalized,
+                name=entry_posix.rstrip("/").rsplit("/", 1)[-1],
+                is_dir=is_dir,
+            )
+
+        all_files: List[_ListedPath] = []
+        if not recursive:
+            for name in sorted(os.listdir(posix)):
+                child = os.path.join(posix, name)
+                all_files.append(_make(child, os.path.isdir(child)))
+            return all_files
+
+        for root, dirnames, filenames in os.walk(posix):
+            # Match dbutils: do not recurse into directories whose name ends with .parquet
+            parquet_dirs = [d for d in dirnames if d.endswith(".parquet")]
+            dirnames[:] = [d for d in dirnames if not d.endswith(".parquet")]
+            for dirname in dirnames:
+                all_files.append(_make(os.path.join(root, dirname), True))
+            for parquet_dir in parquet_dirs:
+                all_files.append(_make(os.path.join(root, parquet_dir), True))
+            for filename in filenames:
+                all_files.append(_make(os.path.join(root, filename), False))
+
+        return all_files
+
+    def _list_files_dbutils(self, path: str, recursive: bool = True) -> List:
+        """List via ``dbutils.fs.ls`` (may be blocked under SEG)."""
+        dbutils = pipeline_config.get_dbutils()
+        all_files = []
+        for f in dbutils.fs.ls(path):
+            all_files.append(f)
+            if recursive and f.isDir() and not f.path.rstrip("/").endswith(".parquet"):
+                all_files.extend(self._list_files_dbutils(f.path, recursive=True))
+        return all_files
+
+    def _list_files_spark(self, path: str, recursive: bool = True) -> List:
+        """List via Spark ``binaryFile`` + ``collect`` (SEG-safe, expensive)."""
+        spark = pipeline_config.get_spark()
+        rows = (
+            spark.read.format("binaryFile")
+            .option("recursiveFileLookup", str(recursive).lower())
+            .load(path)
+            .select("path", "modificationTime", "length")
+            .collect()
+        )
+
         def _truncate_at_parquet_dir(p: str) -> str:
             segments = p.split("/")
-            for i, seg in enumerate(segments[:-1]):  # skip the last segment
+            for i, seg in enumerate(segments[:-1]):
                 if seg.endswith(".parquet"):
                     return "/".join(segments[: i + 1])
             return p
 
         seen_paths = set()
-        files: List[_FileInfo] = []
+        files: List[_ListedPath] = []
         for row in rows:
-            fi = _FileInfo(row)
-            fi.path = _truncate_at_parquet_dir(fi.path)
-            fi.name = fi.path.rstrip("/").rsplit("/", 1)[-1]
-            if fi.path not in seen_paths:
-                seen_paths.add(fi.path)
-                files.append(fi)
-
-        self.logger.debug(
-            f"CDC Snapshot: Spark binaryFile fallback listed {len(files)} file(s) under '{path}'"
-        )
-
+            raw = row.path
+            if path.startswith("dbfs:"):
+                normalized = raw if raw.startswith("dbfs:") else f"dbfs:{raw}"
+            else:
+                normalized = raw[5:] if raw.startswith("dbfs:") else raw
+            normalized = _truncate_at_parquet_dir(normalized)
+            if normalized in seen_paths:
+                continue
+            seen_paths.add(normalized)
+            files.append(
+                _ListedPath(
+                    path=normalized,
+                    name=normalized.rstrip("/").rsplit("/", 1)[-1],
+                    size=row.length,
+                    modificationTime=row.modificationTime,
+                )
+            )
         return files
 
     def _path_to_regex_pattern(self, path: str) -> str:
@@ -462,41 +557,70 @@ class CDCSnapshotFlow:
 
         self.logger.debug(f"CDC Snapshot: Listing files in {parent_dir} with pattern {file_pattern_regex}")
 
-        # List files using the configured recursive file lookup option
+        # List files using the configured recursive file lookup option (cached)
         recursive_file_lookup = self.source.recursiveFileLookup
         self.logger.debug(f"CDC Snapshot: Using recursive file lookup: {recursive_file_lookup}")
-        files_list = self._list_files(parent_dir, recursive=recursive_file_lookup)
-        files_with_path_info = [FilePathInfo(full_path=f.path, filename_with_version_path='/'.join(f.path.split('/')[dynamic_idx:])) for f in files_list]
+        files_list = self._get_listed_files(parent_dir, recursive=recursive_file_lookup)
+        files_with_path_info = [
+            FilePathInfo(
+                full_path=f.path,
+                filename_with_version_path="/".join(f.path.split("/")[dynamic_idx:]),
+            )
+            for f in files_list
+        ]
 
         self.logger.debug(f"CDC Snapshot: Found {len(files_with_path_info)} files")
 
-        # Extract version from filename and filter by latest_snapshot_version if provided
+        # Extract version from filename; index paths for later reads without re-listing
+        version_paths: Dict[str, List[str]] = {}
         available_versions = []
         for file in files_with_path_info:
             self.logger.debug(f"CDC Snapshot: Processing file: {file.filename_with_version_path}")
             try:
-                version_info = self._extract_version_from_filename(file.filename_with_version_path, file_pattern_regex)
+                version_info = self._extract_version_from_filename(
+                    file.filename_with_version_path, file_pattern_regex
+                )
                 if version_info is None:
                     continue
 
-                self.logger.debug(f"CDC Snapshot: Extracted version from filename: {version_info.formatted_value}. Raw version: {version_info.raw_value}")
+                self.logger.debug(
+                    "CDC Snapshot: Extracted version from filename: "
+                    f"{version_info.formatted_value}. Raw version: {version_info.raw_value}"
+                )
 
-                if latest_snapshot_version is None and self.source.startingVersion is not None and version_info.raw_value < self.source.startingVersion:
+                version_paths.setdefault(version_info.formatted_value, []).append(
+                    file.full_path
+                )
+
+                if (
+                    latest_snapshot_version is None
+                    and self.source.startingVersion is not None
+                    and version_info.raw_value < self.source.startingVersion
+                ):
                     continue
 
-                if latest_snapshot_version is not None and version_info.raw_value <= latest_snapshot_version:
+                if (
+                    latest_snapshot_version is not None
+                    and version_info.raw_value <= latest_snapshot_version
+                ):
                     continue
 
                 # Dedupe by version (multiple fragments can share same version)
                 if any(v.raw_value == version_info.raw_value for v in available_versions):
                     continue
                 available_versions.append(version_info)
-                self.logger.debug(f"CDC Snapshot: Added version {version_info.formatted_value} to available versions")
+                self.logger.debug(
+                    f"CDC Snapshot: Added version {version_info.formatted_value} "
+                    "to available versions"
+                )
 
             except ValueError as e:
-                self.logger.warning(f"CDC Snapshot: Skipping file '{file.filename_with_version_path}' - {e}")
+                self.logger.warning(
+                    f"CDC Snapshot: Skipping file '{file.filename_with_version_path}' - {e}"
+                )
                 continue
 
+        self._version_paths = version_paths
         return available_versions
 
     def _get_available_table_versions(self, latest_snapshot_version: Optional[Union[int, datetime]]) -> List[VersionInfo]:
@@ -636,22 +760,27 @@ class CDCSnapshotFlow:
             file_pattern_regex = '/'.join(pattern.split('/')[dynamic_idx:]) + r'/?$'
             regex_pattern = self._path_to_regex_pattern(file_pattern_regex)
 
-            recursive_file_lookup = self.source.recursiveFileLookup
-            files_list = self._list_files(parent_dir, recursive=recursive_file_lookup)
-
             target_version = version_info.formatted_value
             files_to_read: List[str] = []
 
-            for f in files_list:
-                full_path = f.path
-                relative_path = '/'.join(full_path.split('/')[dynamic_idx:])
-                match = re.match(regex_pattern, relative_path)
-                if not match:
-                    continue
-                version_str = self._get_version_string_from_match(match)
-                if version_str is None or version_str != target_version:
-                    continue
-                files_to_read.append(full_path)
+            # Prefer paths indexed during version discovery (no second listing).
+            if self._version_paths is not None and target_version in self._version_paths:
+                files_to_read = list(self._version_paths[target_version])
+            else:
+                recursive_file_lookup = self.source.recursiveFileLookup
+                files_list = self._get_listed_files(
+                    parent_dir, recursive=recursive_file_lookup
+                )
+                for f in files_list:
+                    full_path = f.path
+                    relative_path = "/".join(full_path.split("/")[dynamic_idx:])
+                    match = re.match(regex_pattern, relative_path)
+                    if not match:
+                        continue
+                    version_str = self._get_version_string_from_match(match)
+                    if version_str is None or version_str != target_version:
+                        continue
+                    files_to_read.append(full_path)
 
             if not files_to_read:
                 self.logger.warning(f"CDC Snapshot: No files found for version {target_version}")
