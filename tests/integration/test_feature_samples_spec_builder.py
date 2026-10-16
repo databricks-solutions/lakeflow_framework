@@ -42,6 +42,32 @@ class TestFeatureSamplesSpecBuilder:
         target = spec.get_target_details()
         assert "tgt_append_sql_flow" in target.table
 
+    def test_build_chained_transformations_from_feature_samples_bundle(
+        self,
+        framework_src_path,
+        feature_samples_bundle_path,
+        feature_samples_secrets_manager,
+        feature_samples_substitution_manager,
+        pipeline_context,
+    ):
+        """Transformations chained off other transformations are standalone views."""
+        builder = DataflowSpecBuilder(
+            bundle_path=str(feature_samples_bundle_path),
+            framework_path=str(framework_src_path),
+            filters={"data_flow_ids": "chained_transformations"},
+            secrets_manager=feature_samples_secrets_manager,
+            ignore_validation_errors=False,
+            max_workers=1,
+        )
+        specs = builder.build()
+
+        assert len(specs) == 1
+        group = specs[0].get_flow_groups()[0]
+        assert set(group.get_views()) == {"v_chained_clean", "v_chained_enrich"}
+        flow = group.get_flows()["f_chained_transformations"]
+        assert flow.sourceView == "v_chained_shape"
+        assert set(flow.get_views()) == {"v_chained_shape", "v_chained_customer"}
+
     def test_read_all_feature_sample_main_specs(
         self,
         framework_src_path,

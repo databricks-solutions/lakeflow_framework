@@ -5,6 +5,7 @@
         "dataFlowId": {"type": "string"},
         "flowGroupId": {"type": "string"},
         "stagingTables": {"$ref": "#/definitions/stagingTables"},
+        "views": {"$ref": "#/definitions/views"},
         "flows": {
             "type": "object",
             "patternProperties": {
