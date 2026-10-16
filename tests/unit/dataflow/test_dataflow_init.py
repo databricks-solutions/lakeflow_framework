@@ -278,3 +278,47 @@ class TestDataFlowHelpers:
         )
         config = dataflow._prepare_flow_config(flow, {"stg_orders": staging})
         assert config.target_config_flags == ["disableOperationalMetadata"]
+
+
+class TestDataFlowStandaloneViews:
+    """Flow-group ``views`` are created before the flows, independent of them."""
+
+    def test_creates_standalone_views_before_flows(self, pipeline_context, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            "lakeflow_framework.dataflow.view.View.create_view",
+            lambda self, dataflow_config, view_config=None, quarantine_rules=None: calls.append(
+                ("view", self.viewName, view_config.target_config_flags, quarantine_rules)),
+        )
+        monkeypatch.setattr(
+            "lakeflow_framework.dataflow.dataflow.DataFlow._create_flow",
+            lambda self, flow, staging_tables: calls.append(("flow", flow.flowName)),
+        )
+        spec = _streaming_spec(targetDetails={
+            "table": "catalog.schema.orders", "type": "st",
+            "configFlags": ["disableOperationalMetadata"],
+        })
+        dataflow = DataFlow(spec)
+        group = FlowGroup(
+            flowGroupId="main",
+            views={"v_clean": {"mode": "batch", "sourceType": "sql",
+                               "sourceDetails": {"sqlStatement": "SELECT 1"}}},
+            flows={"f_load": {"flowType": "append_sql", "flowDetails": {
+                "targetTable": "catalog.schema.orders", "sqlStatement": "SELECT * FROM v_clean"}}},
+        )
+        dataflow._create_flow_group(group)
+        assert calls == [
+            ("view", "v_clean", ["disableOperationalMetadata"], None),
+            ("flow", "f_load"),
+        ]
+
+    def test_no_standalone_views_is_a_noop(self, pipeline_context, monkeypatch):
+        created = []
+        monkeypatch.setattr(
+            "lakeflow_framework.dataflow.view.View.create_view",
+            lambda self, *a, **k: created.append(self.viewName),
+        )
+        monkeypatch.setattr(
+            "lakeflow_framework.dataflow.dataflow.DataFlow._create_flow", lambda self, flow, st: None)
+        DataFlow(_streaming_spec())._create_flow_group(FlowGroup(flowGroupId="main", flows={}))
+        assert created == []
