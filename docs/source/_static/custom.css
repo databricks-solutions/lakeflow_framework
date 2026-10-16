@@ -53,6 +53,79 @@
     color: white !important;
 }
 
+/* Landing-page "See it in action" showcase (marketing hero for the demo) */
+.lf-showcase {
+    max-width: 62rem;
+    margin: 0.5rem auto 2.5rem;
+    text-align: center;
+}
+.md-typeset .lf-showcase p.lf-hero__subtitle {
+    max-width: 46rem;
+    margin: 0 auto 1.25rem;
+    color: var(--md-default-fg-color, #1b3139);
+    font-family: var(--md-text-font, "Roboto"), sans-serif;
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    opacity: 0.92;
+}
+.md-typeset .lf-showcase p.lf-showcase__lead {
+    max-width: 46rem;
+    margin: 0 auto 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--md-default-fg-color, #1b3139);
+    opacity: 0.92;
+}
+.lf-showcase__demo {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Embedded animated demos (self-contained HTML in _static/animations, shown via iframe) */
+.lf-demo {
+    margin: 1.5rem 0 2rem;
+}
+
+.lf-demo__caption {
+    font-size: 0.8rem;
+    color: #6b7684;
+    margin: 0.5rem 0 0;
+    text-align: center;
+}
+
+.lf-demo__frame {
+    position: relative;
+    width: 100%;
+    border: 1px solid #e1e4e5;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(27, 49, 57, 0.12);
+    display: block;
+}
+
+.lf-demo__frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+}
+
+/* Screen demo: 1120x660 stage scaled to width => 660/1120 aspect ratio */
+.lf-demo--screen .lf-demo__frame {
+    aspect-ratio: 1120 / 660;
+    background: #1B3139;
+}
+
+/* Architecture animation: 1600x650 stage that fills the frame (no controls) */
+.lf-demo--architecture .lf-demo__frame {
+    aspect-ratio: 1600 / 650;
+    background: #EBEEF0;
+}
+
 /* Custom styling for sphinx-tabs — layout/structure only; colours in databricks-theme.css */
 .sphinx-tabs {
     margin-bottom: 0.75rem;
