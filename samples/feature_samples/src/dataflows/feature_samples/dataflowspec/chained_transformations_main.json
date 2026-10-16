@@ -1,0 +1,56 @@
+{
+    "data_flow_id": "chained_transformations",
+    "data_flow_group": "feature_samples_general",
+    "data_flow_type": "nodespec",
+    "nodes": [
+        {
+            "name": "v_chained_customer",
+            "node_type": "source",
+            "source_type": "delta",
+            "config": {
+                "mode": "stream",
+                "database": "{feature_schema}",
+                "table": "src_customer",
+                "cdf_enabled": true
+            }
+        },
+        {
+            "name": "v_chained_clean",
+            "node_type": "transformation",
+            "transformation_type": "sql",
+            "config": {
+                "sql_statement": "SELECT * FROM STREAM(v_chained_customer) WHERE coalesce(DELETE_FLAG, false) = false"
+            }
+        },
+        {
+            "name": "v_chained_enrich",
+            "node_type": "transformation",
+            "transformation_type": "sql",
+            "config": {
+                "sql_statement": "SELECT *, concat_ws(' ', FIRST_NAME, LAST_NAME) AS FULL_NAME, lower(EMAIL) AS EMAIL_NORMALISED FROM STREAM(v_chained_clean)"
+            }
+        },
+        {
+            "name": "v_chained_shape",
+            "node_type": "transformation",
+            "transformation_type": "sql",
+            "config": {
+                "sql_statement": "SELECT CUSTOMER_ID, FULL_NAME, EMAIL_NORMALISED, LOAD_TIMESTAMP FROM STREAM(v_chained_enrich)"
+            }
+        },
+        {
+            "name": "target_tgt_chained_transformations",
+            "node_type": "target",
+            "config": {
+                "database": "{feature_schema}",
+                "table": "tgt_chained_transformations",
+                "sources": [
+                    {
+                        "view": "v_chained_shape",
+                        "flow": "f_chained_transformations"
+                    }
+                ]
+            }
+        }
+    ]
+}

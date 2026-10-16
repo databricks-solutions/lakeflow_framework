@@ -106,3 +106,21 @@ class TestBaseFlowWithViews:
         views = flow.get_views()
         assert list(views) == ["v_src"]
         assert views["v_src"].viewName == "v_src"
+
+
+class TestFlowGroupGetViews:
+    def test_builds_standalone_views(self, pipeline_context):
+        group = FlowGroup(
+            flowGroupId="main",
+            flows={},
+            views={"v_clean": {"mode": "BATCH", "sourceType": "SQL",
+                               "sourceDetails": {"sqlStatement": "SELECT 1"}}},
+        )
+        views = group.get_views()
+        assert list(views) == ["v_clean"]
+        assert views["v_clean"].viewName == "v_clean"
+        assert views["v_clean"].mode == "batch"
+        assert views["v_clean"].sourceType == "sql"
+
+    def test_views_default_empty(self, pipeline_context):
+        assert FlowGroup(flowGroupId="main", flows={}).get_views() == {}

@@ -137,6 +137,7 @@ class NodespecSpecTransformer(BaseSpecTransformer):
 
         if not specs:
             raise ValueError("Nodespec spec must contain at least one target node")
+        self._add_standalone_transformations(specs)
         for s in specs:
             _values_to_backend(s)
         return specs if len(specs) > 1 else specs[0]
@@ -507,6 +508,29 @@ class NodespecSpecTransformer(BaseSpecTransformer):
                     node2 = {**node2, "config": {**node2.get("config", {}), "database": "live"}}
                 views[vn] = self._source_view(node2)
         return name, views
+
+    def _add_standalone_transformations(self, specs: List[Dict]) -> None:
+        """Define every enabled transformation no flow defines as a standalone view.
+
+        SQL names its upstream views textually and SDP builds the DAG from those
+        references, so a transformation that only feeds another transformation
+        (never read by a target) still needs a view. A transformation a target
+        reads stays on that target's flow, which applies the target's quarantine
+        rules and config flags to it. Standalone views go on the first spec's
+        flow group only: SDP views are pipeline-wide, so defining them in every
+        spec would redefine them.
+        """
+        defined = {v for s in specs for g in s.get("flowGroups", [])
+                   for f in g.get("flows", {}).values() for v in f.get("views") or {}}
+        standalone = {}
+        for n, node in self.lookup.items():
+            if node.get("node_type", "").lower() != self.TRANSFORMATION or node.get("enabled", True) is False:
+                continue
+            name = node.get("output_view_name") or self._view_name(n)
+            if name not in defined:
+                standalone[name] = self._transform_view(node)
+        if standalone:
+            specs[0]["flowGroups"][0]["views"] = standalone
 
     def _source_view(self, node: Dict) -> Dict:
         st = node.get("source_type", "delta")
