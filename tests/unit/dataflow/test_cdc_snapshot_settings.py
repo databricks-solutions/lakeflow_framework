@@ -218,3 +218,177 @@ class TestCDCSnapshotSortedVersions:
             VersionInfo(1, CDCSnapshotVersionTypes.INTEGER),
         ]
         assert file_snapshot_flow.version_values == [1, 2]
+
+
+class TestCDCSnapshotFileListing:
+    @pytest.fixture
+    def data_dir(self, tmp_path):
+        d = tmp_path / "snapshots"
+        d.mkdir()
+        return d
+
+    @pytest.fixture
+    def file_snapshot_flow(self, pipeline_context, data_dir):
+        settings = CDCSnapshotSettings(
+            keys=["id"],
+            scd_type="1",
+            snapshotType=CDCSnapshotTypes.HISTORICAL,
+            sourceType=CDCSnapshotSourceTypes.FILE,
+            source={
+                "format": "csv",
+                "path": f"{data_dir}/customer_{{version}}.csv",
+                "versionType": CDCSnapshotVersionTypes.INTEGER,
+            },
+        )
+        return CDCSnapshotFlow(settings)
+
+    def test_fuse_lists_flat_directory(self, file_snapshot_flow, data_dir):
+        (data_dir / "customer_1.csv").write_text("id\n1\n")
+        (data_dir / "customer_2.csv").write_text("id\n2\n")
+        listed = file_snapshot_flow._list_files_fuse(str(data_dir), recursive=False)
+        names = sorted(entry.name for entry in listed)
+        assert names == ["customer_1.csv", "customer_2.csv"]
+
+    def test_fuse_skips_descending_into_parquet_directories(
+        self, file_snapshot_flow, data_dir
+    ):
+        parquet_dir = data_dir / "snap.parquet"
+        parquet_dir.mkdir()
+        (parquet_dir / "part-0000.parquet").write_text("x")
+        (data_dir / "other.csv").write_text("id\n1\n")
+
+        listed = file_snapshot_flow._list_files_fuse(str(data_dir), recursive=True)
+        names = {entry.name for entry in listed}
+        assert "snap.parquet" in names
+        assert "other.csv" in names
+        assert "part-0000.parquet" not in names
+
+    def test_get_listed_files_caches_single_listing(self, file_snapshot_flow, data_dir):
+        (data_dir / "customer_1.csv").write_text("id\n1\n")
+        calls = {"n": 0}
+        original = file_snapshot_flow._list_files
+
+        def counting_list(path, recursive=True):
+            calls["n"] += 1
+            return original(path, recursive=recursive)
+
+        file_snapshot_flow._list_files = counting_list  # type: ignore[method-assign]
+        first = file_snapshot_flow._get_listed_files(str(data_dir), recursive=False)
+        second = file_snapshot_flow._get_listed_files(str(data_dir), recursive=False)
+        assert calls["n"] == 1
+        assert first is second
+
+    def test_available_file_versions_indexes_paths_for_read(
+        self, file_snapshot_flow, data_dir
+    ):
+        (data_dir / "customer_1.csv").write_text("id\n1\n")
+        (data_dir / "customer_2.csv").write_text("id\n2\n")
+        versions = file_snapshot_flow._get_available_file_versions(None)
+        assert sorted(v.raw_value for v in versions) == [1, 2]
+        assert file_snapshot_flow._version_paths is not None
+        assert any(
+            p.endswith("customer_1.csv")
+            for p in file_snapshot_flow._version_paths["1"]
+        )
+        # Second listing should be a cache hit
+        calls = {"n": 0}
+        original = file_snapshot_flow._list_files
+
+        def counting_list(path, recursive=True):
+            calls["n"] += 1
+            return original(path, recursive=recursive)
+
+        file_snapshot_flow._list_files = counting_list  # type: ignore[method-assign]
+        file_snapshot_flow._get_listed_files(str(data_dir), recursive=False)
+        assert calls["n"] == 0
+
+
+class TestCDCSnapshotMultiFileRead:
+    @pytest.fixture
+    def data_dir(self, tmp_path):
+        d = tmp_path / "multi_frag"
+        d.mkdir()
+        return d
+
+    @pytest.fixture
+    def file_snapshot_flow(self, pipeline_context, data_dir):
+        settings = CDCSnapshotSettings(
+            keys=["id"],
+            scd_type="1",
+            snapshotType=CDCSnapshotTypes.HISTORICAL,
+            sourceType=CDCSnapshotSourceTypes.FILE,
+            source={
+                "format": "csv",
+                "path": f"{data_dir}/{{version}}_FINAL_{{fragment}}.csv",
+                "versionType": CDCSnapshotVersionTypes.INTEGER,
+                "readerOptions": {"header": "true", "inferSchema": "false"},
+            },
+        )
+        return CDCSnapshotFlow(settings)
+
+    def test_read_snapshot_dataframe_loads_all_fragments_in_one_call(
+        self, file_snapshot_flow, data_dir, monkeypatch
+    ):
+        from lakeflow_framework.dataflow import cdc_snapshot as cdc_mod
+        from lakeflow_framework.dataflow.dataflow_config import DataFlowConfig
+        from lakeflow_framework.dataflow.features import Features
+
+        p1 = data_dir / "1_FINAL_a.csv"
+        p2 = data_dir / "1_FINAL_b.csv"
+        p1.write_text("id\n1\n")
+        p2.write_text("id\n2\n")
+
+        captured = {}
+
+        class FakeBatchFiles:
+            def __init__(self, **kwargs):
+                captured["kwargs"] = kwargs
+
+            def read_source(self, read_config):
+                captured["read_config"] = read_config
+                return "fake-df"
+
+        monkeypatch.setattr(cdc_mod, "SourceBatchFiles", FakeBatchFiles)
+
+        file_snapshot_flow._version_paths = {
+            "1": [str(p2), str(p1)],  # unsorted on purpose
+        }
+        version = VersionInfo(1, CDCSnapshotVersionTypes.INTEGER)
+        df = file_snapshot_flow._read_snapshot_dataframe(
+            version,
+            DataFlowConfig(features=Features()),
+            target_config_flags=[],
+        )
+
+        assert df == "fake-df"
+        assert captured["kwargs"]["path"] == [str(p1), str(p2)]
+        assert captured["kwargs"]["format"] == "csv"
+
+    def test_read_snapshot_dataframe_uses_string_path_for_single_file(
+        self, file_snapshot_flow, data_dir, monkeypatch
+    ):
+        from lakeflow_framework.dataflow import cdc_snapshot as cdc_mod
+        from lakeflow_framework.dataflow.dataflow_config import DataFlowConfig
+        from lakeflow_framework.dataflow.features import Features
+
+        p1 = data_dir / "1_FINAL_a.csv"
+        p1.write_text("id\n1\n")
+
+        captured = {}
+
+        class FakeBatchFiles:
+            def __init__(self, **kwargs):
+                captured["kwargs"] = kwargs
+
+            def read_source(self, read_config):
+                return "fake-df"
+
+        monkeypatch.setattr(cdc_mod, "SourceBatchFiles", FakeBatchFiles)
+        file_snapshot_flow._version_paths = {"1": [str(p1)]}
+        df = file_snapshot_flow._read_snapshot_dataframe(
+            VersionInfo(1, CDCSnapshotVersionTypes.INTEGER),
+            DataFlowConfig(features=Features()),
+            target_config_flags=[],
+        )
+        assert df == "fake-df"
+        assert captured["kwargs"]["path"] == str(p1)
