@@ -18,18 +18,13 @@ The Lakeflow Framework is a metadata-driven framework for building Databricks La
 The framework supports centralized and domain-oriented operating models, and accommodates multiple modelling paradigms (including dimensional, Data Vault, and enterprise canonical models). It is designed for simplicity, performance, maintainability, and extensibility as the Databricks product evolves.
 
 <!-- Dont remove: exclude package -->
-<p align="center">
-  <video
-    src="docs/source/_static/animations/screen_demo.mp4"
-    poster="docs/source/_static/animations/screen_demo_poster.webp"
-    preload="none" controls muted playsinline width="820">
-  </video>
-</p>
+https://github.com/user-attachments/assets/eb95bf4c-ebb1-4064-afc7-3450facd7ec9
+
 <!--
-  Lazy-loaded: preload="none" means the video is not downloaded until the viewer clicks play;
-  the poster (~33 KB) shows immediately. The relative src plays in local Markdown previews.
-  For inline playback on github.com, replace the src above with the GitHub user-attachments URL
-  you get by dragging docs/source/_static/animations/screen_demo.mp4 into any GitHub edit box.
+  GitHub only plays videos hosted on github.com/user-attachments, so a relative <video src> is
+  stripped from the rendered README. The URL above is docs/source/_static/animations/screen_demo.mp4
+  uploaded to GitHub; keep it on its own line so GitHub renders its video player. If the video
+  changes, drag the new mp4 into any GitHub edit box and replace the URL with the one it generates.
 -->
 <!-- Dont remove: end exclude package -->
 
