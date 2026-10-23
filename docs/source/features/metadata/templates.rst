@@ -192,7 +192,7 @@ A template data flow specification is a simplified file that references a templa
    * - **template**
      - The filename of the template definition to use (without the ``.json`` extension). The framework will search for this template in the configured template directories.
    * - **global_defaults** (*optional*)
-     - Shared parameter values applied to every entry in ``parameter_sets``. Per-set keys override these values. Omit the key for the previous behavior (all values only on each set).
+     - Shared parameter values applied to every entry in ``parameter_sets``. Per-set keys override these values. Omit the key for the previous behavior (all values only on each set). Legacy ``globalDefaults`` is still accepted.
    * - **parameter_sets**
      - An array of parameter sets. Each object in the array represents one set of parameter values that will generate one complete data flow specification. Legacy ``parameterSets`` is still accepted. After merging ``global_defaults``, each set must supply every required template parameter (including a unique ``dataFlowId``).
 

@@ -24,11 +24,17 @@ These approaches can be implemented using the same Data Flow Spec-driven pattern
 Framework overview
 ==================
 
-The below diagram illustrates some of the key concepts of the Framework, which are explained in more detail in the following sections.
+The Framework Bundle is deployed once with DABs to a central location in the Databricks workspace, decoupled from the pipelines that use it. Pipeline Bundles — as many as you need — are then deployed with DABs; each references the framework's deployment location and creates the physical Spark Declarative Pipelines. At pipeline execution, the framework code runs, reads the Data Flow Specs directly from the workspace files, and interprets them to build the data flow (the pipeline DAG). These concepts are explained in more detail in the following sections.
 
-.. image:: ../images/framework_concept_overview.png
-   :target: _images/framework_concept_overview.png
-   :alt: Framework Concept Overview
+.. raw:: html
+
+   <div class="lf-demo lf-demo--architecture">
+     <div class="lf-demo__frame">
+       <iframe src="../_static/animations/architecture_animated.html"
+               title="Lakeflow Framework — architecture in motion"
+               loading="lazy" scrolling="no"></iframe>
+     </div>
+   </div>
 
 .. _concepts_dabs:
 

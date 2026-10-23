@@ -71,3 +71,18 @@ class TestSCD2ExceptColumnList:
         settings = patched_table_import.captured[0]
         scd2_columns = [c.value for c in SystemColumns.SCD2Columns]
         assert settings.except_column_list == ["is_deleted", *scd2_columns]
+
+    def test_partial_update_settings_omit_columns_to_update(self, patched_table_import):
+        _run(CDCSettings(
+            scd_type="2",
+            keys=["id"],
+            sequence_by="ts",
+            columns_to_update="COLUMNS_TO_UPDATE",
+            ignore_null_updates_column_list=[],
+        ))
+
+        settings = patched_table_import.captured[0]
+        # Import is a full once-load; do not pass partial-update column through.
+        assert settings.columns_to_update is None
+        assert settings.ignore_null_updates_column_list == []
+        assert settings.ignore_null_updates_except_column_list == []
