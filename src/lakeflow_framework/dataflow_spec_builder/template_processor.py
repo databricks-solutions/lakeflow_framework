@@ -39,6 +39,10 @@ class TemplateProcessor:
         PARAM_TYPE = "type"
         PARAM_REQUIRED = "required"
         PARAM_DEFAULT = "default"
+        FOR_EACH = "$for_each"
+        FOR_EACH_AS = "as"
+        FOR_EACH_NODE = "node"
+        FOR_EACH_VALUE = "value"
 
     class SpecKeys:
         """Constants for dictionary keys for the template dataflow spec JSON files"""
@@ -60,7 +64,11 @@ class TemplateProcessor:
         self.framework_path = framework_path
         self.max_workers = max(1, int(max_workers))
         self.logger = pipeline_config.get_logger()
-        self._pattern = re.compile(r'\$\{param\.([^}]+)\}')
+        # ${param.<key>} or ${<loop_alias>.<dotted.path>}; other roots pass through
+        # (e.g. ${secret.*} for SecretsManager later in the builder).
+        _root = r'[a-zA-Z_][a-zA-Z0-9_]*'
+        self._placeholder_root_re = re.compile(rf'^{_root}$')
+        self._pattern = re.compile(rf'\${{({_root})\.([^}}]+)}}')
         
         # Initialize cache for loaded templates
         self._template_cache: Dict[str, Dict] = {}
@@ -335,6 +343,8 @@ class TemplateProcessor:
         template_string = json.dumps(template_content)
         param_placeholders = re.findall(r'\$\{param\.([^}]+)\}', template_string)
         unique_placeholders = set(param_placeholders)
+        # List params referenced only via $for_each (not ${param.*}) still count as used
+        unique_placeholders |= self._collect_for_each_list_names(template_content)
         
         # Validate all placeholders have definitions
         undefined_params = unique_placeholders - set(param_definitions.keys())
@@ -424,47 +434,200 @@ class TemplateProcessor:
             
         return isinstance(param_value, expected_python_type)
     
-    def _generate_spec(self, obj, params: Dict):
-        """Recursively process a value, replacing parameter placeholders."""
+    def _collect_for_each_list_names(self, obj) -> set:
+        """Return list-parameter names referenced by ``$for_each`` markers."""
+        names: set = set()
         if isinstance(obj, dict):
+            if self.DefinitionKeys.FOR_EACH in obj:
+                list_name = obj[self.DefinitionKeys.FOR_EACH]
+                if isinstance(list_name, str) and list_name:
+                    names.add(list_name)
+            for value in obj.values():
+                names |= self._collect_for_each_list_names(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                names |= self._collect_for_each_list_names(item)
+        return names
+
+    def _generate_spec(self, obj, params: Dict, loop_bindings: Dict | None = None):
+        """Recursively process a value, expanding ``$for_each`` and placeholders."""
+        bindings = loop_bindings or {}
+
+        if isinstance(obj, dict):
+            if self.DefinitionKeys.FOR_EACH in obj:
+                # Property-value form: replace this object with an expanded array
+                return self._expand_for_each(
+                    obj, params, bindings, fragment_key=self.DefinitionKeys.FOR_EACH_VALUE
+                )
             result = {
-                self._generate_spec(k, params): self._generate_spec(v, params) 
+                self._generate_spec(k, params, bindings): self._generate_spec(
+                    v, params, bindings
+                )
                 for k, v in obj.items()
             }
-            # Validate all keys are strings
             if non_string_keys := [k for k in result.keys() if not isinstance(k, str)]:
                 error_msg = f"Dictionary keys must be strings, found: {non_string_keys}"
                 self.logger.error(error_msg)
                 raise ValueError(error_msg)
             return result
-        
+
         if isinstance(obj, list):
-            return [self._generate_spec(item, params) for item in obj]
-        
+            result = []
+            for item in obj:
+                if isinstance(item, dict) and self.DefinitionKeys.FOR_EACH in item:
+                    # Array-element form: splice N cloned fragments into the list
+                    result.extend(
+                        self._expand_for_each(
+                            item,
+                            params,
+                            bindings,
+                            fragment_key=self.DefinitionKeys.FOR_EACH_NODE,
+                        )
+                    )
+                else:
+                    result.append(self._generate_spec(item, params, bindings))
+            return result
+
         if isinstance(obj, str):
-            return self._replace_string_placeholders(obj, params)
-        
+            return self._replace_string_placeholders(obj, params, bindings)
+
         return obj
-    
-    def _replace_string_placeholders(self, text: str, params: Dict):
-        """Replace parameter placeholders in a string value."""
-        # Full replacement: entire string is a single placeholder
+
+    def _fail(self, error_msg: str, exc_type: type = ValueError):
+        """Log and raise — shared by ``$for_each`` validation paths."""
+        self.logger.error(error_msg)
+        raise exc_type(error_msg)
+
+    def _expand_for_each(
+        self,
+        marker: Dict,
+        params: Dict,
+        loop_bindings: Dict,
+        fragment_key: str,
+    ) -> list:
+        """Expand a ``$for_each`` marker into a list of generated fragments.
+
+        Array-element form (``fragment_key=\"node\"``): each item becomes a nodespec
+        node spliced into ``nodes``. Property-value form (``fragment_key=\"value\"``):
+        each item becomes an element of an array property (e.g. ``sources``).
+        Nested ``$for_each`` is not supported in v1.
+        """
+        if loop_bindings:
+            self._fail(
+                "Nested '$for_each' is not supported; expand one list at a time"
+            )
+
+        list_name = marker.get(self.DefinitionKeys.FOR_EACH)
+        alias = marker.get(self.DefinitionKeys.FOR_EACH_AS, "item")
+        if not isinstance(list_name, str) or not list_name:
+            self._fail(
+                "'$for_each' must be a non-empty string naming a list parameter"
+            )
+        if (
+            not isinstance(alias, str)
+            or not self._placeholder_root_re.fullmatch(alias)
+            or alias == "param"
+        ):
+            self._fail(
+                f"'$for_each' 'as' must be a Python-style identifier "
+                f"(not 'param'; got {alias!r})"
+            )
+        if fragment_key not in marker:
+            form_hint = (
+                "use 'node' when $for_each is a list element"
+                if fragment_key == self.DefinitionKeys.FOR_EACH_NODE
+                else "use 'value' when $for_each is a property value"
+            )
+            self._fail(
+                f"'$for_each' marker missing '{fragment_key}' fragment ({form_hint})"
+            )
+
+        unexpected = set(marker.keys()) - {
+            self.DefinitionKeys.FOR_EACH,
+            self.DefinitionKeys.FOR_EACH_AS,
+            fragment_key,
+        }
+        if unexpected:
+            self._fail(
+                f"'$for_each' marker has unexpected keys: {sorted(unexpected)}"
+            )
+
+        items = params.get(list_name)
+        if items is None:
+            self._fail(
+                f"'$for_each' list parameter '{list_name}' not found in params",
+                KeyError,
+            )
+        if not isinstance(items, list):
+            self._fail(
+                f"'$for_each' parameter '{list_name}' must be a list, "
+                f"got {type(items).__name__}"
+            )
+
+        fragment = marker[fragment_key]
+        expanded = []
+        for index, item in enumerate(items):
+            if not isinstance(item, dict):
+                self._fail(
+                    f"'$for_each' items in '{list_name}' must be objects "
+                    f"(item {index} is {type(item).__name__})"
+                )
+            expanded.append(
+                self._generate_spec(fragment, params, {alias: item})
+            )
+        return expanded
+
+    def _replace_string_placeholders(
+        self, text: str, params: Dict, loop_bindings: Dict | None = None
+    ):
+        """Replace ``${param.*}`` / ``${alias.*}`` placeholders in a string value.
+
+        Unknown roots (e.g. ``${secret.*}``) are left unchanged for later stages.
+        """
+        bindings = loop_bindings or {}
+
+        def resolve(match: re.Match):
+            return self._resolve_placeholder_match(match, params, bindings)
+
+        # Full replacement: entire string is a single placeholder (preserves type)
         if (m := self._pattern.fullmatch(text)):
-            return self._get_param_value(m.group(1), params)
-        
+            return resolve(m)
+
         # Partial replacement: string contains placeholders
         if self._pattern.search(text):
-            return self._pattern.sub(
-                lambda m: str(self._get_param_value(m.group(1), params)), 
-                text
-            )
-        
+            return self._pattern.sub(lambda m: str(resolve(m)), text)
+
         return text
-    
+
+    def _resolve_placeholder_match(
+        self, match: re.Match, params: Dict, loop_bindings: Dict
+    ):
+        """Resolve one ``${root.path}`` match, or leave foreign roots intact."""
+        root, path = match.group(1), match.group(2)
+        if root == "param":
+            return self._get_param_value(path, params)
+        if root in loop_bindings:
+            return self._get_nested_value(loop_bindings[root], path, root)
+        # Pass through ${secret.*} and any other non-template root.
+        return match.group(0)
+
+    def _get_nested_value(self, obj: Any, dotted_path: str, alias: str):
+        """Walk ``dotted_path`` through a loop-item object."""
+        current = obj
+        for part in dotted_path.split("."):
+            if not isinstance(current, dict) or part not in current:
+                self._fail(
+                    f"Path '{dotted_path}' not found on $for_each alias '{alias}'",
+                    KeyError,
+                )
+            current = current[part]
+        return current
+
     def _get_param_value(self, param_key: str, params: Dict):
         """Get a parameter value from the params dictionary."""
         if param_key not in params:
-            error_msg = f"Parameter '{param_key}' not found in params"
-            self.logger.error(error_msg)
-            raise KeyError(error_msg)
+            self._fail(
+                f"Parameter '{param_key}' not found in params",
+                KeyError,
+            )
         return params[param_key]

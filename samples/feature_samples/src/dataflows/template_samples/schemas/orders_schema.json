@@ -1,0 +1,35 @@
+{
+    "fields": [
+        {
+            "name": "ORDER_ID",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "CUSTOMER_ID",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "ORDER_TS",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "AMOUNT",
+            "type": "double",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "CURRENCY",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        }
+    ],
+    "type": "struct"
+}

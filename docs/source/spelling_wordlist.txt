@@ -25,6 +25,7 @@ Ctrl
 customization
 customizations
 dataflow
+dataflows
 dataFlowId
 Dataframe
 Databricks
@@ -45,6 +46,7 @@ dev
 discoverable
 env
 erp
+expander
 Foreach
 functionPath
 GitFlow
@@ -84,6 +86,7 @@ namespaced
 namespaces
 nav
 nodespec
+nodespecs
 Observability
 OAuth
 openpyxl
@@ -107,6 +110,7 @@ reStructuredText
 rollout
 rollouts
 rst
+runnable
 RTD
 Schemas
 schemas

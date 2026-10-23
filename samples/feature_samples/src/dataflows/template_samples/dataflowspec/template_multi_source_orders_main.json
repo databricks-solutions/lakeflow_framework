@@ -1,0 +1,34 @@
+{
+    "template": "cloud_files_multi_source_append_template",
+    "global_defaults": {
+        "schemaPath": "orders_schema.json",
+        "readerOptions": {
+            "cloudFiles.format": "csv",
+            "header": "true",
+            "cloudFiles.inferColumnTypes": "true"
+        }
+    },
+    "parameter_sets": [
+        {
+            "dataFlowId": "orders_multi_channel",
+            "targetTable": "orders_bronze",
+            "sources": [
+                {
+                    "sourceTable": "pos",
+                    "filePath": "{sample_file_location}/template_samples/orders_pos/",
+                    "channel": "pos"
+                },
+                {
+                    "sourceTable": "web",
+                    "filePath": "{sample_file_location}/template_samples/orders_web/",
+                    "channel": "web"
+                },
+                {
+                    "sourceTable": "marketplace",
+                    "filePath": "{sample_file_location}/template_samples/orders_marketplace/",
+                    "channel": "marketplace"
+                }
+            ]
+        }
+    ]
+}

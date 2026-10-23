@@ -402,6 +402,126 @@ Parameters support multiple data types and structures:
      - ``${param.config}``
      - ``"config": {"key": "value"}``
 
+.. _template-for-each:
+
+Multi-source streaming with ``$for_each``
+-----------------------------------------
+
+Use ``$for_each`` inside a **nodespec** template body to author
+:doc:`/features/platform/multi-source-streaming` from a list parameter: many
+similarly shaped sources feed **one** target table in a **single** generated
+dataflow (one ``dataFlowId``, one streaming-table create). Each entry produced
+for ``target.config.sources`` becomes a distinct SDP **append flow** into that
+table. Keep ``parameter_sets`` for 1:1 flows (N sets → N dataflows); do not use
+N parameter sets that all write the same physical table.
+
+``$for_each`` is allowed only in the template definition ``template`` object, in
+two forms:
+
+1. **Array-element form** — as an item of ``nodes``, with a ``node`` fragment.
+   The expander splices one cloned node per list item.
+2. **Property-value form** — as the value of an array property (typically
+   ``target.config.sources``), with a ``value`` fragment. The expander builds a
+   JSON array of view/flow wiring.
+
+The list name in ``$for_each`` must be a declared ``list`` parameter. Inside the
+fragment, use ``${<alias>.<field>}`` for per-item fields and ``${param.<key>}``
+for shared parameters. Nested ``$for_each`` is not supported. The same expand
+primitive can later cover other list-driven node or array patterns; multi-source
+streaming is the primary use case.
+
+.. tabs::
+
+   .. tab:: Template definition (excerpt)
+
+      .. code-block:: json
+
+         {
+             "name": "cloud_files_multi_source_append_template",
+             "parameters": {
+                 "dataFlowId": { "type": "string", "required": true },
+                 "targetTable": { "type": "string", "required": true },
+                 "sources": { "type": "list", "required": true },
+                 "schemaPath": { "type": "string", "required": true },
+                 "readerOptions": { "type": "object", "required": true }
+             },
+             "template": {
+                 "data_flow_id": "${param.dataFlowId}",
+                 "data_flow_type": "nodespec",
+                 "nodes": [
+                     {
+                         "$for_each": "sources",
+                         "as": "src",
+                         "node": {
+                             "name": "v_${src.sourceTable}",
+                             "node_type": "source",
+                             "source_type": "cloud_files",
+                             "config": {
+                                 "path": "${src.filePath}",
+                                 "schema_path": "${param.schemaPath}",
+                                 "reader_options": "${param.readerOptions}",
+                                 "select_exp": [
+                                     "*",
+                                     "'${src.channel}' AS channel"
+                                 ]
+                             }
+                         }
+                     },
+                     {
+                         "name": "target_${param.targetTable}",
+                         "node_type": "target",
+                         "config": {
+                             "table": "${param.targetTable}",
+                             "sources": {
+                                 "$for_each": "sources",
+                                 "as": "src",
+                                 "value": {
+                                     "view": "v_${src.sourceTable}",
+                                     "flow": "f_${src.sourceTable}"
+                                 }
+                             }
+                         }
+                     }
+                 ]
+             }
+         }
+
+   .. tab:: Usage (``global_defaults`` + one set)
+
+      .. code-block:: json
+
+         {
+             "template": "cloud_files_multi_source_append_template",
+             "global_defaults": {
+                 "schemaPath": "orders_schema.json",
+                 "readerOptions": {
+                     "cloudFiles.format": "csv",
+                     "header": "true"
+                 }
+             },
+             "parameter_sets": [
+                 {
+                     "dataFlowId": "orders_multi_channel",
+                     "targetTable": "orders_bronze",
+                     "sources": [
+                         {
+                             "sourceTable": "pos",
+                             "filePath": "{landing}/orders_pos/",
+                             "channel": "pos"
+                         },
+                         {
+                             "sourceTable": "web",
+                             "filePath": "{landing}/orders_web/",
+                             "channel": "web"
+                         }
+                     ]
+                 }
+             ]
+         }
+
+See the feature sample ``template_multi_source_orders_main.json`` (POS, web, and
+marketplace orders → ``orders_bronze``) for a runnable example.
+
 Key Features
 ------------
 
@@ -503,6 +623,7 @@ The current template implementation has the following limitations, which may be 
 
 1. **No Template Sub Components (Blocks)**: Templates cannot reference other templates or smaller template blocks
 2. **No Conditional Logic**: Complex conditional logic is not supported (consider using multiple templates)
+3. **``$for_each`` scope**: Allowed only in nodespec template bodies (``nodes`` list items via ``node``, or array property values via ``value``). Not supported in standard ``sourceDetails``/``targetDetails`` templates, usage files, nested loops, or as a way to multiply ``parameter_sets`` into multiple dataflows.
 
 .. note::
 
