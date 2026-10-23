@@ -64,10 +64,11 @@ class TemplateProcessor:
         self.framework_path = framework_path
         self.max_workers = max(1, int(max_workers))
         self.logger = pipeline_config.get_logger()
-        # ${param.<key>} or ${<loop_alias>.<dotted.path>}
-        self._pattern = re.compile(
-            r'\$\{(param|[a-zA-Z_][a-zA-Z0-9_]*)\.([^}]+)\}'
-        )
+        # ${param.<key>} or ${<loop_alias>.<dotted.path>}; other roots pass through
+        # (e.g. ${secret.*} for SecretsManager later in the builder).
+        _root = r'[a-zA-Z_][a-zA-Z0-9_]*'
+        self._placeholder_root_re = re.compile(rf'^{_root}$')
+        self._pattern = re.compile(rf'\${{({_root})\.([^}}]+)}}')
         
         # Initialize cache for loaded templates
         self._template_cache: Dict[str, Dict] = {}
@@ -492,6 +493,11 @@ class TemplateProcessor:
 
         return obj
 
+    def _fail(self, error_msg: str, exc_type: type = ValueError):
+        """Log and raise — shared by ``$for_each`` validation paths."""
+        self.logger.error(error_msg)
+        raise exc_type(error_msg)
+
     def _expand_for_each(
         self,
         marker: Dict,
@@ -507,36 +513,34 @@ class TemplateProcessor:
         Nested ``$for_each`` is not supported in v1.
         """
         if loop_bindings:
-            error_msg = (
+            self._fail(
                 "Nested '$for_each' is not supported; expand one list at a time"
             )
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
 
         list_name = marker.get(self.DefinitionKeys.FOR_EACH)
         alias = marker.get(self.DefinitionKeys.FOR_EACH_AS, "item")
         if not isinstance(list_name, str) or not list_name:
-            error_msg = "'$for_each' must be a non-empty string naming a list parameter"
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
-        if not isinstance(alias, str) or not alias or alias == "param":
-            error_msg = (
-                f"'$for_each' 'as' must be a non-empty alias other than 'param' "
-                f"(got {alias!r})"
+            self._fail(
+                "'$for_each' must be a non-empty string naming a list parameter"
             )
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
+        if (
+            not isinstance(alias, str)
+            or not self._placeholder_root_re.fullmatch(alias)
+            or alias == "param"
+        ):
+            self._fail(
+                f"'$for_each' 'as' must be a Python-style identifier "
+                f"(not 'param'; got {alias!r})"
+            )
         if fragment_key not in marker:
             form_hint = (
                 "use 'node' when $for_each is a list element"
                 if fragment_key == self.DefinitionKeys.FOR_EACH_NODE
                 else "use 'value' when $for_each is a property value"
             )
-            error_msg = (
+            self._fail(
                 f"'$for_each' marker missing '{fragment_key}' fragment ({form_hint})"
             )
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
 
         unexpected = set(marker.keys()) - {
             self.DefinitionKeys.FOR_EACH,
@@ -544,37 +548,30 @@ class TemplateProcessor:
             fragment_key,
         }
         if unexpected:
-            error_msg = (
+            self._fail(
                 f"'$for_each' marker has unexpected keys: {sorted(unexpected)}"
             )
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
 
         items = params.get(list_name)
         if items is None:
-            error_msg = (
-                f"'$for_each' list parameter '{list_name}' not found in params"
+            self._fail(
+                f"'$for_each' list parameter '{list_name}' not found in params",
+                KeyError,
             )
-            self.logger.error(error_msg)
-            raise KeyError(error_msg)
         if not isinstance(items, list):
-            error_msg = (
+            self._fail(
                 f"'$for_each' parameter '{list_name}' must be a list, "
                 f"got {type(items).__name__}"
             )
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
 
         fragment = marker[fragment_key]
         expanded = []
         for index, item in enumerate(items):
             if not isinstance(item, dict):
-                error_msg = (
+                self._fail(
                     f"'$for_each' items in '{list_name}' must be objects "
                     f"(item {index} is {type(item).__name__})"
                 )
-                self.logger.error(error_msg)
-                raise ValueError(error_msg)
             expanded.append(
                 self._generate_spec(fragment, params, {alias: item})
             )
@@ -583,7 +580,10 @@ class TemplateProcessor:
     def _replace_string_placeholders(
         self, text: str, params: Dict, loop_bindings: Dict | None = None
     ):
-        """Replace ``${param.*}`` / ``${alias.*}`` placeholders in a string value."""
+        """Replace ``${param.*}`` / ``${alias.*}`` placeholders in a string value.
+
+        Unknown roots (e.g. ``${secret.*}``) are left unchanged for later stages.
+        """
         bindings = loop_bindings or {}
 
         def resolve(match: re.Match):
@@ -602,36 +602,32 @@ class TemplateProcessor:
     def _resolve_placeholder_match(
         self, match: re.Match, params: Dict, loop_bindings: Dict
     ):
-        """Resolve one ``${root.path}`` match to a concrete value."""
+        """Resolve one ``${root.path}`` match, or leave foreign roots intact."""
         root, path = match.group(1), match.group(2)
         if root == "param":
             return self._get_param_value(path, params)
         if root in loop_bindings:
             return self._get_nested_value(loop_bindings[root], path, root)
-        error_msg = (
-            f"Unknown placeholder root '{root}' in '${{{root}.{path}}}'; "
-            f"expected 'param' or a $for_each alias"
-        )
-        self.logger.error(error_msg)
-        raise KeyError(error_msg)
+        # Pass through ${secret.*} and any other non-template root.
+        return match.group(0)
 
     def _get_nested_value(self, obj: Any, dotted_path: str, alias: str):
         """Walk ``dotted_path`` through a loop-item object."""
         current = obj
         for part in dotted_path.split("."):
             if not isinstance(current, dict) or part not in current:
-                error_msg = (
-                    f"Path '{dotted_path}' not found on $for_each alias '{alias}'"
+                self._fail(
+                    f"Path '{dotted_path}' not found on $for_each alias '{alias}'",
+                    KeyError,
                 )
-                self.logger.error(error_msg)
-                raise KeyError(error_msg)
             current = current[part]
         return current
 
     def _get_param_value(self, param_key: str, params: Dict):
         """Get a parameter value from the params dictionary."""
         if param_key not in params:
-            error_msg = f"Parameter '{param_key}' not found in params"
-            self.logger.error(error_msg)
-            raise KeyError(error_msg)
+            self._fail(
+                f"Parameter '{param_key}' not found in params",
+                KeyError,
+            )
         return params[param_key]

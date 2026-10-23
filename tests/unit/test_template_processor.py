@@ -879,3 +879,34 @@ class TestTemplateForEachExpansion:
         }
         with pytest.raises(ValueError, match="must be objects"):
             processor._generate_spec(template, {"sources": ["pos", "web"]})
+
+    def test_for_each_rejects_invalid_alias(
+        self, pipeline_context, framework_src_path
+    ):
+        processor = _processor(Path("/tmp"), framework_src_path)
+        template = {
+            "nodes": [
+                {
+                    "$for_each": "sources",
+                    "as": "my-src",
+                    "node": {"name": "v_${my-src.id}"},
+                }
+            ]
+        }
+        with pytest.raises(ValueError, match="Python-style identifier"):
+            processor._generate_spec(template, {"sources": [{"id": "a"}]})
+
+    def test_foreign_placeholders_pass_through(
+        self, pipeline_context, framework_src_path
+    ):
+        """${secret.*} must survive for SecretsManager after template expand."""
+        processor = _processor(Path("/tmp"), framework_src_path)
+        template = {
+            "password": "${secret.kafka_password}",
+            "note": "user=${secret.kafka_user} end",
+            "name": "${param.dataFlowId}",
+        }
+        result = processor._generate_spec(template, {"dataFlowId": "flow_a"})
+        assert result["password"] == "${secret.kafka_password}"
+        assert result["note"] == "user=${secret.kafka_user} end"
+        assert result["name"] == "flow_a"
