@@ -70,12 +70,20 @@ def create_table_import_flow(
             end_at_column = SystemColumns.SCD2Columns.SCD2_END_AT.value
             watermark_column = "WATERMARK_COLUMN"
             exclude_columns = [is_deleted_column, watermark_column, *scd2_columns]
+            # Intentionally omit columns_to_update: table import is a once=True
+            # full backfill from an existing Delta table / synthetic SCD2 view.
+            # columns_to_update names a source column that steers partial applies
+            # on the live CDC stream; it must not apply to the import source.
             cdc_settings_with_deletes = CDCSettings(
                 scd_type=cdc_settings.scd_type,
                 keys=cdc_settings.keys,
                 sequence_by=SystemColumns.SCD2Columns.SCD2_START_AT.value,
                 apply_as_deletes=f"{is_deleted_column} = true",
                 ignore_null_updates=cdc_settings.ignore_null_updates,
+                ignore_null_updates_column_list=cdc_settings.ignore_null_updates_column_list,
+                ignore_null_updates_except_column_list=(
+                    cdc_settings.ignore_null_updates_except_column_list
+                ),
                 # Union of the spec's except_column_list and the framework's
                 # internal columns; dict.fromkeys de-duplicates while keeping order
                 # (list.extend() returns None, so it cannot be chained here).
