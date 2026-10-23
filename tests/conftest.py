@@ -187,9 +187,14 @@ def secrets_manager(tmp_path: Path, pipeline_context, framework_package_path):
 def template_bundle_tree(tmp_path: Path, fixtures_dir: Path) -> Path:
     """Bundle tree with minimal template for TemplateProcessor tests."""
     bundle = tmp_path / "bundle"
-    template_src = fixtures_dir / "bundles" / "templates" / "minimal_template.json"
+    templates_dir = fixtures_dir / "bundles" / "templates"
     make_tree(bundle, {
-        "templates/minimal_template.json": template_src.read_text(),
+        "templates/minimal_template.json": (
+            templates_dir / "minimal_template.json"
+        ).read_text(),
+        "templates/fan_in_append_template.json": (
+            templates_dir / "fan_in_append_template.json"
+        ).read_text(),
         "dataflows/.keep": "",
     })
     return bundle

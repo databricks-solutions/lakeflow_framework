@@ -33,7 +33,11 @@ Configuration
 
 In a Pipeline Bundle, multi-source streaming is configured in the Data Flow Spec
 using the ``flow_groups`` and ``flows`` attributes.
-This is documented in :ref:`flow-group-configuration <dataflow-spec-flows-flow-groups-configuration>` and :ref:`flow-configuration <dataflow-spec-flows-flow-configuration>`. 
+This is documented in :ref:`flow-group-configuration <dataflow-spec-flows-flow-groups-configuration>` and :ref:`flow-configuration <dataflow-spec-flows-flow-configuration>`.
+
+Nodespec targets can also declare multiple inputs via ``config.sources`` (each
+entry maps to an append flow). To generate that shape from a reusable template
+and a list of sources, see :ref:`template-for-each`.
 
 Key Features
 ------------
@@ -58,3 +62,4 @@ See Also
 - :doc:`/features/sources-targets/target-types`
 - :doc:`/build/spec-reference/source-details`
 - :doc:`/build/spec-reference/target-details`
+- :ref:`template-for-each` — author multi-source nodespecs from a template list
