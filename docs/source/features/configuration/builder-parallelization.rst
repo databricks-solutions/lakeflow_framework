@@ -40,6 +40,7 @@ Parameters
      - Should only be used if the auto-detected default is not working. Controls the maximum number of worker threads used when:
 
        - Reading data flow specification files from the file system
+       - Expanding template ``parameter_sets`` into concrete specs (template definition is loaded once on the main thread)
        - Validating data flow specifications against schemas
        - Applying data flow specification version mappings and transformations
        - Creating DataFlow objects from data flow specifications
