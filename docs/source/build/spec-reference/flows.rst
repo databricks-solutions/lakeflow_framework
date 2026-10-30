@@ -270,6 +270,9 @@ The `flowGroupDetails` object contains the following properties:
    * - **stagingTables** (*optional*)
      - ``object``
      - An object containing named objects representing staging tables in the flow group. The key for each nested object in this object will become the table names for the staging tables.
+   * - **views** (*optional*)
+     - ``object``
+     - Standalone views, not owned by any flow. The key for each nested object becomes the view name; each value uses the :ref:`view configuration <dataflow-spec-flows-view-configuration>`. They are created before the flows and use the main target's config flags, and any flow or view in the pipeline can reference them by name. Use this for a view that other views read but that is not any flow's ``sourceView``. A view that is a flow's ``sourceView`` belongs in that flow's ``views``, so it gets the flow's quarantine rules.
    * - **flows**
      - ``array``
      - An array of flows in the flow group. Items: :ref:`flow-configuration <dataflow-spec-flows-flow-configuration>`
