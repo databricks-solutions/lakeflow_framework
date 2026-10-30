@@ -171,12 +171,47 @@ class NodespecSpecTransformer(BaseSpecTransformer):
                     "'sources' array instead, the same way every other target is fed.")
         if not targets:
             raise ValueError("Nodespec spec must contain at least one target node")
+        self._validate_python_sources(nodes)
 
         mv_inline_sql = all(
             self._is_mv(t) and (t["config"].get("sql_path") or t["config"].get("sql_statement")) for t in targets)
         snapshot = all(t.get("config", {}).get("cdc_snapshot_settings") for t in targets)
         if not sources and not (mv_inline_sql or snapshot):
             raise ValueError("Nodespec spec must contain at least one source node")
+
+    def _validate_python_sources(self, nodes: List[Dict]) -> None:
+        """``config.source`` on a python transformation must name an enabled source
+        or transformation node, and python-to-python chains must not cycle."""
+        by_name = {n.get("name"): n for n in nodes}
+        by_view = {(n.get("output_view_name") or self._view_name(n.get("name", ""))): n for n in nodes}
+
+        def upstream(node):
+            ref = node.get("config", {}).get("source")
+            if not ref:
+                return None
+            up = by_name.get(ref) or by_view.get(ref)
+            name = node.get("name")
+            if up is None:
+                raise ValueError(f"Python transformation '{name}' has config.source '{ref}', which is not a node in this spec")
+            if up.get("node_type", "").lower() not in (self.SOURCE, self.TRANSFORMATION):
+                raise ValueError(f"Python transformation '{name}' has config.source '{ref}', which is a "
+                                 f"{up.get('node_type')} node; it must be a source or transformation node")
+            if up.get("enabled", True) is False:
+                raise ValueError(f"Python transformation '{name}' has config.source '{ref}', which is disabled")
+            return up
+
+        for node in nodes:
+            if node.get("node_type", "").lower() != self.TRANSFORMATION or node.get("transformation_type") != "python":
+                continue
+            chain, cur = [node.get("name")], node
+            while (up := upstream(cur)) is not None:
+                if up.get("name") in chain:
+                    raise ValueError("Python transformations form a cycle via config.source: "
+                                     + " -> ".join(chain + [up.get("name")]))
+                if up.get("node_type", "").lower() != self.TRANSFORMATION or up.get("transformation_type") != "python":
+                    break
+                chain.append(up.get("name"))
+                cur = up
 
     # -- inputs --
 
@@ -580,15 +615,48 @@ class NodespecSpecTransformer(BaseSpecTransformer):
             out["tokens"] = pt["tokens"]
         return out
 
+    def _node_for_ref(self, ref: str) -> Optional[Dict]:
+        """Resolve a node reference by node name, or by the view name it emits."""
+        if ref in self.lookup:
+            return self.lookup[ref]
+        return next((n for n in self.lookup.values()
+                     if (n.get("output_view_name") or self._view_name(n.get("name", ""))) == ref), None)
+
     def _python_upstream(self, node: Dict) -> Tuple[str, str]:
-        """Infer the upstream view a python transform reads (it has no textual ref)."""
+        """The upstream view a python transform reads, and its read mode.
+
+        A python transform has no textual reference, so ``config.source`` names
+        its upstream node. Without it, fall back to the first source node.
+        """
+        ref = node.get("config", {}).get("source")
+        if ref:
+            up = self._node_for_ref(ref)
+            view = up.get("output_view_name") or self._view_name(up.get("name"))
+            up_type = up.get("node_type", "").lower()
+            if up_type == self.SOURCE:
+                if up.get("name") in getattr(self, "internal", {}) and not any(
+                        up.get("config", {}).get(k) for k in self._INTERNAL_VIEW_KEYS):
+                    view = self.internal[up.get("name")]  # plain read of a sibling target's table
+                return view, up.get("config", {}).get("mode", Mode.STREAM)
+            if up.get("transformation_type", "sql") == "python":
+                return view, self._python_upstream(up)[1]  # cycles rejected in _validate_python_sources
+            # A SQL view's streaming-ness can't be inferred; the node's own mode decides.
+            return view, node.get("config", {}).get("mode", Mode.STREAM)
+
         sources = [n for n in self.lookup.values() if n.get("node_type", "").lower() == self.SOURCE]
         if not sources:
             self.logger.warning("Python transformation '%s' has no upstream source node to read from.",
                                 node.get("name"))
             return self._view_name(node.get("name")), Mode.STREAM
         if len(sources) > 1:
-            self.logger.warning("Python transformation '%s' has multiple upstream sources %s; reading from '%s'.",
+            self.logger.warning("Python transformation '%s' has multiple upstream sources %s; reading from '%s'. "
+                                "Set config.source to choose its input.",
                                 node.get("name"), [s.get("name") for s in sources], sources[0].get("name"))
+        others = [n.get("name") for n in self.lookup.values()
+                  if n.get("node_type", "").lower() == self.TRANSFORMATION and n is not node]
+        if others:
+            self.logger.warning("Python transformation '%s' has no config.source, so it reads source '%s' directly. "
+                                "To run it after one of the transformations %s, set config.source.",
+                                node.get("name"), sources[0].get("name"), others)
         up = sources[0]
         return up.get("output_view_name") or self._view_name(up.get("name")), up.get("config", {}).get("mode", Mode.STREAM)

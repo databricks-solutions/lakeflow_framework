@@ -25,9 +25,10 @@
         {
             "name": "v_chained_enrich",
             "node_type": "transformation",
-            "transformation_type": "sql",
+            "transformation_type": "python",
             "config": {
-                "sql_statement": "SELECT *, concat_ws(' ', FIRST_NAME, LAST_NAME) AS FULL_NAME, lower(EMAIL) AS EMAIL_NORMALISED FROM STREAM(v_chained_clean)"
+                "source": "v_chained_clean",
+                "function_path": "feature_chained_python_enrich.py"
             }
         },
         {

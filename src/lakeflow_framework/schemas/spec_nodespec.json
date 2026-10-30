@@ -111,7 +111,7 @@
                 },
                 {
                     "if": {"properties": {"transformation_type": {"const": "python"}}, "required": ["transformation_type"]},
-                    "then": {"properties": {"config": {"$ref": "#/$defs/python_logic_config"}}}
+                    "then": {"properties": {"config": {"$ref": "#/$defs/python_transformation_config"}}}
                 }
             ]
         },
@@ -317,6 +317,23 @@
             "description": "Python source or transformation. Provide exactly one of function_path or python_module.",
             "properties": {
                 "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream"},
+                "function_path": {"type": "string", "pattern": "\\.py$", "description": "Path to a .py file exposing the function."},
+                "python_module": {"type": "string", "pattern": "^[a-zA-Z_][a-zA-Z0-9_.]*\\.[a-zA-Z_][a-zA-Z0-9_]*$", "description": "Dotted module.function reference."},
+                "tokens": {"type": "object", "additionalProperties": true, "description": "Tokens passed to the Python callable."}
+            },
+            "oneOf": [
+                {"required": ["function_path"]},
+                {"required": ["python_module"]}
+            ],
+            "additionalProperties": false
+        },
+
+        "python_transformation_config": {
+            "type": "object",
+            "description": "Python transformation: apply_transform(df) runs on the upstream view named by `source`. Provide exactly one of function_path or python_module.",
+            "properties": {
+                "source": {"type": "string", "description": "Name of the upstream node (a source or another transformation) whose view is passed to apply_transform. Defaults to the first source node, which skips any transformation in between, so set it when chaining."},
+                "mode": {"type": "string", "enum": ["stream", "batch"], "default": "stream", "description": "Read mode for the upstream view when `source` is a SQL transformation. Otherwise the upstream's own mode is used."},
                 "function_path": {"type": "string", "pattern": "\\.py$", "description": "Path to a .py file exposing the function."},
                 "python_module": {"type": "string", "pattern": "^[a-zA-Z_][a-zA-Z0-9_.]*\\.[a-zA-Z_][a-zA-Z0-9_]*$", "description": "Dotted module.function reference."},
                 "tokens": {"type": "object", "additionalProperties": true, "description": "Tokens passed to the Python callable."}

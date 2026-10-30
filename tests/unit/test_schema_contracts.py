@@ -125,3 +125,34 @@ class TestTemplateDefinitionParameterDefaults:
         payload = _template_definition_with_default("string", None)
         errors = template_definition_validator.validate(payload)
         assert errors, "null defaults should be rejected"
+
+
+class TestNodespecPythonTransformationSchema:
+    """``source`` is accepted on python transformations only, not on python sources."""
+
+    @pytest.fixture
+    def nodespec_validator(self, framework_src_path: Path):
+        return utility.JSONValidator(str(framework_src_path / FrameworkPaths.NODESPEC_SPEC_SCHEMA_PATH.lstrip("./")))
+
+    @staticmethod
+    def _spec(python_node):
+        return {
+            "data_flow_id": "py_chain", "data_flow_group": "grp", "data_flow_type": "nodespec",
+            "nodes": [
+                {"name": "v_src", "node_type": "source", "source_type": "delta",
+                 "config": {"database": "db", "table": "t"}},
+                python_node,
+                {"name": "target_out", "node_type": "target", "target_type": "delta",
+                 "config": {"table": "out", "sources": ["v_py"]}},
+            ],
+        }
+
+    def test_python_transformation_accepts_source(self, nodespec_validator):
+        node = {"name": "v_py", "node_type": "transformation", "transformation_type": "python",
+                "config": {"function_path": "f.py", "source": "v_src", "mode": "stream"}}
+        assert nodespec_validator.validate(self._spec(node)) == []
+
+    def test_python_source_node_rejects_source(self, nodespec_validator):
+        node = {"name": "v_py", "node_type": "source", "source_type": "python",
+                "config": {"function_path": "f.py", "source": "v_src"}}
+        assert nodespec_validator.validate(self._spec(node)) != []

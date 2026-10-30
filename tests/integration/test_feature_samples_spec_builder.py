@@ -63,7 +63,11 @@ class TestFeatureSamplesSpecBuilder:
 
         assert len(specs) == 1
         group = specs[0].get_flow_groups()[0]
-        assert set(group.get_views()) == {"v_chained_clean", "v_chained_enrich"}
+        standalone = group.get_views()
+        assert set(standalone) == {"v_chained_clean", "v_chained_enrich"}
+        # the python step reads the SQL step before it, not the source
+        assert standalone["v_chained_enrich"].sourceDetails["table"] == "v_chained_clean"
+        assert standalone["v_chained_enrich"].mode == "stream"
         flow = group.get_flows()["f_chained_transformations"]
         assert flow.sourceView == "v_chained_shape"
         assert set(flow.get_views()) == {"v_chained_shape", "v_chained_customer"}
