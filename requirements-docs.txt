@@ -10,3 +10,8 @@ sphinx-design==0.7.0
 sphinxcontrib-spelling==8.0.2
 docutils==0.22.0
 sphinx-tabs==3.5.0
+
+## Security floors for transitive dependencies
+# certifi < 2026.10.19 still trusts the compromised eMudhra (emSign) intermediate CAs (CVE-2026-111943).
+# Databricks serverless blocks installing these versions from 2026-11-12.
+certifi>=2026.10.19
