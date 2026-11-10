@@ -3,6 +3,7 @@ from typing import Dict
 
 from .flows import BaseFlow, FlowFactory
 from .targets import StagingTable
+from .view import View
 
 
 @dataclass
@@ -15,15 +16,19 @@ class FlowGroup:
         flows (List[Dict]): List of flows.
         dataFlowId (str, optional): ID of the data flow.
         stagingTables (Dict[str, Dict], optional): Dictionary of staging tables.
+        views (Dict[str, Dict], optional): Standalone views, created independently of
+            any flow. SDP resolves references to them by name.
 
     Methods:
         get_flows() -> Dict[str, BaseFlow]: Get flows associated with the flow group.
         get_staging_tables() -> Dict[str, StagingTable]: Get staging tables associated with the flow group.
+        get_views() -> Dict[str, View]: Get the standalone views of the flow group.
     """
     flowGroupId: str
     flows: Dict[str, Dict]
     dataFlowId: str = None
     stagingTables: Dict[str, Dict] = field(default_factory=dict)
+    views: Dict[str, Dict] = field(default_factory=dict)
 
     def get_flows(self) -> Dict[str, BaseFlow]:
         """Retrieve all flows as a dictionary of Flow objects."""
@@ -33,6 +38,10 @@ class FlowGroup:
                 raise ValueError(f"Multiple flows found with the same name: {key}")
             flows[key] = FlowFactory.create(key, value)
         return flows
+
+    def get_views(self) -> Dict[str, View]:
+        """Retrieve the standalone views."""
+        return {key: View(viewName=key, **value) for key, value in (self.views or {}).items()}
 
     def get_staging_tables(self) -> Dict[str, StagingTable]:
         """Retrieve the staging tables."""

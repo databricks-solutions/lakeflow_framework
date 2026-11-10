@@ -33,9 +33,12 @@ There are three node types:
 **How nodes connect.** A *target* node declares what feeds it through an explicit
 ``sources`` list. *Source* and *transformation* nodes are wired by explicit
 reference inside their own definition: a SQL transformation names the view it
-reads in its SQL (for example ``FROM STREAM(live.v_source_customer)``), and a
-source names the table, path, or stream it reads. The ``sources`` list is
-therefore a target-node construct.
+reads in its SQL (for example ``FROM STREAM(live.v_source_customer)``), a Python
+transformation names its upstream node in ``config.source``, and a source names
+the table, path, or stream it reads. The ``sources`` list is therefore a
+target-node construct. Transformations can read other transformations, so a
+data flow can be built from several small steps (see
+:ref:`dataflow-spec-nodespec-chaining`).
 
 **Casing.** These specs use ``snake_case`` field names.
 
@@ -130,6 +133,86 @@ view it reads; the target lists the transformation in its ``sources``:
            }
        ]
    }
+
+.. _dataflow-spec-nodespec-chaining:
+
+Example: chaining transformations
+=================================
+
+Transformations can read other transformations, so a data flow can be split into
+small, reusable steps (for example clean → enrich → shape) instead of one large
+transformation. Mix SQL and Python freely:
+
+- A **SQL** transformation names the view it reads in its SQL.
+- A **Python** transformation names its upstream node in ``config.source``.
+- The **target** lists only the last step in its ``sources``.
+
+.. code-block:: json
+
+   {
+       "data_flow_id": "chained_transformations",
+       "data_flow_group": "feature_samples_general",
+       "data_flow_type": "nodespec",
+       "nodes": [
+           {
+               "name": "v_chained_customer",
+               "node_type": "source",
+               "source_type": "delta",
+               "config": { "database": "{feature_schema}", "table": "src_customer", "cdf_enabled": true, "mode": "stream" }
+           },
+           {
+               "name": "v_chained_clean",
+               "node_type": "transformation",
+               "transformation_type": "sql",
+               "config": {
+                   "sql_statement": "SELECT * FROM STREAM(v_chained_customer) WHERE coalesce(DELETE_FLAG, false) = false"
+               }
+           },
+           {
+               "name": "v_chained_enrich",
+               "node_type": "transformation",
+               "transformation_type": "python",
+               "config": {
+                   "source": "v_chained_clean",
+                   "function_path": "feature_chained_python_enrich.py"
+               }
+           },
+           {
+               "name": "v_chained_shape",
+               "node_type": "transformation",
+               "transformation_type": "sql",
+               "config": {
+                   "sql_statement": "SELECT CUSTOMER_ID, FULL_NAME, EMAIL_NORMALISED, LOAD_TIMESTAMP FROM STREAM(v_chained_enrich)"
+               }
+           },
+           {
+               "name": "target_tgt_chained_transformations",
+               "node_type": "target",
+               "config": {
+                   "database": "{feature_schema}",
+                   "table": "tgt_chained_transformations",
+                   "sources": ["v_chained_shape"]
+               }
+           }
+       ]
+   }
+
+This is based on the ``chained_transformations`` feature sample
+(``samples/feature_samples/src/dataflows/feature_samples/dataflowspec/chained_transformations_main.json``).
+
+Every enabled transformation becomes a view, whether or not a target reads it
+directly. The step a target reads (``v_chained_shape`` here) is attached to that
+target's flow, so it gets the target's quarantine rules and config flags. The
+steps in between (``v_chained_clean``, ``v_chained_enrich``) become standalone
+views on the flow group, and Spark Declarative Pipelines resolves the references
+between them by name.
+
+.. note::
+   A ``config.source`` that names a missing, target, or disabled node, or a cycle
+   between Python transformations, fails when the spec is built. SQL
+   transformations name their inputs only inside the SQL text, so a missing view
+   or a cycle between SQL steps is reported by Spark Declarative Pipelines when
+   the pipeline starts.
 
 Editor autocomplete and validation
 ==================================
@@ -291,14 +374,27 @@ Transformation node configuration
      - ``string``
      - For ``python`` transforms. The referenced file/module must contain an
        ``apply_transform(df)`` (or ``apply_transform(df, tokens)``) function.
+   * - **source** (*optional*)
+     - ``string``
+     - For ``python`` transforms. The upstream node whose view is passed to
+       ``apply_transform``: a source or any transformation, by node name or by its
+       view name. Defaults to the first source node in the spec.
+   * - **mode** (*optional*)
+     - ``string``
+     - For ``python`` transforms. ``stream`` (default) or ``batch``. Used when
+       ``source`` is a SQL transformation. Otherwise the upstream's own mode is
+       used.
    * - **tokens** (*optional*)
      - ``object``
      - Tokens passed to a Python transform.
 
 .. note::
    A ``python`` transformation node becomes its own view that reads its upstream
-   view and applies ``apply_transform``. The upstream is inferred from the graph,
-   so no explicit reference is required.
+   view and applies ``apply_transform``. Python code has no reference the
+   framework can read, so set ``config.source`` to name the upstream. Without it,
+   the transformation reads the first source node directly and any
+   transformation in between is skipped; the framework logs a warning when the
+   spec has other transformations.
 
 .. _dataflow-spec-nodespec-target-nodes:
 
@@ -531,7 +627,9 @@ How Nodespec specs are converted
 2. Other targets become ``stagingTables``, each with their own settings.
 3. Source nodes become views; an internal source (one that reads a table produced
    by a target in the same spec) references that table directly.
-4. Transformation nodes become SQL or Python views.
+4. Transformation nodes become SQL or Python views. A transformation that a
+   target reads is attached to that target's flow; every other enabled
+   transformation becomes a standalone view in the flow group's ``views``.
 5. Each ``sources`` entry becomes a flow into its target. The flow type is
    ``merge`` when the target has CDC, otherwise ``append_view`` (or ``append_sql``
    for an inline SQL source).

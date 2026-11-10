@@ -168,6 +168,250 @@ class TestNodespecMaterializedView:
         assert mv_specs[0]["targetDetails"]["table"] == "customer_summary_mv"
 
 
+class TestNodespecChainedTransformations:
+    """A transformation can read another transformation's view. SDP builds the
+    DAG from the view names in each SQL statement, so every enabled
+    transformation is defined as a view: on its target's flow when a target
+    reads it, otherwise as a standalone flow-group view."""
+
+    @staticmethod
+    def _sql(name, statement, **extra):
+        return {"name": name, "node_type": "transformation", "transformation_type": "sql",
+                "config": {"sql_statement": statement}, **extra}
+
+    @staticmethod
+    def _target(table, source, **config):
+        return {"name": f"target_{table}", "node_type": "target",
+                "config": {"table": table, "sources": [source], **config}}
+
+    @staticmethod
+    def _specs(result):
+        return result if isinstance(result, list) else [result]
+
+    @classmethod
+    def _flow_views(cls, result):
+        return [v for s in cls._specs(result) for g in s["flowGroups"]
+                for fl in g["flows"].values() for v in (fl.get("views") or {})]
+
+    @classmethod
+    def _standalone(cls, result):
+        return {v: d for s in cls._specs(result) for g in s["flowGroups"]
+                for v, d in (g.get("views") or {}).items()}
+
+    def test_sql_chain_defines_intermediate_view_standalone(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._sql("clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._sql("enrich", "SELECT * FROM STREAM(v_clean)"),
+            self._target("customer_silver", "enrich"),
+        )
+        result = NodespecSpecTransformer().transform(spec)
+        flow = result["flowGroups"][0]["flows"]["f_enrich"]
+        assert flow["flowDetails"]["sourceView"] == "v_enrich"
+        # the transformation the target reads stays on the target's flow
+        assert set(flow["views"]) == {"v_enrich", "v_source_customer"}
+        # the intermediate one is standalone, independent of any flow
+        assert self._standalone(result) == {
+            "v_clean": {"mode": "batch", "sourceType": "sql",
+                        "sourceDetails": {"sqlStatement": "SELECT * FROM STREAM(v_source_customer)"}}}
+
+    def test_multi_level_chain_defines_every_step(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._sql("clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._sql("enrich", "SELECT * FROM STREAM(v_clean)"),
+            self._sql("shape", "SELECT * FROM STREAM(v_enrich)", output_view_name="v_shaped"),
+            self._target("customer_silver", "shape"),
+        )
+        result = NodespecSpecTransformer().transform(spec)
+        assert set(self._standalone(result)) == {"v_clean", "v_enrich"}
+        assert "v_shaped" in self._flow_views(result)
+
+    def test_transformation_defined_even_when_no_target_reads_one(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._sql("clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._target("customer_silver", "v_source_customer"),
+        )
+        assert set(self._standalone(NodespecSpecTransformer().transform(spec))) == {"v_clean"}
+
+    def test_standalone_view_survives_disabled_flow(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._sql("clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._sql("enrich", "SELECT * FROM STREAM(v_clean)"),
+            {**self._target("customer_silver", "enrich"), "enabled": False},
+        )
+        result = NodespecSpecTransformer().transform(spec)
+        assert result["flowGroups"][0]["flows"]["f_enrich"]["enabled"] is False
+        assert "v_clean" in self._standalone(result)
+
+    def test_sql_can_read_python_transformation(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            {"name": "py_clean", "node_type": "transformation", "transformation_type": "python",
+             "config": {"function_path": "clean.py"}},
+            self._sql("enrich", "SELECT * FROM STREAM(v_py_clean)"),
+            self._target("customer_silver", "enrich"),
+        )
+        standalone = self._standalone(NodespecSpecTransformer().transform(spec))
+        assert standalone["v_py_clean"]["sourceDetails"]["pythonTransform"] == {"functionPath": "clean.py"}
+
+    def test_disabled_transformation_is_not_defined(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._sql("unused", "SELECT 1", enabled=False),
+            self._sql("clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._target("customer_silver", "clean"),
+        )
+        result = NodespecSpecTransformer().transform(spec)
+        assert "v_unused" not in self._standalone(result)
+        assert "v_unused" not in self._flow_views(result)
+
+    def test_single_transformation_unchanged(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._sql("clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._target("customer_silver", "clean"),
+        )
+        result = NodespecSpecTransformer().transform(spec)
+        assert "views" not in result["flowGroups"][0]
+        assert set(result["flowGroups"][0]["flows"]["f_clean"]["views"]) == {"v_clean", "v_source_customer"}
+
+    def test_every_view_defined_once_across_specs(self, pipeline_context):
+        # A streaming target and an MV target split into separate specs in the
+        # same pipeline; standalone views must only be emitted once.
+        spec = _spec(
+            _source(),
+            self._sql("clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._sql("enrich", "SELECT * FROM STREAM(v_clean)"),
+            self._target("customer_silver", "enrich"),
+            self._target("customer_mv", "v_source_customer", table_type="mv"),
+        )
+        result = NodespecSpecTransformer().transform(spec)
+        assert len(self._specs(result)) == 2
+        standalone = [v for s in self._specs(result) for g in s["flowGroups"] for v in (g.get("views") or {})]
+        assert standalone == ["v_clean"]
+        assert "v_clean" not in self._flow_views(result)
+
+
+class TestNodespecPythonTransformationSource:
+    """A python transformation has no textual reference, so ``config.source``
+    names its upstream. Without it, it falls back to the first source node."""
+
+    @staticmethod
+    def _py(name, source=None, **config):
+        cfg = {"function_path": f"{name}.py", **config}
+        if source:
+            cfg["source"] = source
+        return {"name": name, "node_type": "transformation", "transformation_type": "python", "config": cfg}
+
+    @staticmethod
+    def _sql(name, statement):
+        return {"name": name, "node_type": "transformation", "transformation_type": "sql",
+                "config": {"sql_statement": statement}}
+
+    @staticmethod
+    def _target(source):
+        return {"name": "target_out", "node_type": "target", "config": {"table": "out", "sources": [source]}}
+
+    @staticmethod
+    def _all_views(result):
+        group = result["flowGroups"][0]
+        views = dict(group.get("views") or {})
+        for flow in group["flows"].values():
+            views.update(flow.get("views") or {})
+        return views
+
+    def _reads(self, result, view):
+        return self._all_views(result)[view]
+
+    def test_python_after_sql_reads_the_sql_view(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._sql("v_clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._py("v_enrich", source="v_clean"),
+            self._target("v_enrich"),
+        )
+        result = NodespecSpecTransformer().transform(spec)
+        details = self._reads(result, "v_enrich")
+        assert details["mode"] == "stream"
+        assert details["sourceDetails"] == {"database": "live", "table": "v_clean",
+                                            "pythonTransform": {"functionPath": "v_enrich.py"}}
+        assert "v_clean" in result["flowGroups"][0]["views"]
+
+    def test_mode_applies_when_upstream_is_sql(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._sql("v_clean", "SELECT * FROM v_source_customer"),
+            self._py("v_enrich", source="v_clean", mode="batch"),
+            self._target("v_enrich"),
+        )
+        assert self._reads(NodespecSpecTransformer().transform(spec), "v_enrich")["mode"] == "batch"
+
+    def test_python_after_python_inherits_upstream_mode(self, pipeline_context):
+        batch_source = {**_source(), "config": {**_source()["config"], "mode": "batch"}}
+        spec = _spec(
+            batch_source,
+            self._py("v_first", source="v_source_customer"),
+            self._py("v_second", source="v_first"),
+            self._target("v_second"),
+        )
+        views = self._all_views(NodespecSpecTransformer().transform(spec))
+        assert views["v_second"]["sourceDetails"]["table"] == "v_first"
+        assert views["v_second"]["mode"] == "batch"
+        assert views["v_first"]["sourceDetails"]["table"] == "v_source_customer"
+
+    def test_source_can_be_a_node_name_or_its_view_name(self, pipeline_context):
+        for ref in ("clean", "v_clean_out"):
+            spec = _spec(
+                _source(),
+                {**self._sql("clean", "SELECT * FROM STREAM(v_source_customer)"), "output_view_name": "v_clean_out"},
+                self._py("v_enrich", source=ref),
+                self._target("v_enrich"),
+            )
+            assert self._reads(NodespecSpecTransformer().transform(spec), "v_enrich")["sourceDetails"]["table"] == "v_clean_out"
+
+    def test_without_source_falls_back_to_first_source_and_warns(self, pipeline_context, caplog):
+        spec = _spec(
+            _source(),
+            self._sql("v_clean", "SELECT * FROM STREAM(v_source_customer)"),
+            self._py("v_enrich"),
+            self._target("v_enrich"),
+        )
+        transformer = NodespecSpecTransformer()
+        transformer.logger.propagate = True
+        with caplog.at_level("WARNING"):
+            result = transformer.transform(spec)
+        assert self._reads(result, "v_enrich")["sourceDetails"]["table"] == "v_source_customer"
+        assert "set config.source" in caplog.text
+
+    @pytest.mark.parametrize("ref, message", [
+        ("v_missing", "not a node in this spec"),
+        ("target_out", "is a target node"),
+        ("v_disabled", "is disabled"),
+    ])
+    def test_invalid_source_is_rejected(self, pipeline_context, ref, message):
+        spec = _spec(
+            _source(),
+            {**self._sql("v_disabled", "SELECT 1"), "enabled": False},
+            self._py("v_enrich", source=ref),
+            self._target("v_enrich"),
+        )
+        with pytest.raises(ValueError, match=message):
+            NodespecSpecTransformer().transform(spec)
+
+    def test_python_cycle_is_rejected(self, pipeline_context):
+        spec = _spec(
+            _source(),
+            self._py("v_a", source="v_b"),
+            self._py("v_b", source="v_a"),
+            self._target("v_b"),
+        )
+        with pytest.raises(ValueError, match="cycle via config.source: v_a -> v_b -> v_a"):
+            NodespecSpecTransformer().transform(spec)
+
+
 class TestNodespecSnapshotFlows:
     """Snapshot targets read their source directly; the SDP snapshot API takes no
     flow name, so we must not synthesize a differently-named flow for a *staging*
