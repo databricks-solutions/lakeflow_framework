@@ -7,6 +7,7 @@ import pytest
 
 from lakeflow_framework.pipeline_config import initialize_mandatory_table_properties, initialize_operational_metadata_schema
 from lakeflow_framework.dataflow.enums import TableType, TargetConfigFlags
+from lakeflow_framework.dataflow.features import Features
 from lakeflow_framework.dataflow.targets import TargetDeltaStreamingTable
 
 
@@ -188,6 +189,81 @@ class TestBaseTargetDeltaProperties:
             configFlags=[TargetConfigFlags.DISABLE_OPERATIONAL_METADATA],
         )
         assert target.operational_metadata_schema is None
+
+    def test_features_flag_disables_operational_metadata_columns(self, pipeline_context, fixtures_dir, monkeypatch):
+        """features.operationalMetadataEnabled=false must keep metadata columns out of the target schema (#97)."""
+        import lakeflow_framework.dataflow.targets.delta_streaming_table as st_module
+        from unittest.mock import MagicMock
+
+        monkeypatch.setattr(st_module, "dp", MagicMock())
+        initialize_operational_metadata_schema(
+            T.StructType([T.StructField("meta", T.StringType())])
+        )
+        target = TargetDeltaStreamingTable(
+            table="t",
+            type=TableType.STREAMING.value,
+            schemaPath=str(fixtures_dir / "schemas" / "minimal_struct.json"),
+        )
+        target.create_table(features=Features(operationalMetadataEnabled=False))
+        assert "meta" not in target.schema_struct.fieldNames()
+        created_schema = st_module.dp.create_streaming_table.call_args.kwargs["schema"]
+        assert "meta" not in created_schema.fieldNames()
+
+    def test_features_flag_enables_operational_metadata_columns(self, pipeline_context, fixtures_dir, monkeypatch):
+        """Metadata columns are appended at create_table time when the feature is on (#97)."""
+        import lakeflow_framework.dataflow.targets.delta_streaming_table as st_module
+        from unittest.mock import MagicMock
+
+        monkeypatch.setattr(st_module, "dp", MagicMock())
+        initialize_operational_metadata_schema(
+            T.StructType([T.StructField("meta", T.StringType())])
+        )
+        target = TargetDeltaStreamingTable(
+            table="t",
+            type=TableType.STREAMING.value,
+            schemaPath=str(fixtures_dir / "schemas" / "minimal_struct.json"),
+        )
+        assert "meta" not in target.schema_struct.fieldNames()
+        target.create_table(features=Features(operationalMetadataEnabled=True))
+        created_schema = st_module.dp.create_streaming_table.call_args.kwargs["schema"]
+        assert "meta" in created_schema.fieldNames()
+
+    def test_missing_features_defaults_to_operational_metadata_enabled(self, pipeline_context, fixtures_dir, monkeypatch):
+        """Call sites that pass no features keep the pre-#97 enabled-by-default behavior."""
+        import lakeflow_framework.dataflow.targets.delta_streaming_table as st_module
+        from unittest.mock import MagicMock
+
+        monkeypatch.setattr(st_module, "dp", MagicMock())
+        initialize_operational_metadata_schema(
+            T.StructType([T.StructField("meta", T.StringType())])
+        )
+        target = TargetDeltaStreamingTable(
+            table="t",
+            type=TableType.STREAMING.value,
+            schemaPath=str(fixtures_dir / "schemas" / "minimal_struct.json"),
+        )
+        target.create_table()
+        created_schema = st_module.dp.create_streaming_table.call_args.kwargs["schema"]
+        assert "meta" in created_schema.fieldNames()
+
+    def test_config_flag_disables_metadata_even_when_features_enabled(self, pipeline_context, fixtures_dir, monkeypatch):
+        """The per-target DISABLE_OPERATIONAL_METADATA flag still wins over features (#97)."""
+        import lakeflow_framework.dataflow.targets.delta_streaming_table as st_module
+        from unittest.mock import MagicMock
+
+        monkeypatch.setattr(st_module, "dp", MagicMock())
+        initialize_operational_metadata_schema(
+            T.StructType([T.StructField("meta", T.StringType())])
+        )
+        target = TargetDeltaStreamingTable(
+            table="t",
+            type=TableType.STREAMING.value,
+            schemaPath=str(fixtures_dir / "schemas" / "minimal_struct.json"),
+            configFlags=[TargetConfigFlags.DISABLE_OPERATIONAL_METADATA],
+        )
+        target.create_table(features=Features(operationalMetadataEnabled=True))
+        created_schema = st_module.dp.create_streaming_table.call_args.kwargs["schema"]
+        assert "meta" not in created_schema.fieldNames()
 
     def test_add_table_properties_merges_recursively(self, pipeline_context, fixtures_dir):
         schema_path = fixtures_dir / "schemas" / "minimal_struct.json"

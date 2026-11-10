@@ -139,11 +139,6 @@ class BaseTargetDelta():
             self._schema_constraints = schema_constraints
             self._schema_struct = struct_from_ddl_column_lines(schema_lines)
 
-        # Initialize operational metadata schema
-        if self.operational_metadata_schema:
-            self.logger.info(f"Adding operational metadata schema to table: {self.table}")
-            self._add_columns(self.operational_metadata_schema.fields)
-
     @property
     def schema_type(self) -> Optional[str]:
         """Get the schema type."""
@@ -272,6 +267,15 @@ class BaseTargetDelta():
         substitution_manager = self.substitution_manager
 
         logger.info(f"Creating Delta Table: {self.table}, Type: {self.type}")
+
+        # Operational metadata columns are appended here rather than at schema
+        # init so the per-spec features flag is honored, matching the source/MV
+        # read paths (#97). _add_columns skips columns already present.
+        operational_metadata_enabled = features.operationalMetadataEnabled if features else True
+        if (self.operational_metadata_schema and operational_metadata_enabled
+                and (self._schema_struct or self._schema_lines)):
+            logger.info(f"Adding operational metadata schema to table: {self.table}")
+            self._add_columns(self.operational_metadata_schema.fields)
 
         schema = None
         if self.schema_type == "json":
