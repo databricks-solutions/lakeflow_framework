@@ -231,7 +231,7 @@ class DataFlow:
             if self.target_details.type == TableType.STREAMING.value:
                 
                 # create streaming table
-                self.target_details.create_table(expectations)
+                self.target_details.create_table(expectations, features=self.features)
 
                 # setup table migration
                 if self.table_migration_manager:
@@ -281,7 +281,7 @@ class DataFlow:
                 self._init_staging_table_cdc_settings(staging_table)
 
                 # Create the staging table with expectations if enabled
-                staging_table.create_table(staging_expectations)
+                staging_table.create_table(staging_expectations, features=self.features)
 
                 # Support direct historical snapshots into Staging Tables in Flows
                 cdc_snapshot_settings = staging_table.get_cdc_snapshot_settings()
