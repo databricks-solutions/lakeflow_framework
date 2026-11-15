@@ -297,6 +297,14 @@ class DataFlow:
                         target_config_flags=staging_table.configFlags
                     )
 
+        # create standalone views (not owned by a flow; SDP resolves them by name)
+        standalone_views = flow_group.get_views()
+        if standalone_views:
+            self.logger.info("Creating Standalone Views...")
+            self._create_views(
+                standalone_views, None, True, self.target_details.configFlags
+            )
+
         # create flows
         self.logger.info("Creating Flows...")
         flows = flow_group.get_flows()
