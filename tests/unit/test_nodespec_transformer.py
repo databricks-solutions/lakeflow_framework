@@ -166,6 +166,36 @@ class TestNodespecMaterializedView:
         ]
         assert len(mv_specs) == 1
         assert mv_specs[0]["targetDetails"]["table"] == "customer_summary_mv"
+        flow = next(iter(mv_specs[0]["flowGroups"][0]["flows"].values()))
+        assert flow["flowDetails"]["targetTable"] == "customer_summary_mv"
+
+    def test_mv_target_with_database_qualifies_flow_target_table(self, pipeline_context):
+        """Issue #180: the runtime qualifies the target as ``database.table``, so the
+        MV flow's targetTable must match or it is mistaken for a staging table."""
+        spec = _spec(
+            _source(name="v_mv_source", table="customer"),
+            {
+                "name": "dim_revenue_company_target",
+                "node_type": "target",
+                "config": {
+                    "table_type": "mv",
+                    "database": "my_database",
+                    "table": "my_table",
+                    "sources": ["v_mv_source"],
+                },
+            },
+        )
+        results = NodespecSpecTransformer().transform(spec)
+        mv_spec = next(
+            s for s in (results if isinstance(results, list) else [results])
+            if s["targetDetails"].get("type") == TableType.MATERIALIZED_VIEW
+        )
+        # targetDetails stays unqualified — the runtime folds `database` in itself.
+        assert mv_spec["targetDetails"]["table"] == "my_table"
+        assert mv_spec["targetDetails"]["database"] == "my_database"
+        flow = next(iter(mv_spec["flowGroups"][0]["flows"].values()))
+        assert flow["flowType"] == FlowType.MATERIALIZED_VIEW
+        assert flow["flowDetails"]["targetTable"] == "my_database.my_table"
 
 
 class TestNodespecChainedTransformations:

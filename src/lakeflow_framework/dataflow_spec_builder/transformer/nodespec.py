@@ -433,6 +433,10 @@ class NodespecSpecTransformer(BaseSpecTransformer):
     def _mv_spec(self, spec_data: Dict, target: Dict, sources: List[Dict]) -> Dict:
         cfg = target.get("config", {})
         mv = cfg.get("table")
+        # The runtime qualifies the target table with its `database` (see
+        # targets/base.py), and is_target compares the flow's targetTable against
+        # that qualified name — so qualify it here too (same as _add_flows).
+        target_ref = f"{cfg['database']}.{mv}" if cfg.get("database") else mv
         # All table settings (including MV-only `private`) live top-level on the config.
         details = {"table": mv, "type": TableType.MATERIALIZED_VIEW, **_camel(cfg, _HANDLED)}
 
@@ -451,7 +455,7 @@ class NodespecSpecTransformer(BaseSpecTransformer):
             source_view, views = self._views_for(view)
             if source_view:
                 details["sourceView"] = source_view
-                flow = {"flowType": FlowType.MATERIALIZED_VIEW, "flowDetails": {"targetTable": mv}}
+                flow = {"flowType": FlowType.MATERIALIZED_VIEW, "flowDetails": {"targetTable": target_ref}}
                 if views:
                     for v in views.values():
                         v["mode"] = Mode.BATCH  # MVs use batch reads (spark.sql)
