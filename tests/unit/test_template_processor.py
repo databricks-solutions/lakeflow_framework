@@ -742,3 +742,171 @@ class TestTemplateProcessorHelpers:
         assert result["retries"] == 3
         assert result["enabled"] is True
         assert result["name"] == "flow_x"
+
+
+class TestTemplateForEachExpansion:
+    """$for_each list→node cloning for multi-source (fan-in) templates."""
+
+    def test_for_each_expands_one_spec_with_n_sources_and_shared_target(
+        self,
+        pipeline_context,
+        template_bundle_tree: Path,
+        framework_src_path: Path,
+    ):
+        processor = _processor(template_bundle_tree, framework_src_path)
+        template_spec = {
+            "template": "fan_in_append_template",
+            "global_defaults": {
+                "schemaPath": "orders_schema.json",
+                "readerOptions": {
+                    "cloudFiles.format": "csv",
+                    "header": "true",
+                },
+            },
+            "parameter_sets": [
+                {
+                    "dataFlowId": "orders_multi_channel",
+                    "targetTable": "orders_bronze",
+                    "sources": [
+                        {
+                            "sourceTable": "pos",
+                            "filePath": "/landing/pos/",
+                            "channel": "pos",
+                        },
+                        {
+                            "sourceTable": "web",
+                            "filePath": "/landing/web/",
+                            "channel": "web",
+                        },
+                        {
+                            "sourceTable": "marketplace",
+                            "filePath": "/landing/marketplace/",
+                            "channel": "marketplace",
+                        },
+                    ],
+                }
+            ],
+        }
+        result = processor.process_template_spec(
+            "/virtual/fan_in.json", template_spec
+        )
+        assert len(result) == 1
+        spec = next(iter(result.values()))
+        assert spec["data_flow_id"] == "orders_multi_channel"
+        assert spec["data_flow_type"] == "nodespec"
+
+        source_nodes = [
+            n for n in spec["nodes"] if n.get("node_type") == "source"
+        ]
+        target_nodes = [
+            n for n in spec["nodes"] if n.get("node_type") == "target"
+        ]
+        assert len(source_nodes) == 3
+        assert len(target_nodes) == 1
+
+        by_name = {n["name"]: n for n in source_nodes}
+        assert set(by_name) == {"v_pos", "v_web", "v_marketplace"}
+        assert by_name["v_pos"]["config"]["path"] == "/landing/pos/"
+        assert by_name["v_web"]["config"]["schema_path"] == "orders_schema.json"
+        assert by_name["v_marketplace"]["config"]["reader_options"]["cloudFiles.format"] == "csv"
+        assert "'marketplace' AS channel" in by_name["v_marketplace"]["config"]["select_exp"]
+
+        target = target_nodes[0]
+        assert target["name"] == "target_orders_bronze"
+        assert target["config"]["table"] == "orders_bronze"
+        assert target["config"]["sources"] == [
+            {"view": "v_pos", "flow": "f_pos"},
+            {"view": "v_web", "flow": "f_web"},
+            {"view": "v_marketplace", "flow": "f_marketplace"},
+        ]
+
+    def test_for_each_rejects_nested_markers(
+        self, pipeline_context, framework_src_path
+    ):
+        processor = _processor(Path("/tmp"), framework_src_path)
+        template = {
+            "nodes": [
+                {
+                    "$for_each": "sources",
+                    "as": "src",
+                    "node": {
+                        "nested": {
+                            "$for_each": "inner",
+                            "as": "x",
+                            "value": "${x.id}",
+                        }
+                    },
+                }
+            ]
+        }
+        with pytest.raises(ValueError, match="Nested '\\$for_each'"):
+            processor._generate_spec(
+                template,
+                {
+                    "sources": [{"sourceTable": "a"}],
+                    "inner": [{"id": "1"}],
+                },
+            )
+
+    def test_for_each_requires_node_fragment_in_list(
+        self, pipeline_context, framework_src_path
+    ):
+        processor = _processor(Path("/tmp"), framework_src_path)
+        template = {
+            "nodes": [
+                {
+                    "$for_each": "sources",
+                    "as": "src",
+                    "value": {"name": "v_${src.id}"},
+                }
+            ]
+        }
+        with pytest.raises(ValueError, match="missing 'node'"):
+            processor._generate_spec(template, {"sources": [{"id": "a"}]})
+
+    def test_for_each_requires_list_of_objects(
+        self, pipeline_context, framework_src_path
+    ):
+        processor = _processor(Path("/tmp"), framework_src_path)
+        template = {
+            "nodes": [
+                {
+                    "$for_each": "sources",
+                    "as": "src",
+                    "node": {"name": "v_${src.id}"},
+                }
+            ]
+        }
+        with pytest.raises(ValueError, match="must be objects"):
+            processor._generate_spec(template, {"sources": ["pos", "web"]})
+
+    def test_for_each_rejects_invalid_alias(
+        self, pipeline_context, framework_src_path
+    ):
+        processor = _processor(Path("/tmp"), framework_src_path)
+        template = {
+            "nodes": [
+                {
+                    "$for_each": "sources",
+                    "as": "my-src",
+                    "node": {"name": "v_${my-src.id}"},
+                }
+            ]
+        }
+        with pytest.raises(ValueError, match="Python-style identifier"):
+            processor._generate_spec(template, {"sources": [{"id": "a"}]})
+
+    def test_foreign_placeholders_pass_through(
+        self, pipeline_context, framework_src_path
+    ):
+        """${secret.*} must survive for SecretsManager after template expand."""
+        processor = _processor(Path("/tmp"), framework_src_path)
+        template = {
+            "password": "${secret.kafka_password}",
+            "note": "user=${secret.kafka_user} end",
+            "name": "${param.dataFlowId}",
+        }
+        result = processor._generate_spec(template, {"dataFlowId": "flow_a"})
+        assert result["password"] == "${secret.kafka_password}"
+        assert result["note"] == "user=${secret.kafka_user} end"
+        assert result["name"] == "flow_a"

@@ -1,0 +1,67 @@
+{
+    "name": "cloud_files_multi_source_append_template",
+    "parameters": {
+        "dataFlowId": {
+            "type": "string",
+            "required": true
+        },
+        "targetTable": {
+            "type": "string",
+            "required": true
+        },
+        "sources": {
+            "type": "list",
+            "required": true
+        },
+        "schemaPath": {
+            "type": "string",
+            "required": true
+        },
+        "readerOptions": {
+            "type": "object",
+            "required": true
+        }
+    },
+    "template": {
+        "data_flow_id": "${param.dataFlowId}",
+        "data_flow_group": "template_samples",
+        "data_flow_type": "nodespec",
+        "nodes": [
+            {
+                "$for_each": "sources",
+                "as": "src",
+                "node": {
+                    "name": "v_${src.sourceTable}",
+                    "node_type": "source",
+                    "source_type": "cloud_files",
+                    "config": {
+                        "mode": "stream",
+                        "path": "${src.filePath}",
+                        "schema_path": "${param.schemaPath}",
+                        "reader_options": "${param.readerOptions}",
+                        "select_exp": [
+                            "*",
+                            "'${src.channel}' AS channel",
+                            "_metadata AS meta_file_info"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "target_${param.targetTable}",
+                "node_type": "target",
+                "config": {
+                    "table": "${param.targetTable}",
+                    "sources": {
+                        "$for_each": "sources",
+                        "as": "src",
+                        "value": {
+                            "view": "v_${src.sourceTable}",
+                            "flow": "f_${src.sourceTable}"
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
