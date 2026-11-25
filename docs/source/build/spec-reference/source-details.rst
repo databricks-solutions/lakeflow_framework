@@ -111,7 +111,7 @@ The `sourceDelta` object contains the following properties:
      - The Python transform configuration. See :ref:`pythonTransform-object` for supported options.
    * - **startingVersionFromDLTSetup** (*optional*)
      - ``boolean``
-     - Whether to automatically set reader option 'startingVersion' to the last time the SDP Setup operation was run on the source table. This helps to ensure CDF is read from the last time source table was reset (full refresh).
+     - Whether to automatically set reader option 'startingVersion' to the first 'DLT SETUP' operation since the source table was last fully refreshed (the latest 'DLT REFRESH' in its history), or the first 'DLT SETUP' if it was never fully refreshed. This ensures CDF is read from the last time the source table was reset. Later 'DLT SETUP' operations, written when the table definition changes, are ignored. 'startingVersion' is only used when the reading stream has no checkpoint, so when the source table is fully refreshed, the tables reading its CDF must be fully refreshed with it.
 
 Delta Join
 ----------------
